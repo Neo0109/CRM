@@ -1,6 +1,6 @@
 import { ArrowDownToLine, FileJson, Search, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { fetchLeads, importJson, updateLead } from "./api";
+import { fetchLeads, getAccessToken, importJson, saveAccessToken, updateLead } from "./api";
 import type { Bucket, Lead, Stage } from "./types";
 
 type Filters = {
@@ -33,6 +33,7 @@ export default function App() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tokenDraft, setTokenDraft] = useState(getAccessToken());
 
   useEffect(() => {
     void reload();
@@ -121,6 +122,11 @@ export default function App() {
 
       {status && <div className="notice">{status}</div>}
       {error && <div className="notice error">{error}</div>}
+      {error?.includes("CRM access token") && <section className="token-panel">
+        <strong>输入 CRM 访问口令</strong>
+        <input type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="CRM_ACCESS_TOKEN" />
+        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(); }}>进入</button>
+      </section>}
 
       <section className="filters">
         <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 类型 / 关键词" /></label>
