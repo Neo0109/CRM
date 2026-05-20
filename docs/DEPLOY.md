@@ -25,9 +25,36 @@ create index if not exists crm_leads_updated_at_idx
 
 Keep the secret / service role key private. It must only be used on the server.
 
-## 2. Deploy Web Service
+## 2. Deploy on Zeabur
 
-Deploy the GitHub repo as a Node web service.
+Zeabur is a good option when Render phone verification is not available.
+
+1. Open `https://zeabur.com`.
+2. Sign in with GitHub.
+3. Create a new project.
+4. Add a service from GitHub.
+5. Select `Neo0109/CRM`.
+6. Zeabur will use `zbpack.json`:
+
+```bash
+npm install && npm run build
+npm run start --workspace app/backend
+```
+
+7. Add environment variables:
+
+```text
+SUPABASE_URL=your-supabase-url
+SUPABASE_SECRET_KEY=your-server-side-key
+CRM_ACCESS_TOKEN=choose-a-private-password
+NODE_ENV=production
+```
+
+8. Deploy and open the generated domain.
+
+## 3. Alternative Generic Node Web Service
+
+If you use another Node hosting service, use:
 
 Build command:
 
@@ -52,13 +79,13 @@ NODE_ENV=production
 
 The app will serve the React CRM and API from the same online URL.
 
-## 3. First Use
+## 4. First Use
 
 Open the deployed URL in any browser.
 
 If `CRM_ACCESS_TOKEN` is configured, enter it once in the CRM. The browser saves it locally and sends it with API requests.
 
-## 4. Storage Mode
+## 5. Storage Mode
 
 - With Supabase variables: leads are stored in Supabase.
 - Without Supabase variables: leads fall back to local `data/leads.json`.
