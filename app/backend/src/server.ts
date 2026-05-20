@@ -92,7 +92,7 @@ app.use((req, res, next) => {
     return;
   }
 
-  if (req.headers["x-crm-token"] === crmAccessToken) {
+  if (req.headers["x-crm-token"] === crmAccessToken || readCookie(req.headers.cookie, "crm_access_token") === crmAccessToken) {
     next();
     return;
   }
@@ -416,4 +416,10 @@ function normalizeText(value: string) {
 
 function normalizeUrl(value: string) {
   return value.trim().toLowerCase().replace(/\/$/, "");
+}
+
+function readCookie(header: string | undefined, name: string) {
+  if (!header) return null;
+  const match = header.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
 }
