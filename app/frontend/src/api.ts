@@ -45,8 +45,11 @@ export function getAccessToken() {
 
 export function saveAccessToken(token: string) {
   window.localStorage.setItem(tokenKey, token);
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `crm_access_token=${encodeURIComponent(token)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
 }
 
 export function clearAccessToken() {
   window.localStorage.removeItem(tokenKey);
+  document.cookie = "crm_access_token=; Path=/; Max-Age=0; SameSite=Lax";
 }
