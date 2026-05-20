@@ -1,0 +1,19 @@
+{
+  "name": "sourcing-crm",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "app/frontend",
+    "app/backend",
+    "automations"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev --workspace app/backend\" \"npm run dev --workspace app/frontend\"",
+    "build": "npm run build --workspace app/frontend && npm run build --workspace app/backend",
+    "typecheck": "npm run typecheck --workspace app/frontend && npm run typecheck --workspace app/backend",
+    "import:daily": "npm --workspace automations run import:daily --"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
