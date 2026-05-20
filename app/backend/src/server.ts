@@ -2,6 +2,7 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import cors from "cors";
 import express from "express";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -60,8 +61,17 @@ type DailyReport = {
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(dirname, "../../..");
 const dataPath = path.join(rootDir, "data/leads.json");
+const frontendDistPath = path.join(rootDir, "app/frontend/dist");
 const leadSchemaPath = path.join(rootDir, "schemas/sourcing_lead.schema.json");
 const dailyReportSchemaPath = path.join(rootDir, "schemas/daily_report.schema.json");
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+const crmAccessToken = process.env.CRM_ACCESS_TOKEN;
+const supabase = supabaseUrl && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false }
+    })
+  : null;
 
 const [leadSchema, dailyReportSchema] = await Promise.all([
   readJson(leadSchemaPath),
@@ -76,9 +86,22 @@ const validateDailyReport = ajv.compile<DailyReport>(dailyReportSchema);
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "4mb" }));
+app.use((req, res, next) => {
+  if (!crmAccessToken || req.path === "/api/health" || !req.path.startsWith("/api")) {
+    next();
+    return;
+  }
+
+  if (req.headers["x-crm-token"] === crmAccessToken) {
+    next();
+    return;
+  }
+
+  res.status(401).json({ error: "CRM access token required" });
+});
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true });
+  res.json({ ok: true, storage: supabase ? "supabase" : "json" });
 });
 
 app.get("/api/leads", async (_req, res, next) => {
@@ -93,7 +116,6 @@ app.patch("/api/leads/:id", async (req, res, next) => {
   try {
     const leads = await readLeads();
     const index = leads.findIndex((lead) => lead.id === req.params.id);
-
     if (index === -1) {
       res.status(404).json({ error: "Lead not found" });
       return;
@@ -112,16 +134,12 @@ app.patch("/api/leads/:id", async (req, res, next) => {
 app.post("/api/leads/import", async (req, res, next) => {
   try {
     const payload = req.body;
-    const reportLike = isDailyReport(payload);
-    const incoming = reportLike ? leadsFromReport(payload) : payload;
-
+    const incoming = isDailyReport(payload) ? leadsFromReport(payload) : payload;
     if (!Array.isArray(incoming)) {
       res.status(400).json({ error: "Expected a daily report or an array of leads" });
       return;
     }
-
-    const result = await mergeIncomingLeads(incoming);
-    res.json(result);
+    res.json(await mergeIncomingLeads(incoming));
   } catch (error) {
     next(error);
   }
@@ -160,6 +178,11 @@ app.get("/api/export/csv", async (_req, res, next) => {
   }
 });
 
+app.use(express.static(frontendDistPath));
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(frontendDistPath, "index.html"));
+});
+
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const message = error instanceof Error ? error.message : "Unknown error";
   res.status(500).json({ error: message });
@@ -167,7 +190,7 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 
 const port = Number(process.env.PORT ?? 8787);
 app.listen(port, () => {
-  console.log(`Sourcing CRM API listening on http://localhost:${port}`);
+  console.log(`Sourcing CRM listening on http://localhost:${port}`);
 });
 
 async function readJson(filePath: string) {
@@ -175,6 +198,10 @@ async function readJson(filePath: string) {
 }
 
 async function readLeads(): Promise<Lead[]> {
+  if (supabase) {
+    return readLeadsFromSupabase(supabase);
+  }
+
   try {
     const leads = JSON.parse(await readFile(dataPath, "utf8")) as Lead[];
     return leads.map((lead) => normalizeLead(lead));
@@ -183,21 +210,37 @@ async function readLeads(): Promise<Lead[]> {
       await writeLeads([]);
       return [];
     }
-
     throw error;
   }
 }
 
 async function writeLeads(leads: Lead[]) {
+  if (supabase) {
+    await writeLeadsToSupabase(supabase, leads);
+    return;
+  }
+
   await mkdir(path.dirname(dataPath), { recursive: true });
   await writeFile(dataPath, `${JSON.stringify(leads, null, 2)}\n`, "utf8");
+}
+
+async function readLeadsFromSupabase(client: SupabaseClient): Promise<Lead[]> {
+  const { data, error } = await client.from("crm_leads").select("data").order("updated_at", { ascending: false });
+  if (error) throw new Error(`Supabase read failed: ${error.message}`);
+  return (data ?? []).map((row: { data: Lead }) => normalizeLead(row.data));
+}
+
+async function writeLeadsToSupabase(client: SupabaseClient, leads: Lead[]) {
+  const rows = leads.map((lead) => ({ id: lead.id, data: lead, updated_at: new Date().toISOString() }));
+  if (!rows.length) return;
+  const { error } = await client.from("crm_leads").upsert(rows, { onConflict: "id" });
+  if (error) throw new Error(`Supabase write failed: ${error.message}`);
 }
 
 async function mergeIncomingLeads(rawLeads: Partial<Lead>[]) {
   const existing = await readLeads();
   const byKey = new Map(existing.flatMap((lead) => leadKeys(lead).map((key) => [key, lead.id] as const)));
   const byId = new Map(existing.map((lead) => [lead.id, lead]));
-
   let created = 0;
   let updated = 0;
   let dropped = 0;
@@ -206,26 +249,18 @@ async function mergeIncomingLeads(rawLeads: Partial<Lead>[]) {
     const incoming = normalizeLead(raw);
     assertValidLead(incoming);
     const matchId = leadKeys(incoming).map((key) => byKey.get(key)).find(Boolean);
-
     if (matchId && byId.has(matchId)) {
       const current = byId.get(matchId)!;
       const merged = mergeLead(current, incoming);
       byId.set(current.id, merged);
-      for (const key of leadKeys(merged)) {
-        byKey.set(key, merged.id);
-      }
+      for (const key of leadKeys(merged)) byKey.set(key, merged.id);
       updated += 1;
     } else {
       byId.set(incoming.id, incoming);
-      for (const key of leadKeys(incoming)) {
-        byKey.set(key, incoming.id);
-      }
+      for (const key of leadKeys(incoming)) byKey.set(key, incoming.id);
       created += 1;
     }
-
-    if (incoming.bucket === "淘汰池") {
-      dropped += 1;
-    }
+    if (incoming.bucket === "淘汰池") dropped += 1;
   }
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
@@ -242,20 +277,15 @@ function isDailyReport(value: unknown): value is DailyReport {
 }
 
 function assertValidDailyReport(report: DailyReport) {
-  if (!validateDailyReport(report)) {
-    throw new Error(ajv.errorsText(validateDailyReport.errors));
-  }
+  if (!validateDailyReport(report)) throw new Error(ajv.errorsText(validateDailyReport.errors));
 }
 
 function assertValidLead(lead: Lead) {
-  if (!validateLead(lead)) {
-    throw new Error(ajv.errorsText(validateLead.errors));
-  }
+  if (!validateLead(lead)) throw new Error(ajv.errorsText(validateLead.errors));
 }
 
 function leadsFromReport(report: DailyReport): Partial<Lead>[] {
   assertValidDailyReport(report);
-
   return [
     ...report.push_pool.map((lead) => ({ ...lead, bucket: "推进池" as const })),
     ...report.watch_pool.map((lead) => ({ ...lead, bucket: "观察池" as const })),
@@ -270,7 +300,6 @@ function leadsFromReport(report: DailyReport): Partial<Lead>[] {
 function normalizeLead(raw: Partial<Lead>): Lead {
   const project = requiredString(raw.project, "project");
   const firstSeen = raw.first_seen ?? new Date().toISOString().slice(0, 10);
-
   return {
     id: raw.id ?? makeLeadId(project, raw.steam_app_id, firstSeen),
     project,
