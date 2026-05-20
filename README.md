@@ -9,7 +9,8 @@
 - JSON 导入：支持每日扫描日报和 leads 数组
 - 去重合并：项目名优先，其次 Steam AppID / 链接
 - 导出：JSON / CSV
-- 本地存储：`data/leads.json`
+- 线上存储：部署后使用 Supabase 作为共享数据库
+- 本地备用：未配置 Supabase 时使用 `data/leads.json`
 
 ## 快速启动
 
@@ -23,12 +24,22 @@ npm run dev
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:8787`
 
+## 线上部署
+
+多电脑使用时，建议部署为线上服务并使用 Supabase 存储 leads。
+
+部署说明见：
+
+```text
+docs/DEPLOY.md
+```
+
 ## 目录
 
 ```text
 app/
   frontend/      React CRM 页面
-  backend/       Node API，本地读写 data/leads.json
+  backend/       Node API，本地读写 data/leads.json 或线上 Supabase
 data/
   leads.json
   reports/
