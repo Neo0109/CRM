@@ -1,0 +1,15 @@
+{
+  "name": "@sourcing-crm/automations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "daily:prompt": "tsx jobs/daily_scan.ts",
+    "import:daily": "tsx jobs/import_to_crm.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  }
+}

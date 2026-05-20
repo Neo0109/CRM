@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sourcing Lead",
+  "type": "object",
+  "required": [
+    "id",
+    "project",
+    "country",
+    "bucket",
+    "stage",
+    "priority",
+    "progress",
+    "publisher_status",
+    "bilibili_fit",
+    "amplification",
+    "verdict",
+    "first_seen"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "project": { "type": "string" },
+    "steam_app_id": { "type": ["string", "null"] },
+    "team": { "type": ["string", "null"] },
+    "team_size": { "type": ["string", "null"] },
+    "country": { "type": "string" },
+    "region_priority": {
+      "type": "string",
+      "enum": ["国内优先", "海外-高视觉", "海外-强数据", "其他"]
+    },
+    "bucket": {
+      "type": "string",
+      "enum": ["推进池", "观察池", "淘汰池"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["new", "watch", "active", "negotiating", "won", "rejected"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3"]
+    },
+    "genre": { "type": ["string", "null"] },
+    "gameplay": { "type": ["string", "null"] },
+    "progress": { "type": "string" },
+    "release_window": { "type": ["string", "null"] },
+    "early_access": { "type": "boolean" },
+    "narrative_heavy": { "type": "boolean" },
+    "india_team": { "type": "boolean" },
+    "publisher_status": { "type": "string" },
+    "publisher_name": { "type": ["string", "null"] },
+    "china_capability_occupied": { "type": "boolean" },
+    "traction_summary": { "type": ["string", "null"] },
+    "public_signals": { "type": ["string", "null"] },
+    "contact": { "type": ["string", "null"] },
+    "links": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exposure_trail": { "type": ["string", "null"] },
+    "bilibili_fit": { "type": "string" },
+    "amplification": { "type": "string" },
+    "risks": { "type": ["string", "null"] },
+    "verdict": { "type": "string" },
+    "next_action": { "type": ["string", "null"] },
+    "owner": { "type": ["string", "null"] },
+    "due_date": { "type": ["string", "null"], "format": "date" },
+    "first_seen": { "type": "string", "format": "date" },
+    "notes": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

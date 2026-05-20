@@ -1,0 +1,50 @@
+export type Bucket = "推进池" | "观察池" | "淘汰池";
+export type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
+export type Priority = "P0" | "P1" | "P2" | "P3";
+export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
+
+export type Lead = {
+  id: string;
+  project: string;
+  steam_app_id: string | null;
+  team: string | null;
+  team_size: string | null;
+  country: string;
+  region_priority: RegionPriority;
+  bucket: Bucket;
+  stage: Stage;
+  priority: Priority;
+  genre: string | null;
+  gameplay: string | null;
+  progress: string;
+  release_window: string | null;
+  early_access: boolean;
+  narrative_heavy: boolean;
+  india_team: boolean;
+  publisher_status: string;
+  publisher_name: string | null;
+  china_capability_occupied: boolean;
+  traction_summary: string | null;
+  public_signals: string | null;
+  contact: string | null;
+  links: string[];
+  exposure_trail: string | null;
+  bilibili_fit: string;
+  amplification: string;
+  risks: string | null;
+  verdict: string;
+  next_action: string | null;
+  owner: string | null;
+  due_date: string | null;
+  first_seen: string;
+  notes: string | null;
+};
+
+export type ImportResult = {
+  created: number;
+  updated: number;
+  dropped: number;
+  total: number;
+  report_date?: string;
+  summary?: string;
+};
