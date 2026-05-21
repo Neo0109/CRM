@@ -1,9 +1,9 @@
-import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Trash2, XCircle } from "lucide-react";
+import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { fetchLeads, fetchRadar, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
-import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage } from "./types";
+import { excelExportUrl, fetchLeads, fetchRadar, fetchSettings, getAccessToken, saveAccessToken, saveSettings, syncLatestReport, updateLead } from "./api";
+import type { Bucket, ContactMethod, ContactType, CrmSettings, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, SettingsPatch, Stage } from "./types";
 
-type View = "leads" | "radar";
+type View = "leads" | "radar" | "settings";
 type Filters = {
   query: string;
   bucket: "全部" | Bucket;
@@ -113,6 +113,17 @@ export default function App() {
     await handleLeadPatch(lead.id, { bucket, stage: stageFromBucket(bucket), ...reviewPatchForBucket(bucket) });
   }
 
+  function refreshCurrentView() {
+    if (view === "leads") void reload(true);
+    if (view === "radar") void loadRadar();
+  }
+
+  function downloadExcel() {
+    const password = window.prompt("请输入 Excel 导出密码");
+    if (!password?.trim()) return;
+    window.location.assign(excelExportUrl(password.trim()));
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -123,7 +134,9 @@ export default function App() {
         <div className="actions">
           <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
           <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
-          <button className="ghost-button" onClick={() => view === "leads" ? void reload(true) : void loadRadar()}><RefreshCw size={16} />刷新</button>
+          <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
+          <button className="ghost-button" onClick={refreshCurrentView}><RefreshCw size={16} />刷新</button>
+          <button className="ghost-button" onClick={downloadExcel}><FileSpreadsheet size={16} />Excel</button>
           <a className="ghost-button" href="/api/export/json"><FileJson size={16} />JSON</a>
           <a className="ghost-button" href="/api/export/csv"><ArrowDownToLine size={16} />CSV</a>
         </div>
@@ -181,7 +194,7 @@ export default function App() {
           </div>
           <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
         </section>
-      </> : <RadarPage radar={radar} loading={radarLoading} />}
+      </> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
     </main>
   );
 }
@@ -343,6 +356,97 @@ function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boo
         </article>)}</div> : <div className="radar-empty">等待今日自动化写入</div>}
       </section>;
     })}
+  </section>;
+}
+
+function SettingsPage({ onStatus, onTokenChanged }: { onStatus: (message: string) => void; onTokenChanged: (token: string) => void }) {
+  const [settings, setSettings] = useState<CrmSettings | null>(null);
+  const [boundEmail, setBoundEmail] = useState("");
+  const [excelPassword, setExcelPassword] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [downloadPassword, setDownloadPassword] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => { void loadSettings(); }, []);
+
+  async function loadSettings() {
+    try {
+      setLoading(true);
+      const nextSettings = await fetchSettings();
+      setSettings(nextSettings);
+      setBoundEmail(nextSettings.bound_email ?? "");
+      setLocalError(null);
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : "设置加载失败");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSave() {
+    try {
+      const patch: SettingsPatch = { bound_email: boundEmail };
+      if (excelPassword.trim()) patch.excel_export_password = excelPassword.trim();
+      if (loginPassword.trim()) patch.login_password = loginPassword.trim();
+      const nextSettings = await saveSettings(patch);
+      setSettings(nextSettings);
+      setBoundEmail(nextSettings.bound_email ?? "");
+      if (loginPassword.trim()) {
+        saveAccessToken(loginPassword.trim());
+        onTokenChanged(loginPassword.trim());
+      }
+      setExcelPassword("");
+      setLoginPassword("");
+      setLocalError(null);
+      onStatus("CRM 设置已保存");
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : "设置保存失败");
+    }
+  }
+
+  function handleExcelDownload() {
+    if (!downloadPassword.trim()) {
+      setLocalError("请输入 Excel 导出密码");
+      return;
+    }
+    window.location.assign(excelExportUrl(downloadPassword.trim()));
+  }
+
+  if (loading) return <section className="settings-shell"><div className="empty-cell">加载设置中</div></section>;
+
+  return <section className="settings-shell">
+    <div className="settings-head">
+      <div><p className="eyebrow">CRM Control</p><h2>设置</h2></div>
+      <button className="ghost-button" onClick={() => void loadSettings()}><RefreshCw size={16} />刷新设置</button>
+    </div>
+    {localError && <div className="notice error inline-notice">{localError}</div>}
+    <div className="settings-grid">
+      <article className="settings-card">
+        <h3>账户</h3>
+        <div className="form-grid two">
+          <TextField label="绑定邮箱" value={boundEmail} onChange={setBoundEmail} />
+          <TextField label="新登录密码" type="password" value={loginPassword} onChange={setLoginPassword} />
+        </div>
+        <div className="settings-state">
+          <span>邮箱：{settings?.bound_email ?? "未绑定"}</span>
+          <span>登录密码：{settings?.has_login_password ? "已设置" : "使用环境口令"}</span>
+        </div>
+      </article>
+
+      <article className="settings-card">
+        <h3>Excel 导出</h3>
+        <div className="form-grid two">
+          <TextField label="设置导出密码" type="password" value={excelPassword} onChange={setExcelPassword} />
+          <TextField label="导出时输入密码" type="password" value={downloadPassword} onChange={setDownloadPassword} />
+        </div>
+        <div className="settings-actions">
+          <button className="primary-button" onClick={handleSave}><Save size={16} />保存设置</button>
+          <button className="ghost-button" onClick={handleExcelDownload}><FileSpreadsheet size={16} />导出 Excel</button>
+        </div>
+        <div className="settings-state"><span>导出密码：{settings?.has_excel_export_password ? "已设置" : "未设置"}</span></div>
+      </article>
+    </div>
   </section>;
 }
 
