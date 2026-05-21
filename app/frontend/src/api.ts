@@ -1,4 +1,4 @@
-import type { ImportResult, Lead } from "./types";
+import type { ImportResult, Lead, RadarReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
@@ -31,6 +31,11 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
 export function fetchLeads() {
   return request<Lead[]>("/api/leads");
+}
+
+export function fetchRadar(date?: string) {
+  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+  return request<RadarReport>(`/api/radar${query}`);
 }
 
 export function syncLatestReport(date?: string) {
