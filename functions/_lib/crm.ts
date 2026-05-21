@@ -152,7 +152,8 @@ export function json(payload: unknown, status = 200) {
 
 async function supabaseFetch(env: Env, path: string, init?: RequestInit) {
   const key = env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!env.SUPABASE_URL || !key) throw new Error("Missing Supabase environment variables");
+  const missing = [!env.SUPABASE_URL ? "SUPABASE_URL" : null, !key ? "SUPABASE_SECRET_KEY" : null].filter(Boolean);
+  if (missing.length) throw new Error(`Missing Supabase environment variables: ${missing.join(", ")}`);
   const response = await fetch(`${env.SUPABASE_URL}${path}`, {
     ...init,
     headers: {
