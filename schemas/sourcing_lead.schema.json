@@ -32,7 +32,7 @@
     },
     "bucket": {
       "type": "string",
-      "enum": ["推进池", "观察池", "淘汰池"]
+      "enum": ["推进池", "跟进中", "观察池", "淘汰池"]
     },
     "stage": {
       "type": "string",
@@ -42,6 +42,11 @@
       "type": "string",
       "enum": ["P0", "P1", "P2", "P3"]
     },
+    "review_status": {
+      "type": "string",
+      "enum": ["未处理", "已查看", "跟进中", "已淘汰"]
+    },
+    "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
     "priority_reason": { "type": ["string", "null"] },
     "rule_fit": { "type": ["string", "null"] },
     "genre": { "type": ["string", "null"] },
@@ -83,7 +88,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"]
+          "enum": ["微信/QQ", "Email", "电话", "官网", "Discord", "B站", "X/Twitter", "其他"]
         },
         "value": { "type": "string" },
         "note": { "type": ["string", "null"] }
