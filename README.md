@@ -6,7 +6,7 @@
 
 - Leads 列表：搜索、池子、区域、阶段、Owner、发售窗口过滤
 - Lead 详情：B站适配度、放大作用、发行结构、曝光轨迹、风险和下一步动作
-- JSON 导入：支持每日扫描日报和 leads 数组
+- 自动同步：每日自动化报告可一键同步到 CRM（Supabase）
 - 去重合并：项目名优先，其次 Steam AppID / 链接
 - 导出：JSON / CSV
 - 线上存储：部署后使用 Supabase 作为共享数据库
@@ -53,10 +53,10 @@ docs/
 ## 每日流程
 
 1. 用 `automations/prompts/daily_scan.md` 生成当天日报 JSON。
-2. 在 CRM 页面粘贴 JSON 导入，或保存到 `data/reports/` 后运行：
+2. 将日报保存到 `data/reports/` 后运行自动同步：
 
 ```bash
 npm run import:daily -- data/reports/daily_report.example.json
 ```
 
-3. 在 CRM 中筛选推进池、观察池、淘汰池，补充 Owner / Due Date / 下一步动作。
+3. 打开 CRM 进入 review 工作台，筛选推进池、观察池、淘汰池，补充 Owner / Due Date / 下一步动作。

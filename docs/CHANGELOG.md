@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2 - 自动同步收口与稳定性修复
+
+发布日期：2026-05-21
+
+### 产品变化
+
+- 移除手动 JSON 导入遗留 API 面：不再保留通用 `POST /api/leads/import`。
+- 保留自动化专用导入路径：`POST /api/leads/import-daily-report` 与 `/api/reports/sync`。
+- 前端版本标识更新为 `v1.2`。
+
+### 稳定性
+
+- 修复 lead 详情表单 `setDraft` 的 TypeScript 类型问题，恢复 `npm run typecheck` 可通过。
+
 ## v1.1 - Review 工作台与行业雷达
 
 发布日期：2026-05-21

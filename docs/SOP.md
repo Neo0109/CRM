@@ -25,15 +25,16 @@
 - 发售过近，默认小于 60 天，不进推进池。
 - Demo / 公开口碑低于 80%，淘汰。
 
-## 导入
+## 自动同步
 
 1. 将每日扫描结果保存为 `data/reports/YYYY-MM-DD.json`。
-2. 打开 CRM 页面，粘贴 JSON 导入。
-3. 或运行：
+2. 运行自动同步命令：
 
 ```bash
 npm run import:daily -- data/reports/YYYY-MM-DD.json
 ```
+
+3. 打开 CRM 直接 review（无需手动粘贴 JSON）。
 
 ## 人工处理
 

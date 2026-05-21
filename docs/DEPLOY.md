@@ -52,6 +52,8 @@ Do not set `NODE_ENV=production` in Cloudflare Pages build variables. It can mak
 
 7. Deploy and open the generated `*.pages.dev` domain.
 
+> 说明：本仓库当前不依赖 `wrangler.toml`，Cloudflare 构建日志出现 “No Wrangler configuration file found. Continuing.” 属于正常现象。
+
 Cloudflare Pages serves the React CRM, and Cloudflare Pages Functions serve `/api/*`.
 
 ## 3. Deploy on Zeabur

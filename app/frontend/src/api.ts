@@ -43,13 +43,6 @@ export function syncLatestReport(date?: string) {
   return request<SyncResult>(`/api/reports/sync${query}`, { method: "POST" });
 }
 
-export function importJson(payload: unknown) {
-  return request<ImportResult>("/api/leads/import", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-}
-
 export function updateLead(id: string, patch: Partial<Lead>) {
   return request<Lead>(`/api/leads/${encodeURIComponent(id)}`, {
     method: "PATCH",

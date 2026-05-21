@@ -224,7 +224,9 @@ function normalizeLead(raw: Partial<Lead>): Lead {
   const region = raw.region ?? inferRegion(country);
   const steamAppId = valueOrNull(raw.steam_app_id);
   const links = normalizeLinks(raw.links, steamAppId);
-  const contactMethods = normalizeContacts(raw.contact_methods, raw.contact, links);
+  const contactMethods = normalizeContacts(raw.contact_methods, raw.contact);
+  const { methods: sanitizedContacts, movedLinks } = splitContactLinks(contactMethods);
+  const mergedLinks = mergeStringArrays(links, movedLinks);
   return {
     id: raw.id ?? makeLeadId(project, steamAppId, firstSeen),
     project,
@@ -253,8 +255,8 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     traction_summary: valueOrNull(raw.traction_summary),
     public_signals: valueOrNull(raw.public_signals),
     contact: valueOrNull(raw.contact),
-    contact_methods: contactMethods,
-    links,
+    contact_methods: sanitizedContacts,
+    links: mergedLinks,
     exposure_trail: valueOrNull(raw.exposure_trail),
     bilibili_fit: raw.bilibili_fit ?? "待评估",
     amplification: raw.amplification ?? "待评估",
@@ -340,7 +342,7 @@ function normalizeLinks(value: unknown, steamAppId: string | null) {
   return Array.from(deduped.values());
 }
 
-function normalizeContacts(value: unknown, legacyContact: unknown, links: unknown): ContactMethod[] {
+function normalizeContacts(value: unknown, legacyContact: unknown): ContactMethod[] {
   const methods: ContactMethod[] = [];
   if (Array.isArray(value)) {
     for (const item of value) {
@@ -356,15 +358,28 @@ function normalizeContacts(value: unknown, legacyContact: unknown, links: unknow
     methods.push({ type: inferContactType(legacyContact), value: legacyContact.trim(), note: "legacy contact" });
   }
 
-  if (Array.isArray(links)) {
-    for (const link of links) {
-      if (typeof link !== "string" || !link.trim()) continue;
-      const type = link.includes("store.steampowered.com") || link.includes("steamdb.info") ? "Steam" : "官网";
-      if (!methods.some((method) => method.value === link.trim())) methods.push({ type, value: link.trim(), note: type === "Steam" ? "game link" : "source link" });
-    }
-  }
 
   return methods;
+}
+
+function splitContactLinks(methods: ContactMethod[]) {
+  const keep: ContactMethod[] = [];
+  const movedLinks: string[] = [];
+
+  for (const method of methods) {
+    if (isLikelyLinkValue(method.value)) {
+      movedLinks.push(method.value.trim());
+      continue;
+    }
+    keep.push(method);
+  }
+
+  return { methods: keep, movedLinks };
+}
+
+function isLikelyLinkValue(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return normalized.startsWith("http://") || normalized.startsWith("https://") || normalized.startsWith("www.");
 }
 
 function inferContactType(value: string): ContactType {

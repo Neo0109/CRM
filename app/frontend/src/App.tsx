@@ -14,7 +14,7 @@ type Filters = {
   releaseWindow: string;
 };
 
-const version = "v1.1";
+const version = "v1.2";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "" };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "观察池", "淘汰池"];
@@ -201,7 +201,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
   if (!lead || !draft) return <aside className="detail-panel"><div className="empty-cell">暂无 lead</div></aside>;
 
   function setField<K extends keyof Lead>(key: K, value: Lead[K]) {
-    setDraft({ ...draft, [key]: value });
+    setDraft((current) => (current ? { ...current, [key]: value } : current));
   }
 
   const addContact = () => setField("contact_methods", [...draft.contact_methods, { type: "微信/QQ", value: "", note: null }]);
@@ -244,7 +244,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
     <div className="form-section">
       <h3>Review 结论</h3>
       <div className="form-grid two">
-        <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft({ ...draft, bucket: value, stage: stageFromBucket(value) })} />
+        <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value) } : current))} />
         <Select label="阶段" value={draft.stage} options={stageValues} onChange={(value) => setField("stage", value)} />
         <Select label="优先级" value={draft.priority} options={priorityValues} onChange={(value) => setField("priority", value)} />
         <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
