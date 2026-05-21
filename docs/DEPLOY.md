@@ -46,8 +46,9 @@ Build output directory: app/frontend/dist
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
 CRM_ACCESS_TOKEN=choose-a-private-password
-NODE_ENV=production
 ```
+
+Do not set `NODE_ENV=production` in Cloudflare Pages build variables. It can make npm skip type-related dev packages during build.
 
 7. Deploy and open the generated `*.pages.dev` domain.
 
