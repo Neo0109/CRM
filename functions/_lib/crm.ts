@@ -276,6 +276,8 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     first_seen: current.first_seen,
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
+    contact_methods: mergeContactMethods(current.contact_methods, incoming.contact_methods),
+    links: mergeStringArrays(current.links, incoming.links),
     notes: mergeNotes(current.notes, incoming.notes)
   });
 }
@@ -405,6 +407,24 @@ function mergeNotes(current: string | null, incoming: string | null) {
 
 function appendText(current: string | null | undefined, next: string) {
   return current ? `${current}\n${next}` : next;
+}
+
+function mergeStringArrays(current: string[], incoming: string[]) {
+  const deduped = new Map<string, string>();
+  for (const value of [...current, ...incoming]) {
+    if (value) deduped.set(normalizeUrl(value), value);
+  }
+  return Array.from(deduped.values());
+}
+
+function mergeContactMethods(current: ContactMethod[], incoming: ContactMethod[]) {
+  const deduped = new Map<string, ContactMethod>();
+  for (const method of [...current, ...incoming]) {
+    if (!method.value) continue;
+    const key = `${method.type}:${normalizeText(method.value)}`;
+    if (!deduped.has(key)) deduped.set(key, method);
+  }
+  return Array.from(deduped.values());
 }
 
 function csvCell(value: unknown) {
