@@ -25,7 +25,35 @@ create index if not exists crm_leads_updated_at_idx
 
 Keep the secret / service role key private. It must only be used on the server.
 
-## 2. Deploy on Zeabur
+## 2. Deploy on Cloudflare Pages
+
+Cloudflare Pages + Functions is the recommended free-friendly option for this CRM.
+
+1. Open `https://dash.cloudflare.com`.
+2. Go to **Workers & Pages**.
+3. Create an application, choose **Pages**, then connect GitHub.
+4. Select `Neo0109/CRM`.
+5. Use:
+
+```text
+Build command: npm install && npm run build --workspace app/frontend
+Build output directory: app/frontend/dist
+```
+
+6. Add environment variables:
+
+```text
+SUPABASE_URL=your-supabase-url
+SUPABASE_SECRET_KEY=your-server-side-key
+CRM_ACCESS_TOKEN=choose-a-private-password
+NODE_ENV=production
+```
+
+7. Deploy and open the generated `*.pages.dev` domain.
+
+Cloudflare Pages serves the React CRM, and Cloudflare Pages Functions serve `/api/*`.
+
+## 3. Deploy on Zeabur
 
 Zeabur is a good option when Render phone verification is not available.
 
@@ -52,7 +80,7 @@ NODE_ENV=production
 
 8. Deploy and open the generated domain.
 
-## 3. Alternative Generic Node Web Service
+## 4. Alternative Generic Node Web Service
 
 If you use another Node hosting service, use:
 
@@ -79,13 +107,13 @@ NODE_ENV=production
 
 The app will serve the React CRM and API from the same online URL.
 
-## 4. First Use
+## 5. First Use
 
 Open the deployed URL in any browser.
 
 If `CRM_ACCESS_TOKEN` is configured, enter it once in the CRM. The browser saves it locally and sends it with API requests.
 
-## 5. Storage Mode
+## 6. Storage Mode
 
 - With Supabase variables: leads are stored in Supabase.
 - Without Supabase variables: leads fall back to local `data/leads.json`.
