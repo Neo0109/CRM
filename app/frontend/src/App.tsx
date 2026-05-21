@@ -1,9 +1,9 @@
-import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, XCircle } from "lucide-react";
+import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { excelExportUrl, fetchLeads, fetchRadar, fetchSettings, getAccessToken, saveAccessToken, saveSettings, sendSettingsVerification, syncLatestReport, updateLead } from "./api";
-import type { Bucket, ContactMethod, ContactType, CrmSettings, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, SettingsPatch, Stage } from "./types";
+import { excelExportUrl, fetchLeads, fetchRadar, fetchSettings, fetchSteamTrends, getAccessToken, saveAccessToken, saveSettings, sendSettingsVerification, syncLatestReport, updateLead } from "./api";
+import type { Bucket, ContactMethod, ContactType, CrmSettings, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, SettingsPatch, Stage, SteamTrendReport } from "./types";
 
-type View = "leads" | "radar" | "settings";
+type View = "leads" | "radar" | "steam" | "settings";
 type Filters = {
   query: string;
   bucket: "全部" | Bucket;
@@ -38,10 +38,13 @@ export default function App() {
   const [tokenDraft, setTokenDraft] = useState(getAccessToken());
   const [radar, setRadar] = useState<RadarReport | null>(null);
   const [radarLoading, setRadarLoading] = useState(false);
+  const [steamTrends, setSteamTrends] = useState<SteamTrendReport | null>(null);
+  const [steamLoading, setSteamLoading] = useState(false);
 
   useEffect(() => {
     void reload(true);
     void loadRadar();
+    void loadSteamTrends();
   }, []);
 
   const stats = useMemo(() => ({
@@ -103,6 +106,22 @@ export default function App() {
     }
   }
 
+  async function loadSteamTrends() {
+    try {
+      setSteamLoading(true);
+      const report = await fetchSteamTrends();
+      setSteamTrends(report);
+      if (report.sync_result && (report.sync_result.created > 0 || report.sync_result.updated > 0)) {
+        setStatus(`Steam 趋势已同步：新增 ${report.sync_result.created}，更新 ${report.sync_result.updated}`);
+        void reload(false);
+      }
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Steam 趋势加载失败");
+    } finally {
+      setSteamLoading(false);
+    }
+  }
+
   async function handleLeadPatch(id: string, patch: Partial<Lead>) {
     const updated = await updateLead(id, patch);
     setLeads((current) => current.map((lead) => (lead.id === id ? updated : lead)));
@@ -116,6 +135,7 @@ export default function App() {
   function refreshCurrentView() {
     if (view === "leads") void reload(true);
     if (view === "radar") void loadRadar();
+    if (view === "steam") void loadSteamTrends();
   }
 
   function downloadExcel() {
@@ -134,6 +154,7 @@ export default function App() {
         <div className="actions">
           <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
           <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
+          <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
           <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
           <button className="ghost-button" onClick={refreshCurrentView}><RefreshCw size={16} />刷新</button>
           <button className="ghost-button" onClick={downloadExcel}><FileSpreadsheet size={16} />Excel</button>
@@ -147,7 +168,7 @@ export default function App() {
       {error?.includes("CRM access token") && <section className="token-panel">
         <strong>输入 CRM 访问口令</strong>
         <input type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="CRM_ACCESS_TOKEN" />
-        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(true); void loadRadar(); }}>进入</button>
+        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(true); void loadRadar(); void loadSteamTrends(); }}>进入</button>
       </section>}
 
       {view === "leads" ? <>
@@ -194,7 +215,7 @@ export default function App() {
           </div>
           <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
         </section>
-      </> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
+      </> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
     </main>
   );
 }
@@ -356,6 +377,21 @@ function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boo
         </article>)}</div> : <div className="radar-empty">等待今日自动化写入</div>}
       </section>;
     })}
+  </section>;
+}
+
+function SteamTrendsPage({ report, loading }: { report: SteamTrendReport | null; loading: boolean }) {
+  if (loading) return <section className="radar-shell"><div className="empty-cell">加载 Steam 趋势中</div></section>;
+  const items = report?.items ?? [];
+  return <section className="radar-shell">
+    <div className="radar-head"><div><p className="eyebrow">{report?.report_date ?? "今日"}</p><h2>Steam 趋势</h2></div><p>{report?.summary ?? "暂无 Steam 趋势数据"}</p></div>
+    {report?.sync_result && <div className="notice inline-notice">已自动合并 CRM 候选：新增 {report.sync_result.created}，更新 {report.sync_result.updated}，当前总数 {report.sync_result.total}</div>}
+    {items.length ? <div className="radar-grid">{items.map((item) => <article className="radar-card" key={item.id}>
+      <div className="radar-card-head"><span className={`heat ${item.auto_import ? "heat-高" : "heat-中"}`}>{item.auto_import ? "入库" : "观察"}</span><strong>{item.title}</strong></div>
+      <p>{item.signal}</p>
+      <dl><div><dt>趋势来源</dt><dd>{[item.rank_bucket, item.source].filter(Boolean).join(" · ")}</dd></div><div><dt>B站适配</dt><dd>{item.bilibili_fit}</dd></div><div><dt>判断</dt><dd>{item.reason ?? "待复核"}</dd></div></dl>
+      <div className="link-list">{item.links.filter(isGameLink).slice(0, 2).map((link) => <a key={link} href={link} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(link)}</a>)}</div>
+    </article>)}</div> : <div className="radar-empty">等待今日自动化写入 Steam 趋势</div>}
   </section>;
 }
 
