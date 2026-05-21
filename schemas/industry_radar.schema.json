@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Industry Radar Report",
+  "type": "object",
+  "required": ["report_date", "summary", "items"],
+  "properties": {
+    "report_date": { "type": "string", "format": "date" },
+    "summary": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "title", "summary", "heat", "source", "link", "relevance", "suggested_action", "captured_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["行业新闻", "发行八卦", "AI 游戏", "新梗热点", "B站趋势"]
+          },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "heat": { "type": "string", "enum": ["高", "中", "低"] },
+          "source": { "type": "string" },
+          "link": { "type": "string" },
+          "relevance": { "type": "string" },
+          "suggested_action": { "type": "string" },
+          "captured_at": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
