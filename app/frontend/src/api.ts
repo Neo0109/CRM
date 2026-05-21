@@ -1,4 +1,4 @@
-import type { CrmSettings, ImportResult, Lead, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport } from "./types";
+import type { CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
@@ -41,6 +41,13 @@ export function fetchRadar(date?: string) {
 export function fetchSteamTrends(date?: string) {
   const query = date ? `?date=${encodeURIComponent(date)}` : "";
   return request<SteamTrendReport>(`/api/steam-trends${query}`);
+}
+
+export function runLeadAssistant(payload: LeadAssistantPayload) {
+  return request<LeadAssistantResult>("/api/lead-assistant", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
 }
 
 export function fetchSettings() {
