@@ -76,6 +76,14 @@ export type SettingsPatch = {
   bound_email?: string | null;
   excel_export_password?: string | null;
   login_password?: string | null;
+  verification_code?: string | null;
+};
+
+export type SettingsVerification = {
+  email: string;
+  sent: boolean;
+  delivery: "sent" | "not_configured";
+  expires_at: string | null;
 };
 
 export type RadarCategory = "行业新闻" | "发行八卦" | "AI 游戏" | "新梗热点" | "B站趋势";
