@@ -1,9 +1,10 @@
-import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
+import { ArrowDownToLine, Bot, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { excelExportUrl, fetchLeads, fetchRadar, fetchSettings, fetchSteamTrends, getAccessToken, saveAccessToken, saveSettings, sendSettingsVerification, syncLatestReport, updateLead } from "./api";
+import { AssistantPage } from "./AssistantPage";
 import type { Bucket, ContactMethod, ContactType, CrmSettings, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, SettingsPatch, Stage, SteamTrendReport } from "./types";
 
-type View = "leads" | "radar" | "steam" | "settings";
+type View = "leads" | "assistant" | "radar" | "steam" | "settings";
 type Filters = {
   query: string;
   bucket: "全部" | Bucket;
@@ -133,7 +134,7 @@ export default function App() {
   }
 
   function refreshCurrentView() {
-    if (view === "leads") void reload(true);
+    if (view === "leads" || view === "assistant") void reload(view === "leads");
     if (view === "radar") void loadRadar();
     if (view === "steam") void loadSteamTrends();
   }
@@ -153,6 +154,7 @@ export default function App() {
         </div>
         <div className="actions">
           <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
+          <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}><Bot size={16} />线索助手</button>
           <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
           <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
           <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
@@ -215,7 +217,7 @@ export default function App() {
           </div>
           <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
         </section>
-      </> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
+      </> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
     </main>
   );
 }
