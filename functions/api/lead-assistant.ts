@@ -109,7 +109,7 @@ function buildSteamLead({ steamAppId, details, text, links, contacts, attachment
     stage: "watch",
     priority: inferPriority(text, regionPriority),
     review_status: "未处理",
-    genre: details?.genres?.map((genre) => genre.description).filter(Boolean).join(" / ") ?? null,
+    genre: (details?.genres ?? []).map((genre) => genre.description).filter((value): value is string => Boolean(value)).join(" / ") || null,
     gameplay: details?.short_description ?? null,
     progress: releaseText ?? "线索助手录入，待确认进度",
     release_window: releaseText,
@@ -197,8 +197,9 @@ function extractContactMethods(text: string): NonNullable<Partial<Lead>["contact
   const emails = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
   for (const email of emails) methods.push({ type: "Email", value: email });
 
-  const phones = text.match(/(?:\+?\d[\d\s-]{7,}\d)/g) ?? [];
-  for (const phone of phones) methods.push({ type: "电话", value: phone.trim() });
+  for (const match of text.matchAll(/(?:电话|手机|tel|phone|mobile)[:：\s]*([+]?\d[\d\s-]{7,}\d)/gi)) {
+    methods.push({ type: "电话", value: match[1].trim() });
+  }
 
   for (const match of text.matchAll(/(?:微信|wechat|wx|QQ|qq)[:：\s]*([A-Za-z0-9_\-.]{4,})/gi)) {
     methods.push({ type: "微信/QQ", value: match[1] });
