@@ -3,6 +3,10 @@ type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
 type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
 
+const reportRepoFullName = "Neo0109/CRM";
+const reportBranch = "main";
+const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+
 export type Env = {
   SUPABASE_URL: string;
   SUPABASE_SECRET_KEY: string;
@@ -135,6 +139,39 @@ export function leadsFromReport(report: DailyReport): Partial<Lead>[] {
   }));
 }
 
+export async function syncReportFromRepository(env: Env, reportDate = todayInShanghai()) {
+  if (!reportDatePattern.test(reportDate)) throw new Error("Invalid report date");
+
+  const source = `https://raw.githubusercontent.com/${reportRepoFullName}/${reportBranch}/data/reports/${reportDate}.json`;
+  const response = await fetch(`${source}?t=${Date.now()}`, {
+    headers: { Accept: "application/json" }
+  });
+
+  if (response.status === 404) return { synced: false, report_date: reportDate, reason: "report_not_found", source };
+  if (!response.ok) throw new Error(`Report fetch failed: ${response.status}`);
+
+  const report = (await response.json()) as DailyReport;
+  const result = await mergeIncomingLeads(env, leadsFromReport(report));
+  return {
+    synced: true,
+    ...result,
+    report_date: report.report_date,
+    summary: report.summary,
+    source
+  };
+}
+
+export function todayInShanghai() {
+  const parts = new Intl.DateTimeFormat("en", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "00";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 export function isDailyReport(value: unknown): value is DailyReport {
   return Boolean(value && typeof value === "object" && "report_date" in value && "push_pool" in value && "watch_pool" in value && "drop_pool" in value);
 }
@@ -208,7 +245,15 @@ function normalizeLead(raw: Partial<Lead>): Lead {
 }
 
 function mergeLead(current: Lead, incoming: Lead): Lead {
-  return { ...current, ...incoming, id: current.id, first_seen: current.first_seen, notes: mergeNotes(current.notes, incoming.notes) };
+  return {
+    ...current,
+    ...incoming,
+    id: current.id,
+    first_seen: current.first_seen,
+    owner: current.owner ?? incoming.owner,
+    due_date: current.due_date ?? incoming.due_date,
+    notes: mergeNotes(current.notes, incoming.notes)
+  };
 }
 
 function leadKeys(lead: Lead) {
