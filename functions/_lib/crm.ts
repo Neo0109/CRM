@@ -15,6 +15,7 @@ type ContactMethod = {
 const reportRepoFullName = "Neo0109/CRM";
 const reportBranch = "main";
 const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const settingsRowId = "__crm_settings__";
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
 const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
@@ -24,12 +25,27 @@ export type Env = {
   SUPABASE_SECRET_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   CRM_ACCESS_TOKEN?: string;
+  EXCEL_EXPORT_PASSWORD?: string;
 };
 
 export type PagesContext = {
   request: Request;
   env: Env;
   params: Record<string, string | string[]>;
+};
+
+export type CrmSettings = {
+  bound_email: string | null;
+  excel_export_password: string | null;
+  login_password: string | null;
+  updated_at: string | null;
+};
+
+export type PublicCrmSettings = {
+  bound_email: string | null;
+  has_excel_export_password: boolean;
+  has_login_password: boolean;
+  updated_at: string | null;
 };
 
 export type Lead = {
@@ -86,17 +102,27 @@ type DailyReport = {
 };
 
 export async function requireAccess(request: Request, env: Env) {
-  if (!env.CRM_ACCESS_TOKEN) return null;
   const headerToken = request.headers.get("x-crm-token");
   const cookieToken = readCookie(request.headers.get("cookie"), "crm_access_token");
-  if (headerToken === env.CRM_ACCESS_TOKEN || cookieToken === env.CRM_ACCESS_TOKEN) return null;
+  const candidateTokens = [env.CRM_ACCESS_TOKEN];
+
+  try {
+    const settings = await readSettings(env);
+    if (settings.login_password) candidateTokens.push(settings.login_password);
+  } catch {
+    // Env token remains the fallback when settings storage is not reachable.
+  }
+
+  const validTokens = candidateTokens.filter(Boolean);
+  if (!validTokens.length) return null;
+  if (validTokens.includes(headerToken ?? "") || validTokens.includes(cookieToken ?? "")) return null;
   return json({ error: "CRM access token required" }, 401);
 }
 
 export async function readLeads(env: Env): Promise<Lead[]> {
-  const response = await supabaseFetch(env, "/rest/v1/crm_leads?select=data&order=updated_at.desc");
-  const rows = (await response.json()) as { data: Lead }[];
-  return rows.map((row) => normalizeLead(row.data));
+  const response = await supabaseFetch(env, "/rest/v1/crm_leads?select=id,data&order=updated_at.desc");
+  const rows = (await response.json()) as { id: string; data: Lead }[];
+  return rows.filter((row) => !row.id.startsWith("__crm_")).map((row) => normalizeLead(row.data));
 }
 
 export async function writeLeads(env: Env, leads: Lead[]) {
@@ -109,6 +135,35 @@ export async function writeLeads(env: Env, leads: Lead[]) {
     },
     body: JSON.stringify(leads.map((lead) => ({ id: lead.id, data: normalizeLead(lead), updated_at: new Date().toISOString() })))
   });
+}
+
+export async function readSettings(env: Env): Promise<CrmSettings> {
+  const response = await supabaseFetch(env, `/rest/v1/crm_leads?select=id,data&id=eq.${settingsRowId}`);
+  const rows = (await response.json()) as { id: string; data: Partial<CrmSettings> }[];
+  return normalizeSettings(rows[0]?.data ?? {});
+}
+
+export async function writeSettings(env: Env, patch: Partial<CrmSettings>) {
+  const current = await readSettings(env);
+  const next = normalizeSettings({ ...current, ...patch, updated_at: new Date().toISOString() });
+  await supabaseFetch(env, "/rest/v1/crm_leads?on_conflict=id", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal"
+    },
+    body: JSON.stringify([{ id: settingsRowId, data: next, updated_at: new Date().toISOString() }])
+  });
+  return next;
+}
+
+export function publicSettings(settings: CrmSettings): PublicCrmSettings {
+  return {
+    bound_email: settings.bound_email,
+    has_excel_export_password: Boolean(settings.excel_export_password),
+    has_login_password: Boolean(settings.login_password),
+    updated_at: settings.updated_at
+  };
 }
 
 export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
@@ -293,6 +348,15 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     links: mergeStringArrays(current.links, incoming.links),
     notes: mergeNotes(current.notes, incoming.notes)
   });
+}
+
+function normalizeSettings(raw: Partial<CrmSettings>): CrmSettings {
+  return {
+    bound_email: valueOrNull(raw.bound_email),
+    excel_export_password: valueOrNull(raw.excel_export_password),
+    login_password: valueOrNull(raw.login_password),
+    updated_at: valueOrNull(raw.updated_at)
+  };
 }
 
 function leadKeys(lead: Lead) {
