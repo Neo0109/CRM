@@ -37,3 +37,10 @@
    - 风险
    - 结论
 5. 最终输出为符合 `schemas/daily_report.schema.json` 的 JSON。
+
+自动保存要求：
+1. 将最终日报 JSON 写入 `data/reports/{{report_date}}.json`。
+2. 写入成功后，调用线上 CRM 同步接口：`https://crm-pages.pages.dev/api/reports/sync?date={{report_date}}`。
+3. 同步接口会从 GitHub 固定路径读取当天日报并写入 Supabase，不需要手动粘贴或导入 JSON。
+4. 结束时输出同步结果摘要：新增多少、更新多少、淘汰多少、当前总数多少。
+5. 如果同步接口返回 `report_not_found`，先确认文件是否已经写入 `data/reports/{{report_date}}.json`，再重试同步。
