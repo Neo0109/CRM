@@ -2,10 +2,19 @@ type Bucket = "推进池" | "观察池" | "淘汰池";
 type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
 type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
+type Region = "中国" | "海外";
+type ContactType = "微信/QQ" | "Email" | "电话" | "官网" | "Steam" | "Discord" | "B站" | "X/Twitter" | "其他";
+
+type ContactMethod = {
+  type: ContactType;
+  value: string;
+  note?: string | null;
+};
 
 const reportRepoFullName = "Neo0109/CRM";
 const reportBranch = "main";
 const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 
 export type Env = {
   SUPABASE_URL: string;
@@ -27,10 +36,14 @@ export type Lead = {
   team: string | null;
   team_size: string | null;
   country: string;
+  region: Region;
+  city: string | null;
   region_priority: RegionPriority;
   bucket: Bucket;
   stage: Stage;
   priority: Priority;
+  priority_reason: string | null;
+  rule_fit: string | null;
   genre: string | null;
   gameplay: string | null;
   progress: string;
@@ -44,6 +57,7 @@ export type Lead = {
   traction_summary: string | null;
   public_signals: string | null;
   contact: string | null;
+  contact_methods: ContactMethod[];
   links: string[];
   exposure_trail: string | null;
   bilibili_fit: string;
@@ -88,7 +102,7 @@ export async function writeLeads(env: Env, leads: Lead[]) {
       "Content-Type": "application/json",
       Prefer: "resolution=merge-duplicates,return=minimal"
     },
-    body: JSON.stringify(leads.map((lead) => ({ id: lead.id, data: lead, updated_at: new Date().toISOString() })))
+    body: JSON.stringify(leads.map((lead) => ({ id: lead.id, data: normalizeLead(lead), updated_at: new Date().toISOString() })))
   });
 }
 
@@ -119,7 +133,7 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
     const bucketOrder: Record<Bucket, number> = { "推进池": 0, "观察池": 1, "淘汰池": 2 };
-    return bucketOrder[a.bucket] - bucketOrder[b.bucket] || a.project.localeCompare(b.project, "zh-CN");
+    return bucketOrder[a.bucket] - bucketOrder[b.bucket] || priorityOrder(a.priority) - priorityOrder(b.priority) || a.project.localeCompare(b.project, "zh-CN");
   });
 
   await writeLeads(env, nextLeads);
@@ -177,7 +191,7 @@ export function isDailyReport(value: unknown): value is DailyReport {
 }
 
 export function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "country", "bucket", "stage", "priority", "genre", "progress", "release_window", "publisher_status", "public_signals", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "notes", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;
@@ -206,17 +220,24 @@ async function supabaseFetch(env: Env, path: string, init?: RequestInit) {
 function normalizeLead(raw: Partial<Lead>): Lead {
   const project = requiredString(raw.project, "project");
   const firstSeen = raw.first_seen ?? new Date().toISOString().slice(0, 10);
+  const country = raw.country ?? "未知";
+  const region = raw.region ?? inferRegion(country);
+  const contactMethods = normalizeContacts(raw.contact_methods, raw.contact, raw.links);
   return {
     id: raw.id ?? makeLeadId(project, raw.steam_app_id, firstSeen),
     project,
     steam_app_id: valueOrNull(raw.steam_app_id),
     team: valueOrNull(raw.team),
     team_size: valueOrNull(raw.team_size),
-    country: raw.country ?? "未知",
-    region_priority: raw.region_priority ?? inferRegionPriority(raw.country, raw.public_signals),
+    country,
+    region,
+    city: valueOrNull(raw.city),
+    region_priority: raw.region_priority ?? inferRegionPriority(country, raw.public_signals),
     bucket: raw.bucket ?? "观察池",
     stage: raw.stage ?? stageFromBucket(raw.bucket),
     priority: raw.priority ?? priorityFromBucket(raw.bucket),
+    priority_reason: valueOrNull(raw.priority_reason) ?? inferPriorityReason(raw),
+    rule_fit: valueOrNull(raw.rule_fit) ?? inferRuleFit(raw, country),
     genre: valueOrNull(raw.genre),
     gameplay: valueOrNull(raw.gameplay),
     progress: raw.progress ?? "待补充",
@@ -230,6 +251,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     traction_summary: valueOrNull(raw.traction_summary),
     public_signals: valueOrNull(raw.public_signals),
     contact: valueOrNull(raw.contact),
+    contact_methods: contactMethods,
     links: Array.isArray(raw.links) ? raw.links.filter(Boolean) : [],
     exposure_trail: valueOrNull(raw.exposure_trail),
     bilibili_fit: raw.bilibili_fit ?? "待评估",
@@ -245,7 +267,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
 }
 
 function mergeLead(current: Lead, incoming: Lead): Lead {
-  return {
+  return normalizeLead({
     ...current,
     ...incoming,
     id: current.id,
@@ -253,7 +275,7 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
     notes: mergeNotes(current.notes, incoming.notes)
-  };
+  });
 }
 
 function leadKeys(lead: Lead) {
@@ -276,8 +298,70 @@ function inferRegionPriority(country: string | undefined, signals: string | null
   return "其他";
 }
 
+function inferRegion(country: string | undefined): Region {
+  return isDomestic(country) ? "中国" : "海外";
+}
+
+function inferPriorityReason(raw: Partial<Lead>) {
+  if (raw.priority_reason) return raw.priority_reason;
+  if (raw.bucket === "推进池") return raw.traction_summary ?? raw.verdict ?? "进入推进池，需优先 review";
+  if (raw.bucket === "淘汰池") return raw.risks ?? raw.verdict ?? "触发淘汰规则";
+  return raw.traction_summary ?? raw.public_signals ?? "等待更强公开信号";
+}
+
+function inferRuleFit(raw: Partial<Lead>, country: string) {
+  const reasons: string[] = [];
+  if (isDomestic(country)) reasons.push("国内项目优先");
+  if (raw.early_access) reasons.push("命中排除项：EA");
+  if (raw.narrative_heavy) reasons.push("命中排除项：叙事主导");
+  if (raw.india_team) reasons.push("命中排除项：印度团队");
+  if (raw.china_capability_occupied) reasons.push("中国发行能力可能已占位");
+  if (!isDomestic(country) && (raw.region_priority === "海外-高视觉" || raw.region_priority === "海外-强数据")) reasons.push("海外保留条件成立");
+  if (!raw.links?.length) reasons.push("缺少可验证链接");
+  return reasons.length ? reasons.join("；") : "符合基础筛选，待人工复核";
+}
+
+function normalizeContacts(value: unknown, legacyContact: unknown, links: unknown): ContactMethod[] {
+  const methods: ContactMethod[] = [];
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (!item || typeof item !== "object") continue;
+      const record = item as Record<string, unknown>;
+      const type = contactTypes.includes(record.type as ContactType) ? record.type as ContactType : "其他";
+      const contactValue = typeof record.value === "string" ? record.value.trim() : "";
+      if (contactValue) methods.push({ type, value: contactValue, note: valueOrNull(record.note) });
+    }
+  }
+
+  if (!methods.length && typeof legacyContact === "string" && legacyContact.trim()) {
+    methods.push({ type: inferContactType(legacyContact), value: legacyContact.trim(), note: "legacy contact" });
+  }
+
+  if (Array.isArray(links)) {
+    for (const link of links) {
+      if (typeof link !== "string" || !link.trim()) continue;
+      const type = link.includes("store.steampowered.com") || link.includes("steamdb.info") ? "Steam" : "官网";
+      if (!methods.some((method) => method.value === link.trim())) methods.push({ type, value: link.trim(), note: type === "Steam" ? "game link" : "source link" });
+    }
+  }
+
+  return methods;
+}
+
+function inferContactType(value: string): ContactType {
+  const lower = value.toLowerCase();
+  if (lower.includes("@")) return "Email";
+  if (/\+?\d[\d\s-]{6,}/.test(value)) return "电话";
+  if (lower.includes("steam")) return "Steam";
+  if (lower.includes("discord")) return "Discord";
+  if (lower.includes("bilibili") || lower.includes("b23.tv") || lower.includes("space.bilibili")) return "B站";
+  if (lower.includes("twitter") || lower.includes("x.com")) return "X/Twitter";
+  if (lower.includes("http")) return "官网";
+  return "微信/QQ";
+}
+
 function isDomestic(country: string | undefined) {
-  return Boolean(country && ["中国", "大陆", "香港", "台湾", "澳门"].some((token) => country.includes(token)));
+  return Boolean(country && ["中国", "大陆", "香港", "台湾", "澳门", "China", "Hong Kong", "Taiwan", "Macau"].some((token) => country.includes(token)));
 }
 
 function stageFromBucket(bucket: Bucket | undefined): Stage {
@@ -292,6 +376,10 @@ function priorityFromBucket(bucket: Bucket | undefined): Priority {
   return "P2";
 }
 
+function priorityOrder(priority: Priority) {
+  return { P0: 0, P1: 1, P2: 2, P3: 3 }[priority];
+}
+
 function mergeNotes(current: string | null, incoming: string | null) {
   if (!current) return incoming;
   if (!incoming || current.includes(incoming)) return current;
@@ -303,7 +391,12 @@ function appendText(current: string | null | undefined, next: string) {
 }
 
 function csvCell(value: unknown) {
-  if (Array.isArray(value)) return csvCell(value.join(" | "));
+  if (Array.isArray(value)) {
+    if (value.every((item) => item && typeof item === "object" && "value" in item)) {
+      return csvCell((value as ContactMethod[]).map((item) => `${item.type}:${item.value}${item.note ? ` (${item.note})` : ""}`).join(" | "));
+    }
+    return csvCell(value.join(" | "));
+  }
   const text = value === null || value === undefined ? "" : String(value);
   return `"${text.replaceAll("\"", "\"\"")}"`;
 }
