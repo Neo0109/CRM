@@ -1,4 +1,4 @@
-import type { ImportResult, Lead, RadarReport } from "./types";
+import type { CrmSettings, ImportResult, Lead, RadarReport, SettingsPatch } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
@@ -38,6 +38,17 @@ export function fetchRadar(date?: string) {
   return request<RadarReport>(`/api/radar${query}`);
 }
 
+export function fetchSettings() {
+  return request<CrmSettings>("/api/settings");
+}
+
+export function saveSettings(patch: SettingsPatch) {
+  return request<CrmSettings>("/api/settings", {
+    method: "PATCH",
+    body: JSON.stringify(patch)
+  });
+}
+
 export function syncLatestReport(date?: string) {
   const query = date ? `?date=${encodeURIComponent(date)}` : "";
   return request<SyncResult>(`/api/reports/sync${query}`, { method: "POST" });
@@ -55,6 +66,10 @@ export function updateLead(id: string, patch: Partial<Lead>) {
     method: "PATCH",
     body: JSON.stringify(patch)
   });
+}
+
+export function excelExportUrl(password: string) {
+  return `/api/export/excel?password=${encodeURIComponent(password)}`;
 }
 
 export function getAccessToken() {
