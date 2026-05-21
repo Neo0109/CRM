@@ -2,6 +2,14 @@ import type { ImportResult, Lead } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
+type SyncResult = ImportResult & {
+  synced: boolean;
+  report_date?: string;
+  summary?: string;
+  reason?: string;
+  source?: string;
+};
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getAccessToken();
   const response = await fetch(url, {
@@ -23,6 +31,11 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
 export function fetchLeads() {
   return request<Lead[]>("/api/leads");
+}
+
+export function syncLatestReport(date?: string) {
+  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+  return request<SyncResult>(`/api/reports/sync${query}`, { method: "POST" });
 }
 
 export function importJson(payload: unknown) {
