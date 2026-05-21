@@ -222,11 +222,13 @@ function normalizeLead(raw: Partial<Lead>): Lead {
   const firstSeen = raw.first_seen ?? new Date().toISOString().slice(0, 10);
   const country = raw.country ?? "未知";
   const region = raw.region ?? inferRegion(country);
-  const contactMethods = normalizeContacts(raw.contact_methods, raw.contact, raw.links);
+  const steamAppId = valueOrNull(raw.steam_app_id);
+  const links = normalizeLinks(raw.links, steamAppId);
+  const contactMethods = normalizeContacts(raw.contact_methods, raw.contact, links);
   return {
-    id: raw.id ?? makeLeadId(project, raw.steam_app_id, firstSeen),
+    id: raw.id ?? makeLeadId(project, steamAppId, firstSeen),
     project,
-    steam_app_id: valueOrNull(raw.steam_app_id),
+    steam_app_id: steamAppId,
     team: valueOrNull(raw.team),
     team_size: valueOrNull(raw.team_size),
     country,
@@ -237,7 +239,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     stage: raw.stage ?? stageFromBucket(raw.bucket),
     priority: raw.priority ?? priorityFromBucket(raw.bucket),
     priority_reason: valueOrNull(raw.priority_reason) ?? inferPriorityReason(raw),
-    rule_fit: valueOrNull(raw.rule_fit) ?? inferRuleFit(raw, country),
+    rule_fit: valueOrNull(raw.rule_fit) ?? inferRuleFit(raw, country, links),
     genre: valueOrNull(raw.genre),
     gameplay: valueOrNull(raw.gameplay),
     progress: raw.progress ?? "待补充",
@@ -252,7 +254,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     public_signals: valueOrNull(raw.public_signals),
     contact: valueOrNull(raw.contact),
     contact_methods: contactMethods,
-    links: Array.isArray(raw.links) ? raw.links.filter(Boolean) : [],
+    links,
     exposure_trail: valueOrNull(raw.exposure_trail),
     bilibili_fit: raw.bilibili_fit ?? "待评估",
     amplification: raw.amplification ?? "待评估",
@@ -309,7 +311,7 @@ function inferPriorityReason(raw: Partial<Lead>) {
   return raw.traction_summary ?? raw.public_signals ?? "等待更强公开信号";
 }
 
-function inferRuleFit(raw: Partial<Lead>, country: string) {
+function inferRuleFit(raw: Partial<Lead>, country: string, links: string[]) {
   const reasons: string[] = [];
   if (isDomestic(country)) reasons.push("国内项目优先");
   if (raw.early_access) reasons.push("命中排除项：EA");
@@ -317,8 +319,23 @@ function inferRuleFit(raw: Partial<Lead>, country: string) {
   if (raw.india_team) reasons.push("命中排除项：印度团队");
   if (raw.china_capability_occupied) reasons.push("中国发行能力可能已占位");
   if (!isDomestic(country) && (raw.region_priority === "海外-高视觉" || raw.region_priority === "海外-强数据")) reasons.push("海外保留条件成立");
-  if (!raw.links?.length) reasons.push("缺少可验证链接");
+  if (!links.length) reasons.push("缺少可验证链接");
   return reasons.length ? reasons.join("；") : "符合基础筛选，待人工复核";
+}
+
+function normalizeLinks(value: unknown, steamAppId: string | null) {
+  const links = Array.isArray(value)
+    ? value.filter((link): link is string => typeof link === "string").map((link) => link.trim()).filter(Boolean)
+    : [];
+
+  if (steamAppId) {
+    const storeLink = `https://store.steampowered.com/app/${steamAppId}/`;
+    if (!links.some((link) => normalizeUrl(link) === normalizeUrl(storeLink))) links.unshift(storeLink);
+  }
+
+  const deduped = new Map<string, string>();
+  for (const link of links) deduped.set(normalizeUrl(link), link);
+  return Array.from(deduped.values());
 }
 
 function normalizeContacts(value: unknown, legacyContact: unknown, links: unknown): ContactMethod[] {
