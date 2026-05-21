@@ -1,6 +1,6 @@
 import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { excelExportUrl, fetchLeads, fetchRadar, fetchSettings, getAccessToken, saveAccessToken, saveSettings, syncLatestReport, updateLead } from "./api";
+import { excelExportUrl, fetchLeads, fetchRadar, fetchSettings, getAccessToken, saveAccessToken, saveSettings, sendSettingsVerification, syncLatestReport, updateLead } from "./api";
 import type { Bucket, ContactMethod, ContactType, CrmSettings, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, SettingsPatch, Stage } from "./types";
 
 type View = "leads" | "radar" | "settings";
@@ -364,6 +364,7 @@ function SettingsPage({ onStatus, onTokenChanged }: { onStatus: (message: string
   const [boundEmail, setBoundEmail] = useState("");
   const [excelPassword, setExcelPassword] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
   const [downloadPassword, setDownloadPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -384,11 +385,26 @@ function SettingsPage({ onStatus, onTokenChanged }: { onStatus: (message: string
     }
   }
 
+  async function handleSendVerification() {
+    try {
+      const result = await sendSettingsVerification();
+      if (!result.sent) {
+        setLocalError("邮件服务未配置：请在 Cloudflare 增加 RESEND_API_KEY 和 CRM_FROM_EMAIL");
+        return;
+      }
+      setLocalError(null);
+      onStatus(`验证码已发送到 ${result.email}`);
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : "验证码发送失败");
+    }
+  }
+
   async function handleSave() {
     try {
       const patch: SettingsPatch = { bound_email: boundEmail };
       if (excelPassword.trim()) patch.excel_export_password = excelPassword.trim();
       if (loginPassword.trim()) patch.login_password = loginPassword.trim();
+      if (verificationCode.trim()) patch.verification_code = verificationCode.trim();
       const nextSettings = await saveSettings(patch);
       setSettings(nextSettings);
       setBoundEmail(nextSettings.bound_email ?? "");
@@ -398,6 +414,7 @@ function SettingsPage({ onStatus, onTokenChanged }: { onStatus: (message: string
       }
       setExcelPassword("");
       setLoginPassword("");
+      setVerificationCode("");
       setLocalError(null);
       onStatus("CRM 设置已保存");
     } catch (error) {
@@ -427,6 +444,11 @@ function SettingsPage({ onStatus, onTokenChanged }: { onStatus: (message: string
         <div className="form-grid two">
           <TextField label="绑定邮箱" value={boundEmail} onChange={setBoundEmail} />
           <TextField label="新登录密码" type="password" value={loginPassword} onChange={setLoginPassword} />
+          <TextField label="验证码" value={verificationCode} onChange={setVerificationCode} />
+        </div>
+        <div className="settings-actions">
+          <button className="ghost-button" onClick={() => void handleSendVerification()}>发送验证码</button>
+          <button className="primary-button" onClick={handleSave}><Save size={16} />保存设置</button>
         </div>
         <div className="settings-state">
           <span>邮箱：{settings?.bound_email ?? "未绑定"}</span>
