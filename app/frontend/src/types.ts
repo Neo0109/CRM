@@ -1,8 +1,9 @@
-export type Bucket = "推进池" | "观察池" | "淘汰池";
+export type Bucket = "推进池" | "跟进中" | "观察池" | "淘汰池";
 export type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 export type Priority = "P0" | "P1" | "P2" | "P3";
 export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
 export type Region = "中国" | "海外";
+export type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";
 export type ContactType = "微信/QQ" | "Email" | "电话" | "官网" | "Steam" | "Discord" | "B站" | "X/Twitter" | "其他";
 
 export type ContactMethod = {
@@ -24,6 +25,8 @@ export type Lead = {
   bucket: Bucket;
   stage: Stage;
   priority: Priority;
+  review_status: ReviewStatus;
+  reviewed_at: string | null;
   priority_reason: string | null;
   rule_fit: string | null;
   genre: string | null;
