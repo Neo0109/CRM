@@ -1,6 +1,6 @@
-import { ArrowDownToLine, ExternalLink, FileJson, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Trash2, Upload } from "lucide-react";
+import { ArrowDownToLine, ExternalLink, FileJson, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { fetchLeads, fetchRadar, getAccessToken, importJson, saveAccessToken, syncLatestReport, updateLead } from "./api";
+import { fetchLeads, fetchRadar, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage } from "./types";
 
 type View = "leads" | "radar";
@@ -32,8 +32,6 @@ export default function App() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const [importOpen, setImportOpen] = useState(false);
-  const [importText, setImportText] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,18 +101,6 @@ export default function App() {
     }
   }
 
-  async function handleImport() {
-    try {
-      const result = await importJson(JSON.parse(importText));
-      setStatus(`新增 ${result.created}，更新 ${result.updated}，淘汰 ${result.dropped}，当前总计 ${result.total}`);
-      setImportText("");
-      setImportOpen(false);
-      await reload();
-    } catch (nextError) {
-      setStatus(nextError instanceof Error ? nextError.message : "导入失败");
-    }
-  }
-
   async function handleLeadPatch(id: string, patch: Partial<Lead>) {
     const updated = await updateLead(id, patch);
     setLeads((current) => current.map((lead) => (lead.id === id ? updated : lead)));
@@ -158,12 +144,6 @@ export default function App() {
           <Metric label="缺链接" value={stats.missingLinks} tone="blue" />
         </section>
 
-        {importOpen && <section className="import-panel">
-          <strong>JSON 导入</strong>
-          <textarea value={importText} onChange={(event) => setImportText(event.target.value)} spellCheck={false} placeholder='{"report_date":"2026-05-18","summary":"...","insights":[],"push_pool":[],"watch_pool":[],"drop_pool":[]}' />
-          <button className="primary-button" onClick={handleImport} disabled={!importText.trim()}>导入</button>
-        </section>}
-
         <section className="filters">
           <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由 / 备注" /></label>
           <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
@@ -173,7 +153,6 @@ export default function App() {
           <label><span>Owner</span><input value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} /></label>
           <label><span>窗口</span><input value={filters.releaseWindow} onChange={(event) => setFilters({ ...filters, releaseWindow: event.target.value })} /></label>
           <button className="ghost-button" onClick={() => setFilters(emptyFilters)}>清空</button>
-          <button className="ghost-button" onClick={() => setImportOpen((open) => !open)}><Upload size={16} />导入</button>
         </section>
 
         <section className="workspace">
