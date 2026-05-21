@@ -1,5 +1,5 @@
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
+import * as AjvModule from "ajv";
+import * as addFormatsModule from "ajv-formats";
 import cors from "cors";
 import express from "express";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -78,10 +78,13 @@ const [leadSchema, dailyReportSchema] = await Promise.all([
   readJson(dailyReportSchemaPath)
 ]);
 
+const Ajv = (AjvModule as { default: any }).default;
+const addFormats = (addFormatsModule as { default: any }).default;
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
-const validateLead = ajv.compile<Lead>(leadSchema);
-const validateDailyReport = ajv.compile<DailyReport>(dailyReportSchema);
+type ValidatorFn = ((data: unknown) => boolean) & { errors?: unknown };
+const validateLead = ajv.compile(leadSchema) as ValidatorFn;
+const validateDailyReport = ajv.compile(dailyReportSchema) as ValidatorFn;
 
 const app = express();
 app.use(cors());
@@ -131,19 +134,6 @@ app.patch("/api/leads/:id", async (req, res, next) => {
   }
 });
 
-app.post("/api/leads/import", async (req, res, next) => {
-  try {
-    const payload = req.body;
-    const incoming = isDailyReport(payload) ? leadsFromReport(payload) : payload;
-    if (!Array.isArray(incoming)) {
-      res.status(400).json({ error: "Expected a daily report or an array of leads" });
-      return;
-    }
-    res.json(await mergeIncomingLeads(incoming));
-  } catch (error) {
-    next(error);
-  }
-});
 
 app.post("/api/leads/import-daily-report", async (req, res, next) => {
   try {
