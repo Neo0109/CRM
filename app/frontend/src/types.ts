@@ -65,6 +65,18 @@ export type ImportResult = {
   summary?: string;
 };
 
+export type LeadAssistantPayload = {
+  text: string;
+  keywords?: string[];
+  attachments?: { name?: string; type?: string }[];
+};
+
+export type LeadAssistantResult = ImportResult & {
+  message: string;
+  skipped: string[];
+  leads: Partial<Lead>[];
+};
+
 export type CrmSettings = {
   bound_email: string | null;
   has_excel_export_password: boolean;
