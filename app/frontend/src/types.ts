@@ -106,3 +106,26 @@ export type RadarReport = {
   summary: string;
   items: RadarItem[];
 };
+
+export type SteamTrendItem = {
+  id: string;
+  title: string;
+  steam_app_id: string | null;
+  rank_bucket: string | null;
+  signal: string;
+  source: string;
+  links: string[];
+  bilibili_fit: string;
+  reason: string | null;
+  auto_import: boolean;
+  captured_at: string;
+};
+
+export type SteamTrendReport = {
+  report_date: string;
+  summary: string;
+  items: SteamTrendItem[];
+  crm_candidates?: Partial<Lead>[];
+  sync_result?: ImportResult | null;
+  source?: string;
+};
