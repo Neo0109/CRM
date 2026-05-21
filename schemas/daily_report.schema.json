@@ -24,6 +24,19 @@
     }
   },
   "$defs": {
+    "contactMethod": {
+      "type": "object",
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"]
+        },
+        "value": { "type": "string" },
+        "note": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
     "reportLead": {
       "type": "object",
       "required": [
@@ -46,6 +59,8 @@
         "team": { "type": ["string", "null"] },
         "team_size": { "type": ["string", "null"] },
         "country": { "type": "string" },
+        "region": { "type": "string", "enum": ["中国", "海外"] },
+        "city": { "type": ["string", "null"] },
         "region_priority": {
           "type": "string",
           "enum": ["国内优先", "海外-高视觉", "海外-强数据", "其他"]
@@ -62,6 +77,8 @@
           "type": "string",
           "enum": ["P0", "P1", "P2", "P3"]
         },
+        "priority_reason": { "type": ["string", "null"] },
+        "rule_fit": { "type": ["string", "null"] },
         "genre": { "type": ["string", "null"] },
         "gameplay": { "type": ["string", "null"] },
         "progress": { "type": "string" },
@@ -75,6 +92,10 @@
         "traction_summary": { "type": ["string", "null"] },
         "public_signals": { "type": ["string", "null"] },
         "contact": { "type": ["string", "null"] },
+        "contact_methods": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contactMethod" }
+        },
         "links": {
           "type": "array",
           "items": { "type": "string" }
