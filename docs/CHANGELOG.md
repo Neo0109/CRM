@@ -1,26 +1,29 @@
 # Changelog
 
-## v1.2 - 设置、安全导出与待处理工作流
+## v1.2 - 设置、安全导出、待处理工作流与趋势助手
 
 发布日期：2026-05-21
 
 ### 已完成
 
 - 新增 CRM 设置页，可维护绑定邮箱、Excel 导出密码和登录密码。
-- 新增 CRM 设置后端接口 `/api/settings`，用于保存绑定邮箱、Excel 导出密码和登录密码配置。
-- 新增设置验证码接口 `/api/settings-verification`，修改登录密码或 Excel 导出密码时会校验邮箱验证码；邮件发送使用 `RESEND_API_KEY` 和 `CRM_FROM_EMAIL` 环境变量。
-- 新增独立密码保护的 Excel 导出接口 `/api/export/excel`，导出内容包含 leads 的地区、处理状态、联系方式、Steam/SteamDB 链接、备注和规则判断等字段。
-- 前端新增 Excel 导出按钮；设置页也提供导出入口。
-- 新增 `跟进中` 池子、未处理状态和 review 时间字段，未处理 leads 会持续保留并优先展示。
+- 新增设置接口 `/api/settings`，配置保存在 Supabase 的 CRM 设置行里，不依赖单台电脑本地数据。
+- 新增验证码接口 `/api/settings-verification`。修改登录密码或 Excel 导出密码时，会校验绑定邮箱验证码；邮件发送依赖 Cloudflare 环境变量 `RESEND_API_KEY` 和 `CRM_FROM_EMAIL`。
+- 新增独立密码保护的 Excel 导出接口 `/api/export/excel`，导出字段包含地区、处理状态、联系方式、Steam/SteamDB 链接、备注和规则判断。
+- 新增 `跟进中` 池子、未处理状态和 review 时间字段；未处理 leads 会像未读邮件一样持续保留并优先展示。
+- 列表与详情页新增 `跟进`、`淘汰`、`已看` 快捷动作，可直接把 lead 放入对应池子。
 - 联系方式清洗规则升级：Steam/SteamDB 不再混入联系方式，只保留真实联系方式；游戏链接统一放到链接字段。
 - 有 Steam AppID 的 lead 会自动保留游戏本体 Steam 商店和 SteamDB 链接，并过滤其他 Steam AppID 链接，减少 DLC/重复项干扰。
-- 前端版本号升级为 `v1.2`，并加入跟进/淘汰/已看快捷处理动作。
-- 全局字体改为更适合中文阅读的系统字体栈。
+- 新增 Steam 趋势页和 `/api/steam-trends` 接口，读取每日 `data/steam_trends/YYYY-MM-DD.json`，并把适合 CRM 的候选自动合并进 Supabase。
+- 新增 Steam 趋势自动化 prompt 与 schema：`automations/prompts/steam_trends.md`、`schemas/steam_trends.schema.json`。
+- 新增线索助手入口和 `/api/lead-assistant` 接口，可输入关键词、线索说明、Steam 链接和截图备注；接口会抽取 Steam AppID、真实联系方式，并从 Steam appdetails 补项目名、团队、类型、发行商和发售信息后直接写入 CRM。
+- 线索助手会跳过 Steam 返回的非 game 类型，降低 DLC/工具/原声带误入库概率。
+- 前端版本号升级为 `v1.2`，全局字体改为更适合中文阅读的系统字体栈。
 
-### 进行中
+### 后续增强
 
-- Steam 趋势页与趋势线索自动入库。
-- 线索助手对话框，支持输入关键词/信息并生成 leads。
+- 线索助手当前支持截图备注保存；真正的截图 OCR/视觉识别可以在后续接入 OpenAI Vision 或其他 OCR 服务。
+- Steam 趋势数据依赖每日自动化写入 `data/steam_trends/YYYY-MM-DD.json`，上线后需要把自动化任务指向新的 Steam 趋势 prompt。
 
 ## v1.1 - Review 工作台与行业雷达
 
