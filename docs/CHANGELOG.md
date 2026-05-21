@@ -6,8 +6,11 @@
 
 ### 已完成
 
+- 新增 CRM 设置页，可维护绑定邮箱、Excel 导出密码和登录密码。
 - 新增 CRM 设置后端接口 `/api/settings`，用于保存绑定邮箱、Excel 导出密码和登录密码配置。
+- 新增设置验证码接口 `/api/settings-verification`，修改登录密码或 Excel 导出密码时会校验邮箱验证码；邮件发送使用 `RESEND_API_KEY` 和 `CRM_FROM_EMAIL` 环境变量。
 - 新增独立密码保护的 Excel 导出接口 `/api/export/excel`，导出内容包含 leads 的地区、处理状态、联系方式、Steam/SteamDB 链接、备注和规则判断等字段。
+- 前端新增 Excel 导出按钮；设置页也提供导出入口。
 - 新增 `跟进中` 池子、未处理状态和 review 时间字段，未处理 leads 会持续保留并优先展示。
 - 联系方式清洗规则升级：Steam/SteamDB 不再混入联系方式，只保留真实联系方式；游戏链接统一放到链接字段。
 - 有 Steam AppID 的 lead 会自动保留游戏本体 Steam 商店和 SteamDB 链接，并过滤其他 Steam AppID 链接，减少 DLC/重复项干扰。
@@ -16,8 +19,6 @@
 
 ### 进行中
 
-- 设置页前端入口、Excel 导出按钮和密码修改表单。
-- 修改密码时的邮箱验证码流程。
 - Steam 趋势页与趋势线索自动入库。
 - 线索助手对话框，支持输入关键词/信息并生成 leads。
 
