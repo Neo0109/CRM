@@ -2,7 +2,7 @@
 
 报告日期：{{report_date}}
 
-目标：每日扫描新增游戏线索，优先发现“前期窗口仍在、B站有机会切入并把中国区盘子做大”的项目。
+目标：每日扫描新增游戏线索，优先发现“前期窗口仍在、B站有机会切入并把中国区盘子做大”的项目，并同步收集游戏行业雷达信息。
 
 硬规则：
 1. 国内项目优先。
@@ -19,28 +19,40 @@
 4. B站 / indienova / 中文社区
 5. 其他弱信号站点
 
-输出要求：
+Leads 输出要求：
 1. 先给出行业 insight（中文）。
 2. 将结果分为：推进池、观察池、淘汰池。
 3. 推进池 1-3 条，观察池 8-15 条，淘汰池列出主要出局项。
 4. 每条重要项目尽量补：
    - 团队
    - 国家
+   - region：中国 / 海外
+   - city：具体城市，未知则 null
    - 类型
    - 玩法
    - 进度/发售窗口
    - 发行结构
-   - 联系方式
+   - contact_methods：数组，每项包含 type/value/note；type 可为 微信/QQ、Email、电话、官网、Steam、Discord、B站、X/Twitter、其他
+   - links：必须至少 1 条，优先 Steam 商店链接，其次 SteamDB、官网、Trailer、B站视频等可判断画面和背景的链接
    - 前置曝光轨迹
    - B站适配点
    - 放大作用
    - 风险
+   - priority_reason：为什么优先级高/低
+   - rule_fit：是否符合硬规则，命中了什么规则或排除项
    - 结论
 5. 最终输出为符合 `schemas/daily_report.schema.json` 的 JSON。
 
+行业雷达输出要求：
+1. 同步扫描游戏行业新闻、发行八卦、AI 对游戏行业的影响、互联网新梗/热点、B站游戏内容趋势变化。
+2. 分类必须使用：行业新闻、发行八卦、AI 游戏、新梗热点、B站趋势。
+3. 每条必须包含：id、category、title、summary、heat、source、link、relevance、suggested_action、captured_at。
+4. 最终输出为符合 `schemas/industry_radar.schema.json` 的 JSON。
+
 自动保存要求：
-1. 将最终日报 JSON 写入 `data/reports/{{report_date}}.json`。
-2. 写入成功后，调用线上 CRM 同步接口：`https://crm-pages.pages.dev/api/reports/sync?date={{report_date}}`。
-3. 同步接口会从 GitHub 固定路径读取当天日报并写入 Supabase，不需要手动粘贴或导入 JSON。
-4. 结束时输出同步结果摘要：新增多少、更新多少、淘汰多少、当前总数多少。
-5. 如果同步接口返回 `report_not_found`，先确认文件是否已经写入 `data/reports/{{report_date}}.json`，再重试同步。
+1. 将最终 leads 日报 JSON 写入 `data/reports/{{report_date}}.json`。
+2. 将行业雷达 JSON 写入 `data/radar/{{report_date}}.json`。
+3. 写入日报成功后，调用线上 CRM 同步接口：`https://crm-pages.pages.dev/api/reports/sync?date={{report_date}}`。
+4. 同步接口会从 GitHub 固定路径读取当天日报并写入 Supabase，不需要手动粘贴或导入 JSON。
+5. 结束时输出同步结果摘要：新增多少、更新多少、淘汰多少、当前总数多少，并说明行业雷达文件是否已写入。
+6. 如果同步接口返回 `report_not_found`，先确认文件是否已经写入 `data/reports/{{report_date}}.json`，再重试同步。
