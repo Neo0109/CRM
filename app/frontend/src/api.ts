@@ -1,4 +1,4 @@
-import type { CrmSettings, ImportResult, Lead, RadarReport, SettingsPatch } from "./types";
+import type { CrmSettings, ImportResult, Lead, RadarReport, SettingsPatch, SettingsVerification } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
@@ -47,6 +47,10 @@ export function saveSettings(patch: SettingsPatch) {
     method: "PATCH",
     body: JSON.stringify(patch)
   });
+}
+
+export function sendSettingsVerification() {
+  return request<SettingsVerification>("/api/settings-verification", { method: "POST" });
 }
 
 export function syncLatestReport(date?: string) {
