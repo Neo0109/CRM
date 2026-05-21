@@ -22,6 +22,7 @@ const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", 
 const stageValues: Stage[] = ["new", "watch", "active", "negotiating", "won", "rejected"];
 const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
 const regionValues: Region[] = ["中国", "海外"];
+const regionOptions: ("全部" | Region)[] = ["全部", ...regionValues];
 const regionPriorityValues: RegionPriority[] = ["国内优先", "海外-高视觉", "海外-强数据", "其他"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 const radarCategories: RadarCategory[] = ["行业新闻", "发行八卦", "AI 游戏", "新梗热点", "B站趋势"];
@@ -166,7 +167,7 @@ export default function App() {
         <section className="filters">
           <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由 / 备注" /></label>
           <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
-          <Select label="地区" value={filters.region} options={["全部", ...regionValues]} onChange={(region) => setFilters({ ...filters, region })} />
+          <Select label="地区" value={filters.region} options={regionOptions} onChange={(region) => setFilters({ ...filters, region })} />
           <Select label="阶段" value={filters.stage} options={stageOptions} onChange={(stage) => setFilters({ ...filters, stage })} />
           <label><span>城市/国家</span><input value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} /></label>
           <label><span>Owner</span><input value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} /></label>
@@ -208,7 +209,7 @@ function Metric({ label, value, tone }: { label: string; value: number; tone: "n
 }
 
 function Select<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: T[]; onChange: (value: T) => void }) {
-  return <label><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value as T)}>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>;
+  return <label className="field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value as T)}>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>;
 }
 
 function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; onMove: (lead: Lead, bucket: Bucket) => Promise<void> }) {
@@ -220,10 +221,17 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
 
   if (!lead || !draft) return <aside className="detail-panel"><div className="empty-cell">暂无 lead</div></aside>;
 
-  const setField = <K extends keyof Lead>(key: K, value: Lead[K]) => setDraft({ ...draft, [key]: value });
+  function setField<K extends keyof Lead>(key: K, value: Lead[K]) {
+    setDraft({ ...draft, [key]: value });
+  }
+
   const addContact = () => setField("contact_methods", [...draft.contact_methods, { type: "微信/QQ", value: "", note: null }]);
   const updateContact = (index: number, patch: Partial<ContactMethod>) => setField("contact_methods", draft.contact_methods.map((method, methodIndex) => methodIndex === index ? { ...method, ...patch } : method));
   const removeContact = (index: number) => setField("contact_methods", draft.contact_methods.filter((_, methodIndex) => methodIndex !== index));
+  const moveDraft = async (nextLead: Lead, bucket: Bucket) => {
+    setDraft({ ...nextLead, bucket, stage: stageFromBucket(bucket) });
+    await onMove(nextLead, bucket);
+  };
   const save = () => onPatch(lead.id, draft);
 
   return <aside className="detail-panel">
@@ -232,7 +240,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
       <button className="primary-button" onClick={save}><Save size={16} />保存</button>
     </div>
 
-    <BucketButtons lead={draft} onMove={(nextLead, bucket) => onMove(nextLead, bucket)} />
+    <BucketButtons lead={draft} onMove={moveDraft} />
 
     <div className="signal-grid three">
       <Signal label="推荐理由" value={draft.priority_reason ?? "待补充"} />
@@ -261,7 +269,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
         <Select label="阶段" value={draft.stage} options={stageValues} onChange={(value) => setField("stage", value)} />
         <Select label="优先级" value={draft.priority} options={priorityValues} onChange={(value) => setField("priority", value)} />
         <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
-        <TextField label="Due Date" type="date" value={draft.due_date} onChange={(value) => setField("due_date", value)} />
+        <TextField label="Due Date" type="date" value={draft.due_date} onChange={(value) => setField("due_date", value || null)} />
         <TextField label="发售窗口" value={draft.release_window} onChange={(value) => setField("release_window", value)} />
       </div>
       <TextareaField label="优先级高/低的原因" value={draft.priority_reason} onChange={(value) => setField("priority_reason", value)} />
@@ -298,7 +306,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
       <TextareaField label="结论" value={draft.verdict} onChange={(value) => setField("verdict", value || "待判断")} />
       <TextareaField label="曝光轨迹" value={draft.exposure_trail} onChange={(value) => setField("exposure_trail", value)} />
       <TextareaField label="旧公开信号" value={draft.public_signals} onChange={(value) => setField("public_signals", value)} />
-      <TextareaField label="链接，一行一个" value={draft.links.join("\n")} onChange={(value) => setField("links", value.split("\n").map((line) => line.trim()).filter(Boolean))} />
+      <TextareaField label="链接，一行一个" value={draft.links.join("\n")} onChange={(value) => setField("links", (value ?? "").split("\n").map((line) => line.trim()).filter(Boolean))} />
       <div className="check-grid">
         <CheckboxField label="PC Early Access" checked={draft.early_access} onChange={(value) => setField("early_access", value)} />
         <CheckboxField label="叙事主导" checked={draft.narrative_heavy} onChange={(value) => setField("narrative_heavy", value)} />
@@ -348,8 +356,8 @@ function Signal({ label, value }: { label: string; value: string }) {
   return <div className="signal"><small>{label}</small><strong>{value}</strong></div>;
 }
 
-function TextField({ label, value, onChange, type = "text" }: { label: string; value: string | null; onChange: (value: string | null) => void; type?: string }) {
-  return <label className="field"><span>{label}</span><input type={type} value={value ?? ""} onChange={(event) => onChange(event.target.value || null)} /></label>;
+function TextField({ label, value, onChange, type = "text" }: { label: string; value: string | null; onChange: (value: string) => void; type?: string }) {
+  return <label className="field"><span>{label}</span><input type={type} value={value ?? ""} onChange={(event) => onChange(event.target.value)} /></label>;
 }
 
 function TextareaField({ label, value, onChange }: { label: string; value: string | null; onChange: (value: string | null) => void }) {
