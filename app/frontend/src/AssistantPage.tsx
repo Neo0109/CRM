@@ -2,6 +2,7 @@ import { Bot, FileImage, Sparkles, XCircle } from "lucide-react";
 import { useState } from "react";
 import { runLeadAssistant } from "./api";
 import type { LeadAssistantResult } from "./types";
+import "./assistant.css";
 
 type AssistantAttachment = {
   name?: string;
