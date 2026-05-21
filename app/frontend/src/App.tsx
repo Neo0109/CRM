@@ -1,6 +1,6 @@
 import { ArrowDownToLine, FileJson, Search, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { fetchLeads, getAccessToken, importJson, saveAccessToken, updateLead } from "./api";
+import { fetchLeads, getAccessToken, importJson, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import type { Bucket, Lead, Stage } from "./types";
 
 type Filters = {
@@ -36,7 +36,7 @@ export default function App() {
   const [tokenDraft, setTokenDraft] = useState(getAccessToken());
 
   useEffect(() => {
-    void reload();
+    void reload(true);
   }, []);
 
   const stats = useMemo(() => ({
@@ -62,9 +62,15 @@ export default function App() {
 
   const selectedLead = useMemo(() => leads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, leads, selectedId]);
 
-  async function reload() {
+  async function reload(syncDailyReport = false) {
     try {
       setLoading(true);
+      if (syncDailyReport) {
+        const syncResult = await syncLatestReport();
+        if (syncResult.synced && (syncResult.created > 0 || syncResult.updated > 0 || syncResult.dropped > 0)) {
+          setStatus(`已自动同步 ${syncResult.report_date} 日报：新增 ${syncResult.created}，更新 ${syncResult.updated}，淘汰 ${syncResult.dropped}`);
+        }
+      }
       const nextLeads = await fetchLeads();
       setLeads(nextLeads);
       setSelectedId((current) => current ?? nextLeads[0]?.id ?? null);
@@ -125,7 +131,7 @@ export default function App() {
       {error?.includes("CRM access token") && <section className="token-panel">
         <strong>输入 CRM 访问口令</strong>
         <input type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="CRM_ACCESS_TOKEN" />
-        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(); }}>进入</button>
+        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(true); }}>进入</button>
       </section>}
 
       <section className="filters">
