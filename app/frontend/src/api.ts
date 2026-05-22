@@ -1,4 +1,4 @@
-import type { CrmSettings, ImportResult, Lead, RadarReport, SettingsPatch, SettingsVerification } from "./types";
+import type { CrmSettings, ImportResult, Lead, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
@@ -36,6 +36,11 @@ export function fetchLeads() {
 export function fetchRadar(date?: string) {
   const query = date ? `?date=${encodeURIComponent(date)}` : "";
   return request<RadarReport>(`/api/radar${query}`);
+}
+
+export function fetchSteamTrends(date?: string) {
+  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+  return request<SteamTrendReport>(`/api/steam-trends${query}`);
 }
 
 export function fetchSettings() {
