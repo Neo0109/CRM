@@ -1,10 +1,11 @@
-import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, XCircle } from "lucide-react";
+import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { excelExportUrl, fetchLeads, fetchRadar, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
+import { excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import { SettingsPage } from "./SettingsPage";
-import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage } from "./types";
+import { SteamTrendsPage } from "./SteamTrendsPage";
+import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage, SteamTrendReport } from "./types";
 
-type View = "leads" | "radar" | "settings";
+type View = "leads" | "radar" | "steam" | "settings";
 type Filters = {
   query: string;
   bucket: "全部" | Bucket;
@@ -39,10 +40,13 @@ export default function App() {
   const [tokenDraft, setTokenDraft] = useState(getAccessToken());
   const [radar, setRadar] = useState<RadarReport | null>(null);
   const [radarLoading, setRadarLoading] = useState(false);
+  const [steamTrends, setSteamTrends] = useState<SteamTrendReport | null>(null);
+  const [steamLoading, setSteamLoading] = useState(false);
 
   useEffect(() => {
     void reload(true);
     void loadRadar();
+    void loadSteamTrends();
   }, []);
 
   const stats = useMemo(() => ({
@@ -103,6 +107,23 @@ export default function App() {
     }
   }
 
+  async function loadSteamTrends() {
+    try {
+      setSteamLoading(true);
+      const report = await fetchSteamTrends();
+      setSteamTrends(report);
+      if (report.sync_result && (report.sync_result.created > 0 || report.sync_result.updated > 0)) {
+        setStatus(`Steam 趋势已同步：新增 ${report.sync_result.created}，更新 ${report.sync_result.updated}`);
+        void reload(false);
+      }
+      setError(null);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Steam 趋势加载失败");
+    } finally {
+      setSteamLoading(false);
+    }
+  }
+
   async function handleLeadPatch(id: string, patch: Partial<Lead>) {
     const updated = await updateLead(id, patch);
     setLeads((current) => current.map((lead) => (lead.id === id ? updated : lead)));
@@ -116,6 +137,7 @@ export default function App() {
   function refreshCurrentView() {
     if (view === "leads") void reload(true);
     if (view === "radar") void loadRadar();
+    if (view === "steam") void loadSteamTrends();
   }
 
   function downloadExcel() {
@@ -134,6 +156,7 @@ export default function App() {
         <div className="actions">
           <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
           <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
+          <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
           <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
           <button className="ghost-button" onClick={refreshCurrentView}><RefreshCw size={16} />刷新</button>
           <button className="ghost-button" onClick={downloadExcel}><FileSpreadsheet size={16} />Excel</button>
@@ -147,56 +170,80 @@ export default function App() {
       {error?.includes("CRM access token") && <section className="token-panel">
         <strong>输入 CRM 访问口令</strong>
         <input type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="CRM_ACCESS_TOKEN" />
-        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(true); void loadRadar(); }}>进入</button>
+        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(true); void loadRadar(); void loadSteamTrends(); }}>进入</button>
       </section>}
 
-      {view === "leads" ? <>
-        <section className="metric-strip">
-          <Metric label="未处理" value={stats.unread} tone="purple" />
-          <Metric label="推进池" value={stats.push} tone="green" />
-          <Metric label="跟进中" value={stats.follow} tone="cyan" />
-          <Metric label="观察池" value={stats.watch} tone="amber" />
-          <Metric label="淘汰池" value={stats.drop} tone="red" />
-          <Metric label="缺链接" value={stats.missingLinks} tone="blue" />
-        </section>
-
-        <section className="filters">
-          <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由 / 备注" /></label>
-          <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
-          <Select label="地区" value={filters.region} options={regionOptions} onChange={(region) => setFilters({ ...filters, region })} />
-          <Select label="阶段" value={filters.stage} options={stageOptions} onChange={(stage) => setFilters({ ...filters, stage })} />
-          <label><span>城市/国家</span><input value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} /></label>
-          <label><span>Owner</span><input value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} /></label>
-          <label><span>窗口</span><input value={filters.releaseWindow} onChange={(event) => setFilters({ ...filters, releaseWindow: event.target.value })} /></label>
-          <button className="ghost-button" onClick={() => setFilters(emptyFilters)}>清空</button>
-        </section>
-
-        <section className="workspace">
-          <div className="lead-table-wrap">
-            <table className="lead-table">
-              <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>链接</th><th>处理</th></tr></thead>
-              <tbody>
-                {loading ? <tr><td colSpan={8} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
-                  <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
-                    <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.review_status}</small></div></div></td>
-                    <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
-                    <td><ContactChips contacts={lead.contact_methods} /></td>
-                    <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
-                    <td>{lead.progress}<small className="subline">{lead.publisher_status}</small></td>
-                    <td>{lead.notes ?? ""}</td>
-                    <td><LinkList links={lead.links} /></td>
-                    <td><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
-                  </tr>
-                ))}
-                {!loading && !filteredLeads.length && <tr><td colSpan={8} className="empty-cell">无匹配 leads</td></tr>}
-              </tbody>
-            </table>
-          </div>
-          <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
-        </section>
-      </> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
+      {view === "leads" ? <LeadsView
+        filters={filters}
+        setFilters={setFilters}
+        stats={stats}
+        loading={loading}
+        filteredLeads={filteredLeads}
+        selectedLead={selectedLead}
+        setSelectedId={setSelectedId}
+        handleLeadPatch={handleLeadPatch}
+        moveBucket={moveBucket}
+      /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
     </main>
   );
+}
+
+function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, handleLeadPatch, moveBucket }: {
+  filters: Filters;
+  setFilters: (filters: Filters) => void;
+  stats: { unread: number; push: number; follow: number; watch: number; drop: number; missingLinks: number };
+  loading: boolean;
+  filteredLeads: Lead[];
+  selectedLead: Lead | null;
+  setSelectedId: (id: string) => void;
+  handleLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
+  moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
+}) {
+  return <>
+    <section className="metric-strip">
+      <Metric label="未处理" value={stats.unread} tone="purple" />
+      <Metric label="推进池" value={stats.push} tone="green" />
+      <Metric label="跟进中" value={stats.follow} tone="cyan" />
+      <Metric label="观察池" value={stats.watch} tone="amber" />
+      <Metric label="淘汰池" value={stats.drop} tone="red" />
+      <Metric label="缺链接" value={stats.missingLinks} tone="blue" />
+    </section>
+
+    <section className="filters">
+      <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由 / 备注" /></label>
+      <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
+      <Select label="地区" value={filters.region} options={regionOptions} onChange={(region) => setFilters({ ...filters, region })} />
+      <Select label="阶段" value={filters.stage} options={stageOptions} onChange={(stage) => setFilters({ ...filters, stage })} />
+      <label><span>城市/国家</span><input value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} /></label>
+      <label><span>Owner</span><input value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} /></label>
+      <label><span>窗口</span><input value={filters.releaseWindow} onChange={(event) => setFilters({ ...filters, releaseWindow: event.target.value })} /></label>
+      <button className="ghost-button" onClick={() => setFilters(emptyFilters)}>清空</button>
+    </section>
+
+    <section className="workspace">
+      <div className="lead-table-wrap">
+        <table className="lead-table">
+          <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>链接</th><th>处理</th></tr></thead>
+          <tbody>
+            {loading ? <tr><td colSpan={8} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
+              <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
+                <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.review_status}</small></div></div></td>
+                <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
+                <td><ContactChips contacts={lead.contact_methods} /></td>
+                <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
+                <td>{lead.progress}<small className="subline">{lead.publisher_status}</small></td>
+                <td>{lead.notes ?? ""}</td>
+                <td><LinkList links={lead.links} /></td>
+                <td><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
+              </tr>
+            ))}
+            {!loading && !filteredLeads.length && <tr><td colSpan={8} className="empty-cell">无匹配 leads</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
+    </section>
+  </>;
 }
 
 function Metric({ label, value, tone }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple" }) {
