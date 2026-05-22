@@ -382,7 +382,7 @@ function normalizeContacts(value: unknown, legacyContact: unknown): ContactMetho
       const record = item as Record<string, unknown>;
       const type = contactTypes.includes(record.type as ContactType) ? record.type as ContactType : "其他";
       const contactValue = typeof record.value === "string" ? record.value.trim() : "";
-      if (!contactValue || isGameStoreLink(contactValue) || type === "Steam") continue;
+      if (!contactValue || isGameStoreLink(contactValue)) continue;
       methods.push({ type, value: contactValue, note: valueOrNull(record.note) });
     }
   }
@@ -462,7 +462,7 @@ function mergeStringArrays(current: string[], incoming: string[]) {
 function mergeContactMethods(current: ContactMethod[], incoming: ContactMethod[]) {
   const deduped = new Map<string, ContactMethod>();
   for (const method of [...current, ...incoming]) {
-    if (!method.value || method.type === "Steam" || isGameStoreLink(method.value)) continue;
+    if (!method.value || isGameStoreLink(method.value)) continue;
     const key = `${method.type}:${normalizeText(method.value)}`;
     if (!deduped.has(key)) deduped.set(key, method);
   }
