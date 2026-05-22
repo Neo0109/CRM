@@ -1,9 +1,10 @@
-import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Trash2, XCircle } from "lucide-react";
+import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { fetchLeads, fetchRadar, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
+import { excelExportUrl, fetchLeads, fetchRadar, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
+import { SettingsPage } from "./SettingsPage";
 import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage } from "./types";
 
-type View = "leads" | "radar";
+type View = "leads" | "radar" | "settings";
 type Filters = {
   query: string;
   bucket: "全部" | Bucket;
@@ -112,6 +113,17 @@ export default function App() {
     await handleLeadPatch(lead.id, { bucket, stage: stageFromBucket(bucket), ...reviewPatchForBucket(bucket) });
   }
 
+  function refreshCurrentView() {
+    if (view === "leads") void reload(true);
+    if (view === "radar") void loadRadar();
+  }
+
+  function downloadExcel() {
+    const password = window.prompt("请输入 Excel 导出密码");
+    if (!password?.trim()) return;
+    window.location.assign(excelExportUrl(password.trim()));
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -122,7 +134,9 @@ export default function App() {
         <div className="actions">
           <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
           <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
-          <button className="ghost-button" onClick={() => view === "leads" ? void reload(true) : void loadRadar()}><RefreshCw size={16} />刷新</button>
+          <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
+          <button className="ghost-button" onClick={refreshCurrentView}><RefreshCw size={16} />刷新</button>
+          <button className="ghost-button" onClick={downloadExcel}><FileSpreadsheet size={16} />Excel</button>
           <a className="ghost-button" href="/api/export/json"><FileJson size={16} />JSON</a>
           <a className="ghost-button" href="/api/export/csv"><ArrowDownToLine size={16} />CSV</a>
         </div>
@@ -180,7 +194,7 @@ export default function App() {
           </div>
           <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
         </section>
-      </> : <RadarPage radar={radar} loading={radarLoading} />}
+      </> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
     </main>
   );
 }
