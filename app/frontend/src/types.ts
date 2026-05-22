@@ -65,10 +65,18 @@ export type ImportResult = {
   summary?: string;
 };
 
+export type LeadAssistantAttachment = {
+  name?: string;
+  type?: string;
+  size?: number;
+  source?: "paste" | "upload";
+  data_url?: string;
+};
+
 export type LeadAssistantPayload = {
   text?: string;
   keywords?: string[];
-  attachments?: { name?: string; type?: string }[];
+  attachments?: LeadAssistantAttachment[];
 };
 
 export type LeadAssistantResult = ImportResult & {
