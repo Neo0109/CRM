@@ -1,0 +1,125 @@
+.manual-shell {
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1680px;
+  min-height: 620px;
+  padding: 18px;
+}
+
+.manual-head {
+  align-items: end;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+.manual-head p {
+  color: #475569;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 720px;
+}
+
+.manual-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.78fr);
+}
+
+.manual-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.manual-card-head {
+  align-items: center;
+  color: #0f172a;
+  display: flex;
+  gap: 8px;
+}
+
+.manual-form-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manual-card .field textarea {
+  min-height: 76px;
+}
+
+.json-card {
+  align-content: start;
+}
+
+.json-import-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #1f2933;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 460px;
+  padding: 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.manual-help {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  display: grid;
+  gap: 4px;
+  line-height: 1.5;
+  padding: 10px 12px;
+}
+
+.manual-help strong {
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.manual-help span {
+  font-size: 12px;
+}
+
+.manual-submit {
+  justify-self: start;
+  min-width: 160px;
+}
+
+@media (max-width: 1180px) {
+  .manual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .manual-shell {
+    padding: 14px;
+  }
+
+  .manual-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .manual-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .manual-submit {
+    width: 100%;
+  }
+}
