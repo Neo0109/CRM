@@ -10,6 +10,11 @@ type SyncResult = ImportResult & {
   source?: string;
 };
 
+export type ImportJsonResult = ImportResult & {
+  message: string;
+  imported: number;
+};
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getAccessToken();
   const response = await fetch(url, {
@@ -60,6 +65,13 @@ export function sendSettingsVerification() {
 
 export function runLeadAssistant(payload: LeadAssistantPayload) {
   return request<LeadAssistantResult>("/api/lead-assistant", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function importJsonLeads(payload: unknown) {
+  return request<ImportJsonResult>("/api/import-json", {
     method: "POST",
     body: JSON.stringify(payload)
   });
