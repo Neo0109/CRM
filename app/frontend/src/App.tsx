@@ -1,4 +1,4 @@
-import { ArrowDownToLine, ExternalLink, FileJson, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Trash2 } from "lucide-react";
+import { ArrowDownToLine, CheckCircle2, ExternalLink, FileJson, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Trash2, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { fetchLeads, fetchRadar, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage } from "./types";
@@ -16,15 +16,15 @@ type Filters = {
 
 const version = "v1.2";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "" };
-const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "观察池", "淘汰池"];
-const bucketValues: Bucket[] = ["推进池", "观察池", "淘汰池"];
+const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
+const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
 const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", "negotiating", "won", "rejected"];
 const stageValues: Stage[] = ["new", "watch", "active", "negotiating", "won", "rejected"];
 const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
 const regionValues: Region[] = ["中国", "海外"];
 const regionOptions: ("全部" | Region)[] = ["全部", ...regionValues];
 const regionPriorityValues: RegionPriority[] = ["国内优先", "海外-高视觉", "海外-强数据", "其他"];
-const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
+const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Discord", "B站", "X/Twitter", "其他"];
 const radarCategories: RadarCategory[] = ["行业新闻", "发行八卦", "AI 游戏", "新梗热点", "B站趋势"];
 
 export default function App() {
@@ -45,15 +45,16 @@ export default function App() {
   }, []);
 
   const stats = useMemo(() => ({
-    total: leads.length,
+    unread: leads.filter((lead) => lead.review_status === "未处理").length,
     push: leads.filter((lead) => lead.bucket === "推进池").length,
+    follow: leads.filter((lead) => lead.bucket === "跟进中").length,
     watch: leads.filter((lead) => lead.bucket === "观察池").length,
     drop: leads.filter((lead) => lead.bucket === "淘汰池").length,
-    missingLinks: leads.filter((lead) => !lead.links.length).length
+    missingLinks: leads.filter((lead) => !gameLinks(lead.links).length).length
   }), [leads]);
 
   const filteredLeads = useMemo(() => leads.filter((lead) => {
-    const contacts = lead.contact_methods.map((method) => `${method.type} ${method.value} ${method.note ?? ""}`).join(" ");
+    const contacts = visibleContacts(lead.contact_methods).map((method) => `${method.type} ${method.value} ${method.note ?? ""}`).join(" ");
     const haystack = [lead.project, lead.team, lead.genre, lead.gameplay, lead.progress, lead.publisher_status, lead.priority_reason, lead.rule_fit, lead.next_action, lead.notes, lead.country, lead.city, contacts]
       .filter(Boolean)
       .join(" ")
@@ -108,7 +109,7 @@ export default function App() {
   }
 
   async function moveBucket(lead: Lead, bucket: Bucket) {
-    await handleLeadPatch(lead.id, { bucket, stage: stageFromBucket(bucket) });
+    await handleLeadPatch(lead.id, { bucket, stage: stageFromBucket(bucket), ...reviewPatchForBucket(bucket) });
   }
 
   return (
@@ -137,8 +138,9 @@ export default function App() {
 
       {view === "leads" ? <>
         <section className="metric-strip">
-          <Metric label="全部" value={stats.total} tone="neutral" />
+          <Metric label="未处理" value={stats.unread} tone="purple" />
           <Metric label="推进池" value={stats.push} tone="green" />
+          <Metric label="跟进中" value={stats.follow} tone="cyan" />
           <Metric label="观察池" value={stats.watch} tone="amber" />
           <Metric label="淘汰池" value={stats.drop} tone="red" />
           <Metric label="缺链接" value={stats.missingLinks} tone="blue" />
@@ -158,18 +160,18 @@ export default function App() {
         <section className="workspace">
           <div className="lead-table-wrap">
             <table className="lead-table">
-              <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>链接</th><th>移池</th></tr></thead>
+              <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>链接</th><th>处理</th></tr></thead>
               <tbody>
                 {loading ? <tr><td colSpan={8} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
-                  <tr key={lead.id} className={lead.id === selectedLead?.id ? "selected-row" : ""} onClick={() => setSelectedId(lead.id)}>
-                    <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.stage}</small></div></div></td>
+                  <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
+                    <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.review_status}</small></div></div></td>
                     <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
                     <td><ContactChips contacts={lead.contact_methods} /></td>
                     <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
                     <td>{lead.progress}<small className="subline">{lead.publisher_status}</small></td>
                     <td>{lead.notes ?? ""}</td>
                     <td><LinkList links={lead.links} /></td>
-                    <td><BucketButtons lead={lead} onMove={moveBucket} compact /></td>
+                    <td><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
                   </tr>
                 ))}
                 {!loading && !filteredLeads.length && <tr><td colSpan={8} className="empty-cell">无匹配 leads</td></tr>}
@@ -183,7 +185,7 @@ export default function App() {
   );
 }
 
-function Metric({ label, value, tone }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" }) {
+function Metric({ label, value, tone }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple" }) {
   return <div className={`metric metric-${tone}`}><span>{label}</span><strong>{value}</strong></div>;
 }
 
@@ -208,17 +210,19 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
   const updateContact = (index: number, patch: Partial<ContactMethod>) => setField("contact_methods", draft.contact_methods.map((method, methodIndex) => methodIndex === index ? { ...method, ...patch } : method));
   const removeContact = (index: number) => setField("contact_methods", draft.contact_methods.filter((_, methodIndex) => methodIndex !== index));
   const moveDraft = async (nextLead: Lead, bucket: Bucket) => {
-    setDraft({ ...nextLead, bucket, stage: stageFromBucket(bucket) });
+    const patch = { bucket, stage: stageFromBucket(bucket), ...reviewPatchForBucket(bucket) };
+    setDraft({ ...nextLead, ...patch });
     await onMove(nextLead, bucket);
   };
   const save = () => onPatch(lead.id, draft);
 
   return <aside className="detail-panel">
     <div className="detail-head">
-      <div><p className="eyebrow">{draft.bucket} · {draft.priority}</p><h2>{draft.project}</h2></div>
+      <div><p className="eyebrow">{draft.bucket} · {draft.priority} · {draft.review_status}</p><h2>{draft.project}</h2></div>
       <button className="primary-button" onClick={save}><Save size={16} />保存</button>
     </div>
 
+    <QuickActions lead={draft} onPatch={onPatch} />
     <BucketButtons lead={draft} onMove={moveDraft} />
 
     <div className="signal-grid three">
@@ -244,7 +248,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
     <div className="form-section">
       <h3>Review 结论</h3>
       <div className="form-grid two">
-        <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value) } : current))} />
+        <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value), ...reviewPatchForBucket(value) } : current))} />
         <Select label="阶段" value={draft.stage} options={stageValues} onChange={(value) => setField("stage", value)} />
         <Select label="优先级" value={draft.priority} options={priorityValues} onChange={(value) => setField("priority", value)} />
         <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
@@ -261,8 +265,8 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
       <h3>联系方式</h3>
       <div className="contact-editor">
         {draft.contact_methods.map((method, index) => <div className="contact-row" key={`${method.type}-${index}`}>
-          <select value={method.type} onChange={(event) => updateContact(index, { type: event.target.value as ContactType })}>{contactTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select>
-          <input value={method.value} onChange={(event) => updateContact(index, { value: event.target.value })} placeholder="账号 / 链接 / 邮箱 / 电话" />
+          <select value={method.type === "Steam" ? "其他" : method.type} onChange={(event) => updateContact(index, { type: event.target.value as ContactType })}>{contactTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select>
+          <input value={method.value} onChange={(event) => updateContact(index, { value: event.target.value })} placeholder="微信 / QQ / 邮箱 / 电话" />
           <input value={method.note ?? ""} onChange={(event) => updateContact(index, { note: event.target.value || null })} placeholder="备注" />
           <button className="icon-button danger" onClick={() => removeContact(index)}><Trash2 size={15} /></button>
         </div>)}
@@ -296,6 +300,14 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
   </aside>;
 }
 
+function QuickActions({ lead, onPatch, compact = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean }) {
+  return <div className={compact ? "quick-actions compact" : "quick-actions"} onClick={(event) => event.stopPropagation()}>
+    <button className="quick-button follow" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at: new Date().toISOString() })}><CheckCircle2 size={15} />跟进</button>
+    <button className="quick-button drop" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at: new Date().toISOString() })}><XCircle size={15} />淘汰</button>
+    {!compact && <button className="quick-button seen" onClick={() => void onPatch(lead.id, { review_status: "已查看", reviewed_at: new Date().toISOString() })}>已看</button>}
+  </div>;
+}
+
 function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: (lead: Lead, bucket: Bucket) => Promise<void>; compact?: boolean }) {
   return <div className={compact ? "bucket-actions compact" : "bucket-actions"} onClick={(event) => event.stopPropagation()}>
     {bucketValues.map((bucket) => <button key={bucket} className={`bucket-button ${bucketClass(bucket)} ${lead.bucket === bucket ? "active" : ""}`} onClick={() => void onMove(lead, bucket)} disabled={lead.bucket === bucket}>{bucket}</button>)}
@@ -303,13 +315,15 @@ function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: 
 }
 
 function ContactChips({ contacts }: { contacts: ContactMethod[] }) {
-  if (!contacts.length) return <span className="muted">待补充</span>;
-  return <div className="chip-list">{contacts.slice(0, 3).map((method, index) => <span className="chip" key={`${method.value}-${index}`}>{method.type}: {method.value}</span>)}</div>;
+  const displayContacts = visibleContacts(contacts).slice(0, 3);
+  if (!displayContacts.length) return <span className="muted">待补充</span>;
+  return <div className="chip-list">{displayContacts.map((method, index) => <span className="chip" key={`${method.value}-${index}`}>{method.type}: {method.value}</span>)}</div>;
 }
 
 function LinkList({ links }: { links: string[] }) {
-  if (!links.length) return <span className="missing-link">缺链接</span>;
-  return <div className="link-list">{links.slice(0, 3).map((link, index) => <a key={`${link}-${index}`} href={link} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}><ExternalLink size={13} />{linkLabel(link)}</a>)}</div>;
+  const displayLinks = gameLinks(links);
+  if (!displayLinks.length) return <span className="missing-link">缺链接</span>;
+  return <div className="link-list">{displayLinks.map((link, index) => <a key={`${link}-${index}`} href={link} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={link}><ExternalLink size={13} />{linkLabel(link)}</a>)}</div>;
 }
 
 function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boolean }) {
@@ -347,16 +361,35 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
   return <label className="checkbox-field"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><span>{label}</span></label>;
 }
 
+function reviewPatchForBucket(bucket: Bucket): Partial<Lead> {
+  if (bucket === "跟进中") return { review_status: "跟进中", reviewed_at: new Date().toISOString() };
+  if (bucket === "淘汰池") return { review_status: "已淘汰", reviewed_at: new Date().toISOString() };
+  return { review_status: "已查看", reviewed_at: new Date().toISOString() };
+}
+
 function stageFromBucket(bucket: Bucket): Stage {
-  if (bucket === "推进池") return "active";
+  if (bucket === "推进池" || bucket === "跟进中") return "active";
   if (bucket === "淘汰池") return "rejected";
   return "watch";
 }
 
 function bucketClass(bucket: Bucket) {
   if (bucket === "推进池") return "push";
+  if (bucket === "跟进中") return "follow";
   if (bucket === "淘汰池") return "drop";
   return "watch";
+}
+
+function visibleContacts(contacts: ContactMethod[]) {
+  return contacts.filter((method) => method.type !== "Steam" && !isGameLink(method.value));
+}
+
+function gameLinks(links: string[]) {
+  return links.filter(isGameLink).slice(0, 2);
+}
+
+function isGameLink(link: string) {
+  return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(link);
 }
 
 function linkLabel(link: string) {
