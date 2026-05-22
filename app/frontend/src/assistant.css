@@ -37,6 +37,12 @@
   min-height: 220px;
 }
 
+.assistant-upload-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .file-drop,
 .paste-target {
   align-items: center;
@@ -217,7 +223,8 @@
   }
 
   .assistant-result-metrics,
-  .screenshot-grid {
+  .screenshot-grid,
+  .assistant-upload-row {
     grid-template-columns: 1fr;
   }
 }
