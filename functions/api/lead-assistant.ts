@@ -4,7 +4,7 @@ type AttachmentMeta = {
   name?: string;
   type?: string;
   size?: number;
-  source?: "paste" | "upload" | string;
+  source?: "paste" | "upload" | "camera" | string;
   data_url?: string;
 };
 
@@ -28,6 +28,59 @@ type SteamAppData = {
 type SteamAppResponse = Record<string, { success?: boolean; data?: SteamAppData }>;
 
 type AssistantLead = Partial<Lead>;
+type AssistantPriority = NonNullable<AssistantLead["priority"]>;
+type AssistantRegionPriority = NonNullable<AssistantLead["region_priority"]>;
+
+type AiContactMethod = {
+  type?: string;
+  value?: string;
+  note?: string | null;
+};
+
+type AiExtractedLead = {
+  project?: string;
+  steam_app_id?: string | null;
+  team?: string | null;
+  team_size?: string | null;
+  country?: string | null;
+  city?: string | null;
+  region_priority?: string | null;
+  bucket?: string | null;
+  priority?: string | null;
+  genre?: string | null;
+  gameplay?: string | null;
+  progress?: string | null;
+  release_window?: string | null;
+  publisher_status?: string | null;
+  publisher_name?: string | null;
+  traction_summary?: string | null;
+  public_signals?: string | null;
+  contact?: string | null;
+  contact_methods?: AiContactMethod[];
+  links?: string[];
+  exposure_trail?: string | null;
+  bilibili_fit?: string | null;
+  amplification?: string | null;
+  risks?: string | null;
+  verdict?: string | null;
+  next_action?: string | null;
+  priority_reason?: string | null;
+  rule_fit?: string | null;
+  notes?: string | null;
+};
+
+type AiExtractionResult = {
+  ocr_text?: string;
+  search_summary?: string;
+  skipped?: string[];
+  leads?: AiExtractedLead[];
+};
+
+const contactTypes = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"] as const;
+const priorityValues = ["P0", "P1", "P2", "P3"] as const;
+const regionPriorityValues = ["国内优先", "海外-高视觉", "海外-强数据", "其他"] as const;
+const openAiResponsesUrl = "https://api.openai.com/v1/responses";
+const defaultVisionModel = "gpt-4.1-mini";
 
 export const onRequestPost = async ({ request, env }: PagesContext) => {
   const denied = await requireAccess(request, env);
@@ -37,35 +90,48 @@ export const onRequestPost = async ({ request, env }: PagesContext) => {
     const payload = (await request.json()) as LeadAssistantPayload;
     const text = normalizeInputText(payload);
     const attachments = Array.isArray(payload.attachments) ? payload.attachments.filter((item) => item?.name || item?.type || item?.data_url) : [];
+    const imageAttachments = attachments.filter(hasImageDataUrl).slice(0, 6);
 
     if (!text && !attachments.length) {
       return json({ error: "请输入关键词、线索说明、Steam 链接，或直接粘贴截图" }, 400);
     }
 
-    const steamAppIds = extractSteamAppIds(text);
     const contacts = extractContactMethods(text);
     const links = extractLinks(text);
     const today = todayInShanghai();
     const skipped: string[] = [];
     const leads: AssistantLead[] = [];
 
-    for (const steamAppId of steamAppIds) {
-      const details = await fetchSteamAppDetails(steamAppId);
-      if (details?.type && details.type !== "game") {
-        skipped.push(`${steamAppId}: ${details.type}`);
-        continue;
+    if (imageAttachments.length) {
+      const aiResult = await extractLeadsWithVision(env, text, imageAttachments);
+      skipped.push(...(aiResult.skipped ?? []));
+      for (const extractedLead of aiResult.leads ?? []) {
+        const lead = await buildAiLead(extractedLead, { text, attachments, ocrText: aiResult.ocr_text, searchSummary: aiResult.search_summary, today });
+        if (lead) leads.push(lead);
+        else skipped.push(`${extractedLead.project ?? "未命名截图线索"}: AI 未找到可验证游戏链接或项目名`);
       }
-
-      leads.push(buildSteamLead({ steamAppId, details, text, links, contacts, attachments, today }));
     }
 
-    if (!leads.length && (text || attachments.length)) {
-      leads.push(buildManualLead({ text, links, contacts, attachments, today }));
+    if (!leads.length) {
+      const steamAppIds = extractSteamAppIds(text);
+      for (const steamAppId of steamAppIds) {
+        const details = await fetchSteamAppDetails(steamAppId);
+        if (details?.type && details.type !== "game") {
+          skipped.push(`${steamAppId}: ${details.type}`);
+          continue;
+        }
+
+        leads.push(buildSteamLead({ steamAppId, details, text, links, contacts, attachments, today }));
+      }
+
+      if (!leads.length && !imageAttachments.length && text) {
+        leads.push(buildManualLead({ text, links, contacts, attachments, today }));
+      }
     }
 
     const result = leads.length ? await mergeIncomingLeads(env, leads) : { created: 0, updated: 0, dropped: 0, total: 0 };
     return json({
-      message: leads.length ? "线索助手已写入 CRM" : "没有可写入的候选",
+      message: leads.length ? "线索助手已写入 CRM" : "AI 没有识别到可写入的候选，请补一条项目名或 Steam 链接后重试",
       created: result.created,
       updated: result.updated,
       dropped: result.dropped,
@@ -83,6 +149,203 @@ function normalizeInputText(payload: LeadAssistantPayload) {
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .map((value) => value.trim());
   return parts.join("\n");
+}
+
+async function extractLeadsWithVision(env: PagesContext["env"], text: string, attachments: AttachmentMeta[]): Promise<AiExtractionResult> {
+  const config = openAiConfig(env);
+  if (!config.apiKey) throw new Error("缺少 OPENAI_API_KEY，无法进行截图 OCR / 视觉识别");
+
+  const userText = text.trim() || "用户只提交了截图，请先 OCR 读图，再顺着截图里的游戏名、Steam 页面、团队名、社媒、新闻标题或商店信息在网上查找对应游戏线索。";
+  const attachmentSummary = attachments.map((item, index) => `${index + 1}. ${item.name ?? "截图"} / ${item.type ?? "image"} / ${typeof item.size === "number" ? formatBytes(item.size) : "unknown size"} / ${item.source ?? "unknown"}`).join("\n");
+  const content = [
+    {
+      type: "input_text",
+      text: `${visionPrompt()}\n\n用户补充文字：\n${userText}\n\n截图列表：\n${attachmentSummary}`
+    },
+    ...attachments.map((item) => ({ type: "input_image", image_url: item.data_url, detail: "high" }))
+  ];
+
+  const body = {
+    model: config.model,
+    input: [{ role: "user", content }],
+    tools: [{ type: "web_search" }],
+    tool_choice: "auto",
+    text: {
+      format: {
+        type: "json_schema",
+        name: "crm_lead_vision_extraction",
+        strict: false,
+        schema: aiExtractionSchema()
+      }
+    },
+    store: false,
+    max_output_tokens: 6000
+  };
+
+  const response = await fetch(openAiResponsesUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.apiKey}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`OpenAI 视觉识别失败：${response.status} ${details}`);
+  }
+
+  const payload = await response.json();
+  const outputText = responseOutputText(payload);
+  if (!outputText) throw new Error("OpenAI 视觉识别没有返回可解析文本");
+
+  try {
+    return JSON.parse(outputText) as AiExtractionResult;
+  } catch {
+    throw new Error(`OpenAI 视觉识别返回的 JSON 无法解析：${outputText.slice(0, 400)}`);
+  }
+}
+
+function visionPrompt() {
+  return `你是 B站游戏发行 BD 的线索识别助手。你需要完成 OCR、视觉理解、网页搜索和 CRM 结构化录入准备。
+
+任务：
+1. 读取用户粘贴/拍照/上传的截图，提取所有可见文字、游戏名、团队名、Steam AppID、官网、社媒、联系方式、新闻来源和截图上下文。
+2. 使用 web_search 顺藤摸瓜查找对应游戏：优先 Steam 页面、SteamDB、官网/presskit、发行商官网、Discord、X/Twitter、B站、新闻稿。
+3. 只输出游戏本体，不要 DLC、原声带、工具、非游戏软件。
+4. 每条 lead 必须尽量有 Steam 链接或一个能看画面/背景的官方链接。
+5. contact_methods 不能空。优先真实邮箱、电话、官网 contact/presskit、Discord、X/Twitter、B站；如果找不到直接商务联系方式，至少放 Steam 社区讨论区、开发者页或发行商页。不要把 Steam 商店 app 页面或 SteamDB app 页面放进 contact_methods，它们只放 links。
+6. 不要编造邮箱、电话、微信号。找不到就用真实可访问的社区/官网/社媒入口。
+7. 按 B站游戏发行 BD 规则判断 priority_reason、rule_fit、bilibili_fit、amplification、risks、verdict、next_action。
+
+输出必须是 JSON，格式：
+{
+  "ocr_text": "截图中读到的关键文字",
+  "search_summary": "你查到了什么，哪些来源最关键",
+  "skipped": ["跳过原因"],
+  "leads": [ ... ]
+}`;
+}
+
+function aiExtractionSchema() {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["ocr_text", "search_summary", "skipped", "leads"],
+    properties: {
+      ocr_text: { type: "string" },
+      search_summary: { type: "string" },
+      skipped: { type: "array", items: { type: "string" } },
+      leads: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            project: { type: "string" },
+            steam_app_id: { type: ["string", "null"] },
+            team: { type: ["string", "null"] },
+            team_size: { type: ["string", "null"] },
+            country: { type: ["string", "null"] },
+            city: { type: ["string", "null"] },
+            region_priority: { type: ["string", "null"] },
+            bucket: { type: ["string", "null"] },
+            priority: { type: ["string", "null"] },
+            genre: { type: ["string", "null"] },
+            gameplay: { type: ["string", "null"] },
+            progress: { type: ["string", "null"] },
+            release_window: { type: ["string", "null"] },
+            publisher_status: { type: ["string", "null"] },
+            publisher_name: { type: ["string", "null"] },
+            traction_summary: { type: ["string", "null"] },
+            public_signals: { type: ["string", "null"] },
+            contact: { type: ["string", "null"] },
+            contact_methods: {
+              type: "array",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  type: { type: "string" },
+                  value: { type: "string" },
+                  note: { type: ["string", "null"] }
+                }
+              }
+            },
+            links: { type: "array", items: { type: "string" } },
+            exposure_trail: { type: ["string", "null"] },
+            bilibili_fit: { type: ["string", "null"] },
+            amplification: { type: ["string", "null"] },
+            risks: { type: ["string", "null"] },
+            verdict: { type: ["string", "null"] },
+            next_action: { type: ["string", "null"] },
+            priority_reason: { type: ["string", "null"] },
+            rule_fit: { type: ["string", "null"] },
+            notes: { type: ["string", "null"] }
+          }
+        }
+      }
+    }
+  };
+}
+
+async function buildAiLead(raw: AiExtractedLead, context: { text: string; attachments: AttachmentMeta[]; ocrText?: string; searchSummary?: string; today: string }): Promise<AssistantLead | null> {
+  const steamAppId = valueOrNull(raw.steam_app_id) ?? steamAppIdFromLinks(raw.links ?? []);
+  const project = valueOrNull(raw.project);
+  if (!project && !steamAppId) return null;
+
+  const details = steamAppId ? await fetchSteamAppDetails(steamAppId) : null;
+  if (details?.type && details.type !== "game") return null;
+
+  const projectName = project ?? details?.name ?? `Steam App ${steamAppId}`;
+  const releaseText = valueOrNull(raw.release_window) ?? (details?.release_date?.coming_soon ? `即将推出${details.release_date.date ? `：${details.release_date.date}` : ""}` : details?.release_date?.date ?? null);
+  const country = valueOrNull(raw.country) ?? inferCountry(`${context.text}\n${context.ocrText ?? ""}\n${raw.search_summary ?? ""}`);
+  const links = uniqueLinks([
+    ...(steamAppId ? [`https://store.steampowered.com/app/${steamAppId}/`, `https://steamdb.info/app/${steamAppId}/`] : []),
+    details?.website,
+    ...(raw.links ?? [])
+  ]);
+  const contacts = ensureContactMethods(normalizeAiContacts(raw.contact_methods ?? [], raw.contact), steamAppId, links);
+
+  return {
+    project: projectName,
+    steam_app_id: steamAppId,
+    team: valueOrNull(raw.team) ?? firstValue(details?.developers),
+    team_size: valueOrNull(raw.team_size),
+    country,
+    city: valueOrNull(raw.city) ?? inferCity(`${context.text}\n${context.ocrText ?? ""}`),
+    region_priority: normalizeRegionPriority(raw.region_priority, context.text, country),
+    bucket: "观察池",
+    stage: "watch",
+    priority: normalizePriority(raw.priority, normalizeRegionPriority(raw.region_priority, context.text, country)),
+    review_status: "未处理",
+    genre: valueOrNull(raw.genre) ?? (details?.genres ?? []).map((genre) => genre.description).filter((value): value is string => Boolean(value)).join(" / ") || null,
+    gameplay: valueOrNull(raw.gameplay) ?? details?.short_description ?? null,
+    progress: valueOrNull(raw.progress) ?? releaseText ?? "AI 视觉识别录入，待确认进度",
+    release_window: releaseText,
+    early_access: /early access|抢先体验|ea\b/i.test(`${context.text}\n${context.ocrText ?? ""}\n${raw.progress ?? ""}`),
+    narrative_heavy: /叙事|剧情驱动|story rich|narrative/i.test(`${context.text}\n${context.ocrText ?? ""}\n${raw.genre ?? ""}`),
+    india_team: /印度|india|indian/i.test(`${country}\n${context.text}\n${context.ocrText ?? ""}`),
+    publisher_status: valueOrNull(raw.publisher_status) ?? (firstValue(details?.publishers) ? `Steam 显示发行商：${firstValue(details?.publishers)}` : "AI 视觉识别录入，待确认发行结构"),
+    publisher_name: valueOrNull(raw.publisher_name) ?? firstValue(details?.publishers),
+    china_capability_occupied: /中国能力已占位|国内发行已定|腾讯|网易|心动|bilibili|哔哩哔哩/i.test(`${context.text}\n${context.ocrText ?? ""}\n${raw.publisher_status ?? ""}`),
+    traction_summary: valueOrNull(raw.traction_summary),
+    public_signals: valueOrNull(raw.public_signals) ?? valueOrNull(context.searchSummary),
+    contact: contacts[0]?.value ?? null,
+    contact_methods: contacts,
+    links,
+    exposure_trail: valueOrNull(raw.exposure_trail) ?? "AI 视觉识别截图 + web_search 补全",
+    bilibili_fit: valueOrNull(raw.bilibili_fit) ?? inferBilibiliFit(`${context.text}\n${context.ocrText ?? ""}`),
+    amplification: valueOrNull(raw.amplification) ?? "AI 视觉识别录入，待评估内容放大方式",
+    risks: valueOrNull(raw.risks),
+    verdict: valueOrNull(raw.verdict) ?? "AI 视觉识别录入，待人工复核",
+    next_action: valueOrNull(raw.next_action) ?? "打开链接复核画面、联系方式和发行结构",
+    priority_reason: valueOrNull(raw.priority_reason) ?? inferPriorityReason(`${context.text}\n${context.ocrText ?? ""}`, normalizeRegionPriority(raw.region_priority, context.text, country)),
+    rule_fit: valueOrNull(raw.rule_fit) ?? (steamAppId ? inferRuleFit(`${context.text}\n${context.ocrText ?? ""}`, country, steamAppId) : "AI 已识别截图线索，待补 Steam/SteamDB 主体链接"),
+    first_seen: context.today,
+    notes: assistantNotes(`${context.text}\n\nOCR：${context.ocrText ?? ""}\n\nAI 检索：${context.searchSummary ?? ""}\n\nAI 备注：${raw.notes ?? ""}`.trim(), context.attachments)
+  };
 }
 
 function buildSteamLead({ steamAppId, details, text, links, contacts, attachments, today }: {
@@ -224,6 +487,19 @@ function extractContactMethods(text: string): Lead["contact_methods"] {
   return dedupeContacts(methods.filter((method) => !isGameLink(method.value)));
 }
 
+function normalizeAiContacts(values: AiContactMethod[], fallbackContact: string | null | undefined): Lead["contact_methods"] {
+  const methods: Lead["contact_methods"] = [];
+  for (const value of values) {
+    const contactValue = valueOrNull(value.value);
+    if (!contactValue || isGameLink(contactValue)) continue;
+    methods.push({ type: normalizeContactType(value.type, contactValue), value: contactValue, note: valueOrNull(value.note) });
+  }
+
+  const fallback = valueOrNull(fallbackContact);
+  if (fallback && !isGameLink(fallback)) methods.push({ type: normalizeContactType(null, fallback), value: fallback, note: "AI fallback contact" });
+  return dedupeContacts(methods);
+}
+
 function ensureContactMethods(contacts: Lead["contact_methods"], steamAppId: string | null, links: string[]) {
   const methods = [...contacts];
   if (!methods.length && steamAppId) {
@@ -266,18 +542,26 @@ function inferCity(text: string) {
   return cities.find((city) => text.includes(city)) ?? null;
 }
 
-function inferRegionPriority(text: string, country: string): NonNullable<AssistantLead["region_priority"]> {
+function inferRegionPriority(text: string, country: string): AssistantRegionPriority {
   if (country === "中国") return "国内优先";
   if (/wishlist|愿望单|销量|在线|峰值|viral|爆火|强数据/i.test(text)) return "海外-强数据";
   if (/高视觉|美术|画面|trailer|visual|art|cute|cozy/i.test(text)) return "海外-高视觉";
   return "其他";
 }
 
-function inferPriority(text: string, regionPriority: NonNullable<AssistantLead["region_priority"]>): NonNullable<AssistantLead["priority"]> {
+function normalizeRegionPriority(value: string | null | undefined, text: string, country: string): AssistantRegionPriority {
+  return regionPriorityValues.includes(value as AssistantRegionPriority) ? value as AssistantRegionPriority : inferRegionPriority(text, country);
+}
+
+function inferPriority(text: string, regionPriority: AssistantRegionPriority): AssistantPriority {
   if (/P0|马上|高优|强推|必须看|爆/i.test(text)) return "P0";
   if (regionPriority === "国内优先" || regionPriority === "海外-强数据") return "P1";
   if (regionPriority === "海外-高视觉") return "P2";
   return "P2";
+}
+
+function normalizePriority(value: string | null | undefined, regionPriority: AssistantRegionPriority): AssistantPriority {
+  return priorityValues.includes(value as AssistantPriority) ? value as AssistantPriority : inferPriority("", regionPriority);
 }
 
 function inferBilibiliFit(text: string) {
@@ -285,7 +569,7 @@ function inferBilibiliFit(text: string) {
   return "待评估：线索助手录入，需要补充 B站适配判断";
 }
 
-function inferPriorityReason(text: string, regionPriority: NonNullable<AssistantLead["region_priority"]>) {
+function inferPriorityReason(text: string, regionPriority: AssistantRegionPriority) {
   if (/wishlist|愿望单|销量|在线|峰值|爆火|viral/i.test(text)) return "文本中出现公开强数据或热度异动信号";
   if (regionPriority === "国内优先") return "国内项目优先，值得进入观察池复核";
   if (regionPriority === "海外-高视觉") return "海外项目疑似具备高视觉/内容传播潜力";
@@ -305,13 +589,70 @@ function assistantNotes(text: string, attachments: AttachmentMeta[]) {
   const body = text.trim() || "仅提交截图，待补充文字线索";
   const attachmentText = attachments.length
     ? `\n截图：${attachments.map((item, index) => {
-      const source = item.source === "paste" ? "粘贴" : "上传";
+      const source = item.source === "paste" ? "粘贴" : item.source === "camera" ? "拍照" : "上传";
       const name = item.name || `截图 ${index + 1}`;
       const size = typeof item.size === "number" ? formatBytes(item.size) : null;
       return [source, name, item.type, size].filter(Boolean).join(" / ");
     }).join("；")}`
     : "";
   return `线索助手输入：\n${body}${attachmentText}`.trim();
+}
+
+function openAiConfig(env: PagesContext["env"]) {
+  const openAiEnv = env as PagesContext["env"] & { OPENAI_API_KEY?: string; OPENAI_VISION_MODEL?: string };
+  return {
+    apiKey: openAiEnv.OPENAI_API_KEY,
+    model: openAiEnv.OPENAI_VISION_MODEL ?? defaultVisionModel
+  };
+}
+
+function responseOutputText(payload: unknown) {
+  const record = payload as Record<string, unknown>;
+  if (typeof record.output_text === "string") return record.output_text;
+
+  const chunks: string[] = [];
+  const output = Array.isArray(record.output) ? record.output : [];
+  for (const item of output) {
+    if (!item || typeof item !== "object") continue;
+    const itemRecord = item as Record<string, unknown>;
+    const content = Array.isArray(itemRecord.content) ? itemRecord.content : [];
+    for (const part of content) {
+      if (!part || typeof part !== "object") continue;
+      const partRecord = part as Record<string, unknown>;
+      if (typeof partRecord.text === "string") chunks.push(partRecord.text);
+      if (typeof partRecord.output_text === "string") chunks.push(partRecord.output_text);
+    }
+  }
+  return chunks.join("\n");
+}
+
+function hasImageDataUrl(item: AttachmentMeta) {
+  return typeof item.data_url === "string" && /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(item.data_url);
+}
+
+function valueOrNull(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function steamAppIdFromLinks(links: string[]) {
+  for (const link of links) {
+    const match = link.match(/(?:store\.steampowered\.com|steamdb\.info)\/app\/(\d+)/i);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+}
+
+function normalizeContactType(type: string | null | undefined, value: string): Lead["contact_methods"][number]["type"] {
+  if (contactTypes.includes(type as Lead["contact_methods"][number]["type"])) return type as Lead["contact_methods"][number]["type"];
+  const lower = value.toLowerCase();
+  if (lower.includes("@")) return "Email";
+  if (/\+?\d[\d\s-]{6,}/.test(value)) return "电话";
+  if (lower.includes("steam")) return "Steam";
+  if (lower.includes("discord")) return "Discord";
+  if (lower.includes("bilibili") || lower.includes("b23.tv")) return "B站";
+  if (lower.includes("twitter") || lower.includes("x.com")) return "X/Twitter";
+  if (lower.startsWith("http")) return "官网";
+  return "其他";
 }
 
 function uniqueLinks(values: (string | null | undefined)[]) {
