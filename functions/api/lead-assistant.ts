@@ -3,6 +3,9 @@ import { json, mergeIncomingLeads, requireAccess, todayInShanghai, type Lead, ty
 type AttachmentMeta = {
   name?: string;
   type?: string;
+  size?: number;
+  source?: "paste" | "upload" | string;
+  data_url?: string;
 };
 
 type LeadAssistantPayload = {
@@ -33,10 +36,10 @@ export const onRequestPost = async ({ request, env }: PagesContext) => {
   try {
     const payload = (await request.json()) as LeadAssistantPayload;
     const text = normalizeInputText(payload);
-    const attachments = Array.isArray(payload.attachments) ? payload.attachments.filter((item) => item?.name || item?.type) : [];
+    const attachments = Array.isArray(payload.attachments) ? payload.attachments.filter((item) => item?.name || item?.type || item?.data_url) : [];
 
     if (!text && !attachments.length) {
-      return json({ error: "请输入关键词、线索说明、Steam 链接或截图备注" }, 400);
+      return json({ error: "请输入关键词、线索说明、Steam 链接，或直接粘贴截图" }, 400);
     }
 
     const steamAppIds = extractSteamAppIds(text);
@@ -56,7 +59,7 @@ export const onRequestPost = async ({ request, env }: PagesContext) => {
       leads.push(buildSteamLead({ steamAppId, details, text, links, contacts, attachments, today }));
     }
 
-    if (!leads.length && text) {
+    if (!leads.length && (text || attachments.length)) {
       leads.push(buildManualLead({ text, links, contacts, attachments, today }));
     }
 
@@ -99,6 +102,8 @@ function buildSteamLead({ steamAppId, details, text, links, contacts, attachment
   const regionPriority = inferRegionPriority(text, country);
   const storeLink = `https://store.steampowered.com/app/${steamAppId}/`;
   const steamDbLink = `https://steamdb.info/app/${steamAppId}/`;
+  const leadLinks = uniqueLinks([storeLink, steamDbLink, details?.website, ...links]);
+  const contactMethods = ensureContactMethods(contacts, steamAppId, leadLinks);
 
   return {
     project,
@@ -121,14 +126,15 @@ function buildSteamLead({ steamAppId, details, text, links, contacts, attachment
     publisher_status: publisherName ? `Steam 显示发行商：${publisherName}` : "待确认发行结构",
     publisher_name: publisherName,
     china_capability_occupied: /中国能力已占位|国内发行已定|腾讯|网易|心动|bilibili|哔哩哔哩/i.test(text),
-    contact_methods: contacts,
-    links: uniqueLinks([storeLink, steamDbLink, details?.website, ...links]),
+    contact: contactMethods[0]?.value ?? null,
+    contact_methods: contactMethods,
+    links: leadLinks,
     bilibili_fit: inferBilibiliFit(text),
     amplification: "线索助手录入，待评估内容放大方式",
     priority_reason: inferPriorityReason(text, regionPriority),
     rule_fit: inferRuleFit(text, country, steamAppId),
     verdict: "线索助手录入，待人工复核",
-    next_action: contacts.length ? "检查联系人并判断是否推进" : "补联系人并复核 Steam 页面",
+    next_action: contactMethods.length ? "检查联系人并判断是否推进" : "补联系人并复核 Steam 页面",
     first_seen: today,
     notes: assistantNotes(text, attachments)
   };
@@ -145,6 +151,7 @@ function buildManualLead({ text, links, contacts, attachments, today }: {
   const country = inferCountry(text);
   const regionPriority = inferRegionPriority(text, country);
   const hasGameLink = links.some(isGameLink);
+  const contactMethods = ensureContactMethods(contacts, null, links);
 
   return {
     project,
@@ -157,7 +164,8 @@ function buildManualLead({ text, links, contacts, attachments, today }: {
     review_status: "未处理",
     progress: hasGameLink ? "线索助手录入，待复核页面信息" : "线索助手录入，待补 Steam/官网信息",
     publisher_status: "待确认发行结构",
-    contact_methods: contacts,
+    contact: contactMethods[0]?.value ?? null,
+    contact_methods: contactMethods,
     links,
     bilibili_fit: inferBilibiliFit(text),
     amplification: "线索助手录入，待评估内容放大方式",
@@ -214,6 +222,24 @@ function extractContactMethods(text: string): Lead["contact_methods"] {
   }
 
   return dedupeContacts(methods.filter((method) => !isGameLink(method.value)));
+}
+
+function ensureContactMethods(contacts: Lead["contact_methods"], steamAppId: string | null, links: string[]) {
+  const methods = [...contacts];
+  if (!methods.length && steamAppId) {
+    methods.push({
+      type: "Steam",
+      value: `https://steamcommunity.com/app/${steamAppId}/discussions/`,
+      note: "线索助手自动补充的 Steam 社区联系入口"
+    });
+  }
+
+  if (!methods.length) {
+    const website = links.find((link) => isHttpLink(link) && !isGameLink(link));
+    if (website) methods.push({ type: "官网", value: website, note: "线索助手从输入链接中提取" });
+  }
+
+  return dedupeContacts(methods.filter((method) => method.value && !isGameLink(method.value)));
 }
 
 function inferProjectName(text: string) {
@@ -276,10 +302,16 @@ function inferRuleFit(text: string, country: string, steamAppId: string) {
 }
 
 function assistantNotes(text: string, attachments: AttachmentMeta[]) {
+  const body = text.trim() || "仅提交截图，待补充文字线索";
   const attachmentText = attachments.length
-    ? `\n附件备注：${attachments.map((item) => [item.name, item.type].filter(Boolean).join(" / ")).join("；")}`
+    ? `\n截图：${attachments.map((item, index) => {
+      const source = item.source === "paste" ? "粘贴" : "上传";
+      const name = item.name || `截图 ${index + 1}`;
+      const size = typeof item.size === "number" ? formatBytes(item.size) : null;
+      return [source, name, item.type, size].filter(Boolean).join(" / ");
+    }).join("；")}`
     : "";
-  return `线索助手输入：\n${text}${attachmentText}`.trim();
+  return `线索助手输入：\n${body}${attachmentText}`.trim();
 }
 
 function uniqueLinks(values: (string | null | undefined)[]) {
@@ -303,6 +335,16 @@ function firstValue(values: string[] | undefined) {
   return values?.find((value) => value.trim()) ?? null;
 }
 
+function isHttpLink(value: string) {
+  return /^https?:\/\//i.test(value);
+}
+
 function isGameLink(value: string) {
   return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(value);
+}
+
+function formatBytes(value: number) {
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
+  return `${(value / 1024 / 1024).toFixed(1)} MB`;
 }
