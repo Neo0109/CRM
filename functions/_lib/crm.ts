@@ -1,3 +1,5 @@
+import { readCrmSettings } from "./settings";
+
 type Bucket = "推进池" | "跟进中" | "观察池" | "淘汰池";
 type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
@@ -24,6 +26,9 @@ export type Env = {
   SUPABASE_SECRET_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   CRM_ACCESS_TOKEN?: string;
+  EXCEL_EXPORT_PASSWORD?: string;
+  RESEND_API_KEY?: string;
+  CRM_FROM_EMAIL?: string;
 };
 
 export type PagesContext = {
@@ -86,10 +91,20 @@ type DailyReport = {
 };
 
 export async function requireAccess(request: Request, env: Env) {
-  if (!env.CRM_ACCESS_TOKEN) return null;
   const headerToken = request.headers.get("x-crm-token");
   const cookieToken = readCookie(request.headers.get("cookie"), "crm_access_token");
-  if (headerToken === env.CRM_ACCESS_TOKEN || cookieToken === env.CRM_ACCESS_TOKEN) return null;
+  const candidateTokens = [env.CRM_ACCESS_TOKEN];
+
+  try {
+    const settings = await readCrmSettings(env);
+    if (settings.login_password) candidateTokens.push(settings.login_password);
+  } catch {
+    // Keep the env token usable even if settings storage is unavailable.
+  }
+
+  const validTokens = candidateTokens.filter(Boolean);
+  if (!validTokens.length) return null;
+  if (validTokens.includes(headerToken ?? "") || validTokens.includes(cookieToken ?? "")) return null;
   return json({ error: "CRM access token required" }, 401);
 }
 
