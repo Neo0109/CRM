@@ -104,7 +104,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, storage: supabase ? "supabase" : "json" });
+  res.json({ ok: true, storage: supabase ? "supabase" : "json", version: "v1.2.6-ui-refresh" });
 });
 
 app.get("/api/leads", async (_req, res, next) => {

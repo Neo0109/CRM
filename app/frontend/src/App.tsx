@@ -4,7 +4,7 @@ import { excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToke
 import { AssistantPage } from "./AssistantPage";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
-import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, Stage, SteamTrendReport } from "./types";
+import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
 type View = "leads" | "assistant" | "radar" | "steam" | "settings";
 type Filters = {
@@ -15,10 +15,12 @@ type Filters = {
   owner: string;
   city: string;
   releaseWindow: string;
+  reviewStatus: "全部" | ReviewStatus;
+  missingLinks: boolean;
 };
 
-const version = "v1.2.1";
-const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "" };
+const version = "v1.2.6";
+const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
 const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", "negotiating", "won", "rejected"];
@@ -72,10 +74,12 @@ export default function App() {
     const ownerMatch = !filters.owner || (lead.owner ?? "").toLowerCase().includes(filters.owner.toLowerCase());
     const cityMatch = !filters.city || [lead.city, lead.country].filter(Boolean).join(" ").toLowerCase().includes(filters.city.toLowerCase());
     const releaseMatch = !filters.releaseWindow || (lead.release_window ?? "").toLowerCase().includes(filters.releaseWindow.toLowerCase());
-    return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch;
+    const reviewMatch = filters.reviewStatus === "全部" || lead.review_status === filters.reviewStatus;
+    const missingLinkMatch = !filters.missingLinks || !gameLinks(lead.links).length;
+    return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && missingLinkMatch;
   }), [filters, leads]);
 
-  const selectedLead = useMemo(() => leads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, leads, selectedId]);
+  const selectedLead = useMemo(() => filteredLeads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, selectedId]);
 
   async function reload(syncDailyReport = false) {
     try {
@@ -151,9 +155,11 @@ export default function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
+        <div className="hero-copy">
+          <span className="brand-mark">B</span>
           <p className="eyebrow">B站游戏发行 BD · {version}</p>
           <h1>Sourcing CRM</h1>
+          <p className="hero-subtitle">把 Steam 信号、B站内容适配和发行跟进收束到一个 review 工作台。</p>
         </div>
         <div className="actions">
           <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
@@ -198,18 +204,23 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
   loading: boolean;
   filteredLeads: Lead[];
   selectedLead: Lead | null;
-  setSelectedId: (id: string) => void;
+  setSelectedId: (id: string | null) => void;
   handleLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
   moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
 }) {
+  function applyMetricFilter(patch: Partial<Filters>) {
+    setFilters({ ...emptyFilters, ...patch });
+    setSelectedId(null);
+  }
+
   return <>
     <section className="metric-strip">
-      <Metric label="未处理" value={stats.unread} tone="purple" />
-      <Metric label="推进池" value={stats.push} tone="green" />
-      <Metric label="跟进中" value={stats.follow} tone="cyan" />
-      <Metric label="观察池" value={stats.watch} tone="amber" />
-      <Metric label="淘汰池" value={stats.drop} tone="red" />
-      <Metric label="缺链接" value={stats.missingLinks} tone="blue" />
+      <Metric label="未处理" value={stats.unread} tone="purple" active={filters.reviewStatus === "未处理"} onClick={() => applyMetricFilter({ reviewStatus: "未处理" })} />
+      <Metric label="推进池" value={stats.push} tone="green" active={filters.bucket === "推进池"} onClick={() => applyMetricFilter({ bucket: "推进池" })} />
+      <Metric label="跟进中" value={stats.follow} tone="cyan" active={filters.bucket === "跟进中"} onClick={() => applyMetricFilter({ bucket: "跟进中" })} />
+      <Metric label="观察池" value={stats.watch} tone="amber" active={filters.bucket === "观察池"} onClick={() => applyMetricFilter({ bucket: "观察池" })} />
+      <Metric label="淘汰池" value={stats.drop} tone="red" active={filters.bucket === "淘汰池"} onClick={() => applyMetricFilter({ bucket: "淘汰池" })} />
+      <Metric label="缺链接" value={stats.missingLinks} tone="blue" active={filters.missingLinks} onClick={() => applyMetricFilter({ missingLinks: true })} />
     </section>
 
     <section className="filters">
@@ -220,7 +231,7 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
       <label><span>城市/国家</span><input value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} /></label>
       <label><span>Owner</span><input value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} /></label>
       <label><span>窗口</span><input value={filters.releaseWindow} onChange={(event) => setFilters({ ...filters, releaseWindow: event.target.value })} /></label>
-      <button className="ghost-button" onClick={() => setFilters(emptyFilters)}>清空</button>
+      <button className="ghost-button" onClick={() => { setFilters(emptyFilters); setSelectedId(null); }}>清空</button>
     </section>
 
     <section className="workspace">
@@ -249,8 +260,8 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
   </>;
 }
 
-function Metric({ label, value, tone }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple" }) {
-  return <div className={`metric metric-${tone}`}><span>{label}</span><strong>{value}</strong></div>;
+function Metric({ label, value, tone, active, onClick }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple"; active?: boolean; onClick?: () => void }) {
+  return <button className={`metric metric-${tone} ${active ? "active" : ""}`} onClick={onClick} type="button" aria-pressed={active}><span>{label}</span><strong>{value}</strong></button>;
 }
 
 function Select<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: T[]; onChange: (value: T) => void }) {
