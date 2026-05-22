@@ -1,4 +1,4 @@
-import { Bot, Clipboard, FileImage, Sparkles, Trash2, XCircle } from "lucide-react";
+import { Bot, Camera, Clipboard, FileImage, Sparkles, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, ClipboardEvent } from "react";
 import { runLeadAssistant } from "./api";
@@ -16,6 +16,8 @@ type AssistantPageProps = {
 
 const maxAttachments = 6;
 const maxAttachmentBytes = 8 * 1024 * 1024;
+
+type AttachmentSource = "paste" | "upload" | "camera";
 
 export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   const [text, setText] = useState("");
@@ -47,7 +49,7 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
     }
   }
 
-  async function addImageFiles(files: File[], source: "paste" | "upload") {
+  async function addImageFiles(files: File[], source: AttachmentSource) {
     const imageFiles = files.filter((file) => file.type.startsWith("image/"));
     if (!imageFiles.length) {
       setError("没有识别到图片");
@@ -85,10 +87,10 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
     void addImageFiles(imageFiles, "paste");
   }
 
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>, source: "upload" | "camera") {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
-    void addImageFiles(files, "upload");
+    void addImageFiles(files, source);
   }
 
   function removeAttachment(id: string) {
@@ -98,7 +100,7 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   return <section className="assistant-shell">
     <div className="assistant-head">
       <div><p className="eyebrow">Lead Assistant</p><h2>线索助手</h2></div>
-      <button className="primary-button" onClick={() => void handleSubmit()} disabled={loading}><Sparkles size={16} />{loading ? "处理中" : "写入 CRM"}</button>
+      <button className="primary-button" onClick={() => void handleSubmit()} disabled={loading}><Sparkles size={16} />{loading ? "识别并写入中" : "AI 识别并写入 CRM"}</button>
     </div>
 
     {error && <div className="notice error inline-notice">{error}</div>}
@@ -115,18 +117,25 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
           <span className="paste-hint">Ctrl+V</span>
         </div>
 
-        <label className="file-drop">
-          <FileImage size={18} />
-          <span>选择图片</span>
-          <input type="file" accept="image/*" multiple onChange={handleFileChange} />
-        </label>
+        <div className="assistant-upload-row">
+          <label className="file-drop">
+            <FileImage size={18} />
+            <span>从相册选择</span>
+            <input type="file" accept="image/*" multiple onChange={(event) => handleFileChange(event, "upload")} />
+          </label>
+          <label className="file-drop">
+            <Camera size={18} />
+            <span>拍照上传</span>
+            <input type="file" accept="image/*" capture="environment" onChange={(event) => handleFileChange(event, "camera")} />
+          </label>
+        </div>
 
         {attachments.length > 0 && <div className="screenshot-grid">{attachments.map((item) => <article className="screenshot-card" key={item.id}>
           <img src={item.data_url} alt={item.name} />
           <div className="screenshot-meta">
             <div>
               <strong>{item.name}</strong>
-              <small>{item.source === "paste" ? "粘贴" : "上传"} / {formatBytes(item.size)}</small>
+              <small>{sourceLabel(item.source)} / {formatBytes(item.size)}</small>
             </div>
             <button className="icon-button danger" onClick={() => removeAttachment(item.id)} aria-label={`删除 ${item.name}`}><Trash2 size={14} /></button>
           </div>
@@ -152,7 +161,7 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   </section>;
 }
 
-function fileToAttachment(file: File, source: "paste" | "upload", index: number): Promise<AssistantAttachment> {
+function fileToAttachment(file: File, source: AttachmentSource, index: number): Promise<AssistantAttachment> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -174,6 +183,12 @@ function fileToAttachment(file: File, source: "paste" | "upload", index: number)
     reader.onerror = () => reject(new Error("截图读取失败"));
     reader.readAsDataURL(file);
   });
+}
+
+function sourceLabel(source: AttachmentSource) {
+  if (source === "paste") return "粘贴";
+  if (source === "camera") return "拍照";
+  return "相册";
 }
 
 function formatBytes(value: number) {
