@@ -57,10 +57,11 @@ h3 { color: #0f172a; font-size: 15px; }
 .workspace { align-items: stretch; display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) minmax(430px, 520px); }
 .lead-table-wrap, .detail-panel, .radar-shell { background: #fff; border: 1px solid #d9e2ec; border-radius: 8px; min-height: 620px; }
 .lead-table-wrap { overflow: auto; }
-.lead-table { border-collapse: collapse; min-width: 1360px; width: 100%; }
+.lead-table { border-collapse: collapse; min-width: 1280px; width: 100%; }
 .lead-table th, .lead-table td { border-bottom: 1px solid #e2e8f0; padding: 12px; text-align: left; vertical-align: top; }
 .lead-table th { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 900; position: sticky; top: 0; z-index: 1; }
 .lead-table td { color: #334155; font-size: 13px; line-height: 1.45; max-width: 280px; }
+.lead-table th:nth-child(6), .lead-table td:nth-child(6) { display: none; }
 .lead-table tr { cursor: pointer; }
 .lead-table tbody tr:hover, .selected-row { background: #f0fdfa; }
 .lead-table tbody tr.unread-row { background: #faf5ff; }
