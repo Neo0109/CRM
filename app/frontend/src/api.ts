@@ -1,4 +1,4 @@
-import type { ImportResult, Lead, RadarReport } from "./types";
+import type { CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 
@@ -38,6 +38,33 @@ export function fetchRadar(date?: string) {
   return request<RadarReport>(`/api/radar${query}`);
 }
 
+export function fetchSteamTrends(date?: string) {
+  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+  return request<SteamTrendReport>(`/api/steam-trends${query}`);
+}
+
+export function fetchSettings() {
+  return request<CrmSettings>("/api/settings");
+}
+
+export function saveSettings(patch: SettingsPatch) {
+  return request<CrmSettings>("/api/settings", {
+    method: "PATCH",
+    body: JSON.stringify(patch)
+  });
+}
+
+export function sendSettingsVerification() {
+  return request<SettingsVerification>("/api/settings-verification", { method: "POST" });
+}
+
+export function runLeadAssistant(payload: LeadAssistantPayload) {
+  return request<LeadAssistantResult>("/api/lead-assistant", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
 export function syncLatestReport(date?: string) {
   const query = date ? `?date=${encodeURIComponent(date)}` : "";
   return request<SyncResult>(`/api/reports/sync${query}`, { method: "POST" });
@@ -48,6 +75,10 @@ export function updateLead(id: string, patch: Partial<Lead>) {
     method: "PATCH",
     body: JSON.stringify(patch)
   });
+}
+
+export function excelExportUrl(password: string) {
+  return `/api/export/excel?password=${encodeURIComponent(password)}`;
 }
 
 export function getAccessToken() {

@@ -1,0 +1,149 @@
+.assistant-shell {
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1680px;
+  min-height: 620px;
+  padding: 18px;
+}
+
+.assistant-head {
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+.assistant-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+}
+
+.assistant-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.input-card textarea {
+  min-height: 280px;
+}
+
+.file-drop {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 14px;
+}
+
+.file-drop input {
+  display: none;
+}
+
+.attachment-list,
+.assistant-skipped {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attachment-list span,
+.assistant-skipped span {
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #475569;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 5px;
+  padding: 5px 9px;
+}
+
+.assistant-result-head {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.assistant-result-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.assistant-result-metrics span {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 10px;
+}
+
+.assistant-result-metrics strong {
+  color: #0f172a;
+  display: block;
+  font-size: 22px;
+  margin-top: 2px;
+}
+
+.assistant-lead-list {
+  display: grid;
+  gap: 8px;
+}
+
+.assistant-lead {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+}
+
+.assistant-lead strong {
+  color: #0f172a;
+}
+
+.assistant-lead small {
+  color: #64748b;
+  line-height: 1.45;
+}
+
+@media (max-width: 1180px) {
+  .assistant-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .assistant-shell {
+    padding: 14px;
+  }
+
+  .assistant-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .assistant-result-metrics {
+    grid-template-columns: 1fr;
+  }
+}

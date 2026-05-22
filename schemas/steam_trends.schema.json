@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Steam Trends Report",
+  "type": "object",
+  "required": ["report_date", "summary", "items"],
+  "properties": {
+    "report_date": { "type": "string", "format": "date" },
+    "summary": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "signal", "source", "links", "bilibili_fit", "auto_import", "captured_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "steam_app_id": { "type": ["string", "null"] },
+          "rank_bucket": { "type": ["string", "null"] },
+          "signal": { "type": "string" },
+          "source": { "type": "string" },
+          "links": { "type": "array", "items": { "type": "string" } },
+          "bilibili_fit": { "type": "string" },
+          "reason": { "type": ["string", "null"] },
+          "auto_import": { "type": "boolean" },
+          "captured_at": { "type": "string" }
+        }
+      }
+    },
+    "crm_candidates": {
+      "type": "array",
+      "items": { "$ref": "./sourcing_lead.schema.json" }
+    }
+  }
+}
