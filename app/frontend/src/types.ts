@@ -69,7 +69,7 @@ export type LeadAssistantAttachment = {
   name?: string;
   type?: string;
   size?: number;
-  source?: "paste" | "upload";
+  source?: "paste" | "upload" | "camera";
   data_url?: string;
 };
 
