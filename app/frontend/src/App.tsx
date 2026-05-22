@@ -17,7 +17,7 @@ type Filters = {
   releaseWindow: string;
 };
 
-const version = "v1.2";
+const version = "v1.2.1";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "" };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
@@ -27,7 +27,7 @@ const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
 const regionValues: Region[] = ["中国", "海外"];
 const regionOptions: ("全部" | Region)[] = ["全部", ...regionValues];
 const regionPriorityValues: RegionPriority[] = ["国内优先", "海外-高视觉", "海外-强数据", "其他"];
-const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Discord", "B站", "X/Twitter", "其他"];
+const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 const radarCategories: RadarCategory[] = ["行业新闻", "发行八卦", "AI 游戏", "新梗热点", "B站趋势"];
 
 export default function App() {
@@ -329,8 +329,8 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
       <h3>联系方式</h3>
       <div className="contact-editor">
         {draft.contact_methods.map((method, index) => <div className="contact-row" key={`${method.type}-${index}`}>
-          <select value={method.type === "Steam" ? "其他" : method.type} onChange={(event) => updateContact(index, { type: event.target.value as ContactType })}>{contactTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select>
-          <input value={method.value} onChange={(event) => updateContact(index, { value: event.target.value })} placeholder="微信 / QQ / 邮箱 / 电话" />
+          <select value={method.type} onChange={(event) => updateContact(index, { type: event.target.value as ContactType })}>{contactTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select>
+          <input value={method.value} onChange={(event) => updateContact(index, { value: event.target.value })} placeholder="微信 / QQ / 邮箱 / 电话 / 官网 / Steam 社区" />
           <input value={method.note ?? ""} onChange={(event) => updateContact(index, { note: event.target.value || null })} placeholder="备注" />
           <button className="icon-button danger" onClick={() => removeContact(index)}><Trash2 size={15} /></button>
         </div>)}
@@ -445,7 +445,7 @@ function bucketClass(bucket: Bucket) {
 }
 
 function visibleContacts(contacts: ContactMethod[]) {
-  return contacts.filter((method) => method.type !== "Steam" && !isGameLink(method.value));
+  return contacts.filter((method) => !isGameLink(method.value));
 }
 
 function gameLinks(links: string[]) {
