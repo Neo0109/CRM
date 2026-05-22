@@ -1,8 +1,9 @@
-type Bucket = "推进池" | "观察池" | "淘汰池";
+type Bucket = "推进池" | "跟进中" | "观察池" | "淘汰池";
 type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
 type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
 type Region = "中国" | "海外";
+type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";
 type ContactType = "微信/QQ" | "Email" | "电话" | "官网" | "Steam" | "Discord" | "B站" | "X/Twitter" | "其他";
 
 type ContactMethod = {
@@ -14,6 +15,8 @@ type ContactMethod = {
 const reportRepoFullName = "Neo0109/CRM";
 const reportBranch = "main";
 const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
+const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 
 export type Env = {
@@ -42,6 +45,8 @@ export type Lead = {
   bucket: Bucket;
   stage: Stage;
   priority: Priority;
+  review_status: ReviewStatus;
+  reviewed_at: string | null;
   priority_reason: string | null;
   rule_fit: string | null;
   genre: string | null;
@@ -89,9 +94,9 @@ export async function requireAccess(request: Request, env: Env) {
 }
 
 export async function readLeads(env: Env): Promise<Lead[]> {
-  const response = await supabaseFetch(env, "/rest/v1/crm_leads?select=data&order=updated_at.desc");
-  const rows = (await response.json()) as { data: Lead }[];
-  return rows.map((row) => normalizeLead(row.data));
+  const response = await supabaseFetch(env, "/rest/v1/crm_leads?select=id,data&order=updated_at.desc");
+  const rows = (await response.json()) as { id: string; data: Lead }[];
+  return rows.filter((row) => !row.id.startsWith("__crm_")).map((row) => normalizeLead(row.data));
 }
 
 export async function writeLeads(env: Env, leads: Lead[]) {
@@ -132,8 +137,11 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   }
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
-    const bucketOrder: Record<Bucket, number> = { "推进池": 0, "观察池": 1, "淘汰池": 2 };
-    return bucketOrder[a.bucket] - bucketOrder[b.bucket] || priorityOrder(a.priority) - priorityOrder(b.priority) || a.project.localeCompare(b.project, "zh-CN");
+    const bucketOrder: Record<Bucket, number> = { "推进池": 0, "跟进中": 1, "观察池": 2, "淘汰池": 3 };
+    return reviewOrder(a.review_status) - reviewOrder(b.review_status)
+      || bucketOrder[a.bucket] - bucketOrder[b.bucket]
+      || priorityOrder(a.priority) - priorityOrder(b.priority)
+      || a.project.localeCompare(b.project, "zh-CN");
   });
 
   await writeLeads(env, nextLeads);
@@ -191,7 +199,7 @@ export function isDailyReport(value: unknown): value is DailyReport {
 }
 
 export function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "notes", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "notes", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;
@@ -222,11 +230,10 @@ function normalizeLead(raw: Partial<Lead>): Lead {
   const firstSeen = raw.first_seen ?? new Date().toISOString().slice(0, 10);
   const country = raw.country ?? "未知";
   const region = raw.region ?? inferRegion(country);
+  const bucket = normalizeBucket(raw.bucket);
   const steamAppId = valueOrNull(raw.steam_app_id);
   const links = normalizeLinks(raw.links, steamAppId);
   const contactMethods = normalizeContacts(raw.contact_methods, raw.contact);
-  const { methods: sanitizedContacts, movedLinks } = splitContactLinks(contactMethods);
-  const mergedLinks = mergeStringArrays(links, movedLinks);
   return {
     id: raw.id ?? makeLeadId(project, steamAppId, firstSeen),
     project,
@@ -237,9 +244,11 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     region,
     city: valueOrNull(raw.city),
     region_priority: raw.region_priority ?? inferRegionPriority(country, raw.public_signals),
-    bucket: raw.bucket ?? "观察池",
-    stage: raw.stage ?? stageFromBucket(raw.bucket),
-    priority: raw.priority ?? priorityFromBucket(raw.bucket),
+    bucket,
+    stage: raw.stage ?? stageFromBucket(bucket),
+    priority: raw.priority ?? priorityFromBucket(bucket),
+    review_status: normalizeReviewStatus(raw.review_status, bucket),
+    reviewed_at: valueOrNull(raw.reviewed_at),
     priority_reason: valueOrNull(raw.priority_reason) ?? inferPriorityReason(raw),
     rule_fit: valueOrNull(raw.rule_fit) ?? inferRuleFit(raw, country, links),
     genre: valueOrNull(raw.genre),
@@ -255,8 +264,8 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     traction_summary: valueOrNull(raw.traction_summary),
     public_signals: valueOrNull(raw.public_signals),
     contact: valueOrNull(raw.contact),
-    contact_methods: sanitizedContacts,
-    links: mergedLinks,
+    contact_methods: contactMethods,
+    links,
     exposure_trail: valueOrNull(raw.exposure_trail),
     bilibili_fit: raw.bilibili_fit ?? "待评估",
     amplification: raw.amplification ?? "待评估",
@@ -278,6 +287,8 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     first_seen: current.first_seen,
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
+    review_status: current.review_status,
+    reviewed_at: current.reviewed_at,
     contact_methods: mergeContactMethods(current.contact_methods, incoming.contact_methods),
     links: mergeStringArrays(current.links, incoming.links),
     notes: mergeNotes(current.notes, incoming.notes)
@@ -310,7 +321,7 @@ function inferRegion(country: string | undefined): Region {
 
 function inferPriorityReason(raw: Partial<Lead>) {
   if (raw.priority_reason) return raw.priority_reason;
-  if (raw.bucket === "推进池") return raw.traction_summary ?? raw.verdict ?? "进入推进池，需优先 review";
+  if (raw.bucket === "推进池" || raw.bucket === "跟进中") return raw.traction_summary ?? raw.verdict ?? "进入重点处理队列，需要优先 review";
   if (raw.bucket === "淘汰池") return raw.risks ?? raw.verdict ?? "触发淘汰规则";
   return raw.traction_summary ?? raw.public_signals ?? "等待更强公开信号";
 }
@@ -328,12 +339,18 @@ function inferRuleFit(raw: Partial<Lead>, country: string, links: string[]) {
 }
 
 function normalizeLinks(value: unknown, steamAppId: string | null) {
-  const links = Array.isArray(value)
+  const sourceLinks = Array.isArray(value)
     ? value.filter((link): link is string => typeof link === "string").map((link) => link.trim()).filter(Boolean)
     : [];
+  const links = sourceLinks.filter((link) => {
+    const linkedSteamAppId = steamAppIdFromLink(link);
+    return !linkedSteamAppId || !steamAppId || linkedSteamAppId === steamAppId;
+  });
 
   if (steamAppId) {
     const storeLink = `https://store.steampowered.com/app/${steamAppId}/`;
+    const steamDbLink = `https://steamdb.info/app/${steamAppId}/`;
+    if (!links.some((link) => normalizeUrl(link) === normalizeUrl(steamDbLink))) links.unshift(steamDbLink);
     if (!links.some((link) => normalizeUrl(link) === normalizeUrl(storeLink))) links.unshift(storeLink);
   }
 
@@ -350,36 +367,16 @@ function normalizeContacts(value: unknown, legacyContact: unknown): ContactMetho
       const record = item as Record<string, unknown>;
       const type = contactTypes.includes(record.type as ContactType) ? record.type as ContactType : "其他";
       const contactValue = typeof record.value === "string" ? record.value.trim() : "";
-      if (contactValue) methods.push({ type, value: contactValue, note: valueOrNull(record.note) });
+      if (!contactValue || isGameStoreLink(contactValue) || type === "Steam") continue;
+      methods.push({ type, value: contactValue, note: valueOrNull(record.note) });
     }
   }
 
-  if (!methods.length && typeof legacyContact === "string" && legacyContact.trim()) {
+  if (!methods.length && typeof legacyContact === "string" && legacyContact.trim() && !isGameStoreLink(legacyContact)) {
     methods.push({ type: inferContactType(legacyContact), value: legacyContact.trim(), note: "legacy contact" });
   }
 
-
   return methods;
-}
-
-function splitContactLinks(methods: ContactMethod[]) {
-  const keep: ContactMethod[] = [];
-  const movedLinks: string[] = [];
-
-  for (const method of methods) {
-    if (isLikelyLinkValue(method.value)) {
-      movedLinks.push(method.value.trim());
-      continue;
-    }
-    keep.push(method);
-  }
-
-  return { methods: keep, movedLinks };
-}
-
-function isLikelyLinkValue(value: string) {
-  const normalized = value.trim().toLowerCase();
-  return normalized.startsWith("http://") || normalized.startsWith("https://") || normalized.startsWith("www.");
 }
 
 function inferContactType(value: string): ContactType {
@@ -398,20 +395,35 @@ function isDomestic(country: string | undefined) {
   return Boolean(country && ["中国", "大陆", "香港", "台湾", "澳门", "China", "Hong Kong", "Taiwan", "Macau"].some((token) => country.includes(token)));
 }
 
+function normalizeBucket(value: unknown): Bucket {
+  return bucketValues.includes(value as Bucket) ? value as Bucket : "观察池";
+}
+
+function normalizeReviewStatus(value: unknown, bucket: Bucket): ReviewStatus {
+  if (reviewStatusValues.includes(value as ReviewStatus)) return value as ReviewStatus;
+  if (bucket === "跟进中") return "跟进中";
+  if (bucket === "淘汰池") return "已淘汰";
+  return "未处理";
+}
+
 function stageFromBucket(bucket: Bucket | undefined): Stage {
-  if (bucket === "推进池") return "active";
+  if (bucket === "推进池" || bucket === "跟进中") return "active";
   if (bucket === "淘汰池") return "rejected";
   return "watch";
 }
 
 function priorityFromBucket(bucket: Bucket | undefined): Priority {
-  if (bucket === "推进池") return "P1";
+  if (bucket === "推进池" || bucket === "跟进中") return "P1";
   if (bucket === "淘汰池") return "P3";
   return "P2";
 }
 
 function priorityOrder(priority: Priority) {
   return { P0: 0, P1: 1, P2: 2, P3: 3 }[priority];
+}
+
+function reviewOrder(status: ReviewStatus) {
+  return { "未处理": 0, "跟进中": 1, "已查看": 2, "已淘汰": 3 }[status];
 }
 
 function mergeNotes(current: string | null, incoming: string | null) {
@@ -435,7 +447,7 @@ function mergeStringArrays(current: string[], incoming: string[]) {
 function mergeContactMethods(current: ContactMethod[], incoming: ContactMethod[]) {
   const deduped = new Map<string, ContactMethod>();
   for (const method of [...current, ...incoming]) {
-    if (!method.value) continue;
+    if (!method.value || method.type === "Steam" || isGameStoreLink(method.value)) continue;
     const key = `${method.type}:${normalizeText(method.value)}`;
     if (!deduped.has(key)) deduped.set(key, method);
   }
@@ -468,6 +480,15 @@ function normalizeText(value: string) {
 
 function normalizeUrl(value: string) {
   return value.trim().toLowerCase().replace(/\/$/, "");
+}
+
+function steamAppIdFromLink(link: string) {
+  const match = link.match(/(?:store\.steampowered\.com|steamdb\.info)\/app\/(\d+)/i);
+  return match?.[1] ?? null;
+}
+
+function isGameStoreLink(value: string) {
+  return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(value);
 }
 
 function readCookie(header: string | null, name: string) {
