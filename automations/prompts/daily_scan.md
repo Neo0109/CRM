@@ -38,17 +38,19 @@ Leads 输出要求：
    - B站适配点
    - 放大作用
    - 风险
-   - priority_reason：为什么优先级高/低
-   - rule_fit：是否符合硬规则，命中了什么规则或排除项
-   - 结论
-5. contact_methods 是硬要求，不能留空。联系方式优先级：
+   - priority_reason：一句话项目级 insight，说明为什么优先级高/低，控制在 45 个中文字以内
+   - rule_fit：一句话规则判断，说明命中/不命中的硬规则或排除项，控制在 60 个中文字以内
+   - verdict：一句话结论，控制在 45 个中文字以内
+   - next_action：一句话下一步 BD 动作，控制在 45 个中文字以内
+5. Review 主表只展示 priority_reason / rule_fit / verdict / next_action 等判断摘要。notes 只用于人工私有备注，不要写“导入日报”“来自某某扫描”“线索助手输入”等流水账，也不要把长篇检索过程塞进 notes。
+6. contact_methods 是硬要求，不能留空。联系方式优先级：
    - 第一优先：官网 contact / presskit / publisher business email / media email / phone
    - 第二优先：Discord、X/Twitter、B站账号、YouTube 官方频道、Reddit 开发者主页、itch.io 开发者页
    - 第三优先：Steam 社区讨论区、Steam 开发者页、Steam 发行商页、Steam community announcements
    - Steam 商店 app 页面和 SteamDB app 页面只能放在 links，不要当成 contact_methods；如果没有邮箱，也要给出可留言或可追踪开发者回复的官方社区入口。
    - contact 字段填写最推荐的单一触达方式；contact_methods 填多个触点。
    - 不确定的邮箱、微信号、电话不要编造；但必须写入官网/社区/社媒等真实可访问触点。
-6. 最终输出为符合 `schemas/daily_report.schema.json` 的 JSON。
+7. 最终输出为符合 `schemas/daily_report.schema.json` 的 JSON。
 
 行业雷达输出要求：
 1. 同步扫描游戏行业新闻、发行八卦、AI 对游戏行业的影响、互联网新梗/热点、B站游戏内容趋势变化。
