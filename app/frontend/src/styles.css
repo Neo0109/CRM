@@ -315,7 +315,21 @@ h3 { color: var(--ink); font-size: 15px; }
 }
 
 .lead-table-wrap { overflow: auto; }
-.lead-table { border-collapse: separate; border-spacing: 0; min-width: 1360px; width: 100%; }
+.lead-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1180px;
+  table-layout: fixed;
+  width: 100%;
+}
+.lead-col-project { width: 15%; }
+.lead-col-region { width: 10%; }
+.lead-col-contact { width: 22%; }
+.lead-col-reason { width: 22%; }
+.lead-col-progress { width: 18%; }
+.lead-col-notes { width: 0; }
+.lead-col-links { width: 5%; }
+.lead-col-actions { width: 8%; }
 .lead-table th, .lead-table td { border-bottom: 1px solid #e5edf6; padding: 13px 12px; text-align: left; vertical-align: top; }
 .lead-table th {
   background: rgba(248, 251, 255, 0.95);
@@ -328,7 +342,10 @@ h3 { color: var(--ink); font-size: 15px; }
 }
 
 .lead-table td { color: #334155; font-size: 13px; line-height: 1.45; max-width: 280px; }
+.lead-table th:nth-child(2), .lead-table td:nth-child(2) { max-width: 150px; }
 .lead-table th:nth-child(6), .lead-table td:nth-child(6) { display: none; }
+.lead-table th:nth-child(7), .lead-table td:nth-child(7) { padding-left: 6px; padding-right: 6px; text-align: center; }
+.lead-table th:nth-child(8), .lead-table td:nth-child(8) { padding-left: 6px; padding-right: 8px; }
 .lead-table tr { cursor: pointer; }
 .lead-table tbody tr:hover, .selected-row { background: #eefaff; }
 .lead-table tbody tr.unread-row { background: #fff7fb; }
@@ -403,12 +420,13 @@ h3 { color: var(--ink); font-size: 15px; }
   display: inline-flex;
   font-size: 12px;
   font-weight: 800;
-  max-width: 240px;
+  max-width: 100%;
   overflow: hidden;
   padding: 4px 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.lead-link-list { align-items: center; }
 .link-list a {
   align-items: center;
   border: 1px solid #bfe7fb;
@@ -421,8 +439,24 @@ h3 { color: var(--ink); font-size: 15px; }
   padding: 4px 8px;
   width: fit-content;
 }
+.lead-link-list a {
+  flex: none;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  width: 34px;
+}
 .link-list a:hover { background: #eef8ff; }
 .missing-link { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 999px; color: #be123c; display: inline-flex; font-size: 12px; font-weight: 900; padding: 4px 8px; }
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
 .contact-editor { display: grid; gap: 8px; }
 .contact-row { display: grid; gap: 8px; grid-template-columns: 110px minmax(120px, 1fr) minmax(100px, 0.8fr) 36px; }
 

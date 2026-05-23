@@ -237,6 +237,16 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
     <section className="workspace">
       <div className="lead-table-wrap">
         <table className="lead-table">
+          <colgroup>
+            <col className="lead-col-project" />
+            <col className="lead-col-region" />
+            <col className="lead-col-contact" />
+            <col className="lead-col-reason" />
+            <col className="lead-col-progress" />
+            <col className="lead-col-notes" />
+            <col className="lead-col-links" />
+            <col className="lead-col-actions" />
+          </colgroup>
           <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>链接</th><th>处理</th></tr></thead>
           <tbody>
             {loading ? <tr><td colSpan={8} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
@@ -398,7 +408,7 @@ function ContactChips({ contacts }: { contacts: ContactMethod[] }) {
 function LinkList({ links }: { links: string[] }) {
   const displayLinks = gameLinks(links);
   if (!displayLinks.length) return <span className="missing-link">缺链接</span>;
-  return <div className="link-list">{displayLinks.map((link, index) => <a key={`${link}-${index}`} href={link} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={link}><ExternalLink size={13} />{linkLabel(link)}</a>)}</div>;
+  return <div className="link-list lead-link-list">{displayLinks.map((link, index) => <a key={`${link}-${index}`} href={link} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={link} aria-label={`打开 ${linkLabel(link)}`}><ExternalLink size={15} /><span className="visually-hidden">{linkLabel(link)}</span></a>)}</div>;
 }
 
 function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boolean }) {
