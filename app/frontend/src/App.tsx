@@ -501,7 +501,12 @@ function isGameLink(link: string) {
 
 function contactLabel(method: ContactMethod) {
   const value = method.value.trim();
-  if (!isHttpUrl(value)) return `${method.type}: ${value}`;
+  if (!isHttpUrl(value)) {
+    if (method.type === "Email" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email";
+    if (method.type === "电话") return "电话";
+    if (method.type === "微信/QQ") return "微信/QQ";
+    return `${method.type}: ${value}`;
+  }
   if (/steamdb/i.test(value)) return "SteamDB";
   if (/steam(?:powered|community)/i.test(value) || method.type === "Steam") return "Steam";
   if (/discord/i.test(value) || method.type === "Discord") return "Discord";

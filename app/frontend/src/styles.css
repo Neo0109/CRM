@@ -345,9 +345,10 @@ h3 { color: var(--ink); font-size: 15px; }
 .lead-table th:nth-child(6), .lead-table td:nth-child(6) { display: none; }
 .lead-table th:nth-child(7), .lead-table td:nth-child(7) { padding-left: 8px; padding-right: 10px; text-align: center; }
 .lead-table tr { cursor: pointer; }
-.lead-table tbody tr:hover, .selected-row { background: #eefaff; }
-.lead-table tbody tr.unread-row { background: #fff7fb; }
-.lead-table tbody tr.unread-row:hover, .lead-table tbody tr.unread-row.selected-row { background: #fff0f7; }
+.lead-table tbody td { background: #fff; }
+.lead-table tbody tr:hover td, .lead-table tbody tr.selected-row td { background: #eefaff; }
+.lead-table tbody tr.unread-row td { background: #fff7fb; }
+.lead-table tbody tr.unread-row:hover td, .lead-table tbody tr.unread-row.selected-row td { background: #fff0f7; }
 
 .project-cell { align-items: start; display: grid; gap: 8px; grid-template-columns: 10px minmax(0, 1fr); }
 .project-cell strong { color: var(--ink); display: block; font-size: 14px; margin-bottom: 3px; }
