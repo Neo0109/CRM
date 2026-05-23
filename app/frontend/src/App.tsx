@@ -256,7 +256,7 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
                 <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
                 <td>{lead.progress}<small className="subline">{lead.publisher_status}</small></td>
                 <td>{lead.notes ?? ""}</td>
-                <td><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
+                <td className="lead-actions-cell"><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
               </tr>
             ))}
             {!loading && !filteredLeads.length && <tr><td colSpan={7} className="empty-cell">无匹配 leads</td></tr>}
