@@ -244,22 +244,20 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
             <col className="lead-col-reason" />
             <col className="lead-col-progress" />
             <col className="lead-col-notes" />
-            <col className="lead-col-actions" />
           </colgroup>
-          <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>处理</th></tr></thead>
+          <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th></tr></thead>
           <tbody>
-            {loading ? <tr><td colSpan={7} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
+            {loading ? <tr><td colSpan={6} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
               <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
                 <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.review_status}</small></div></div></td>
                 <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
                 <td><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
                 <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
-                <td>{lead.progress}<small className="subline">{lead.publisher_status}</small></td>
+                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
                 <td>{lead.notes ?? ""}</td>
-                <td className="lead-actions-cell"><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
               </tr>
             ))}
-            {!loading && !filteredLeads.length && <tr><td colSpan={7} className="empty-cell">无匹配 leads</td></tr>}
+            {!loading && !filteredLeads.length && <tr><td colSpan={6} className="empty-cell">无匹配 leads</td></tr>}
           </tbody>
         </table>
       </div>

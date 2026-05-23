@@ -325,10 +325,9 @@ h3 { color: var(--ink); font-size: 15px; }
 .lead-col-project { width: 15%; }
 .lead-col-region { width: 9%; }
 .lead-col-contact { width: 25%; }
-.lead-col-reason { width: 23%; }
-.lead-col-progress { width: 20%; }
+.lead-col-reason { width: 24%; }
+.lead-col-progress { width: 27%; }
 .lead-col-notes { width: 0; }
-.lead-col-actions { width: 112px; }
 .lead-table th, .lead-table td { border-bottom: 1px solid #e5edf6; padding: 13px 12px; text-align: left; vertical-align: top; }
 .lead-table th {
   background: rgba(248, 251, 255, 0.95);
@@ -343,30 +342,13 @@ h3 { color: var(--ink); font-size: 15px; }
 .lead-table td { color: #334155; font-size: 13px; line-height: 1.45; max-width: 280px; }
 .lead-table th:nth-child(2), .lead-table td:nth-child(2) { max-width: 150px; }
 .lead-table th:nth-child(6), .lead-table td:nth-child(6) { display: none; }
-.lead-table th:nth-child(7), .lead-table td:nth-child(7) { min-width: 112px; padding-left: 10px; padding-right: 12px; text-align: center; white-space: nowrap; width: 112px; }
 .lead-table tr { cursor: pointer; }
 .lead-table tbody tr { --lead-row-bg: #fff; }
 .lead-table tbody tr:hover, .lead-table tbody tr.selected-row { --lead-row-bg: #eefaff; }
 .lead-table tbody tr.unread-row { --lead-row-bg: #fff7fb; }
 .lead-table tbody tr.unread-row:hover, .lead-table tbody tr.unread-row.selected-row { --lead-row-bg: #fff0f7; }
 .lead-table tbody tr > td { background: var(--lead-row-bg) !important; }
-.lead-actions-cell {
-  background: var(--lead-row-bg) !important;
-  box-shadow: inset 1px 0 0 #e5edf6;
-  position: relative;
-}
-.lead-actions-cell::before {
-  background: var(--lead-row-bg);
-  content: "";
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-.lead-actions-cell > * {
-  position: relative;
-  z-index: 1;
-}
+.lead-progress-cell .quick-actions.compact { justify-content: flex-start; margin-top: 10px; }
 
 .project-cell { align-items: start; display: grid; gap: 8px; grid-template-columns: 10px minmax(0, 1fr); }
 .project-cell strong { color: var(--ink); display: block; font-size: 14px; margin-bottom: 3px; }
