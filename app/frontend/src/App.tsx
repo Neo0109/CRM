@@ -244,24 +244,22 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
             <col className="lead-col-reason" />
             <col className="lead-col-progress" />
             <col className="lead-col-notes" />
-            <col className="lead-col-links" />
             <col className="lead-col-actions" />
           </colgroup>
-          <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>链接</th><th>处理</th></tr></thead>
+          <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th><th>处理</th></tr></thead>
           <tbody>
-            {loading ? <tr><td colSpan={8} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
+            {loading ? <tr><td colSpan={7} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
               <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
                 <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.review_status}</small></div></div></td>
                 <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
-                <td><ContactChips contacts={lead.contact_methods} /></td>
+                <td><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
                 <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
                 <td>{lead.progress}<small className="subline">{lead.publisher_status}</small></td>
                 <td>{lead.notes ?? ""}</td>
-                <td><LinkList links={lead.links} /></td>
                 <td><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
               </tr>
             ))}
-            {!loading && !filteredLeads.length && <tr><td colSpan={8} className="empty-cell">无匹配 leads</td></tr>}
+            {!loading && !filteredLeads.length && <tr><td colSpan={7} className="empty-cell">无匹配 leads</td></tr>}
           </tbody>
         </table>
       </div>
@@ -399,22 +397,31 @@ function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: 
   </div>;
 }
 
-function ContactChips({ contacts }: { contacts: ContactMethod[] }) {
-  const displayContacts = visibleContacts(contacts).slice(0, 3);
-  if (!displayContacts.length) return <span className="muted">待补充</span>;
-  return <div className="chip-list">{displayContacts.map((method, index) => {
-    const label = contactLabel(method);
-    if (isHttpUrl(method.value)) {
-      return <a className="chip contact-chip-link" key={`${method.value}-${index}`} href={method.value} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={`${method.type}: ${method.value}`}><span className="chip-label">{label}</span></a>;
-    }
-    return <span className="chip" key={`${method.value}-${index}`} title={`${method.type}: ${method.value}`}><span className="chip-label">{label}</span></span>;
-  })}</div>;
-}
-
-function LinkList({ links }: { links: string[] }) {
-  const displayLinks = gameLinks(links);
-  if (!displayLinks.length) return <span className="missing-link">缺链接</span>;
-  return <div className="link-list lead-link-list">{displayLinks.map((link, index) => <a key={`${link}-${index}`} href={link} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={link} aria-label={`打开 ${linkLabel(link)}`}><ExternalLink size={15} /><span className="visually-hidden">{linkLabel(link)}</span></a>)}</div>;
+function ContactChips({ contacts, links }: { contacts: ContactMethod[]; links: string[] }) {
+  const contactChips = visibleContacts(contacts).slice(0, 3).map((method, index) => ({
+    href: isHttpUrl(method.value) ? method.value : null,
+    key: `contact-${method.value}-${index}`,
+    label: contactLabel(method),
+    title: `${method.type}: ${method.value}`
+  }));
+  const usedLabels = new Set(contactChips.map((chip) => chip.label));
+  const linkChips = gameLinks(links).map((link, index) => ({
+    href: link,
+    key: `link-${link}-${index}`,
+    label: linkLabel(link),
+    title: link
+  })).filter((chip) => {
+    if (usedLabels.has(chip.label)) return false;
+    usedLabels.add(chip.label);
+    return true;
+  }).slice(0, 2);
+  const displayChips = [...contactChips, ...linkChips];
+  if (!displayChips.length) return <span className="muted">待补充</span>;
+  return <div className="chip-list contact-chip-list">{displayChips.map((chip) => (
+    chip.href
+      ? <a className="chip contact-chip-link" key={chip.key} href={chip.href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={chip.title}><ExternalLink size={12} /><span className="chip-label">{chip.label}</span></a>
+      : <span className="chip" key={chip.key} title={chip.title}><span className="chip-label">{chip.label}</span></span>
+  ))}</div>;
 }
 
 function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boolean }) {
@@ -495,9 +502,14 @@ function isGameLink(link: string) {
 function contactLabel(method: ContactMethod) {
   const value = method.value.trim();
   if (!isHttpUrl(value)) return `${method.type}: ${value}`;
-  if (/steam(?:powered|community)|steamdb/i.test(value) || method.type === "Steam") return "Steam";
-  if (method.type === "官网") return `官网: ${linkLabel(value)}`;
-  return `${method.type}: ${linkLabel(value)}`;
+  if (/steamdb/i.test(value)) return "SteamDB";
+  if (/steam(?:powered|community)/i.test(value) || method.type === "Steam") return "Steam";
+  if (/discord/i.test(value) || method.type === "Discord") return "Discord";
+  if (/instagram/i.test(value)) return "Instagram";
+  if (/(?:twitter|x\.com)/i.test(value) || method.type === "X/Twitter") return "X";
+  if (/bilibili/i.test(value) || method.type === "B站") return "B站";
+  if (method.type === "官网") return "官网";
+  return linkLabel(value);
 }
 
 function linkLabel(link: string) {
