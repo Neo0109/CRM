@@ -323,13 +323,13 @@ h3 { color: var(--ink); font-size: 15px; }
   width: 100%;
 }
 .lead-col-project { width: 15%; }
-.lead-col-region { width: 10%; }
+.lead-col-region { width: 9%; }
 .lead-col-contact { width: 22%; }
 .lead-col-reason { width: 22%; }
 .lead-col-progress { width: 18%; }
 .lead-col-notes { width: 0; }
 .lead-col-links { width: 5%; }
-.lead-col-actions { width: 8%; }
+.lead-col-actions { width: 9%; }
 .lead-table th, .lead-table td { border-bottom: 1px solid #e5edf6; padding: 13px 12px; text-align: left; vertical-align: top; }
 .lead-table th {
   background: rgba(248, 251, 255, 0.95);
@@ -404,7 +404,22 @@ h3 { color: var(--ink); font-size: 15px; }
 
 .bucket-actions, .quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .bucket-actions.compact, .quick-actions.compact { margin: 0; }
+.quick-actions.compact {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, 34px);
+  justify-content: center;
+}
 .bucket-button, .quick-button { background: #fff; color: #334155; font-size: 12px; font-weight: 900; min-height: 30px; padding: 0 8px; }
+.quick-actions.compact .quick-button {
+  border-radius: 999px;
+  height: 34px;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0;
+  width: 34px;
+}
 .bucket-button.active.push, .bucket-button.push:hover { background: #dcfce7; border-color: var(--green); color: #166534; }
 .bucket-button.active.follow, .bucket-button.follow:hover, .quick-button.follow:hover { background: #d7f9ff; border-color: var(--cyan); color: #155e75; }
 .bucket-button.active.watch, .bucket-button.watch:hover { background: #fef3c7; border-color: var(--amber); color: #92400e; }
@@ -425,6 +440,16 @@ h3 { color: var(--ink); font-size: 15px; }
   padding: 4px 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.chip-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contact-chip-link:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
 }
 .lead-link-list { align-items: center; }
 .link-list a {

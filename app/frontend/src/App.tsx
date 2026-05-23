@@ -387,8 +387,8 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
 
 function QuickActions({ lead, onPatch, compact = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean }) {
   return <div className={compact ? "quick-actions compact" : "quick-actions"} onClick={(event) => event.stopPropagation()}>
-    <button className="quick-button follow" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at: new Date().toISOString() })}><CheckCircle2 size={15} />跟进</button>
-    <button className="quick-button drop" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at: new Date().toISOString() })}><XCircle size={15} />淘汰</button>
+    <button className="quick-button follow" title="移入跟进" aria-label="移入跟进" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at: new Date().toISOString() })}><CheckCircle2 size={15} /><span className={compact ? "visually-hidden" : ""}>跟进</span></button>
+    <button className="quick-button drop" title="移入淘汰池" aria-label="移入淘汰池" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at: new Date().toISOString() })}><XCircle size={15} /><span className={compact ? "visually-hidden" : ""}>淘汰</span></button>
     {!compact && <button className="quick-button seen" onClick={() => void onPatch(lead.id, { review_status: "已查看", reviewed_at: new Date().toISOString() })}>已看</button>}
   </div>;
 }
@@ -402,7 +402,13 @@ function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: 
 function ContactChips({ contacts }: { contacts: ContactMethod[] }) {
   const displayContacts = visibleContacts(contacts).slice(0, 3);
   if (!displayContacts.length) return <span className="muted">待补充</span>;
-  return <div className="chip-list">{displayContacts.map((method, index) => <span className="chip" key={`${method.value}-${index}`}>{method.type}: {method.value}</span>)}</div>;
+  return <div className="chip-list">{displayContacts.map((method, index) => {
+    const label = contactLabel(method);
+    if (isHttpUrl(method.value)) {
+      return <a className="chip contact-chip-link" key={`${method.value}-${index}`} href={method.value} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={`${method.type}: ${method.value}`}><span className="chip-label">{label}</span></a>;
+    }
+    return <span className="chip" key={`${method.value}-${index}`} title={`${method.type}: ${method.value}`}><span className="chip-label">{label}</span></span>;
+  })}</div>;
 }
 
 function LinkList({ links }: { links: string[] }) {
@@ -473,13 +479,31 @@ function gameLinks(links: string[]) {
   return links.filter(isGameLink).slice(0, 2);
 }
 
+function isHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function isGameLink(link: string) {
   return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(link);
+}
+
+function contactLabel(method: ContactMethod) {
+  const value = method.value.trim();
+  if (!isHttpUrl(value)) return `${method.type}: ${value}`;
+  if (/steam(?:powered|community)|steamdb/i.test(value) || method.type === "Steam") return "Steam";
+  if (method.type === "官网") return `官网: ${linkLabel(value)}`;
+  return `${method.type}: ${linkLabel(value)}`;
 }
 
 function linkLabel(link: string) {
   if (link.includes("store.steampowered.com")) return "Steam";
   if (link.includes("steamdb.info")) return "SteamDB";
+  if (link.includes("steamcommunity.com")) return "Steam 社区";
   if (link.includes("bilibili.com")) return "B站";
   try { return new URL(link).hostname.replace("www.", ""); } catch { return "链接"; }
 }
