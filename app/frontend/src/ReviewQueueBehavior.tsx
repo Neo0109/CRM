@@ -3,6 +3,7 @@ import { useEffect } from "react";
 export function ReviewQueueBehavior() {
   useEffect(() => {
     let frame = 0;
+    ensureMissingLinksDetailStyle();
 
     const applyQueueVisibility = () => {
       frame = 0;
@@ -34,7 +35,13 @@ export function ReviewQueueBehavior() {
         if (shouldHide && row.classList.contains("selected-row")) selectedRowHidden = true;
       }
 
-      if (missingLinksOnly) syncActiveMetricCount(visibleMissingLinkRows);
+      if (missingLinksOnly) {
+        syncActiveMetricCount(visibleMissingLinkRows);
+        syncMissingLinksDetailState(visibleMissingLinkRows === 0);
+      } else {
+        syncMissingLinksDetailState(false);
+      }
+
       if (selectedRowHidden && firstVisibleRow) firstVisibleRow.click();
     };
 
@@ -94,4 +101,52 @@ function syncActiveMetricCount(value: number) {
     .find((metric) => metric.querySelector("span")?.textContent?.includes("缺链接"));
   const count = activeMetric?.querySelector("strong");
   if (count) count.textContent = String(value);
+}
+
+function syncMissingLinksDetailState(empty: boolean) {
+  const panel = document.querySelector<HTMLElement>(".detail-panel");
+  if (!panel) return;
+
+  const existing = panel.querySelector(".missing-links-empty-state");
+  if (!empty) {
+    panel.removeAttribute("data-missing-links-empty");
+    existing?.remove();
+    return;
+  }
+
+  panel.setAttribute("data-missing-links-empty", "true");
+  if (existing) return;
+
+  const placeholder = document.createElement("div");
+  placeholder.className = "missing-links-empty-state";
+  placeholder.innerHTML = "<strong>暂无缺链接 lead</strong><span>补完链接或移入淘汰池后，这里不会再显示已处理项目。</span>";
+  panel.appendChild(placeholder);
+}
+
+function ensureMissingLinksDetailStyle() {
+  if (document.getElementById("missing-links-empty-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "missing-links-empty-style";
+  style.textContent = `
+    .detail-panel[data-missing-links-empty="true"] > :not(.missing-links-empty-state) {
+      display: none !important;
+    }
+
+    .missing-links-empty-state {
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      color: #53657d;
+      text-align: center;
+    }
+
+    .missing-links-empty-state strong {
+      color: #132238;
+      font-size: 18px;
+    }
+  `;
+  document.head.appendChild(style);
 }
