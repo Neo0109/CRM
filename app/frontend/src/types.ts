@@ -151,3 +151,53 @@ export type SteamTrendReport = {
   sync_result?: ImportResult | null;
   source?: string;
 };
+
+export type WeeklyLeadSummary = {
+  id: string;
+  project: string;
+  bucket: Bucket;
+  priority: Priority;
+  review_status: ReviewStatus;
+  region: Region;
+  country: string;
+  city: string | null;
+  team: string | null;
+  genre: string | null;
+  gameplay: string | null;
+  progress: string;
+  release_window: string | null;
+  publisher_status: string;
+  bilibili_fit: string;
+  priority_reason: string | null;
+  rule_fit: string | null;
+  verdict: string;
+  first_seen: string;
+  reviewed_at: string | null;
+  steam_store_url: string | null;
+  steamdb_url: string | null;
+  links: string[];
+  basic_summary: string;
+  recommendation_summary: string;
+};
+
+export type WeeklyReport = {
+  week_start: string;
+  week_end: string;
+  generated_at: string;
+  source: "crm_leads";
+  method: string;
+  summary: string;
+  stats: {
+    sourced: number;
+    entered_follow_up: number;
+    push_pool: number;
+    follow_pool: number;
+    watch_pool: number;
+    dropped: number;
+    pending_review: number;
+    missing_steam_links: number;
+  };
+  follow_up_leads: WeeklyLeadSummary[];
+  dropped_leads: WeeklyLeadSummary[];
+  sourced_leads: WeeklyLeadSummary[];
+};
