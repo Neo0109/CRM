@@ -6,7 +6,13 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
 
   try {
     const today = todayInShanghai();
-    await syncReportFromRepository(env, offsetDate(today, -1)).catch(() => null);
+    const yesterday = offsetDate(today, -1);
+    const existingLeads = await readLeads(env);
+
+    if (!existingLeads.some((lead) => lead.first_seen === yesterday)) {
+      await syncReportFromRepository(env, yesterday).catch(() => null);
+    }
+
     await syncReportFromRepository(env, today).catch(() => null);
     return json(await readLeads(env));
   } catch (error) {
