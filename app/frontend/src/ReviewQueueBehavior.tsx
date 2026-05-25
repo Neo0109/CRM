@@ -10,6 +10,7 @@ export function ReviewQueueBehavior() {
       const bucketSelect = document.querySelector<HTMLSelectElement>(".filters select");
       if (!table || !bucketSelect) return;
 
+      const missingLinksOnly = isMissingLinksMetricActive();
       const queueOnly = shouldUseDefaultReviewQueue(bucketSelect);
       const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tbody tr"));
       let firstVisibleRow: HTMLTableRowElement | null = null;
@@ -23,7 +24,8 @@ export function ReviewQueueBehavior() {
         }
 
         const isUnhandled = statusLine.includes("未处理");
-        const shouldHide = queueOnly && !isUnhandled;
+        const isDropped = statusLine.includes("淘汰池") || statusLine.includes("已淘汰");
+        const shouldHide = (queueOnly && !isUnhandled) || (missingLinksOnly && isDropped);
         row.hidden = shouldHide;
 
         if (!shouldHide && !firstVisibleRow) firstVisibleRow = row;
@@ -58,9 +60,7 @@ export function ReviewQueueBehavior() {
 function shouldUseDefaultReviewQueue(bucketSelect: HTMLSelectElement) {
   if (bucketSelect.value !== "全部") return false;
 
-  const activeMetricLabels = Array.from(document.querySelectorAll<HTMLElement>(".metric.active span"))
-    .map((metric) => metric.textContent?.trim() ?? "")
-    .filter(Boolean);
+  const activeMetricLabels = activeMetricLabelsFromPage();
   const hasSpecialMetric = activeMetricLabels.some((label) => !label.includes("未处理"));
   if (hasSpecialMetric) return false;
 
@@ -74,4 +74,14 @@ function shouldUseDefaultReviewQueue(bucketSelect: HTMLSelectElement) {
     .some((select) => select.value !== "全部");
 
   return !nonBucketFilterChanged;
+}
+
+function isMissingLinksMetricActive() {
+  return activeMetricLabelsFromPage().some((label) => label.includes("缺链接"));
+}
+
+function activeMetricLabelsFromPage() {
+  return Array.from(document.querySelectorAll<HTMLElement>(".metric.active span"))
+    .map((metric) => metric.textContent?.trim() ?? "")
+    .filter(Boolean);
 }
