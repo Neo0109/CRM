@@ -64,7 +64,7 @@ export default function App() {
     follow: leads.filter((lead) => lead.bucket === "跟进中").length,
     watch: leads.filter((lead) => lead.bucket === "观察池").length,
     drop: leads.filter((lead) => lead.bucket === "淘汰池").length,
-    missingLinks: leads.filter((lead) => !gameLinks(lead.links).length).length
+    missingLinks: leads.filter(needsSteamLinkTriage).length
   }), [leads]);
 
   const filteredLeads = useMemo(() => leads.filter((lead) => {
@@ -81,7 +81,7 @@ export default function App() {
     const cityMatch = !filters.city || [lead.city, lead.country].filter(Boolean).join(" ").toLowerCase().includes(filters.city.toLowerCase());
     const releaseMatch = !filters.releaseWindow || (lead.release_window ?? "").toLowerCase().includes(filters.releaseWindow.toLowerCase());
     const reviewMatch = filters.reviewStatus === "全部" || lead.review_status === filters.reviewStatus;
-    const missingLinkMatch = !filters.missingLinks || !gameLinks(lead.links).length;
+    const missingLinkMatch = !filters.missingLinks || needsSteamLinkTriage(lead);
     return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && missingLinkMatch;
   }), [filters, leads]);
 
@@ -541,6 +541,11 @@ function visibleContacts(contacts: ContactMethod[]) {
 
 function gameLinks(links: string[]) {
   return links.filter(isGameLink).slice(0, 2);
+}
+
+function needsSteamLinkTriage(lead: Lead) {
+  const isDropped = lead.bucket === "淘汰池" || lead.review_status === "已淘汰" || lead.stage === "rejected";
+  return !isDropped && !gameLinks(lead.links).length;
 }
 
 function normalizeSteamLinkInput(value: string): NormalizedSteamLink | null {
