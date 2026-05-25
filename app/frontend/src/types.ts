@@ -52,6 +52,8 @@ export type Lead = {
   next_action: string | null;
   owner: string | null;
   due_date: string | null;
+  calendar_enabled: boolean;
+  follow_up_interval: string | null;
   first_seen: string;
   notes: string | null;
 };
