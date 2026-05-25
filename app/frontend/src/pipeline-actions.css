@@ -1,0 +1,55 @@
+.quick-button.watch:hover,
+.quick-button.watch {
+  border-color: #facc15;
+  color: #92400e;
+}
+
+.quick-button.watch:hover {
+  background: #fef3c7;
+}
+
+.quick-button.push:hover,
+.quick-button.push {
+  border-color: #86efac;
+  color: #166534;
+}
+
+.quick-button.push:hover {
+  background: #dcfce7;
+}
+
+.quick-button.seen:hover,
+.quick-button.seen {
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.quick-actions.compact .quick-button[data-pipeline-action-label] svg {
+  display: none;
+}
+
+.quick-actions.compact .quick-button[data-pipeline-action-label]::after {
+  content: attr(data-pipeline-action-label);
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.quick-actions.compact .quick-button.watch {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.quick-actions.compact .quick-button.follow {
+  background: #ecfeff;
+  border-color: #a5f3fc;
+}
+
+.quick-actions.compact .quick-button.drop {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.quick-actions.compact .quick-button:disabled {
+  opacity: 0.6;
+}
