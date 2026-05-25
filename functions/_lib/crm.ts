@@ -77,6 +77,8 @@ export type Lead = {
   next_action: string | null;
   owner: string | null;
   due_date: string | null;
+  calendar_enabled: boolean;
+  follow_up_interval: string | null;
   first_seen: string;
   notes: string | null;
 };
@@ -214,7 +216,7 @@ export function isDailyReport(value: unknown): value is DailyReport {
 }
 
 export function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "notes", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "calendar_enabled", "follow_up_interval", "notes", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;
@@ -289,6 +291,8 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     next_action: valueOrNull(raw.next_action),
     owner: valueOrNull(raw.owner),
     due_date: valueOrNull(raw.due_date),
+    calendar_enabled: Boolean(raw.calendar_enabled),
+    follow_up_interval: valueOrNull(raw.follow_up_interval),
     first_seen: firstSeen,
     notes: valueOrNull(raw.notes)
   };
@@ -302,6 +306,8 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     first_seen: current.first_seen,
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
+    calendar_enabled: current.calendar_enabled || incoming.calendar_enabled,
+    follow_up_interval: current.follow_up_interval ?? incoming.follow_up_interval,
     review_status: current.review_status,
     reviewed_at: current.reviewed_at,
     contact_methods: mergeContactMethods(current.contact_methods, incoming.contact_methods),
