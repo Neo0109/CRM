@@ -10,7 +10,7 @@ export function ReviewQueueBehavior() {
       const bucketSelect = document.querySelector<HTMLSelectElement>(".filters select");
       if (!table || !bucketSelect) return;
 
-      const queueOnly = bucketSelect.value === "全部";
+      const queueOnly = shouldUseDefaultReviewQueue(bucketSelect);
       const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tbody tr"));
       let firstVisibleRow: HTMLTableRowElement | null = null;
       let selectedRowHidden = false;
@@ -53,4 +53,25 @@ export function ReviewQueueBehavior() {
   }, []);
 
   return null;
+}
+
+function shouldUseDefaultReviewQueue(bucketSelect: HTMLSelectElement) {
+  if (bucketSelect.value !== "全部") return false;
+
+  const activeMetricLabels = Array.from(document.querySelectorAll<HTMLElement>(".metric.active span"))
+    .map((metric) => metric.textContent?.trim() ?? "")
+    .filter(Boolean);
+  const hasSpecialMetric = activeMetricLabels.some((label) => !label.includes("未处理"));
+  if (hasSpecialMetric) return false;
+
+  const textFiltersHaveValue = Array.from(document.querySelectorAll<HTMLInputElement>(".filters input"))
+    .some((input) => input.value.trim().length > 0);
+  if (textFiltersHaveValue) return false;
+
+  const selects = Array.from(document.querySelectorAll<HTMLSelectElement>(".filters select"));
+  const nonBucketFilterChanged = selects
+    .filter((select) => select !== bucketSelect)
+    .some((select) => select.value !== "全部");
+
+  return !nonBucketFilterChanged;
 }
