@@ -25,7 +25,6 @@ type ReminderOption = {
   months?: number;
 };
 
-const calendarMarker = "[calendar-reminder]";
 const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
 const reminderOptions: ReminderOption[] = [
   { value: "14d", label: "2周后", days: 14 },
@@ -141,7 +140,8 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
       review_status: "跟进中",
       reviewed_at: new Date().toISOString(),
       due_date: dueDate,
-      notes: addCalendarMarker(lead.notes),
+      calendar_enabled: true,
+      follow_up_interval: choice,
       next_action: lead.next_action ?? `${dueDate} 再跟进研发进度/发行窗口`
     });
   }
@@ -149,7 +149,8 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
   async function removeCalendarReminder(lead: Lead) {
     await patchLead(lead, {
       due_date: null,
-      notes: removeCalendarMarker(lead.notes)
+      calendar_enabled: false,
+      follow_up_interval: null
     });
   }
 
@@ -213,7 +214,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
           <section className="calendar-panel">
             <div className="calendar-panel-head"><h3>设置跟进提醒</h3><span>{loading ? "..." : followLeads.length}</span></div>
             {loading ? <div className="calendar-empty">加载中</div> : followLeads.length ? <div className="follow-reminder-list">{followLeads.map((lead) => {
-              const choice = choiceByLead[lead.id] ?? "1m";
+              const choice = choiceByLead[lead.id] ?? (lead.follow_up_interval as ReminderChoice | null) ?? "1m";
               const enabled = isLeadCalendarVisible(lead);
               return <article className={`follow-reminder-card ${enabled ? "enabled" : ""}`} key={lead.id}>
                 <div>
@@ -225,7 +226,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
                   <select value={choice} onChange={(event) => setChoiceByLead((current) => ({ ...current, [lead.id]: event.target.value as ReminderChoice }))}>
                     {reminderOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </select>
-                  {choice === "custom" && <input type="date" value={customDateByLead[lead.id] ?? ""} onChange={(event) => setCustomDateByLead((current) => ({ ...current, [lead.id]: event.target.value }))} />}
+                  {choice === "custom" && <input type="date" value={customDateByLead[lead.id] ?? lead.due_date ?? ""} onChange={(event) => setCustomDateByLead((current) => ({ ...current, [lead.id]: event.target.value }))} />}
                 </div>
                 <div className="follow-reminder-actions">
                   <button onClick={() => void scheduleFollowUp(lead)} disabled={savingId === lead.id}><Clock3 size={14} />{enabled ? "更新提醒" : "加入日历"}</button>
@@ -252,18 +253,7 @@ function CalendarAgendaItem({ event }: { event: CalendarEvent }) {
 }
 
 function isLeadCalendarVisible(lead: Lead) {
-  return Boolean(lead.due_date && lead.bucket !== "淘汰池" && lead.notes?.includes(calendarMarker));
-}
-
-function addCalendarMarker(notes: string | null) {
-  if (notes?.includes(calendarMarker)) return notes;
-  return [notes, `${calendarMarker} 手动加入日历提醒`].filter(Boolean).join("\n");
-}
-
-function removeCalendarMarker(notes: string | null) {
-  if (!notes) return null;
-  const next = notes.split("\n").filter((line) => !line.includes(calendarMarker)).join("\n").trim();
-  return next || null;
+  return Boolean(lead.calendar_enabled && lead.due_date && lead.bucket !== "淘汰池");
 }
 
 function dueDateFromChoice(choice: ReminderChoice, customDate?: string) {
