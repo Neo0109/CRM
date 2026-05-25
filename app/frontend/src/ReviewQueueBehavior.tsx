@@ -15,6 +15,7 @@ export function ReviewQueueBehavior() {
       const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tbody tr"));
       let firstVisibleRow: HTMLTableRowElement | null = null;
       let selectedRowHidden = false;
+      let visibleMissingLinkRows = 0;
 
       for (const row of rows) {
         const statusLine = row.querySelector(".project-cell small")?.textContent ?? "";
@@ -29,9 +30,11 @@ export function ReviewQueueBehavior() {
         row.hidden = shouldHide;
 
         if (!shouldHide && !firstVisibleRow) firstVisibleRow = row;
+        if (!shouldHide && missingLinksOnly) visibleMissingLinkRows += 1;
         if (shouldHide && row.classList.contains("selected-row")) selectedRowHidden = true;
       }
 
+      if (missingLinksOnly) syncActiveMetricCount(visibleMissingLinkRows);
       if (selectedRowHidden && firstVisibleRow) firstVisibleRow.click();
     };
 
@@ -84,4 +87,11 @@ function activeMetricLabelsFromPage() {
   return Array.from(document.querySelectorAll<HTMLElement>(".metric.active span"))
     .map((metric) => metric.textContent?.trim() ?? "")
     .filter(Boolean);
+}
+
+function syncActiveMetricCount(value: number) {
+  const activeMetric = Array.from(document.querySelectorAll<HTMLElement>(".metric.active"))
+    .find((metric) => metric.querySelector("span")?.textContent?.includes("缺链接"));
+  const count = activeMetric?.querySelector("strong");
+  if (count) count.textContent = String(value);
 }
