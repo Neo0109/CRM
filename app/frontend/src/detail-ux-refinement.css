@@ -48,6 +48,50 @@
   text-align: right;
 }
 
+.steam-link-editor {
+  background: linear-gradient(135deg, #f0f9ff, #fff);
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+}
+
+.steam-link-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.steam-link-copy strong {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.steam-link-copy span {
+  color: #526175;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.steam-link-input-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.steam-link-input-row input {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  min-height: 38px;
+  padding: 0 10px;
+  width: 100%;
+}
+
+.current-steam-links {
+  gap: 6px;
+}
+
 @media (max-width: 720px) {
   .rule-flag-explainer {
     align-items: start;
@@ -56,5 +100,9 @@
 
   .rule-flag-explainer span {
     text-align: left;
+  }
+
+  .steam-link-input-row {
+    grid-template-columns: 1fr;
   }
 }
