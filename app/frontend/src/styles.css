@@ -490,6 +490,52 @@ h3 { color: var(--ink); font-size: 15px; }
   padding-bottom: 16px;
 }
 .radar-head p { color: #475569; line-height: 1.55; margin: 0; max-width: 760px; }
+.report-head-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.report-history-controls {
+  align-items: flex-end;
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+  min-width: 230px;
+}
+.report-history-picker {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+.report-history-picker span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 950;
+}
+.report-history-picker select {
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  min-height: 36px;
+  outline: 0;
+  padding: 0 10px;
+}
+.report-history-picker select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0, 167, 225, 0.14);
+}
+.freshness-note {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  color: #075985;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.5;
+  max-width: 360px;
+  padding: 8px 10px;
+}
 .radar-band { display: grid; gap: 10px; margin-bottom: 20px; }
 .radar-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .radar-card {
@@ -530,4 +576,7 @@ h3 { color: var(--ink); font-size: 15px; }
   .ghost-button, .primary-button, .tab-button { justify-content: center; width: 100%; }
   .detail-panel { padding: 14px; }
   .radar-head { align-items: start; flex-direction: column; }
+  .report-history-controls { align-items: start; justify-items: start; min-width: 0; width: 100%; }
+  .report-history-picker { width: 100%; }
+  .report-history-picker select { flex: 1; min-width: 0; }
 }

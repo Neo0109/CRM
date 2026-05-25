@@ -124,9 +124,13 @@ export type RadarItem = {
 };
 
 export type RadarReport = {
+  available_dates?: string[];
+  is_fallback?: boolean;
   report_date: string;
+  requested_date?: string;
   summary: string;
   items: RadarItem[];
+  source?: string;
 };
 
 export type SteamTrendItem = {
@@ -164,8 +168,11 @@ export type SteamGenreSignal = {
 };
 
 export type SteamTrendReport = {
+  available_dates?: string[];
   report_date: string;
+  requested_date?: string;
   summary: string;
+  is_fallback?: boolean;
   market_insights?: SteamMarketInsight[];
   genre_signals?: SteamGenreSignal[];
   items: SteamTrendItem[];

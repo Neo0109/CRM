@@ -1,4 +1,5 @@
 import { json, mergeIncomingLeads, requireAccess, todayInShanghai, type Lead, type PagesContext } from "../_lib/crm";
+import { fetchHistoricalJson } from "../_lib/reportHistory";
 
 const repoFullName = "Neo0109/CRM";
 const branch = "main";
@@ -16,27 +17,34 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
   if (denied) return denied;
 
   const url = new URL(request.url);
-  const reportDate = url.searchParams.get("date") ?? todayInShanghai();
-  if (!datePattern.test(reportDate)) return json({ error: "Invalid Steam trends date" }, 400);
+  const reportDate = url.searchParams.get("date");
+  if (reportDate && !datePattern.test(reportDate)) return json({ error: "Invalid Steam trends date" }, 400);
 
-  const source = `https://raw.githubusercontent.com/${repoFullName}/${branch}/data/steam_trends/${reportDate}.json`;
-  const response = await fetch(`${source}?t=${Date.now()}`, { headers: { Accept: "application/json" } });
-
-  if (response.status === 404) {
-    return json({
-      report_date: reportDate,
-      summary: "今日 Steam 趋势尚未写入。每日自动化会把新品、Demo、愿望单/热度异动和适合 CRM 的候选保存到这里。",
-      items: [],
-      crm_candidates: [],
-      sync_result: null,
-      source
+  try {
+    const result = await fetchHistoricalJson<SteamTrendReport & Record<string, unknown>>(reportDate, {
+      basePath: "data/steam_trends",
+      branch,
+      fallbackSummary: "暂无 Steam 趋势历史数据。每日自动化写入后，这里会保留最近一次有效内容并支持回看。",
+      repoFullName,
+      today: todayInShanghai()
     });
+
+    const report = result.report as SteamTrendReport;
+    const candidates = Array.isArray(report.crm_candidates) ? report.crm_candidates : [];
+    const shouldSyncCandidates = candidates.length > 0 && !url.searchParams.has("date") && url.searchParams.get("sync") !== "0";
+    const sync_result = shouldSyncCandidates ? await mergeIncomingLeads(env, candidates) : null;
+    return json({
+      ...report,
+      available_dates: result.available_dates,
+      is_fallback: result.is_fallback,
+      requested_date: result.requested_date,
+      sync_result,
+      source: result.source
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown";
+    if (message === "invalid_date") return json({ error: "Invalid Steam trends date" }, 400);
+    if (message.startsWith("fetch_failed:")) return json({ error: `Steam trends fetch failed: ${message.split(":")[1]}` }, 502);
+    return json({ error: "Steam trends fetch failed" }, 502);
   }
-
-  if (!response.ok) return json({ error: `Steam trends fetch failed: ${response.status}` }, 502);
-
-  const report = (await response.json()) as SteamTrendReport;
-  const candidates = Array.isArray(report.crm_candidates) ? report.crm_candidates : [];
-  const sync_result = candidates.length ? await mergeIncomingLeads(env, candidates) : null;
-  return json({ ...report, sync_result, source });
 };

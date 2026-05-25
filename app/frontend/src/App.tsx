@@ -2,6 +2,7 @@ import { ArrowDownToLine, Bot, CheckCircle2, ExternalLink, FileJson, FileSpreads
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
+import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
 import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
@@ -25,7 +26,7 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.4.7";
+const version = "v1.4.8";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
@@ -107,10 +108,11 @@ export default function App() {
     }
   }
 
-  async function loadRadar() {
+  async function loadRadar(date?: string) {
     try {
       setRadarLoading(true);
-      setRadar(await fetchRadar());
+      setRadar(await fetchRadar(date));
+      setError(null);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "行业雷达加载失败");
     } finally {
@@ -118,10 +120,10 @@ export default function App() {
     }
   }
 
-  async function loadSteamTrends() {
+  async function loadSteamTrends(date?: string) {
     try {
       setSteamLoading(true);
-      const report = await fetchSteamTrends();
+      const report = await fetchSteamTrends(date);
       setSteamTrends(report);
       if (report.sync_result && (report.sync_result.created > 0 || report.sync_result.updated > 0)) {
         setStatus(`Steam 趋势已同步：新增 ${report.sync_result.created}，更新 ${report.sync_result.updated}`);
@@ -198,7 +200,7 @@ export default function App() {
         setSelectedId={setSelectedId}
         handleLeadPatch={handleLeadPatch}
         moveBucket={moveBucket}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
+      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
     </main>
   );
 }
@@ -541,10 +543,20 @@ function ContactChips({ contacts, links }: { contacts: ContactMethod[]; links: s
   ))}</div>;
 }
 
-function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boolean }) {
+function RadarPage({ radar, loading, onDateChange }: { radar: RadarReport | null; loading: boolean; onDateChange: (date: string) => void }) {
   if (loading) return <section className="radar-shell"><div className="empty-cell">加载行业雷达中</div></section>;
   return <section className="radar-shell">
-    <div className="radar-head"><div><p className="eyebrow">{radar?.report_date ?? "今日"}</p><h2>行业雷达</h2></div><p>{radar?.summary ?? "暂无雷达数据"}</p></div>
+    <div className="radar-head">
+      <div className="report-head-main"><div><p className="eyebrow">{radar?.report_date ?? "今日"}</p><h2>行业雷达</h2></div><p>{radar?.summary ?? "暂无雷达数据"}</p></div>
+      <ReportHistoryControls
+        availableDates={radar?.available_dates}
+        isFallback={radar?.is_fallback}
+        noun="行业雷达"
+        onDateChange={onDateChange}
+        reportDate={radar?.report_date}
+        requestedDate={radar?.requested_date}
+      />
+    </div>
     {radarCategories.map((category) => {
       const items = radar?.items.filter((item) => item.category === category) ?? [];
       return <section className="radar-band" key={category}>
@@ -554,7 +566,7 @@ function RadarPage({ radar, loading }: { radar: RadarReport | null; loading: boo
           <p>{item.summary}</p>
           <dl><div><dt>BD 相关</dt><dd>{item.relevance}</dd></div><div><dt>建议动作</dt><dd>{item.suggested_action}</dd></div></dl>
           <a href={item.link} target="_blank" rel="noreferrer"><ExternalLink size={14} />{item.source}</a>
-        </article>)}</div> : <div className="radar-empty">等待今日自动化写入</div>}
+        </article>)}</div> : <div className="radar-empty">这一天暂无该类记录；可以用上方回看保留的历史内容。</div>}
       </section>;
     })}
   </section>;
