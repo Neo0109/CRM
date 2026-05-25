@@ -1,0 +1,41 @@
+.follow-reminder-card.enabled {
+  border-color: #91e8f5;
+  box-shadow: 0 10px 24px rgba(32, 199, 222, 0.12);
+}
+
+.follow-reminder-controls {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(140px, 1fr);
+}
+
+.follow-reminder-controls select,
+.follow-reminder-controls input {
+  background: #fff;
+  border: 1px solid #c4d2e2;
+  border-radius: 8px;
+  color: #142033;
+  min-height: 34px;
+  outline: 0;
+  padding: 0 9px;
+  width: 100%;
+}
+
+.follow-reminder-controls select:focus,
+.follow-reminder-controls input:focus {
+  border-color: #00a7e1;
+  box-shadow: 0 0 0 3px rgba(0, 167, 225, 0.14);
+}
+
+.follow-reminder-card:not(.enabled) {
+  background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
+}
+
+.follow-reminder-card:not(.enabled) small {
+  color: #8a98aa;
+}
+
+@media (max-width: 720px) {
+  .follow-reminder-controls { grid-template-columns: 1fr; }
+}
