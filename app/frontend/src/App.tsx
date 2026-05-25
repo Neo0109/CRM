@@ -19,7 +19,13 @@ type Filters = {
   missingLinks: boolean;
 };
 
-const version = "v1.2.6";
+type NormalizedSteamLink = {
+  appId: string;
+  storeUrl: string;
+  steamDbUrl: string;
+};
+
+const version = "v1.4.5";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
@@ -253,7 +259,7 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
                 <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
                 <td><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
                 <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
-                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><QuickActions lead={lead} onPatch={handleLeadPatch} compact /></td>
+                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><QuickActions lead={lead} onPatch={handleLeadPatch} compact missingLinksMode={filters.missingLinks} /></td>
                 <td>{lead.notes ?? ""}</td>
               </tr>
             ))}
@@ -261,7 +267,7 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
           </tbody>
         </table>
       </div>
-      <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} />
+      <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} missingLinksMode={filters.missingLinks} />
     </section>
   </>;
 }
@@ -274,7 +280,7 @@ function Select<T extends string>({ label, value, options, onChange }: { label: 
   return <label className="field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value as T)}>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>;
 }
 
-function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; onMove: (lead: Lead, bucket: Bucket) => Promise<void> }) {
+function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | null; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; onMove: (lead: Lead, bucket: Bucket) => Promise<void>; missingLinksMode: boolean }) {
   const [draft, setDraft] = useState<Lead | null>(null);
 
   useEffect(() => {
@@ -285,6 +291,12 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
 
   function setField<K extends keyof Lead>(key: K, value: Lead[K]) {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function applySteamLink(normalized: NormalizedSteamLink) {
+    const nextDraft = applySteamLinkToLead(draft, normalized);
+    setDraft(nextDraft);
+    await onPatch(lead.id, nextDraft);
   }
 
   const addContact = () => setField("contact_methods", [...draft.contact_methods, { type: "微信/QQ", value: "", note: null }]);
@@ -303,7 +315,7 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
       <button className="primary-button" onClick={save}><Save size={16} />保存</button>
     </div>
 
-    <QuickActions lead={draft} onPatch={onPatch} />
+    <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />
     <BucketButtons lead={draft} onMove={moveDraft} />
 
     <div className="signal-grid three">
@@ -311,6 +323,8 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
       <Signal label="规则判断" value={draft.rule_fit ?? "待复核"} />
       <Signal label="B站适配" value={draft.bilibili_fit} />
     </div>
+
+    <SteamLinkEditor lead={draft} onApply={applySteamLink} />
 
     <div className="form-section">
       <h3>基础信息</h3>
@@ -381,11 +395,56 @@ function LeadDetail({ lead, onPatch, onMove }: { lead: Lead | null; onPatch: (id
   </aside>;
 }
 
-function QuickActions({ lead, onPatch, compact = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean }) {
+function SteamLinkEditor({ lead, onApply }: { lead: Lead; onApply: (link: NormalizedSteamLink) => Promise<void> }) {
+  const [value, setValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const links = gameLinks(lead.links);
+
+  useEffect(() => setValue(""), [lead.id]);
+
+  async function handleApply() {
+    const normalized = normalizeSteamLinkInput(value);
+    if (!normalized) {
+      window.alert("请粘贴 Steam 商店/SteamDB/Steam 社区链接，或者直接输入 Steam AppID");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await onApply(normalized);
+      setValue("");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return <div className="steam-link-editor">
+    <div className="steam-link-copy">
+      <strong>Steam 链接补录</strong>
+      <span>粘贴 Steam 商店、SteamDB、Steam 社区链接，或直接填 AppID；保存后左侧会出现 Steam / SteamDB 跳转标签。</span>
+    </div>
+    <div className="steam-link-input-row">
+      <input value={value} onChange={(event) => setValue(event.target.value)} placeholder="https://store.steampowered.com/app/... 或 AppID" />
+      <button className="ghost-button" onClick={handleApply} disabled={saving}>{saving ? "保存中" : "补录并保存"}</button>
+    </div>
+    {links.length > 0 && <div className="chip-list current-steam-links">{links.map((link) => <a className="chip contact-chip-link" key={link} href={link} target="_blank" rel="noreferrer"><ExternalLink size={12} /><span className="chip-label">{linkLabel(link)}</span></a>)}</div>}
+  </div>;
+}
+
+function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean; missingLinksMode?: boolean }) {
+  const reviewed_at = new Date().toISOString();
+  if (missingLinksMode) {
+    return <div className={compact ? "quick-actions compact" : "quick-actions"} data-fixed-actions="missing-links" onClick={(event) => event.stopPropagation()}>
+      <button className="quick-button follow" data-action-label="跟" title="移入跟进中" aria-label="移入跟进中" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at })}><CheckCircle2 size={15} /><span className={compact ? "visually-hidden" : ""}>跟进</span></button>
+      <button className="quick-button watch" data-action-label="观" title="移入观察池" aria-label="移入观察池" onClick={() => void onPatch(lead.id, { bucket: "观察池", stage: "watch", review_status: "已查看", reviewed_at })}><ListChecks size={15} /><span className={compact ? "visually-hidden" : ""}>观望</span></button>
+      <button className="quick-button drop" data-action-label="淘" title="移入淘汰池" aria-label="移入淘汰池" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at })}><XCircle size={15} /><span className={compact ? "visually-hidden" : ""}>淘汰</span></button>
+    </div>;
+  }
+
   return <div className={compact ? "quick-actions compact" : "quick-actions"} onClick={(event) => event.stopPropagation()}>
-    <button className="quick-button follow" title="移入跟进" aria-label="移入跟进" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at: new Date().toISOString() })}><CheckCircle2 size={15} /><span className={compact ? "visually-hidden" : ""}>跟进</span></button>
-    <button className="quick-button drop" title="移入淘汰池" aria-label="移入淘汰池" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at: new Date().toISOString() })}><XCircle size={15} /><span className={compact ? "visually-hidden" : ""}>淘汰</span></button>
-    {!compact && <button className="quick-button seen" onClick={() => void onPatch(lead.id, { review_status: "已查看", reviewed_at: new Date().toISOString() })}>已看</button>}
+    <button className="quick-button follow" title="移入跟进" aria-label="移入跟进" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at })}><CheckCircle2 size={15} /><span className={compact ? "visually-hidden" : ""}>跟进</span></button>
+    <button className="quick-button drop" title="移入淘汰池" aria-label="移入淘汰池" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at })}><XCircle size={15} /><span className={compact ? "visually-hidden" : ""}>淘汰</span></button>
+    {!compact && <button className="quick-button seen" onClick={() => void onPatch(lead.id, { review_status: "已查看", reviewed_at })}>已看</button>}
   </div>;
 }
 
@@ -482,6 +541,41 @@ function visibleContacts(contacts: ContactMethod[]) {
 
 function gameLinks(links: string[]) {
   return links.filter(isGameLink).slice(0, 2);
+}
+
+function normalizeSteamLinkInput(value: string): NormalizedSteamLink | null {
+  const appId = steamAppIdFromText(value);
+  if (!appId) return null;
+  return {
+    appId,
+    storeUrl: `https://store.steampowered.com/app/${appId}/`,
+    steamDbUrl: `https://steamdb.info/app/${appId}/`
+  };
+}
+
+function steamAppIdFromText(value: string) {
+  const trimmed = value.trim();
+  if (/^\d{3,}$/.test(trimmed)) return trimmed;
+  const match = trimmed.match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i) ?? trimmed.match(/\/app\/(\d+)/i);
+  return match?.[1] ?? null;
+}
+
+function applySteamLinkToLead(lead: Lead, steam: NormalizedSteamLink): Lead {
+  return {
+    ...lead,
+    steam_app_id: lead.steam_app_id || steam.appId,
+    links: mergeLinks([steam.storeUrl, steam.steamDbUrl, ...lead.links])
+  };
+}
+
+function mergeLinks(links: string[]) {
+  const deduped = new Map<string, string>();
+  for (const link of links) {
+    const trimmed = link.trim();
+    if (!trimmed) continue;
+    deduped.set(trimmed.toLowerCase().replace(/\/$/, ""), trimmed);
+  }
+  return Array.from(deduped.values());
 }
 
 function isHttpUrl(value: string) {
