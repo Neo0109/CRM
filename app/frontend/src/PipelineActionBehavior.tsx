@@ -12,6 +12,8 @@ type ActionSpec = {
   tone: "follow" | "watch" | "drop" | "push" | "seen";
 };
 
+const customHandledActions: PipelineAction[] = ["watch", "push"];
+
 export function PipelineActionBehavior() {
   useEffect(() => {
     let frame = 0;
@@ -57,7 +59,7 @@ export function PipelineActionBehavior() {
 
       const action = button.dataset.pipelineAction as PipelineAction | undefined;
       const leadId = button.dataset.pipelineLeadId;
-      if (!action || !leadId) return;
+      if (!action || !leadId || !customHandledActions.includes(action)) return;
 
       event.preventDefault();
       event.stopPropagation();
@@ -65,10 +67,12 @@ export function PipelineActionBehavior() {
 
       try {
         button.disabled = true;
-        await updateLead(leadId, patchForAction(action));
-        leads = await fetchLeads();
-        refreshLeadsView();
+        const updated = await updateLead(leadId, patchForAction(action));
+        leads = leads.map((lead) => lead.id === updated.id ? updated : lead);
+        markActionApplied(button, updated);
         scheduleApply();
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : "操作保存失败");
       } finally {
         button.disabled = false;
       }
@@ -177,12 +181,18 @@ function resolveLead(block: HTMLElement, leads: Lead[]) {
   return exact.find((lead) => bucketText.includes(lead.bucket)) ?? exact[0] ?? null;
 }
 
-function refreshLeadsView() {
-  const refreshButton = Array.from(document.querySelectorAll<HTMLButtonElement>(".actions .ghost-button"))
-    .find((button) => button.textContent?.includes("刷新"));
-  if (refreshButton) {
-    refreshButton.click();
-  } else {
-    window.location.reload();
+function markActionApplied(button: HTMLButtonElement, updated: Lead) {
+  const row = button.closest<HTMLTableRowElement>("tr");
+  if (row) {
+    row.dataset.pipelineMoved = updated.bucket;
+    const statusLine = row.querySelector<HTMLElement>(".project-cell small");
+    if (statusLine) statusLine.textContent = `${updated.priority} · ${updated.bucket} · ${updated.review_status}`;
+    const activeBucketFilter = document.querySelector<HTMLSelectElement>(".filters select")?.value ?? "全部";
+    if (activeBucketFilter !== "全部" && activeBucketFilter !== updated.bucket) row.hidden = true;
+  }
+
+  const detailEyebrow = document.querySelector<HTMLElement>(".detail-head .eyebrow");
+  if (detailEyebrow?.textContent?.includes(updated.project) || !row) {
+    detailEyebrow.textContent = `${updated.bucket} · ${updated.priority} · ${updated.review_status}`;
   }
 }
