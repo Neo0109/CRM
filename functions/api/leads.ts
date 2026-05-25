@@ -13,7 +13,10 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
       await syncReportFromRepository(env, yesterday).catch(() => null);
     }
 
-    await syncReportFromRepository(env, today).catch(() => null);
+    if (!hasSyncedReport(existingLeads, today)) {
+      await syncReportFromRepository(env, today).catch(() => null);
+    }
+
     return json(await readLeads(env));
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
