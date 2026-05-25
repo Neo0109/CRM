@@ -9,7 +9,7 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
     const yesterday = offsetDate(today, -1);
     const existingLeads = await readLeads(env);
 
-    if (!existingLeads.some((lead) => lead.first_seen === yesterday)) {
+    if (!hasSyncedReport(existingLeads, yesterday)) {
       await syncReportFromRepository(env, yesterday).catch(() => null);
     }
 
@@ -19,6 +19,10 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
     return json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
   }
 };
+
+function hasSyncedReport(leads: Awaited<ReturnType<typeof readLeads>>, reportDate: string) {
+  return leads.some((lead) => lead.first_seen === reportDate || (lead.notes ?? "").includes(`日报 ${reportDate}`));
+}
 
 function offsetDate(dateKey: string, days: number) {
   const [year, month, day] = dateKey.split("-").map(Number);
