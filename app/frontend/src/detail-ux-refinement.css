@@ -1,0 +1,60 @@
+.detail-panel label[data-raw-due-date-field="hidden"] {
+  display: none !important;
+}
+
+.followup-reminder-note {
+  background: linear-gradient(135deg, #f0f9ff, #fff7ed);
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #334155;
+  display: grid;
+  gap: 4px;
+  grid-column: 1 / -1;
+  line-height: 1.55;
+  padding: 10px 12px;
+}
+
+.followup-reminder-note strong {
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.followup-reminder-note span {
+  color: #526175;
+  font-size: 12px;
+}
+
+.rule-flag-explainer {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  color: #334155;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  line-height: 1.45;
+  padding: 9px 11px;
+}
+
+.rule-flag-explainer strong {
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.rule-flag-explainer span {
+  color: #64748b;
+  font-size: 12px;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .rule-flag-explainer {
+    align-items: start;
+    display: grid;
+  }
+
+  .rule-flag-explainer span {
+    text-align: left;
+  }
+}
