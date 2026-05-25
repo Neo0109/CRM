@@ -16,7 +16,26 @@ type CalendarEvent = {
   lead?: Lead;
 };
 
+type ReminderChoice = "14d" | "1m" | "6w" | "2m" | "3m" | "6m" | "custom";
+
+type ReminderOption = {
+  value: ReminderChoice;
+  label: string;
+  days?: number;
+  months?: number;
+};
+
+const calendarMarker = "[calendar-reminder]";
 const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
+const reminderOptions: ReminderOption[] = [
+  { value: "14d", label: "2周后", days: 14 },
+  { value: "1m", label: "1个月后", months: 1 },
+  { value: "6w", label: "6周后", days: 42 },
+  { value: "2m", label: "2个月后", months: 2 },
+  { value: "3m", label: "3个月后", months: 3 },
+  { value: "6m", label: "6个月后", months: 6 },
+  { value: "custom", label: "指定日期" }
+];
 
 export function CalendarLauncher() {
   const [host, setHost] = useState<Element | null>(null);
@@ -33,7 +52,7 @@ export function CalendarLauncher() {
   useEffect(() => {
     const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
     if (versionLabel && /v\d+\.\d+(?:\.\d+)?/.test(versionLabel.textContent ?? "")) {
-      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v1.3.0");
+      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v1.3.1");
     }
   }, []);
 
@@ -52,13 +71,16 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [month, setMonth] = useState(monthStart(todayKey()));
   const [selectedDay, setSelectedDay] = useState(todayKey());
+  const [choiceByLead, setChoiceByLead] = useState<Record<string, ReminderChoice>>({});
+  const [customDateByLead, setCustomDateByLead] = useState<Record<string, string>>({});
 
   useEffect(() => {
     void reload();
   }, []);
 
-  const reminderEvents = useMemo<CalendarEvent[]>(() => leads
-    .filter((lead) => lead.due_date && lead.bucket !== "淘汰池")
+  const calendarLeads = useMemo(() => leads.filter(isLeadCalendarVisible), [leads]);
+  const reminderEvents = useMemo<CalendarEvent[]>(() => calendarLeads
+    .filter((lead) => lead.bucket !== "淘汰池")
     .map((lead) => ({
       id: `lead-${lead.id}`,
       title: lead.project,
@@ -67,7 +89,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
       kind: "lead",
       note: `${lead.bucket} · ${lead.priority}${lead.owner ? ` · ${lead.owner}` : ""}`,
       lead
-    })), [leads]);
+    })), [calendarLeads]);
 
   const steamEvents = useMemo<CalendarEvent[]>(() => officialSteamEvents.map((event) => ({ ...event, kind: event.kind })), []);
   const allEvents = useMemo(() => [...reminderEvents, ...steamEvents], [reminderEvents, steamEvents]);
@@ -76,9 +98,9 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
   const followLeads = useMemo(() => leads.filter((lead) => lead.bucket === "跟进中").sort(compareFollowLeads), [leads]);
   const monthSteamEvents = officialSteamEvents.filter((event) => monthOverlaps(event.start, event.end, month));
   const today = todayKey();
-  const overdueCount = followLeads.filter((lead) => lead.due_date && lead.due_date < today).length;
-  const soonCount = followLeads.filter((lead) => lead.due_date && daysUntil(lead.due_date) >= 0 && daysUntil(lead.due_date) <= 14).length;
-  const missingReminderCount = followLeads.filter((lead) => !lead.due_date).length;
+  const overdueCount = calendarLeads.filter((lead) => lead.due_date && lead.due_date < today).length;
+  const soonCount = calendarLeads.filter((lead) => lead.due_date && daysUntil(lead.due_date) >= 0 && daysUntil(lead.due_date) <= 14).length;
+  const pendingFollowCount = followLeads.filter((lead) => !isLeadCalendarVisible(lead)).length;
 
   async function reload() {
     try {
@@ -105,15 +127,29 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
     }
   }
 
-  async function scheduleFollowUp(lead: Lead, months: number) {
-    const dueDate = addMonths(todayKey(), months);
+  async function scheduleFollowUp(lead: Lead) {
+    const choice = choiceByLead[lead.id] ?? "1m";
+    const dueDate = dueDateFromChoice(choice, customDateByLead[lead.id]);
+    if (!dueDate) {
+      setError("请先选择一个具体日期");
+      return;
+    }
+
     await patchLead(lead, {
       bucket: "跟进中",
       stage: "active",
       review_status: "跟进中",
       reviewed_at: new Date().toISOString(),
       due_date: dueDate,
+      notes: addCalendarMarker(lead.notes),
       next_action: lead.next_action ?? `${dueDate} 再跟进研发进度/发行窗口`
+    });
+  }
+
+  async function removeCalendarReminder(lead: Lead) {
+    await patchLead(lead, {
+      due_date: null,
+      notes: removeCalendarMarker(lead.notes)
     });
   }
 
@@ -123,7 +159,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
         <div>
           <p className="eyebrow">CALENDAR · FOLLOW-UP</p>
           <h2>日历与长期跟进提醒</h2>
-          <p>把跟进中项目的下次触达时间和 Steam 官方活动放在同一张日历里。</p>
+          <p>日历只显示你手动加入的 Lead 提醒；Steam 官方活动默认显示，避免日程被自动导入的线索淹没。</p>
         </div>
         <div className="calendar-head-actions">
           <button className="ghost-button" onClick={() => void reload()} disabled={loading}><RefreshCw size={16} />刷新</button>
@@ -135,10 +171,10 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
       {error && <div className="notice error">{error}</div>}
 
       <div className="calendar-metrics">
-        <div className="calendar-metric"><span>跟进中</span><strong>{followLeads.length}</strong></div>
+        <div className="calendar-metric"><span>日历提醒</span><strong>{calendarLeads.length}</strong></div>
         <div className="calendar-metric danger"><span>已过期</span><strong>{overdueCount}</strong></div>
         <div className="calendar-metric warn"><span>14天内</span><strong>{soonCount}</strong></div>
-        <div className="calendar-metric"><span>未设提醒</span><strong>{missingReminderCount}</strong></div>
+        <div className="calendar-metric"><span>跟进中待加入</span><strong>{pendingFollowCount}</strong></div>
         <div className="calendar-metric steam"><span>本月 Steam 活动</span><strong>{monthSteamEvents.length}</strong></div>
       </div>
 
@@ -175,19 +211,28 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
           </section>
 
           <section className="calendar-panel">
-            <div className="calendar-panel-head"><h3>跟进提醒</h3><span>{loading ? "..." : followLeads.length}</span></div>
-            {loading ? <div className="calendar-empty">加载中</div> : followLeads.length ? <div className="follow-reminder-list">{followLeads.map((lead) => <article className="follow-reminder-card" key={lead.id}>
-              <div>
-                <strong>{lead.project}</strong>
-                <small>{lead.due_date ? reminderText(lead.due_date) : "未设置下次跟进日"}</small>
-              </div>
-              <p>{lead.next_action ?? lead.priority_reason ?? "等待补充下一步动作"}</p>
-              <div className="follow-reminder-actions">
-                <button onClick={() => void scheduleFollowUp(lead, 1)} disabled={savingId === lead.id}><Clock3 size={14} />1个月</button>
-                <button onClick={() => void scheduleFollowUp(lead, 2)} disabled={savingId === lead.id}><Clock3 size={14} />2个月</button>
-                <button onClick={() => void patchLead(lead, { due_date: null })} disabled={savingId === lead.id}>清除</button>
-              </div>
-            </article>)}</div> : <div className="calendar-empty">暂无跟进中项目。把 Lead 移入“跟进中”后会出现在这里。</div>}
+            <div className="calendar-panel-head"><h3>设置跟进提醒</h3><span>{loading ? "..." : followLeads.length}</span></div>
+            {loading ? <div className="calendar-empty">加载中</div> : followLeads.length ? <div className="follow-reminder-list">{followLeads.map((lead) => {
+              const choice = choiceByLead[lead.id] ?? "1m";
+              const enabled = isLeadCalendarVisible(lead);
+              return <article className={`follow-reminder-card ${enabled ? "enabled" : ""}`} key={lead.id}>
+                <div>
+                  <strong>{lead.project}</strong>
+                  <small>{enabled && lead.due_date ? `已加入日历 · ${reminderText(lead.due_date)}` : "未加入日历，不会显示在月历上"}</small>
+                </div>
+                <p>{lead.next_action ?? lead.priority_reason ?? "等待补充下一步动作"}</p>
+                <div className="follow-reminder-controls">
+                  <select value={choice} onChange={(event) => setChoiceByLead((current) => ({ ...current, [lead.id]: event.target.value as ReminderChoice }))}>
+                    {reminderOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
+                  {choice === "custom" && <input type="date" value={customDateByLead[lead.id] ?? ""} onChange={(event) => setCustomDateByLead((current) => ({ ...current, [lead.id]: event.target.value }))} />}
+                </div>
+                <div className="follow-reminder-actions">
+                  <button onClick={() => void scheduleFollowUp(lead)} disabled={savingId === lead.id}><Clock3 size={14} />{enabled ? "更新提醒" : "加入日历"}</button>
+                  {enabled && <button onClick={() => void removeCalendarReminder(lead)} disabled={savingId === lead.id}>移出日历</button>}
+                </div>
+              </article>;
+            })}</div> : <div className="calendar-empty">暂无跟进中项目。先把 Lead 移入“跟进中”，再按需要加入日历提醒。</div>}
           </section>
         </aside>
       </div>
@@ -206,6 +251,30 @@ function CalendarAgendaItem({ event }: { event: CalendarEvent }) {
   </article>;
 }
 
+function isLeadCalendarVisible(lead: Lead) {
+  return Boolean(lead.due_date && lead.bucket !== "淘汰池" && lead.notes?.includes(calendarMarker));
+}
+
+function addCalendarMarker(notes: string | null) {
+  if (notes?.includes(calendarMarker)) return notes;
+  return [notes, `${calendarMarker} 手动加入日历提醒`].filter(Boolean).join("\n");
+}
+
+function removeCalendarMarker(notes: string | null) {
+  if (!notes) return null;
+  const next = notes.split("\n").filter((line) => !line.includes(calendarMarker)).join("\n").trim();
+  return next || null;
+}
+
+function dueDateFromChoice(choice: ReminderChoice, customDate?: string) {
+  if (choice === "custom") return customDate || null;
+  const option = reminderOptions.find((item) => item.value === choice);
+  if (!option) return addMonths(todayKey(), 1);
+  if (option.days) return addDays(todayKey(), option.days);
+  if (option.months) return addMonths(todayKey(), option.months);
+  return null;
+}
+
 function buildMonthDays(monthKey: string) {
   const first = parseDate(monthKey);
   const startOffset = (first.getDay() + 6) % 7;
@@ -218,6 +287,8 @@ function buildMonthDays(monthKey: string) {
 }
 
 function compareFollowLeads(a: Lead, b: Lead) {
+  const enabledDiff = Number(isLeadCalendarVisible(b)) - Number(isLeadCalendarVisible(a));
+  if (enabledDiff) return enabledDiff;
   if (!a.due_date && !b.due_date) return a.project.localeCompare(b.project, "zh-CN");
   if (!a.due_date) return 1;
   if (!b.due_date) return -1;
@@ -245,6 +316,12 @@ function monthOverlaps(start: string, end: string, monthKey: string) {
 
 function monthStart(value: string) {
   return `${value.slice(0, 7)}-01`;
+}
+
+function addDays(value: string, days: number) {
+  const date = parseDate(value);
+  date.setDate(date.getDate() + days);
+  return dateKey(date);
 }
 
 function addMonths(value: string, months: number) {
