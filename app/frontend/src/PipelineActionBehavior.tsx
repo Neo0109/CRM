@@ -41,6 +41,7 @@ export function PipelineActionBehavior() {
       }
 
       for (const block of Array.from(document.querySelectorAll<HTMLElement>(".quick-actions"))) {
+        if (block.dataset.fixedActions) continue;
         const lead = resolveLead(block, leads);
         if (!lead) continue;
         configureActionBlock(block, lead);
@@ -55,7 +56,7 @@ export function PipelineActionBehavior() {
     const handleClick = async (event: MouseEvent) => {
       const target = event.target as Element | null;
       const button = target?.closest<HTMLButtonElement>(".quick-button[data-pipeline-action]");
-      if (!button) return;
+      if (!button || button.closest<HTMLElement>(".quick-actions")?.dataset.fixedActions) return;
 
       const action = button.dataset.pipelineAction as PipelineAction | undefined;
       const leadId = button.dataset.pipelineLeadId;
