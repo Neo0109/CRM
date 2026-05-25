@@ -143,9 +143,31 @@ export type SteamTrendItem = {
   captured_at: string;
 };
 
+export type SteamMarketInsight = {
+  id: string;
+  title: string;
+  summary: string;
+  signal_level: "高" | "中" | "低";
+  source: string;
+  link: string;
+  suggested_action: string;
+  captured_at: string;
+};
+
+export type SteamGenreSignal = {
+  id: string;
+  genre: string;
+  signal: string;
+  why_it_matters: string;
+  bd_action: string;
+  links: string[];
+};
+
 export type SteamTrendReport = {
   report_date: string;
   summary: string;
+  market_insights?: SteamMarketInsight[];
+  genre_signals?: SteamGenreSignal[];
   items: SteamTrendItem[];
   crm_candidates?: Partial<Lead>[];
   sync_result?: ImportResult | null;
