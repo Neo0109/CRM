@@ -24,23 +24,15 @@
   color: #334155;
 }
 
-.quick-actions.compact .quick-button[data-pipeline-action-label] svg,
-.quick-actions.compact[data-fixed-actions="missing-links"] .quick-button svg {
-  display: none;
-}
-
-.quick-actions.compact .quick-button[data-pipeline-action-label]::after {
-  content: attr(data-pipeline-action-label);
-  font-size: 12px;
-  font-weight: 950;
-  line-height: 1;
-}
-
-.quick-actions.compact[data-fixed-actions="missing-links"] {
+.quick-actions.compact[data-action-count="3"] {
   grid-template-columns: repeat(3, 34px);
 }
 
-.quick-actions.compact[data-fixed-actions="missing-links"] .quick-button::after {
+.quick-actions.compact .quick-button[data-action-label] svg {
+  display: none;
+}
+
+.quick-actions.compact .quick-button[data-action-label]::after {
   content: attr(data-action-label);
   font-size: 12px;
   font-weight: 950;
@@ -55,6 +47,11 @@
 .quick-actions.compact .quick-button.follow {
   background: #ecfeff;
   border-color: #a5f3fc;
+}
+
+.quick-actions.compact .quick-button.push {
+  background: #f0fdf4;
+  border-color: #86efac;
 }
 
 .quick-actions.compact .quick-button.drop {

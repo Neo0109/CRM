@@ -4,7 +4,6 @@ import App from "./App";
 import { CalendarLauncher } from "./CalendarLauncher";
 import { DetailUxRefinement } from "./DetailUxRefinement";
 import { ManualLeadLauncher } from "./ManualLeadLauncher";
-import { PipelineActionBehavior } from "./PipelineActionBehavior";
 import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
 import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
@@ -24,6 +23,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ReviewQueueBehavior />
     <SteamStoreLinkBehavior />
     <DetailUxRefinement />
-    <PipelineActionBehavior />
   </React.StrictMode>
 );

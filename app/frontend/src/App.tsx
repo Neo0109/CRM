@@ -1,5 +1,5 @@
 import { ArrowDownToLine, Bot, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
 import { SettingsPage } from "./SettingsPage";
@@ -25,7 +25,7 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.4.5";
+const version = "v1.4.7";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
@@ -431,21 +431,81 @@ function SteamLinkEditor({ lead, onApply }: { lead: Lead; onApply: (link: Normal
   </div>;
 }
 
-function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean; missingLinksMode?: boolean }) {
-  const reviewed_at = new Date().toISOString();
-  if (missingLinksMode) {
-    return <div className={compact ? "quick-actions compact" : "quick-actions"} data-fixed-actions="missing-links" onClick={(event) => event.stopPropagation()}>
-      <button className="quick-button follow" data-action-label="跟" title="移入跟进中" aria-label="移入跟进中" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at })}><CheckCircle2 size={15} /><span className={compact ? "visually-hidden" : ""}>跟进</span></button>
-      <button className="quick-button watch" data-action-label="观" title="移入观察池" aria-label="移入观察池" onClick={() => void onPatch(lead.id, { bucket: "观察池", stage: "watch", review_status: "已查看", reviewed_at })}><ListChecks size={15} /><span className={compact ? "visually-hidden" : ""}>观望</span></button>
-      <button className="quick-button drop" data-action-label="淘" title="移入淘汰池" aria-label="移入淘汰池" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at })}><XCircle size={15} /><span className={compact ? "visually-hidden" : ""}>淘汰</span></button>
-    </div>;
-  }
+type QuickActionSpec = {
+  key: string;
+  label: string;
+  compactLabel: string;
+  title: string;
+  tone: "follow" | "watch" | "drop" | "push" | "seen";
+  icon: ReactElement;
+  patch: () => Partial<Lead>;
+};
 
-  return <div className={compact ? "quick-actions compact" : "quick-actions"} onClick={(event) => event.stopPropagation()}>
-    <button className="quick-button follow" title="移入跟进" aria-label="移入跟进" onClick={() => void onPatch(lead.id, { bucket: "跟进中", stage: "active", review_status: "跟进中", reviewed_at })}><CheckCircle2 size={15} /><span className={compact ? "visually-hidden" : ""}>跟进</span></button>
-    <button className="quick-button drop" title="移入淘汰池" aria-label="移入淘汰池" onClick={() => void onPatch(lead.id, { bucket: "淘汰池", stage: "rejected", review_status: "已淘汰", reviewed_at })}><XCircle size={15} /><span className={compact ? "visually-hidden" : ""}>淘汰</span></button>
-    {!compact && <button className="quick-button seen" onClick={() => void onPatch(lead.id, { review_status: "已查看", reviewed_at })}>已看</button>}
+function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean; missingLinksMode?: boolean }) {
+  const specs = quickActionSpecs(lead, missingLinksMode, compact);
+  return <div className={compact ? "quick-actions compact" : "quick-actions"} data-fixed-actions="native-pipeline" data-action-count={specs.length} onClick={(event) => event.stopPropagation()}>
+    {specs.map((spec) => (
+      <button key={spec.key} className={`quick-button ${spec.tone}`} data-action-label={compact ? spec.compactLabel : undefined} title={spec.title} aria-label={spec.title} onClick={() => void onPatch(lead.id, spec.patch())}>
+        {spec.icon}
+        <span className={compact ? "visually-hidden" : ""}>{spec.label}</span>
+      </button>
+    ))}
   </div>;
+}
+
+function quickActionSpecs(lead: Lead, missingLinksMode: boolean, compact: boolean): QuickActionSpec[] {
+  const reviewed_at = new Date().toISOString();
+  const follow = {
+    key: "follow",
+    label: lead.bucket === "淘汰池" ? "放入跟进" : "跟进",
+    compactLabel: "跟",
+    title: lead.bucket === "淘汰池" ? "从淘汰池恢复到跟进中" : "移入跟进中",
+    tone: "follow" as const,
+    icon: <CheckCircle2 size={15} />,
+    patch: () => ({ bucket: "跟进中" as const, stage: "active" as const, review_status: "跟进中" as const, reviewed_at })
+  };
+  const push = {
+    key: "push",
+    label: "推进中",
+    compactLabel: "推",
+    title: "运营测试通过，进入推进池做深入商务洽谈",
+    tone: "push" as const,
+    icon: <TrendingUp size={15} />,
+    patch: () => ({ bucket: "推进池" as const, stage: "negotiating" as const, review_status: "跟进中" as const, reviewed_at })
+  };
+  const watch = {
+    key: "watch",
+    label: lead.bucket === "淘汰池" ? "放入观察" : "转观察",
+    compactLabel: "观",
+    title: lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : "转入观察池",
+    tone: "watch" as const,
+    icon: <ListChecks size={15} />,
+    patch: () => ({ bucket: "观察池" as const, stage: "watch" as const, review_status: "已查看" as const, reviewed_at })
+  };
+  const drop = {
+    key: "drop",
+    label: "淘汰",
+    compactLabel: "淘",
+    title: "移入淘汰池",
+    tone: "drop" as const,
+    icon: <XCircle size={15} />,
+    patch: () => ({ bucket: "淘汰池" as const, stage: "rejected" as const, review_status: "已淘汰" as const, reviewed_at })
+  };
+  const seen = {
+    key: "seen",
+    label: "已看",
+    compactLabel: "看",
+    title: "标记已看",
+    tone: "seen" as const,
+    icon: <CheckCircle2 size={15} />,
+    patch: () => ({ review_status: "已查看" as const, reviewed_at })
+  };
+
+  if (missingLinksMode) return [follow, watch, drop];
+  if (lead.bucket === "淘汰池") return [follow, watch];
+  if (lead.bucket === "跟进中") return [push, watch, drop];
+  if (lead.bucket === "推进池") return [follow, drop];
+  return compact || lead.review_status !== "未处理" ? [follow, drop] : [follow, drop, seen];
 }
 
 function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: (lead: Lead, bucket: Bucket) => Promise<void>; compact?: boolean }) {
@@ -517,13 +577,15 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
 }
 
 function reviewPatchForBucket(bucket: Bucket): Partial<Lead> {
+  if (bucket === "推进池") return { review_status: "跟进中", reviewed_at: new Date().toISOString() };
   if (bucket === "跟进中") return { review_status: "跟进中", reviewed_at: new Date().toISOString() };
   if (bucket === "淘汰池") return { review_status: "已淘汰", reviewed_at: new Date().toISOString() };
   return { review_status: "已查看", reviewed_at: new Date().toISOString() };
 }
 
 function stageFromBucket(bucket: Bucket): Stage {
-  if (bucket === "推进池" || bucket === "跟进中") return "active";
+  if (bucket === "推进池") return "negotiating";
+  if (bucket === "跟进中") return "active";
   if (bucket === "淘汰池") return "rejected";
   return "watch";
 }
