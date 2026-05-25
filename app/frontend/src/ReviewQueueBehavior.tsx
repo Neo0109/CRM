@@ -16,12 +16,13 @@ export function ReviewQueueBehavior() {
       let selectedRowHidden = false;
 
       for (const row of rows) {
-        if (!row.querySelector(".project-cell")) {
+        const statusLine = row.querySelector(".project-cell small")?.textContent ?? "";
+        if (!statusLine) {
           row.hidden = false;
           continue;
         }
 
-        const isUnhandled = row.textContent?.includes("未处理") ?? false;
+        const isUnhandled = statusLine.includes("未处理");
         const shouldHide = queueOnly && !isUnhandled;
         row.hidden = shouldHide;
 
