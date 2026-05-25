@@ -7,6 +7,7 @@ import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
 import "./styles.css";
 import "./calendar.css";
+import "./calendar-refinement.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
