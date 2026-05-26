@@ -4,6 +4,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
   const hasSupabaseUrl = Boolean(env.SUPABASE_URL);
   const hasSupabaseSecret = Boolean(env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY);
   const hasOpenAiApiKey = Boolean((env as PagesContext["env"] & { OPENAI_API_KEY?: string }).OPENAI_API_KEY);
+  const hasExcelExportPassword = Boolean((env as PagesContext["env"] & { EXCEL_EXPORT_PASSWORD?: string }).EXCEL_EXPORT_PASSWORD);
 
   return json({
     ok: true,
@@ -13,7 +14,8 @@ export const onRequestGet = async ({ env }: PagesContext) => {
       hasSupabaseUrl,
       hasSupabaseSecret,
       hasCrmAccessToken: Boolean(env.CRM_ACCESS_TOKEN),
-      hasOpenAiApiKey
+      hasOpenAiApiKey,
+      hasExcelExportPassword
     }
   });
 };
