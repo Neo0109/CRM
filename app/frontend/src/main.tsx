@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { CalendarLauncher } from "./CalendarLauncher";
 import { DetailUxRefinement } from "./DetailUxRefinement";
+import { HeaderUiRefinement } from "./HeaderUiRefinement";
 import { ManualLeadLauncher } from "./ManualLeadLauncher";
 import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
@@ -23,5 +24,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ReviewQueueBehavior />
     <SteamStoreLinkBehavior />
     <DetailUxRefinement />
+    <HeaderUiRefinement />
   </React.StrictMode>
 );
