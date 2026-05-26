@@ -1,9 +1,9 @@
 {
   "report_date": "2026-05-26",
-  "summary": "今日 Steam 趋势：扫描到 0 个可解析游戏。宏观看 新品节窗口和热门即将推出，适合 CRM 的候选已进入日报池。",
+  "summary": "今日 Steam 趋势：扫描到 45 个候选。宏观看 Indie、Adventure、Action、Casual，适合 CRM 的候选已进入日报池。",
   "market_insights": [
     {
-      "id": "steam_macro_2026_05_26_next_fest_runway",
+      "id": "steam_macro_2026_05_26_runway",
       "title": "新品节前窗口继续升温",
       "summary": "Demo/Playtest 与 Popular Upcoming 是当前最适合前置 BD 的入口。",
       "signal_level": "高",
@@ -14,26 +14,716 @@
     },
     {
       "id": "steam_macro_2026_05_26_macro_genres",
-      "title": "今日高频品类：待观察",
+      "title": "今日高频品类：Indie、Adventure、Action、Casual",
       "summary": "高频品类只说明供给密度，需要结合愿望单、Demo、视频素材和发行占位判断。",
       "signal_level": "中",
       "source": "CRM Online Scan",
       "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
       "suggested_action": "把有视觉/玩法传播点且窗口未被占位的项目进入观察。",
       "captured_at": "2026-05-26T09:30:00+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_05_26_indie",
+      "genre": "Indie",
+      "signal": "Indie 在今日样本中出现较多，需要区分机制差异和普通跟风供给。",
+      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
+      "bd_action": "保留 Steam 页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
+      "links": [
+        "https://store.steampowered.com/search/?filter=popularcomingsoon",
+        "https://steamdb.info/charts/?sort=trending"
+      ]
     },
     {
-      "id": "steam_macro_2026_05_26_featured_fallback",
-      "title": "Steam featured categories 已作为兜底数据源",
-      "summary": "当搜索结果接口返回空时，系统会用 Steam 官方 featured categories 保证趋势页和日报不断档。",
-      "signal_level": "中",
-      "source": "Steam API",
-      "link": "https://store.steampowered.com/api/featuredcategories",
-      "suggested_action": "把 featured 数据当大盘补充，不直接等同于推进理由。",
+      "id": "steam_genre_2026_05_26_adventure",
+      "genre": "Adventure",
+      "signal": "Adventure 在今日样本中出现较多，需要区分机制差异和普通跟风供给。",
+      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
+      "bd_action": "保留 Steam 页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
+      "links": [
+        "https://store.steampowered.com/search/?filter=popularcomingsoon",
+        "https://steamdb.info/charts/?sort=trending"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_05_26_action",
+      "genre": "Action",
+      "signal": "Action 在今日样本中出现较多，需要区分机制差异和普通跟风供给。",
+      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
+      "bd_action": "保留 Steam 页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
+      "links": [
+        "https://store.steampowered.com/search/?filter=popularcomingsoon",
+        "https://steamdb.info/charts/?sort=trending"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_05_26_casual",
+      "genre": "Casual",
+      "signal": "Casual 在今日样本中出现较多，需要区分机制差异和普通跟风供给。",
+      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
+      "bd_action": "保留 Steam 页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
+      "links": [
+        "https://store.steampowered.com/search/?filter=popularcomingsoon",
+        "https://steamdb.info/charts/?sort=trending"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_05_26_simulation",
+      "genre": "Simulation",
+      "signal": "Simulation 在今日样本中出现较多，需要区分机制差异和普通跟风供给。",
+      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
+      "bd_action": "保留 Steam 页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
+      "links": [
+        "https://store.steampowered.com/search/?filter=popularcomingsoon",
+        "https://steamdb.info/charts/?sort=trending"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_05_26_2100280",
+      "title": "World of Tanks: HEAT",
+      "steam_app_id": "2100280",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-26；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/2100280/",
+        "https://steamdb.info/app/2100280/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_1431750",
+      "title": "The Henchmen",
+      "steam_app_id": "1431750",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-26；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/1431750/",
+        "https://steamdb.info/app/1431750/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_4111370",
+      "title": "Birdwatching Notebook",
+      "steam_app_id": "4111370",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-26；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4111370/",
+        "https://steamdb.info/app/4111370/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_4264260",
+      "title": "Utawarerumono: Past and Present Rediscovered",
+      "steam_app_id": "4264260",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-27；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4264260/",
+        "https://steamdb.info/app/4264260/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_3061390",
+      "title": "Inkwellers",
+      "steam_app_id": "3061390",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3061390/",
+        "https://steamdb.info/app/3061390/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_3943690",
+      "title": "Plush Parade",
+      "steam_app_id": "3943690",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3943690/",
+        "https://steamdb.info/app/3943690/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_4008350",
+      "title": "Beat The Champions",
+      "steam_app_id": "4008350",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4008350/",
+        "https://steamdb.info/app/4008350/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_1981560",
+      "title": "万词破 - 单词女友",
+      "steam_app_id": "1981560",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/1981560/",
+        "https://steamdb.info/app/1981560/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_3726370",
+      "title": "Heavy Metal Death Can",
+      "steam_app_id": "3726370",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3726370/",
+        "https://steamdb.info/app/3726370/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_3887090",
+      "title": "Airport Baggage Simulator",
+      "steam_app_id": "3887090",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3887090/",
+        "https://steamdb.info/app/3887090/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_3198890",
+      "title": "Scale the Depths",
+      "steam_app_id": "3198890",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3198890/",
+        "https://steamdb.info/app/3198890/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_26_3264960",
+      "title": "Cardburners",
+      "steam_app_id": "3264960",
+      "rank_bucket": "Popular Upcoming",
+      "signal": "Popular Upcoming；2026-05-28；score=53",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3264960/",
+        "https://steamdb.info/app/3264960/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "可进入 CRM 推进/观察候选",
+      "auto_import": true,
       "captured_at": "2026-05-26T09:30:00+08:00"
     }
   ],
-  "genre_signals": [],
-  "items": [],
-  "crm_candidates": []
+  "crm_candidates": [
+    {
+      "id": "lead_steam_2100280_2026-05-26",
+      "project": "World of Tanks: HEAT",
+      "steam_app_id": "2100280",
+      "team": "Wargaming Group Limited",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "推进池",
+      "stage": "active",
+      "priority": "P1",
+      "priority_reason": "Popular Upcoming 信号 + 可传播玩法/素材，值得优先确认窗口",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Action / Massively Multiplayer / Free To Play",
+      "gameplay": "World of Tanks: HEAT is the first ever hero-driven tank action game. Choose your Agent, personalize your tank, and combine skill and strategy to dominate the battlefield.",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-26",
+      "release_window": "2026-05-26",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Wargaming Group Limited；未见成熟中国发行能力占位",
+      "publisher_name": "Wargaming Group Limited",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 2100280",
+      "contact": "官网: https://wotheat.com；Support: https://discord.com/invite/p9BrPZXV5G",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://wotheat.com",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Support",
+          "value": "https://discord.com/invite/p9BrPZXV5G",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/2100280/",
+        "https://steamdb.info/app/2100280/",
+        "https://wotheat.com"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "amplification": "可做多人首测、主播局和社交传播节点。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "值得优先触达，确认中国区合作窗口",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=53；Popular Upcoming 信号 + 可传播玩法/素材，值得优先确认窗口"
+    },
+    {
+      "id": "lead_steam_1431750_2026-05-26",
+      "project": "The Henchmen",
+      "steam_app_id": "1431750",
+      "team": "Alex Von Bronx",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "推进池",
+      "stage": "active",
+      "priority": "P1",
+      "priority_reason": "Popular Upcoming 信号 + 可传播玩法/素材，值得优先确认窗口",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Action / Adventure / Indie / Racing",
+      "gameplay": "Relive the ‘90s crime sandbox alone, or with a partner by your side. Prepare for a head on collision of the classic and the contemporary in The Henchmen - a chaotic, co-operative crime thriller.",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-26",
+      "release_window": "2026-05-26",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "DOSMan Publishing；未见成熟中国发行能力占位",
+      "publisher_name": "DOSMan Publishing",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 1431750",
+      "contact": "官网: https://www.dosmangames.com/；Support: https://thehenchmengame.com/contact",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.dosmangames.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Support",
+          "value": "https://thehenchmengame.com/contact",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/1431750/",
+        "https://steamdb.info/app/1431750/",
+        "https://www.dosmangames.com/"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "amplification": "可做多人首测、主播局和社交传播节点。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "值得优先触达，确认中国区合作窗口",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=53；Popular Upcoming 信号 + 可传播玩法/素材，值得优先确认窗口"
+    },
+    {
+      "id": "lead_steam_4111370_2026-05-26",
+      "project": "Birdwatching Notebook",
+      "steam_app_id": "4111370",
+      "team": "Biekka Games",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "推进池",
+      "stage": "active",
+      "priority": "P1",
+      "priority_reason": "Popular Upcoming 信号 + 可传播玩法/素材，值得优先确认窗口",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Casual",
+      "gameplay": "Turn your balcony into your very own birdwatching spot, and await the arrival of new avian friends! Enjoy a cozy idle game — place a tiny postcard on the corner of your screen, keeping you company with pleasant scenes and visiting birds. Oh, and don't forget your camera!",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-26",
+      "release_window": "2026-05-26",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Biekka Games；未见成熟中国发行能力占位",
+      "publisher_name": "Biekka Games",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 4111370",
+      "contact": "Email: support@biekka.com",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "support@biekka.com",
+          "note": "Steam support email"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4111370/",
+        "https://steamdb.info/app/4111370/"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和 UP 主联动。",
+      "amplification": "可做多人首测、主播局和社交传播节点。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "值得优先触达，确认中国区合作窗口",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=53；Popular Upcoming 信号 + 可传播玩法/素材，值得优先确认窗口"
+    },
+    {
+      "id": "lead_steam_2982610_2026-05-26",
+      "project": "Stonemachia",
+      "steam_app_id": "2982610",
+      "team": "Crossfall Games",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Popular Upcoming 有公开入口，先放观察等待更强数据",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Action / Adventure / Indie",
+      "gameplay": "Fight, Zefiro! Arm yourself with the power of chess and explore Medhelan, a land haunted by the Plague of Angels, in a dark action-adventure with soulslike elements. Will you be able to return to Heaven?",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-26",
+      "release_window": "2026-05-26",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Crossfall Games；未见成熟中国发行能力占位",
+      "publisher_name": "Crossfall Games",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 2982610",
+      "contact": "Email: Crossfallgames@gmail.com",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "Crossfallgames@gmail.com",
+          "note": "Steam support email"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/2982610/",
+        "https://steamdb.info/app/2982610/"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "先观察，等 Demo/愿望单/社媒数据增强后再推进",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=35；Popular Upcoming 有公开入口，先放观察等待更强数据"
+    },
+    {
+      "id": "lead_steam_1697850_2026-05-26",
+      "project": "Rose and Locket",
+      "steam_app_id": "1697850",
+      "team": "Whistling Wizard",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Popular Upcoming 有公开入口，先放观察等待更强数据",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Action / Adventure / Indie",
+      "gameplay": "To save her daughter's soul, outlaw gunslinger Rose must journey into the Underwest - the wild west's mysterious underworld - and hunt the Deadly Sins. Experience this action-adventure platformer that blurs the line between graphic novel and game experience.",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-26",
+      "release_window": "2026-05-26",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Ninja Kiwi；未见成熟中国发行能力占位",
+      "publisher_name": "Ninja Kiwi",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 1697850",
+      "contact": "Email: contact@whistlingwizard.com；官网: https://www.whistlingwizard.com/；Support: http://whistlingwizard.com/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "contact@whistlingwizard.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.whistlingwizard.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Support",
+          "value": "http://whistlingwizard.com/",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/1697850/",
+        "https://steamdb.info/app/1697850/",
+        "https://www.whistlingwizard.com/"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "先观察，等 Demo/愿望单/社媒数据增强后再推进",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=35；Popular Upcoming 有公开入口，先放观察等待更强数据"
+    },
+    {
+      "id": "lead_steam_3678970_2026-05-26",
+      "project": "TBH: Task Bar Hero",
+      "steam_app_id": "3678970",
+      "team": "Nugem Studio",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Popular Upcoming 有公开入口，先放观察等待更强数据",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Casual / Indie / RPG / Free To Play",
+      "gameplay": "The ultimate tiny idle RPG! Adorable pixel heroes are waiting to join your adventure — from your taskbar. Fight off the boredom of work and daily life with diverse classes, skills, items, and builds!",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-26",
+      "release_window": "2026-05-26",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Nugem Studio；未见成熟中国发行能力占位",
+      "publisher_name": "Nugem Studio",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 3678970",
+      "contact": "Email: nugem@nugemstudio.com；Support: www.nugemstudio.com",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "nugem@nugemstudio.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Support",
+          "value": "www.nugemstudio.com",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3678970/",
+        "https://steamdb.info/app/3678970/"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "先观察，等 Demo/愿望单/社媒数据增强后再推进",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=35；Popular Upcoming 有公开入口，先放观察等待更强数据"
+    },
+    {
+      "id": "lead_steam_1115990_2026-05-26",
+      "project": "Echo Generation 2",
+      "steam_app_id": "1115990",
+      "team": "Cococucumber",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Popular Upcoming 有公开入口，先放观察等待更强数据",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Action / Adventure / Indie / RPG",
+      "gameplay": "Embark on a sci-fi deckbuilding RPG odyssey. Build your crew, master powerful decks, and uncover the truth behind a growing cosmic threat. Deal the cards. Defy the cosmos. Embrace the adventure.",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-27",
+      "release_window": "2026-05-27",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Cococucumber；未见成熟中国发行能力占位",
+      "publisher_name": "Cococucumber",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 1115990",
+      "contact": "Email: info@cococucumber.co；官网: https://cococucumber.co/echo-generation-2/；Support: https://cococucumber.co/contact/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "info@cococucumber.co",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://cococucumber.co/echo-generation-2/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Support",
+          "value": "https://cococucumber.co/contact/",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/1115990/",
+        "https://steamdb.info/app/1115990/",
+        "https://cococucumber.co/echo-generation-2/"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "先观察，等 Demo/愿望单/社媒数据增强后再推进",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=35；Popular Upcoming 有公开入口，先放观察等待更强数据"
+    },
+    {
+      "id": "lead_steam_3768760_2026-05-26",
+      "project": "007 First Light",
+      "steam_app_id": "3768760",
+      "team": "IO Interactive A/S",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Popular Upcoming 有公开入口，先放观察等待更强数据",
+      "rule_fit": "海外项目保留条件初步成立",
+      "genre": "Action / Adventure",
+      "gameplay": "Earn the Number. 007 First Light is a thrilling espionage action-adventure game from IO Interactive. Follow James Bond as a young, resourceful and sometimes reckless recruit in MI6's training programme, and discover an origin story of the world’s most famous spy.",
+      "progress": "Steam Popular Upcoming；发售窗口：2026-05-27",
+      "release_window": "2026-05-27",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "IO Interactive A/S；未见成熟中国发行能力占位",
+      "publisher_name": "IO Interactive A/S",
+      "china_capability_occupied": false,
+      "traction_summary": "Popular Upcoming 中出现；Steam AppDetails 可解析。",
+      "public_signals": "Popular Upcoming / Steam App 3768760",
+      "contact": "Email: support@ioi.dk；官网: https://ioi.dk/007firstlightgame；Support: https://ioi.dk/legal/player-support",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "support@ioi.dk",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://ioi.dk/007firstlightgame",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Support",
+          "value": "https://ioi.dk/legal/player-support",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3768760/",
+        "https://steamdb.info/app/3768760/",
+        "https://ioi.dk/007firstlightgame"
+      ],
+      "exposure_trail": "GitHub Actions online scan captured from Popular Upcoming on 2026-05-26.",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口偏近，需要确认是否仍有中国区切入价值。",
+      "verdict": "先观察，等 Demo/愿望单/社媒数据增强后再推进",
+      "next_action": "打开 Steam/SteamDB 补画面判断、团队地区和联系入口",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-26",
+      "notes": "Popular Upcoming；score=35；Popular Upcoming 有公开入口，先放观察等待更强数据"
+    }
+  ]
 }
