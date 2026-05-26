@@ -1,0 +1,83 @@
+name: Sync daily CRM report
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: Report date to sync, formatted as YYYY-MM-DD. Defaults to today's Shanghai date.
+        required: false
+        type: string
+      force:
+        description: Force re-sync even if the report was already imported.
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+    paths:
+      - data/reports/**.json
+      - .github/workflows/sync-daily-report.yml
+  schedule:
+    # 10:20 Asia/Shanghai. The Codex daily report job is expected to run earlier.
+    - cron: "20 2 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve report date
+        id: resolve
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.date }}" ]; then
+            report_date="${{ inputs.date }}"
+          else
+            report_date="$(TZ=Asia/Shanghai date +%F)"
+          fi
+
+          if ! [[ "$report_date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "Invalid report date: $report_date" >&2
+            exit 1
+          fi
+
+          echo "date=$report_date" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check report file
+        id: report
+        shell: bash
+        run: |
+          report_path="data/reports/${{ steps.resolve.outputs.date }}.json"
+          if [ -f "$report_path" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Found $report_path"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "No report file found at $report_path; skipping CRM sync."
+          fi
+
+      - name: Trigger CRM sync
+        if: steps.report.outputs.exists == 'true'
+        shell: bash
+        env:
+          REPORT_DATE: ${{ steps.resolve.outputs.date }}
+          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+        run: |
+          query="date=$REPORT_DATE"
+          if [ "$FORCE_SYNC" = "true" ]; then
+            query="$query&force=1"
+          fi
+
+          response="$(curl -fsS "https://crm-pages.pages.dev/api/reports/sync?$query")"
+          echo "$response"
+
+          if echo "$response" | grep -q '"error"'; then
+            echo "CRM sync returned an error" >&2
+            exit 1
+          fi
