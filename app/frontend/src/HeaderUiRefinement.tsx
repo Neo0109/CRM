@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 
-const displayVersion = "v1.6.3";
-const versionText = `B站游戏发行 BD · ${displayVersion}`;
+const headerLabel = "Neo's BD Matrix";
 
 export function HeaderUiRefinement() {
   useEffect(() => {
     const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
-    if (versionLabel) versionLabel.textContent = versionText;
+    if (versionLabel) versionLabel.textContent = headerLabel;
 
     document.querySelectorAll<HTMLButtonElement>(".topbar .actions .tab-button").forEach((button) => {
       if (!button.textContent?.includes("设置")) return;
