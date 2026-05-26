@@ -26,7 +26,7 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.4.9";
+const version = "v1.5.5";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
@@ -438,13 +438,13 @@ type QuickActionSpec = {
   label: string;
   compactLabel: string;
   title: string;
-  tone: "follow" | "watch" | "drop" | "push" | "seen";
+  tone: "follow" | "watch" | "drop" | "push";
   icon: ReactElement;
   patch: () => Partial<Lead>;
 };
 
 function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean; missingLinksMode?: boolean }) {
-  const specs = quickActionSpecs(lead, missingLinksMode, compact);
+  const specs = quickActionSpecs(lead, missingLinksMode);
   return <div className={compact ? "quick-actions compact" : "quick-actions"} data-fixed-actions="native-pipeline" data-action-count={specs.length} onClick={(event) => event.stopPropagation()}>
     {specs.map((spec) => (
       <button key={spec.key} className={`quick-button ${spec.tone}`} data-action-label={compact ? spec.compactLabel : undefined} title={spec.title} aria-label={spec.title} onClick={() => void onPatch(lead.id, spec.patch())}>
@@ -455,8 +455,9 @@ function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false
   </div>;
 }
 
-function quickActionSpecs(lead: Lead, missingLinksMode: boolean, compact: boolean): QuickActionSpec[] {
+function quickActionSpecs(lead: Lead, missingLinksMode: boolean): QuickActionSpec[] {
   const reviewed_at = new Date().toISOString();
+  const isUnread = lead.review_status === "未处理";
   const follow = {
     key: "follow",
     label: lead.bucket === "淘汰池" ? "放入跟进" : "跟进",
@@ -477,9 +478,9 @@ function quickActionSpecs(lead: Lead, missingLinksMode: boolean, compact: boolea
   };
   const watch = {
     key: "watch",
-    label: lead.bucket === "淘汰池" ? "放入观察" : "转观察",
+    label: isUnread ? "观望" : lead.bucket === "淘汰池" ? "放入观察" : "转观察",
     compactLabel: "观",
-    title: lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : "转入观察池",
+    title: isUnread ? "暂时放入观察池" : lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : "转入观察池",
     tone: "watch" as const,
     icon: <ListChecks size={15} />,
     patch: () => ({ bucket: "观察池" as const, stage: "watch" as const, review_status: "已查看" as const, reviewed_at })
@@ -493,21 +494,13 @@ function quickActionSpecs(lead: Lead, missingLinksMode: boolean, compact: boolea
     icon: <XCircle size={15} />,
     patch: () => ({ bucket: "淘汰池" as const, stage: "rejected" as const, review_status: "已淘汰" as const, reviewed_at })
   };
-  const seen = {
-    key: "seen",
-    label: "已看",
-    compactLabel: "看",
-    title: "标记已看",
-    tone: "seen" as const,
-    icon: <CheckCircle2 size={15} />,
-    patch: () => ({ review_status: "已查看" as const, reviewed_at })
-  };
 
   if (missingLinksMode) return [follow, watch, drop];
+  if (isUnread) return [follow, watch, drop];
   if (lead.bucket === "淘汰池") return [follow, watch];
   if (lead.bucket === "跟进中") return [push, watch, drop];
-  if (lead.bucket === "推进池") return [follow, drop];
-  return compact || lead.review_status !== "未处理" ? [follow, drop] : [follow, drop, seen];
+  if (lead.bucket === "推进池") return [follow, watch, drop];
+  return [follow, drop];
 }
 
 function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: (lead: Lead, bucket: Bucket) => Promise<void>; compact?: boolean }) {
