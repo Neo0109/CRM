@@ -7,6 +7,152 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (() => {
+        const tokenKey = "sourcing-crm-access-token";
+        const targetVersion = "v1.5.2";
+        let cache = { at: 0, leads: [] };
+
+        function token() {
+          return window.localStorage.getItem(tokenKey) || "";
+        }
+
+        async function crmRequest(url, options = {}) {
+          const response = await fetch(url, {
+            ...options,
+            headers: {
+              "Content-Type": "application/json",
+              ...(token() ? { "x-crm-token": token() } : {}),
+              ...(options.headers || {})
+            }
+          });
+          if (!response.ok) throw new Error(await response.text());
+          return response.json();
+        }
+
+        async function getLeads() {
+          if (Date.now() - cache.at < 5000 && cache.leads.length) return cache.leads;
+          cache = { at: Date.now(), leads: await crmRequest("/api/leads") };
+          return cache.leads;
+        }
+
+        function projectFromRow(row) {
+          return row?.querySelector(".project-cell strong")?.textContent?.trim() || "";
+        }
+
+        function projectFromDetail() {
+          return document.querySelector(".detail-panel h2")?.textContent?.trim() || "";
+        }
+
+        async function moveProjectToWatch(project, button) {
+          if (!project) return;
+          button.disabled = true;
+          try {
+            const leads = await getLeads();
+            const lead = leads.find((item) => item.project === project && item.review_status === "未处理") || leads.find((item) => item.project === project);
+            if (!lead) throw new Error(`Lead not found: ${project}`);
+            await crmRequest(`/api/leads/${encodeURIComponent(lead.id)}`, {
+              method: "PATCH",
+              body: JSON.stringify({
+                bucket: "观察池",
+                stage: "watch",
+                review_status: "已查看",
+                reviewed_at: new Date().toISOString()
+              })
+            });
+            window.location.reload();
+          } catch (error) {
+            button.disabled = false;
+            window.alert("观望保存失败，请刷新后再试。" + (error instanceof Error ? `\n${error.message}` : ""));
+          }
+        }
+
+        function watchIcon() {
+          return '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>';
+        }
+
+        function makeWatchButton(label = "观望") {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "quick-button watch";
+          button.dataset.injectedWatch = "true";
+          button.dataset.actionLabel = "观";
+          button.title = "暂时放入观察池";
+          button.setAttribute("aria-label", "暂时放入观察池");
+          button.innerHTML = `${watchIcon()}<span>${label}</span>`;
+          return button;
+        }
+
+        function addRowWatchAction(row) {
+          if (!row?.textContent?.includes("未处理")) return;
+          const actions = row.querySelector(".quick-actions.compact");
+          if (!actions || actions.querySelector('[data-injected-watch="true"], .quick-button.watch')) return;
+          const button = makeWatchButton();
+          button.querySelector("span")?.classList.add("visually-hidden");
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            void moveProjectToWatch(projectFromRow(row), button);
+          });
+          actions.insertBefore(button, actions.lastElementChild);
+        }
+
+        function addDetailWatchAction() {
+          const panel = document.querySelector(".detail-panel");
+          if (!panel?.textContent?.includes("未处理")) return;
+          const actions = panel.querySelector(".quick-actions:not(.compact)");
+          if (!actions || actions.querySelector('[data-injected-watch="true"], .quick-button.watch')) return;
+          const button = makeWatchButton("观望");
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            void moveProjectToWatch(projectFromDetail(), button);
+          }, true);
+          actions.insertBefore(button, actions.querySelector(".quick-button.drop") || null);
+        }
+
+        function upgradeSeenToWatch() {
+          document.querySelectorAll('button[title="标记已看"], button[aria-label="标记已看"]').forEach((button) => {
+            if (button.dataset.injectedWatchHandler === "true") return;
+            const panel = button.closest(".detail-panel");
+            if (!panel?.textContent?.includes("未处理")) return;
+            button.dataset.injectedWatchHandler = "true";
+            button.classList.add("watch");
+            button.title = "暂时放入观察池";
+            button.setAttribute("aria-label", "暂时放入观察池");
+            const label = button.querySelector("span");
+            if (label) label.textContent = "观望";
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              void moveProjectToWatch(projectFromDetail(), button);
+            }, true);
+          });
+        }
+
+        function showVersion() {
+          document.querySelectorAll(".eyebrow").forEach((node) => {
+            if (node.textContent?.includes("B站游戏发行 BD")) {
+              node.textContent = `B站游戏发行 BD · ${targetVersion}`;
+            }
+          });
+        }
+
+        function hydrate() {
+          showVersion();
+          document.querySelectorAll(".lead-table tbody tr").forEach(addRowWatchAction);
+          addDetailWatchAction();
+          upgradeSeenToWatch();
+        }
+
+        const style = document.createElement("style");
+        style.textContent = '.quick-button.watch[data-injected-watch="true"] { border-color: #f59e0b; color: #92400e; background: #fffbeb; }';
+        document.head.appendChild(style);
+        new MutationObserver(hydrate).observe(document.documentElement, { childList: true, subtree: true });
+        window.addEventListener("DOMContentLoaded", hydrate);
+        window.addEventListener("load", hydrate);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
