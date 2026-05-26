@@ -1,39 +1,49 @@
-name: Sync daily CRM report
+name: Daily online CRM automation
 
 on:
   workflow_dispatch:
     inputs:
       date:
-        description: Report date to sync, formatted as YYYY-MM-DD. Defaults to today's Shanghai date.
+        description: Report date to generate, formatted as YYYY-MM-DD. Defaults to today's Shanghai date.
         required: false
         type: string
       force:
-        description: Force re-sync even if the report was already imported.
+        description: Force CRM sync after generation.
         required: false
-        default: false
+        default: true
         type: boolean
+  schedule:
+    # 09:30 Asia/Shanghai.
+    - cron: "30 1 * * *"
   push:
     branches:
       - main
     paths:
-      - data/reports/**.json
+      - automations/jobs/online_daily.mjs
       - .github/workflows/sync-daily-report.yml
-  schedule:
-    # 10:20 Asia/Shanghai. The Codex daily report job is expected to run earlier.
-    - cron: "20 2 * * *"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: crm-report-sync-${{ github.ref }}
+  group: crm-online-daily-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  sync:
+  generate-and-sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Resolve report date
         id: resolve
         shell: bash
@@ -50,40 +60,50 @@ jobs:
           fi
 
           echo "date=$report_date" >> "$GITHUB_OUTPUT"
-          echo "Syncing report date: $report_date"
+          echo "REPORT_DATE=$report_date" >> "$GITHUB_ENV"
+          echo "Generating online CRM automation for $report_date"
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Check report file
-        id: report
+      - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          report_path="data/reports/${{ steps.resolve.outputs.date }}.json"
-          if [ -f "$report_path" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Found $report_path"
+          node automations/jobs/online_daily.mjs --date="$REPORT_DATE"
+
+      - name: Commit generated data
+        id: commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "data/reports/$REPORT_DATE.json" "data/radar/$REPORT_DATE.json" "data/steam_trends/$REPORT_DATE.json"
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No generated data changes to commit."
           else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "No report file found at $report_path; skipping CRM sync."
+            git commit -m "Generate $REPORT_DATE online CRM automation"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Trigger CRM sync
-        if: steps.report.outputs.exists == 'true'
+      - name: Sync daily report into CRM
         shell: bash
-        env:
-          REPORT_DATE: ${{ steps.resolve.outputs.date }}
-          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
         run: |
-          query="date=$REPORT_DATE"
-          if [ "$FORCE_SYNC" = "true" ]; then
-            query="$query&force=1"
-          fi
-
-          response="$(curl -fsS "https://crm-pages.pages.dev/api/reports/sync?$query")"
+          # Give raw.githubusercontent.com a short moment to serve the just-pushed JSON.
+          sleep 8
+          response="$(curl -fsS "https://crm-pages.pages.dev/api/reports/sync?date=$REPORT_DATE&force=1")"
           echo "$response"
 
           if echo "$response" | grep -q '"error"'; then
             echo "CRM sync returned an error" >&2
             exit 1
           fi
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "Generated and synced CRM data for $REPORT_DATE"
+          echo "Files:"
+          echo "- data/reports/$REPORT_DATE.json"
+          echo "- data/radar/$REPORT_DATE.json"
+          echo "- data/steam_trends/$REPORT_DATE.json"
