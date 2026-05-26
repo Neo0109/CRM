@@ -21,6 +21,7 @@ on:
     paths:
       - automations/jobs/online_daily.mjs
       - automations/jobs/online_daily_v2.mjs
+      - automations/jobs/online_daily_v3.mjs
       - .github/workflows/sync-daily-report.yml
 
 permissions:
@@ -67,7 +68,7 @@ jobs:
       - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          node automations/jobs/online_daily_v2.mjs --date="$REPORT_DATE"
+          node automations/jobs/online_daily_v3.mjs --date="$REPORT_DATE"
 
       - name: Commit generated data
         id: commit
