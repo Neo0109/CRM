@@ -1,3 +1,4 @@
+// Online generator for GitHub Actions. Keep this dependency-free so it can run on hosted runners.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
