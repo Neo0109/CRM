@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const displayVersion = "v1.6.2";
+const displayVersion = "v1.6.3";
 const versionText = `B站游戏发行 BD · ${displayVersion}`;
 
 export function HeaderUiRefinement() {
