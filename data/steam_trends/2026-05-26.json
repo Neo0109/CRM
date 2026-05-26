@@ -1,35 +1,35 @@
 {
   "report_date": "2026-05-26",
-  "summary": "今日 Steam 趋势由线上自动化生成：共抓取 0 个可解析 App。重点看 Popular Upcoming、标签页和 SteamDB 二次验证；适合 CRM 的项目已同时写入日报候选。",
+  "summary": "今日 Steam 趋势：扫描到 0 个可解析游戏。宏观看 新品节窗口和热门即将推出，适合 CRM 的候选已进入日报池。",
   "market_insights": [
     {
       "id": "steam_macro_2026_05_26_next_fest_runway",
       "title": "新品节前窗口继续升温",
-      "summary": "Demo/Playtest 和 Popular Upcoming 是当日最重要的大盘入口，适合提前发现仍有 BD 窗口的项目。",
+      "summary": "Demo/Playtest 与 Popular Upcoming 是当前最适合前置 BD 的入口。",
       "signal_level": "高",
       "source": "Steam Next Fest",
       "link": "https://store.steampowered.com/sale/nextfest",
-      "suggested_action": "每天固定扫新品节、Popular Upcoming 和 Demo 入口。",
+      "suggested_action": "固定追踪新品节、Popular Upcoming 和 Demo 入口。",
       "captured_at": "2026-05-26T09:30:00+08:00"
     },
     {
-      "id": "steam_macro_2026_05_26_popular_upcoming_signal",
-      "title": "热门即将推出比热销榜更适合前置 BD",
-      "summary": "热销榜更多是已成熟项目；热门即将推出能更早暴露愿望单和页面完善度。",
-      "signal_level": "高",
-      "source": "Steam Store",
-      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
-      "suggested_action": "把窗口足够早、非 EA、联系方式明确的项目进入观察/推进。",
-      "captured_at": "2026-05-26T09:30:00+08:00"
-    },
-    {
-      "id": "steam_macro_2026_05_26_genre_density",
+      "id": "steam_macro_2026_05_26_macro_genres",
       "title": "今日高频品类：待观察",
-      "summary": "高频品类说明供给密度，但不代表每个项目都值得推进；需要看机制差异和 B站内容可解释性。",
+      "summary": "高频品类只说明供给密度，需要结合愿望单、Demo、视频素材和发行占位判断。",
       "signal_level": "中",
       "source": "CRM Online Scan",
-      "link": "https://store.steampowered.com/",
-      "suggested_action": "同质化品类只保留有强视觉、强数据或强传播点的项目。",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "把有视觉/玩法传播点且窗口未被占位的项目进入观察。",
+      "captured_at": "2026-05-26T09:30:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_05_26_featured_fallback",
+      "title": "Steam featured categories 已作为兜底数据源",
+      "summary": "当搜索结果接口返回空时，系统会用 Steam 官方 featured categories 保证趋势页和日报不断档。",
+      "signal_level": "中",
+      "source": "Steam API",
+      "link": "https://store.steampowered.com/api/featuredcategories",
+      "suggested_action": "把 featured 数据当大盘补充，不直接等同于推进理由。",
       "captured_at": "2026-05-26T09:30:00+08:00"
     }
   ],
