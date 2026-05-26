@@ -97,26 +97,13 @@
           actions.insertBefore(button, actions.lastElementChild);
         }
 
-        function addDetailWatchAction() {
-          const panel = document.querySelector(".detail-panel");
-          if (!panel?.textContent?.includes("未处理")) return;
-          const actions = panel.querySelector(".quick-actions:not(.compact)");
-          if (!actions || actions.querySelector('[data-injected-watch="true"], .quick-button.watch')) return;
-          const button = makeWatchButton("观望");
-          button.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            void moveProjectToWatch(projectFromDetail(), button);
-          }, true);
-          actions.insertBefore(button, actions.querySelector(".quick-button.drop") || null);
-        }
-
         function upgradeSeenToWatch() {
           document.querySelectorAll('button[title="标记已看"], button[aria-label="标记已看"]').forEach((button) => {
             if (button.dataset.injectedWatchHandler === "true") return;
             const panel = button.closest(".detail-panel");
             if (!panel?.textContent?.includes("未处理")) return;
             button.dataset.injectedWatchHandler = "true";
+            button.dataset.actionLabel = "观";
             button.classList.add("watch");
             button.title = "暂时放入观察池";
             button.setAttribute("aria-label", "暂时放入观察池");
@@ -141,12 +128,11 @@
         function hydrate() {
           showVersion();
           document.querySelectorAll(".lead-table tbody tr").forEach(addRowWatchAction);
-          addDetailWatchAction();
           upgradeSeenToWatch();
         }
 
         const style = document.createElement("style");
-        style.textContent = '.quick-button.watch[data-injected-watch="true"] { border-color: #f59e0b; color: #92400e; background: #fffbeb; }';
+        style.textContent = '.quick-button.watch[data-injected-watch="true"], .quick-button.watch[data-injected-watch-handler="true"] { border-color: #f59e0b; color: #92400e; background: #fffbeb; }';
         document.head.appendChild(style);
         new MutationObserver(hydrate).observe(document.documentElement, { childList: true, subtree: true });
         window.addEventListener("DOMContentLoaded", hydrate);
