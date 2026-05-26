@@ -7,7 +7,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
 
   return json({
     ok: true,
-    version: "v1.5.5-native-unread-triage",
+    version: "v1.6.0-sourcing-rules-v2",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,
