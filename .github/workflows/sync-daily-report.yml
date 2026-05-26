@@ -13,8 +13,10 @@ on:
         default: true
         type: boolean
   schedule:
-    # 09:30 Asia/Shanghai.
+    # 09:30 Asia/Shanghai daily primary run.
     - cron: "30 1 * * *"
+    # 14:00 Asia/Shanghai daily retry/new-batch run.
+    - cron: "0 6 * * *"
   push:
     branches:
       - main
@@ -22,6 +24,7 @@ on:
       - automations/jobs/online_daily.mjs
       - automations/jobs/online_daily_v2.mjs
       - automations/jobs/online_daily_v3.mjs
+      - automations/jobs/online_daily_v4.mjs
       - .github/workflows/sync-daily-report.yml
 
 permissions:
@@ -68,7 +71,7 @@ jobs:
       - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          node automations/jobs/online_daily_v3.mjs --date="$REPORT_DATE"
+          node automations/jobs/online_daily_v4.mjs --date="$REPORT_DATE"
 
       - name: Commit generated data
         id: commit
@@ -91,21 +94,33 @@ jobs:
       - name: Sync daily report into CRM
         shell: bash
         run: |
-          # Give raw.githubusercontent.com a short moment to serve the just-pushed JSON.
-          sleep 8
           sync_url="https://crm-pages.pages.dev/api/reports/sync?date=$REPORT_DATE"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "false" ]; then
             echo "Workflow dispatch force=false; syncing without force."
           else
             sync_url="$sync_url&force=1"
           fi
-          response="$(curl -fsS "$sync_url")"
-          echo "$response"
 
-          if echo "$response" | grep -q '"error"'; then
-            echo "CRM sync returned an error" >&2
-            exit 1
-          fi
+          response=""
+          for attempt in 1 2 3 4 5; do
+            echo "CRM sync attempt $attempt"
+            response="$(curl -fsS "$sync_url")"
+            echo "$response"
+
+            if echo "$response" | grep -q '"synced":true'; then
+              exit 0
+            fi
+
+            if echo "$response" | grep -q '"error"'; then
+              echo "CRM sync returned an error" >&2
+              exit 1
+            fi
+
+            sleep 12
+          done
+
+          echo "CRM sync did not confirm synced=true after retries" >&2
+          exit 1
 
       - name: Summary
         shell: bash
