@@ -1,0 +1,85 @@
+name: One-off unread triage patch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-off-unread-triage-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply unread triage UX patch
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const appPath = 'app/frontend/src/App.tsx';
+          let source = fs.readFileSync(appPath, 'utf8');
+
+          function replaceOnce(input, needle, replacement, label) {
+            if (!input.includes(needle)) {
+              throw new Error(`Patch target not found: ${label}`);
+            }
+            return input.replace(needle, replacement);
+          }
+
+          source = source.replace(/const version = "v[^"]+";/, 'const version = "v1.5.2";');
+          source = replaceOnce(
+            source,
+            '    label: lead.bucket === "淘汰池" ? "放入观察" : "转观察",',
+            '    label: lead.bucket === "淘汰池" ? "放入观察" : lead.review_status === "未处理" ? "观望" : "转观察",',
+            'watch action label'
+          );
+          source = replaceOnce(
+            source,
+            '    title: lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : "转入观察池",',
+            '    title: lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : lead.review_status === "未处理" ? "暂时放入观察池" : "转入观察池",',
+            'watch action title'
+          );
+          source = replaceOnce(
+            source,
+            '  if (missingLinksMode) return [follow, watch, drop];\n  if (lead.bucket === "淘汰池") return [follow, watch];',
+            '  if (missingLinksMode) return [follow, watch, drop];\n  if (lead.review_status === "未处理") return [follow, watch, drop];\n  if (lead.bucket === "淘汰池") return [follow, watch];',
+            'unread quick action branch'
+          );
+
+          fs.writeFileSync(appPath, source);
+
+          fs.mkdirSync('docs/releases', { recursive: true });
+          fs.writeFileSync('docs/releases/v1.5.2-unread-triage-actions.md', `# v1.5.2 未处理三分流
+
+- 未处理标签页的列表和右侧详情统一提供“跟进 / 观望 / 淘汰”三个动作。
+- “跟进”会进入跟进中，“观望”会进入观察池并标记已查看，“淘汰”会进入淘汰池。
+- 处理后 lead 会自动离开未处理筛选，避免同一条线索被重复 review。
+`);
+
+          fs.unlinkSync('.github/workflows/one-off-unread-triage-patch.yml');
+          NODE
+
+      - name: Verify frontend build
+        run: |
+          npm install
+          npm run build --workspace app/frontend
+
+      - name: Commit patch
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add unread lead triage actions"
+          git push
