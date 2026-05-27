@@ -574,11 +574,11 @@ function parseFeedItems(xml, source) {
   const items = [];
   const blocks = String(xml).split(/<item\b|<entry\b/i).slice(1);
   for (const block of blocks.slice(0, 20)) {
-    const title = decodeHtml(stripTags(readXmlTag(block, "title"))).trim();
+    const title = cleanExtractedText(readXmlTag(block, "title"));
     const rawLink = readXmlTag(block, "link") || block.match(/<link[^>]+href=["']([^"']+)/i)?.[1] || "";
     const link = absolutizeUrl(decodeHtml(stripTags(rawLink)).trim(), source.url);
-    const summary = decodeHtml(stripTags(readXmlTag(block, "description") || readXmlTag(block, "summary") || "")).trim();
-    const publishedAt = decodeHtml(stripTags(readXmlTag(block, "pubDate") || readXmlTag(block, "published") || "")).trim();
+    const summary = cleanExtractedText(readXmlTag(block, "description") || readXmlTag(block, "summary") || "");
+    const publishedAt = cleanExtractedText(readXmlTag(block, "pubDate") || readXmlTag(block, "published") || "");
     if (title && link) items.push(sourceTaggedItem({ title, link, summary, published_at: publishedAt }, source));
   }
   return items;
@@ -588,7 +588,7 @@ function parsePageItems(html, source) {
   const items = [];
   const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   for (const match of String(html).matchAll(anchorPattern)) {
-    const title = decodeHtml(stripTags(match[2])).trim();
+    const title = cleanExtractedText(match[2]);
     if (title.length < 8 || title.length > 100) continue;
     items.push(sourceTaggedItem({
       title,
@@ -602,16 +602,16 @@ function parsePageItems(html, source) {
 }
 
 function parseArticleItem(html, source) {
-  const title = decodeHtml(stripTags(
+  const title = cleanExtractedText(
     String(html).match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i)?.[1]
     ?? String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
     ?? ""
-  )).trim();
-  const summary = decodeHtml(stripTags(
+  );
+  const summary = cleanExtractedText(
     String(html).match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)/i)?.[1]
     ?? String(html).match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i)?.[1]
     ?? title
-  )).trim();
+  );
   return title ? sourceTaggedItem({ title, link: source.url, summary, published_at: "" }, source) : null;
 }
 
@@ -633,6 +633,7 @@ function scoreMediaSignal(item) {
 
   let score = (item.source_quality ?? 0) + topicPoints;
   if (topicPoints < 8) score -= 12;
+  if (!hasGameOrBdContext(text, item)) score -= 30;
 
   if (/\b(review|guide|walkthrough|tips|best settings|deal|sale|discount|cosplay|quiz)\b|攻略|评测|折扣|促销|史低|壁纸|图赏|盘点/.test(text)) score -= 10;
   if (/rumor|leak|传闻|曝/.test(text) && !/\b(confirmed|official)\b|确认|官方|公告/.test(text)) score -= 4;
@@ -747,7 +748,7 @@ function topicScore(text, pattern, points) {
 function mediaTopicFamily(item) {
   const text = `${item.title} ${item.summary}`.toLowerCase();
   if (/\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i.test(text)) return "ai_production";
-  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/.test(text)) return "business_legal";
+  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|studio closure|executive|leadership)\b|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/.test(text)) return "business_legal";
   if (/\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation|restarted from scratch)\b|资料片|大型更新|公布|发布会|延期|重制|续作|新作|改编|影视化|动画|联动|周年|上线|定档|发售|手游|端游/.test(text)) return "product_ip";
   if (/\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/.test(text)) return "creator_community";
   if (/\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/.test(text)) return "platform_market";
@@ -889,7 +890,17 @@ function decodeHtml(value) {
 }
 
 function normalizeDisplayText(value) {
-  return decodeHtml(value).replace(/\s+/g, " ").trim();
+  return cleanExtractedText(value);
+}
+
+function cleanExtractedText(value) {
+  return stripTags(decodeHtml(value)).replace(/\s+/g, " ").trim();
+}
+
+function hasGameOrBdContext(text, item) {
+  const broadSources = new Set(["IT之家", "证券时报", "澎湃新闻"]);
+  if (!broadSources.has(item.source)) return true;
+  return /game|gaming|steam|xbox|playstation|nintendo|switch|publisher|developer|studio|bilibili|acg|ip|游戏|手游|端游|主机|电竞|动画|动漫|发行|发售|上线|资料片|腾讯游戏|网易游戏|米哈游|莉莉丝|心动|鹰角|游族|三体|版权|授权|版号|B站|哔哩哔哩/i.test(text);
 }
 
 function normalizeText(value) {
