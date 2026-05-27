@@ -112,7 +112,7 @@ export type RadarCategory = "行业新闻" | "发行八卦" | "AI 游戏" | "新
 
 export type RadarItem = {
   id: string;
-  category: RadarCategory;
+  category: RadarCategory | string;
   title: string;
   summary: string;
   heat: "高" | "中" | "低";

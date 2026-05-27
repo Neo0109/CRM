@@ -26,7 +26,7 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.5.5";
+const version = "v1.7.0";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
@@ -550,7 +550,7 @@ function RadarPage({ radar, loading, onDateChange }: { radar: RadarReport | null
         requestedDate={radar?.requested_date}
       />
     </div>
-    {radarCategories.map((category) => {
+    {(radarCategoryNames(radar) ?? radarCategories).map((category) => {
       const items = radar?.items.filter((item) => item.category === category) ?? [];
       return <section className="radar-band" key={category}>
         <h3>{category}</h3>
@@ -563,6 +563,11 @@ function RadarPage({ radar, loading, onDateChange }: { radar: RadarReport | null
       </section>;
     })}
   </section>;
+}
+
+function radarCategoryNames(radar: RadarReport | null) {
+  const categories = Array.from(new Set((radar?.items ?? []).map((item) => item.category).filter(Boolean)));
+  return categories.length ? categories : null;
 }
 
 function Signal({ label, value }: { label: string; value: string }) {

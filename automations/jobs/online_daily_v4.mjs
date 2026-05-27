@@ -1,5 +1,5 @@
-// Online CRM generator v4: Sourcing Rules V2.
-// Core principle: discovery can be broad, push recommendations must be strict.
+// Online CRM generator v4: Sourcing Rules V3.
+// Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -28,21 +28,24 @@ const enrichedCandidates = [];
 for (const candidate of rawCandidates) {
   const details = await fetchAppDetails(candidate.appId);
   enrichedCandidates.push(await enrichCandidate(candidate, details));
+  await sleep(120);
 }
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
 const pools = buildPools(enrichedCandidates);
+const industrySignals = await fetchIndustrySignals();
 
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport(pools, rawCandidates.length, enrichedCandidates.length));
-await writeJson(`data/radar/${reportDate}.json`, buildRadarReport(enrichedCandidates, pools));
+await writeJson(`data/radar/${reportDate}.json`, buildRadarReport(enrichedCandidates, pools, industrySignals));
 await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport(enrichedCandidates, pools));
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v2",
+  generator: "online_daily_v4_sourcing_rules_v3",
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
+  industry_signals: industrySignals.length,
   push_pool: pools.push.length,
   watch_pool: pools.watch.length,
   drop_pool: pools.drop.length,
@@ -81,7 +84,7 @@ function nowInShanghaiIso() {
 
 async function readExistingProjectNames(date) {
   const names = new Set();
-  for (const reportPath of [`data/reports/${date}.json`, previousDatePath(date)].filter(Boolean)) {
+  for (const reportPath of previousDatePaths(date, 3)) {
     try {
       const report = JSON.parse(await readFile(path.join(rootDir, reportPath), "utf8"));
       for (const bucket of ["push_pool", "watch_pool", "drop_pool"]) {
@@ -92,11 +95,16 @@ async function readExistingProjectNames(date) {
   return names;
 }
 
-function previousDatePath(date) {
+function previousDatePaths(date, days) {
+  const paths = [];
   const current = new Date(`${date}T00:00:00+08:00`);
-  if (Number.isNaN(current.getTime())) return null;
-  current.setUTCDate(current.getUTCDate() - 1);
-  return `data/reports/${current.toISOString().slice(0, 10)}.json`;
+  if (Number.isNaN(current.getTime())) return paths;
+  for (let index = 1; index <= days; index += 1) {
+    const previous = new Date(current);
+    previous.setUTCDate(current.getUTCDate() - index);
+    paths.push(`data/reports/${previous.toISOString().slice(0, 10)}.json`);
+  }
+  return paths;
 }
 
 async function fetchSteamSearch(filter, source, tags = []) {
@@ -175,14 +183,21 @@ async function fetchFeaturedCategories() {
 }
 
 async function fetchAppDetails(appId) {
-  try {
-    const payload = await fetchJson(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=us&l=english`);
-    const entry = payload[String(appId)];
-    return entry?.success && entry.data?.type === "game" ? entry.data : null;
-  } catch (error) {
-    console.warn(`AppDetails failed for ${appId}: ${error.message}`);
-    return null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const payload = await fetchJson(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=us&l=english`);
+      const entry = payload[String(appId)];
+      return entry?.success && entry.data?.type === "game" ? entry.data : null;
+    } catch (error) {
+      if (attempt < 3 && /429|too many requests/i.test(error.message)) {
+        await sleep(1200 * attempt);
+        continue;
+      }
+      console.warn(`AppDetails failed for ${appId}: ${error.message}`);
+      return null;
+    }
   }
+  return null;
 }
 
 async function enrichCandidate(candidate, details) {
@@ -233,6 +248,10 @@ async function enrichCandidate(candidate, details) {
     contactMethods,
     website: details?.website ?? null,
     hasDetails: Boolean(details),
+    recommendationCount: details?.recommendations?.total ?? 0,
+    screenshotCount: details?.screenshots?.length ?? 0,
+    movieCount: details?.movies?.length ?? 0,
+    reviewText: candidate.reviewText ?? "",
     releaseTooSoon,
     score
   };
@@ -446,11 +465,12 @@ function buildAmplification(candidate) {
 function buildDailyReport(pools, rawCount, enrichedCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V2线上自动化：扫描候选 ${rawCount} 条、输出可review游戏 ${enrichedCount} 条；推进池 ${pools.push.length} 条、观察池 ${pools.watch.length} 条、淘汰池 ${pools.drop.length} 条。推进池不强行凑数，临近上线项目默认不进推进。`,
+    summary: `Sourcing V3线上自动化：扫描候选 ${rawCount} 条、输出可review游戏 ${enrichedCount} 条；推进池 ${pools.push.length} 条、观察池 ${pools.watch.length} 条、淘汰池 ${pools.drop.length} 条。V3要求每条重点信息都回答产品优劣、数据、玩法、B站能否赋能和下一步BD动作。`,
     insights: [
-      "V2把发现标准和推进标准拆开：日报可以有很多观察项，但推进池必须严格。",
+      "V3把日报读者明确为B站商务负责人：不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步动作。",
+      "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "发售不足60天、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入推进池。",
-      "Steam Popular Upcoming、Demo/Next Fest、SteamDB和官方社区是前置发现入口；Popular New/Top Sellers只做大盘背景。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。"
     ],
     push_pool: pools.push,
@@ -459,16 +479,24 @@ function buildDailyReport(pools, rawCount, enrichedCount) {
   };
 }
 
-function buildRadarReport(candidates, pools) {
+function buildRadarReport(candidates, pools, industrySignals) {
   const genres = summarizeGenres(candidates);
+  const mediaItems = industrySignals.slice(0, 5).map(mediaSignalToRadarItem);
+  const bilibiliSignal = radarItem(
+    "bilibili_bd_lens",
+    "B站趋势",
+    `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
+    `样本高频不等于推荐。V3只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
+    "中",
+    "CRM Online Scan",
+    "https://store.steampowered.com/search/?filter=popularcomingsoon",
+    "这是给BD选品的背景信号，不是新闻，也不直接进入推进池。",
+    `优先复核推进池 ${pools.push.length} 个项目；观察池只补缺失数据、玩法视频、联系方式和发行占位。`
+  );
   return {
     report_date: reportDate,
-    summary: `Sourcing V2行业雷达：今日Steam候选 ${candidates.length} 个，高频方向为 ${genres.slice(0, 4).join("、") || "待观察"}。雷达重点从“今天有什么新游戏”转向“哪些前置信号值得长期盯”。`,
-    items: [
-      radarItem("v2_system", "行业新闻", "日报升级为前置发现系统", "今天的核心不是补几个游戏名，而是把Steam、Demo、社区、视频和新闻稿当成长期雷达站，持续扩大候选池。", "高", "CRM Sourcing V2", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V2.md", "帮助团队区分发现、观察、推进和淘汰。", "用V2规则复盘每天进入推进池的项目是否真的可切入。"),
-      radarItem("popular_upcoming", "发行趋势", "Popular Upcoming 适合前置发现，但不能直接等同推荐", "热门即将推出说明项目有可见度，不代表B站能切入；必须结合发售窗口、发行结构和B站放大价值。", "高", "Steam Store", "https://store.steampowered.com/search/?filter=popularcomingsoon", "避免把明后天上线的项目误判为BD机会。", "把临近上线项目归为大盘观察或淘汰，不进推进池。"),
-      radarItem("genre_density", "B站趋势", `今日Steam样本高频品类：${genres.slice(0, 4).join("、") || "待观察"}`, "高频品类代表供给密度，不代表每个都值得推进；要看机制差异、视频表达和社区可扩散性。", "中", "CRM Online Scan", "https://store.steampowered.com/", "只保留有强视觉、强数据或强传播点的项目。", "观察池记录缺什么信号，避免无差别收藏。")
-    ]
+    summary: `Sourcing V3行业雷达：今日抓到 ${industrySignals.length} 条主流媒体/行业信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放真实外部事件；Steam样本只作为B站BD选品背景。`,
+    items: [...mediaItems, bilibiliSignal]
   };
 }
 
@@ -476,34 +504,223 @@ function buildSteamTrendReport(candidates, pools) {
   const genres = summarizeGenres(candidates);
   return {
     report_date: reportDate,
-    summary: `今日Steam趋势：扫描到 ${candidates.length} 个候选。宏观看 ${genres.slice(0, 4).join("、") || "新品节窗口和热门即将推出"}；适合CRM的候选已进入日报池，但推进池按V2严格筛选。`,
+    summary: `今日Steam趋势V3：扫描 ${candidates.length} 个候选，推进 ${pools.push.length}、观察 ${pools.watch.length}、淘汰 ${pools.drop.length}。本页只服务BD判断：看产品优劣、数据、玩法、B站能否赋能和下一步动作。`,
     market_insights: [
-      steamInsight("runway", "前置窗口比临近上线更重要", "Popular Upcoming和Demo/Next Fest能帮助发现项目，但发售不足60天默认不再进推进池。", "高", "Steam", "https://store.steampowered.com/search/?filter=popularcomingsoon", "优先找3-6个月窗口内仍未被中国能力占位的项目。"),
-      steamInsight("macro_genres", `今日高频品类：${genres.slice(0, 4).join("、") || "待观察"}`, "高频品类只说明供给密度，真正要看B站内容化、开发者权益空间和公开数据。", "中", "CRM Online Scan", "https://steamdb.info/charts/?sort=trending", "把宏观趋势作为选品背景，不直接当推荐理由。")
+      steamInsight("bd_decision_cards", "趋势页改为BD判断卡", "V3不再把Indie、Adventure这类标签当趋势结论；每个候选必须写清玩法、公开数据、优势短板、B站赋能和BD动作。", "高", "CRM Sourcing V3", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V3.md", "只把能辅助商务判断的信息留在趋势页。"),
+      steamInsight("push_watch_drop", `今日池子结构：推进${pools.push.length} / 观察${pools.watch.length} / 淘汰${pools.drop.length}`, "推进池可以为空；观察池用于保留缺数据但可能有内容潜力的项目，淘汰池记录原因避免重复消耗时间。", "中", "CRM Online Scan", "https://store.steampowered.com/search/?filter=popularcomingsoon", "先读推进池，再看观察池缺什么信号，不再按品类标签无差别浏览。")
     ],
-    genre_signals: genres.slice(0, 5).map((genre) => ({
-      id: `steam_genre_${reportDate.replaceAll("-", "_")}_${normalizeText(genre).replace(/[^a-z0-9]+/g, "_").slice(0, 32)}`,
-      genre,
-      signal: `${genre} 在今日样本中出现较多，需区分机制差异和普通跟风供给。`,
-      why_it_matters: "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
-      bd_action: "保留Steam页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
-      links: ["https://store.steampowered.com/search/?filter=popularcomingsoon", "https://steamdb.info/charts/?sort=trending"]
-    })),
+    genre_signals: [],
     items: candidates.slice(0, 12).map((candidate) => ({
       id: `steam_trend_${reportDate.replaceAll("-", "_")}_${candidate.appId}`,
       title: candidate.title,
       steam_app_id: candidate.appId,
       rank_bucket: candidate.source,
-      signal: `${candidate.source}；${candidate.releaseDate}；score=${candidate.score}`,
+      signal: buildV3SteamSignal(candidate),
       source: "Steam Store / AppDetails",
       links: [candidate.storeUrl, candidate.steamDbUrl],
       bilibili_fit: buildBilibiliFit(candidate),
-      reason: candidate.releaseTooSoon ? "临近上线，仅作大盘观察，不进推进池" : candidate.score >= 48 ? "可进入CRM观察或推进候选" : "作为大盘趋势观察，不直接推进",
+      reason: buildV3TrendReason(candidate),
       auto_import: candidate.score >= 24 && !candidate.earlyAccess && !candidate.publisherOccupied,
       captured_at: capturedAt
     })),
     crm_candidates: [...pools.push, ...pools.watch.slice(0, 8)]
   };
+}
+
+async function fetchIndustrySignals() {
+  const results = (await Promise.all(mediaSources().map(fetchMediaSource))).flat();
+  const scored = results
+    .map((item) => ({ ...item, score: scoreMediaSignal(item) }))
+    .filter((item) => item.score >= 12)
+    .sort((a, b) => b.score - a.score);
+
+  return dedupeMediaSignals(scored).slice(0, 6);
+}
+
+function mediaSources() {
+  return [
+    { name: "GameSpot", url: "https://www.gamespot.com/feeds/news/", type: "feed" },
+    { name: "PC Gamer", url: "https://www.pcgamer.com/rss/", type: "feed" },
+    { name: "IGN", url: "https://www.ign.com/rss/articles/feed?tags=games", type: "feed" },
+    { name: "GameDeveloper", url: "https://www.gamedeveloper.com/rss.xml", type: "feed" },
+    { name: "3DM", url: "https://www.3dmgame.com/news/", type: "page" },
+    { name: "游民星空", url: "https://www.gamersky.com/news/", type: "page" },
+    { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed" },
+    { name: "证券时报", url: "https://www.stcn.com/", type: "page" },
+    { name: "GameSpot", url: "https://www.gamespot.com/articles/cd-projekt-red-is-returning-to-the-witcher-3-with-new-expansion-in-2027/", type: "article", activeUntil: "2026-05-31" },
+    { name: "证券时报", url: "https://stcn.com/live/video-detail/23201.html", type: "article", activeUntil: "2026-05-31" },
+    { name: "澎湃新闻", url: "https://m.thepaper.cn/newsDetail_forward_33237012", type: "article", activeUntil: "2026-05-31" }
+  ].filter((source) => !source.activeUntil || reportDate <= source.activeUntil);
+}
+
+async function fetchMediaSource(source) {
+  try {
+    const text = await fetchText(source.url, 12000, "text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8");
+    if (source.type === "feed") return parseFeedItems(text, source);
+    if (source.type === "article") return [parseArticleItem(text, source)].filter(Boolean);
+    return parsePageItems(text, source);
+  } catch (error) {
+    console.warn(`Media source failed for ${source.name}: ${error.message}`);
+    return [];
+  }
+}
+
+function parseFeedItems(xml, source) {
+  const items = [];
+  const blocks = String(xml).split(/<item\b|<entry\b/i).slice(1);
+  for (const block of blocks.slice(0, 20)) {
+    const title = decodeHtml(stripTags(readXmlTag(block, "title"))).trim();
+    const rawLink = readXmlTag(block, "link") || block.match(/<link[^>]+href=["']([^"']+)/i)?.[1] || "";
+    const link = absolutizeUrl(decodeHtml(stripTags(rawLink)).trim(), source.url);
+    const summary = decodeHtml(stripTags(readXmlTag(block, "description") || readXmlTag(block, "summary") || "")).trim();
+    const publishedAt = decodeHtml(stripTags(readXmlTag(block, "pubDate") || readXmlTag(block, "published") || "")).trim();
+    if (title && link) items.push({ title, link, summary, published_at: publishedAt, source: source.name });
+  }
+  return items;
+}
+
+function parsePageItems(html, source) {
+  const items = [];
+  const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  for (const match of String(html).matchAll(anchorPattern)) {
+    const title = decodeHtml(stripTags(match[2])).trim();
+    if (title.length < 8 || title.length > 100) continue;
+    items.push({
+      title,
+      link: absolutizeUrl(match[1], source.url),
+      summary: title,
+      published_at: "",
+      source: source.name
+    });
+    if (items.length >= 30) break;
+  }
+  return items;
+}
+
+function parseArticleItem(html, source) {
+  const title = decodeHtml(stripTags(
+    String(html).match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i)?.[1]
+    ?? String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+    ?? ""
+  )).trim();
+  const summary = decodeHtml(stripTags(
+    String(html).match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)/i)?.[1]
+    ?? String(html).match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i)?.[1]
+    ?? title
+  )).trim();
+  return title ? { title, link: source.url, summary, published_at: "", source: source.name } : null;
+}
+
+function readXmlTag(block, tagName) {
+  const match = String(block).match(new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i"));
+  return match?.[1]?.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "") ?? "";
+}
+
+function scoreMediaSignal(item) {
+  const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
+  let score = 0;
+  for (const keyword of ["witcher", "巫师", "cd projekt", "cdpr", "expansion", "资料片", "dlc", "许垚", "林奇", "游族", "三体", "死刑", "执行死刑"]) {
+    if (text.includes(keyword.toLowerCase())) score += 20;
+  }
+  for (const keyword of ["steam", "发行", "publisher", "publishing", "indie", "独立游戏", "bilibili", "b站", "ue5", "switch", "xbox", "playstation", "demo", "next fest"]) {
+    if (text.includes(keyword.toLowerCase())) score += 5;
+  }
+  if (/\bai\b|artificial intelligence|人工智能|生成式|aigc/.test(text)) score += 5;
+  if (/rumor|leak|传闻|曝/.test(text)) score -= 3;
+  return score;
+}
+
+function dedupeMediaSignals(items) {
+  const seen = new Set();
+  const out = [];
+  for (const item of items) {
+    const key = normalizeText(item.title).slice(0, 80);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
+function mediaSignalToRadarItem(item, index) {
+  const category = categoryForMediaSignal(item);
+  return radarItem(
+    `media_${index}_${normalizeText(item.title).replace(/[^a-z0-9]+/g, "_").slice(0, 36)}`,
+    category,
+    item.title,
+    conciseMediaSummary(item),
+    item.score >= 25 ? "高" : "中",
+    item.source,
+    item.link,
+    relevanceForMediaSignal(item),
+    actionForMediaSignal(item)
+  );
+}
+
+function categoryForMediaSignal(item) {
+  const text = `${item.title} ${item.summary}`.toLowerCase();
+  if (/许垚|林奇|游族|三体|投毒|死刑|执行死刑/.test(text)) return "发行八卦";
+  if (/\bai\b|artificial intelligence|人工智能|生成式|aigc/.test(text)) return "AI 游戏";
+  if (/bilibili|b站|up主|视频|直播/.test(text)) return "B站趋势";
+  if (/梗|meme|社区热议|玩家/.test(text)) return "新梗热点";
+  return "行业新闻";
+}
+
+function conciseMediaSummary(item) {
+  const text = [item.summary, item.title].filter(Boolean).join(" ");
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (/witcher|巫师/i.test(cleaned)) return "CD Projekt Red确认《巫师3》多年后仍有新内容窗口，说明长线精品IP可通过资料片、直播节点和社区讨论重新激活。";
+  if (/许垚|林奇|游族|三体|死刑|执行死刑/.test(cleaned)) return "林奇案进入司法终局，提醒游戏/IP公司治理、创始人风险和重大IP管理仍会影响行业信任与合作判断。";
+  return cleaned.slice(0, 120);
+}
+
+function relevanceForMediaSignal(item) {
+  const text = `${item.title} ${item.summary}`;
+  if (/witcher|巫师/i.test(text)) return "对B站商务的价值在于：老IP新内容能重新制造UP主选题、怀旧传播和平台内容节点。";
+  if (/许垚|林奇|游族|三体|死刑|执行死刑/.test(text)) return "对BD判断的价值在于：合作方公司治理、IP权属和关键人风险必须进入尽调视野。";
+  return "用于判断游戏行业外部环境、发行节奏和内容平台可介入窗口。";
+}
+
+function actionForMediaSignal(item) {
+  const text = `${item.title} ${item.summary}`;
+  if (/witcher|巫师/i.test(text)) return "记录为经典IP长线运营案例；关注CDPR直播、二创热度和中文社区讨论，判断B站内容节点。";
+  if (/许垚|林奇|游族|三体|死刑|执行死刑/.test(text)) return "对潜在合作方补公司治理、股权/IP权属、关键人和重大诉讼风险检查。";
+  return "只保留有BD启发的媒体信号；无业务动作的普通新闻不进雷达。";
+}
+
+function buildV3SteamSignal(candidate) {
+  return [
+    `数据：${candidate.source}；发售窗口 ${candidate.releaseDate}；score=${candidate.score}；推荐数 ${candidate.recommendationCount || "无公开"}；素材 ${candidate.screenshotCount}图/${candidate.movieCount}视频。`,
+    `玩法：${candidate.shortDescription || candidate.genres.join(" / ") || "待打开Steam页确认玩法循环"}。`,
+    `优势：${buildProductStrength(candidate)}。`,
+    `短板：${buildProductWeakness(candidate)}。`
+  ].join("\n");
+}
+
+function buildV3TrendReason(candidate) {
+  if (candidate.releaseTooSoon) return "不建议推进：窗口过近，只作为市场背景。";
+  if (candidate.earlyAccess) return "不建议推进：Early Access命中排除项。";
+  if (candidate.publisherOccupied) return "不建议推进：成熟发行商可能已占位。";
+  return `B站赋能：${buildBilibiliFit(candidate)} BD动作：${candidate.score >= 58 ? "优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。" : "先补公开数据、视频素材、社区反馈和发行占位，再决定是否触达。"}`;
+}
+
+function buildProductStrength(candidate) {
+  const strengths = [];
+  if (candidate.strongGameplay) strengths.push("玩法具备机制表达空间");
+  if (candidate.highVisual) strengths.push("截图/视频素材较完整");
+  if (candidate.strongData) strengths.push("存在公开数据或榜单信号");
+  if (candidate.contactMethods.length) strengths.push("有可尝试联系入口");
+  return strengths.join("；") || "目前只有基础Steam曝光，优势待复核";
+}
+
+function buildProductWeakness(candidate) {
+  const weaknesses = [];
+  if (typeof candidate.daysToRelease !== "number") weaknesses.push("发售窗口不精确");
+  if (!candidate.strongData) weaknesses.push("缺愿望单/口碑/社区强数据");
+  if (!candidate.highVisual) weaknesses.push("视觉素材不足，内容转化需验证");
+  if (candidate.releaseTooSoon) weaknesses.push("发售过近");
+  if (candidate.publisherOccupied) weaknesses.push("发行可能已占位");
+  return weaknesses.join("；") || "主要风险在团队地区、发行结构和中国区权益空间";
 }
 
 function radarItem(id, category, title, summary, heat, source, link, relevance, suggestedAction) {
@@ -598,4 +815,16 @@ function decodeHtml(value) {
 
 function normalizeText(value) {
   return String(value ?? "").toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+
+function absolutizeUrl(value, baseUrl) {
+  try {
+    return new URL(value, baseUrl).toString();
+  } catch {
+    return baseUrl;
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
