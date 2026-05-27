@@ -481,7 +481,7 @@ function buildDailyReport(pools, rawCount, enrichedCount) {
 
 function buildRadarReport(candidates, pools, industrySignals) {
   const genres = summarizeGenres(candidates);
-  const mediaItems = industrySignals.slice(0, 5).map(mediaSignalToRadarItem);
+  const mediaItems = industrySignals.slice(0, 6).map(mediaSignalToRadarItem);
   const bilibiliSignal = radarItem(
     "bilibili_bd_lens",
     "B站趋势",
@@ -622,14 +622,17 @@ function readXmlTag(block, tagName) {
 
 function scoreMediaSignal(item) {
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
-  let score = item.source_quality ?? 0;
-  score += topicScore(text, /\b(publisher|publishing|acquisition|investment|funding|layoffs?|union|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/, 18);
-  score += topicScore(text, /\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation)\b|资料片|大型更新|公布|发布会|延期|重制|续作|改编|影视化|动画|联动|周年/, 14);
-  score += topicScore(text, /\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/, 12);
-  score += topicScore(text, /\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/, 10);
-  score += topicScore(text, /\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i, 10);
-  score += topicScore(text, /\b(china|chinese|bilibili|asia|netease|tencent)\b|中国|国产|出海|B站|哔哩哔哩|腾讯|网易|米哈游|莉莉丝|心动|鹰角/, 12);
-  score += topicScore(text, /\b(report|analysis|interview|confirmed|official|financial results)\b|报告|分析|专访|确认|官方|公告|财报/, 4);
+  let topicPoints = 0;
+  topicPoints += topicScore(text, /\b(publisher|publishing|acquisition|investment|funding|layoffs?|union|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/, 18);
+  topicPoints += topicScore(text, /\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation|restarted from scratch)\b|资料片|大型更新|公布|发布会|延期|重制|续作|新作|改编|影视化|动画|联动|周年|上线|定档|发售|手游|端游/, 14);
+  topicPoints += topicScore(text, /\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/, 12);
+  topicPoints += topicScore(text, /\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/, 10);
+  topicPoints += topicScore(text, /\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i, 12);
+  topicPoints += topicScore(text, /\b(china|chinese|bilibili|asia|netease|tencent)\b|中国|国产|出海|B站|哔哩哔哩|腾讯|网易|米哈游|莉莉丝|心动|鹰角/, 12);
+  topicPoints += topicScore(text, /\b(report|analysis|interview|confirmed|official|financial results)\b|报告|分析|专访|确认|官方|公告|财报/, 4);
+
+  let score = (item.source_quality ?? 0) + topicPoints;
+  if (topicPoints < 8) score -= 12;
 
   if (/\b(review|guide|walkthrough|tips|best settings|deal|sale|discount|cosplay|quiz)\b|攻略|评测|折扣|促销|史低|壁纸|图赏|盘点/.test(text)) score -= 10;
   if (/rumor|leak|传闻|曝/.test(text) && !/\b(confirmed|official)\b|确认|官方|公告/.test(text)) score -= 4;
@@ -674,10 +677,11 @@ function selectDiverseMediaSignals(items, limit) {
 
 function mediaSignalToRadarItem(item, index) {
   const category = categoryForMediaSignal(item);
+  const title = normalizeDisplayText(item.title);
   return radarItem(
-    `media_${index}_${normalizeText(item.title).replace(/[^a-z0-9]+/g, "_").slice(0, 36)}`,
+    `media_${index}_${normalizeText(title).replace(/[^a-z0-9]+/g, "_").slice(0, 36)}`,
     category,
-    item.title,
+    title,
     conciseMediaSummary(item),
     item.score >= 25 ? "高" : "中",
     item.source,
@@ -688,23 +692,22 @@ function mediaSignalToRadarItem(item, index) {
 }
 
 function categoryForMediaSignal(item) {
-  const text = `${item.title} ${item.summary}`.toLowerCase();
-  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|ip|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人/.test(text)) return "发行八卦";
-  if (/\bai\b|artificial intelligence|人工智能|生成式|aigc/.test(text)) return "AI 游戏";
-  if (/bilibili|b站|哔哩哔哩|up主|视频|直播|创作者|二创/.test(text)) return "B站趋势";
-  if (/梗|meme|社区热议|玩家/.test(text)) return "新梗热点";
+  const family = mediaTopicFamily(item);
+  if (family === "business_legal") return "发行八卦";
+  if (family === "ai_production") return "AI 游戏";
+  if (family === "creator_community") return "B站趋势";
   return "行业新闻";
 }
 
 function conciseMediaSummary(item) {
   const text = [item.summary, item.title].filter(Boolean).join(" ");
-  const cleaned = text.replace(/\s+/g, " ").trim();
+  const cleaned = normalizeDisplayText(text);
   const family = mediaTopicFamily(item);
-  if (family === "product_ip") return "产品/IP出现新的内容节点，重点看它是否能带来UP主选题、社区回流、愿望单/复购转化或长线运营案例。";
-  if (family === "business_legal") return "公司、IP、法律、资本或发行结构出现变化，重点看它是否影响合作方可信度、权属风险或BD切入窗口。";
-  if (family === "platform_market") return "平台、商店、渠道或市场节奏出现变化，重点看它是否改变发现入口、曝光成本或中国区发行窗口。";
-  if (family === "creator_community") return "社区或创作者信号出现变化，重点看它是否能转化为B站内容打法、达人合作或话题运营。";
-  if (family === "ai_production") return "AI/工具链/引擎相关变化，重点看它是否改变研发效率、内容风险或小团队供给质量。";
+  if (family === "product_ip") return `产品/IP生命周期信号：${cleaned.slice(0, 80)}。重点看UP主选题、社区回流、愿望单/复购转化或长线运营案例。`;
+  if (family === "business_legal") return `公司/IP/法律/资本信号：${cleaned.slice(0, 80)}。重点看合作方可信度、权属风险或BD切入窗口。`;
+  if (family === "platform_market") return `平台/渠道/市场节奏信号：${cleaned.slice(0, 80)}。重点看发现入口、曝光成本或中国区发行窗口。`;
+  if (family === "creator_community") return `社区/创作者信号：${cleaned.slice(0, 80)}。重点看B站内容打法、达人合作和话题扩散。`;
+  if (family === "ai_production") return `AI/工具链信号：${cleaned.slice(0, 80)}。重点看研发效率、素材风险、内容供给质量和平台合规。`;
   return cleaned.slice(0, 120);
 }
 
@@ -743,11 +746,11 @@ function topicScore(text, pattern, points) {
 
 function mediaTopicFamily(item) {
   const text = `${item.title} ${item.summary}`.toLowerCase();
-  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/.test(text)) return "business_legal";
-  if (/\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/.test(text)) return "platform_market";
-  if (/\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation)\b|资料片|大型更新|公布|发布会|延期|重制|续作|改编|影视化|动画|联动|周年/.test(text)) return "product_ip";
-  if (/\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/.test(text)) return "creator_community";
   if (/\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i.test(text)) return "ai_production";
+  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/.test(text)) return "business_legal";
+  if (/\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation|restarted from scratch)\b|资料片|大型更新|公布|发布会|延期|重制|续作|新作|改编|影视化|动画|联动|周年|上线|定档|发售|手游|端游/.test(text)) return "product_ip";
+  if (/\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/.test(text)) return "creator_community";
+  if (/\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/.test(text)) return "platform_market";
   return "industry_context";
 }
 
@@ -873,7 +876,20 @@ function stripTags(value) {
 }
 
 function decodeHtml(value) {
-  return String(value).replaceAll("&amp;", "&").replaceAll("&quot;", '"').replaceAll("&#039;", "'").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&nbsp;", " ");
+  return String(value)
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&apos;", "'")
+    .replaceAll("&#039;", "'")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&nbsp;", " ");
+}
+
+function normalizeDisplayText(value) {
+  return decodeHtml(value).replace(/\s+/g, " ").trim();
 }
 
 function normalizeText(value) {
