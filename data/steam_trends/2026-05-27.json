@@ -1,285 +1,229 @@
 {
   "report_date": "2026-05-27",
-  "summary": "今日Steam趋势：扫描到 160 个候选。宏观看 Indie、Adventure、Action、Simulation；适合CRM的候选已进入日报池，但推进池按V2严格筛选。",
+  "summary": "今日Steam趋势V3：扫描 160 个候选，推进 2、观察 15、淘汰 12。本页只服务BD判断：看产品优劣、数据、玩法、B站能否赋能和下一步动作。",
   "market_insights": [
     {
-      "id": "steam_macro_2026_05_27_runway",
-      "title": "前置窗口比临近上线更重要",
-      "summary": "Popular Upcoming和Demo/Next Fest能帮助发现项目，但发售不足60天默认不再进推进池。",
+      "id": "steam_macro_2026_05_27_bd_decision_cards",
+      "title": "趋势页改为BD判断卡",
+      "summary": "V3不再把Indie、Adventure这类标签当趋势结论；每个候选必须写清玩法、公开数据、优势短板、B站赋能和BD动作。",
       "signal_level": "高",
-      "source": "Steam",
-      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
-      "suggested_action": "优先找3-6个月窗口内仍未被中国能力占位的项目。",
-      "captured_at": "2026-05-27T17:58:30+08:00"
+      "source": "CRM Sourcing V3",
+      "link": "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V3.md",
+      "suggested_action": "只把能辅助商务判断的信息留在趋势页。",
+      "captured_at": "2026-05-27T22:39:27+08:00"
     },
     {
-      "id": "steam_macro_2026_05_27_macro_genres",
-      "title": "今日高频品类：Indie、Adventure、Action、Simulation",
-      "summary": "高频品类只说明供给密度，真正要看B站内容化、开发者权益空间和公开数据。",
+      "id": "steam_macro_2026_05_27_push_watch_drop",
+      "title": "今日池子结构：推进2 / 观察15 / 淘汰12",
+      "summary": "推进池可以为空；观察池用于保留缺数据但可能有内容潜力的项目，淘汰池记录原因避免重复消耗时间。",
       "signal_level": "中",
       "source": "CRM Online Scan",
-      "link": "https://steamdb.info/charts/?sort=trending",
-      "suggested_action": "把宏观趋势作为选品背景，不直接当推荐理由。",
-      "captured_at": "2026-05-27T17:58:30+08:00"
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "先读推进池，再看观察池缺什么信号，不再按品类标签无差别浏览。",
+      "captured_at": "2026-05-27T22:39:27+08:00"
     }
   ],
-  "genre_signals": [
-    {
-      "id": "steam_genre_2026_05_27_indie",
-      "genre": "Indie",
-      "signal": "Indie 在今日样本中出现较多，需区分机制差异和普通跟风供给。",
-      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
-      "bd_action": "保留Steam页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
-      "links": [
-        "https://store.steampowered.com/search/?filter=popularcomingsoon",
-        "https://steamdb.info/charts/?sort=trending"
-      ]
-    },
-    {
-      "id": "steam_genre_2026_05_27_adventure",
-      "genre": "Adventure",
-      "signal": "Adventure 在今日样本中出现较多，需区分机制差异和普通跟风供给。",
-      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
-      "bd_action": "保留Steam页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
-      "links": [
-        "https://store.steampowered.com/search/?filter=popularcomingsoon",
-        "https://steamdb.info/charts/?sort=trending"
-      ]
-    },
-    {
-      "id": "steam_genre_2026_05_27_action",
-      "genre": "Action",
-      "signal": "Action 在今日样本中出现较多，需区分机制差异和普通跟风供给。",
-      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
-      "bd_action": "保留Steam页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
-      "links": [
-        "https://store.steampowered.com/search/?filter=popularcomingsoon",
-        "https://steamdb.info/charts/?sort=trending"
-      ]
-    },
-    {
-      "id": "steam_genre_2026_05_27_simulation",
-      "genre": "Simulation",
-      "signal": "Simulation 在今日样本中出现较多，需区分机制差异和普通跟风供给。",
-      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
-      "bd_action": "保留Steam页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
-      "links": [
-        "https://store.steampowered.com/search/?filter=popularcomingsoon",
-        "https://steamdb.info/charts/?sort=trending"
-      ]
-    },
-    {
-      "id": "steam_genre_2026_05_27_casual",
-      "genre": "Casual",
-      "signal": "Casual 在今日样本中出现较多，需区分机制差异和普通跟风供给。",
-      "why_it_matters": "B站内容需要能被讲清楚、剪出来、做挑战；只有标签相似不够。",
-      "bd_action": "保留Steam页面完整、素材可验证、联系入口明确且未被成熟中国发行能力占位的项目。",
-      "links": [
-        "https://store.steampowered.com/search/?filter=popularcomingsoon",
-        "https://steamdb.info/charts/?sort=trending"
-      ]
-    }
-  ],
+  "genre_signals": [],
   "items": [
+    {
+      "id": "steam_trend_2026_05_27_3910140",
+      "title": "残阳 1645/1937",
+      "steam_app_id": "3910140",
+      "rank_bucket": "Strategy Upcoming",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=81；推荐数 无公开；素材 7图/1视频。\n玩法：As a Ming officer in 1645’s Yangzhou &amp; Jiangyin massacres, shield a girl from shouma fate while obeying orders. In 1937’s Battle of Yangzhou, protect a war journalist returned from Japan. Your choices decide their survival and shape their fates across 300 years.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3910140/",
+        "https://steamdb.info/app/3910140/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "B站赋能：画面素材较完整，适合先做视觉向短内容和愿望单转化测试。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
     {
       "id": "steam_trend_2026_05_27_3634340",
       "title": "吾皇万岁",
       "steam_app_id": "3634340",
       "rank_bucket": "Strategy Upcoming",
-      "signal": "Strategy Upcoming；Q2 2026；score=81",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=81；推荐数 无公开；素材 16图/3视频。\n玩法：You'll time-travel to a turbulent ancient Chinese dynasty as a young monarch. Ascend the throne amidst chaos and navigate among powerful officials, noble clans, and common scholars. Each vermilion note harbors danger. Your choice will shape history: Create a prosperous era or be a fallen king.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
       "source": "Steam Store / AppDetails",
       "links": [
         "https://store.steampowered.com/app/3634340/",
         "https://steamdb.info/app/3634340/"
       ],
       "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "reason": "可进入CRM观察或推进候选",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
       "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_2505590",
+      "title": "T.K. Punk - G.O.L.D",
+      "steam_app_id": "2505590",
+      "rank_bucket": "Strategy Upcoming",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=81；推荐数 无公开；素材 8图/1视频。\n玩法：Cyber Three Kingdoms Turn-Based Strategy RPG— As the latest humanoid AI developed, you were kidnapped by Zhang Jiao and joined the resistance organization—GOLD. Develop yourself, accept commissions, research prosthetics, cultivate companions and pursue the love and destruction in your heart!。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/2505590/",
+        "https://steamdb.info/app/2505590/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_3918200",
+      "title": "港警成雙：來自城寨 Dual Fire Walled City",
+      "steam_app_id": "3918200",
+      "rank_bucket": "Co-op Upcoming",
+      "signal": "数据：Co-op Upcoming；发售窗口 Q2 2026；score=81；推荐数 无公开；素材 6图/1视频。\n玩法：Dual Fire Walled City is a story-driven co-op game for two players. Featuring close friends who grew up together in the Kowloon Walled City, only to be pulled onto vastly different life paths by a twist of fate. Get ready to immerse yourself in a classic Hong Kong-style movie.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3918200/",
+        "https://steamdb.info/app/3918200/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "reason": "B站赋能：多人协作适合直播切片、挑战局和UP主联动。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_4380740",
+      "title": "Butcher Shop Simulator",
+      "steam_app_id": "4380740",
+      "rank_bucket": "Co-op Upcoming",
+      "signal": "数据：Co-op Upcoming；发售窗口 Q2 2026；score=81；推荐数 无公开；素材 5图/0视频。\n玩法：Run your own butcher shop! Cut, weigh, package, and sell fresh meat while managing stock, customers, and hygiene. Master the knife, keep the fridge cold, and grow a small neighborhood butcher into a thriving meat empire. Play solo or in co-op.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4380740/",
+        "https://steamdb.info/app/4380740/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "reason": "B站赋能：多人协作适合直播切片、挑战局和UP主联动。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_3326670",
+      "title": "Dreamstranded",
+      "steam_app_id": "3326670",
+      "rank_bucket": "Steam Popular Upcoming",
+      "signal": "数据：Steam Popular Upcoming；发售窗口 2026-05-01；score=69；推荐数 无公开；素材 9图/1视频。\n玩法：Dive into a cozy world, enjoy gathering, crafting, building, and running your own tavern!。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3326670/",
+        "https://steamdb.info/app/3326670/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_2873070",
+      "title": "Endless Tactics",
+      "steam_app_id": "2873070",
+      "rank_bucket": "Strategy Upcoming",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=69；推荐数 无公开；素材 11图/2视频。\n玩法：Endless Tactics is a Turn-Based Roguelite game. Play as the commander of a high-risk planetary mining expedition, defend your base from alien creatures while trying not to get overrun. Use resources to upgrade your starship, unlock new technologies, powerups, and deadly new worlds to harvest!。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/2873070/",
+        "https://steamdb.info/app/2873070/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_3435610",
+      "title": "Exark",
+      "steam_app_id": "3435610",
+      "rank_bucket": "Strategy Upcoming",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=69；推荐数 无公开；素材 7图/1视频。\n玩法：Exark is a run-based engine builder where you command a gigantic ark-ship. Construct buildings, hire crew with unique skills, and exploit powerful synergies to survive your voyage to the rim of the world.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3435610/",
+        "https://steamdb.info/app/3435610/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_1532270",
+      "title": "The Maker Way",
+      "steam_app_id": "1532270",
+      "rank_bucket": "Strategy Upcoming",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=69；推荐数 无公开；素材 6图/2视频。\n玩法：Build creative machines, rovers, drones or robots. Use them to gather resources, discover new machine parts, source energy, construct bases and battle enemy factions in a physics-based open world.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/1532270/",
+        "https://steamdb.info/app/1532270/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
     },
     {
       "id": "steam_trend_2026_05_27_3729550",
       "title": "Stackmon",
       "steam_app_id": "3729550",
       "rank_bucket": "Strategy Upcoming",
-      "signal": "Strategy Upcoming；Q2 2026；score=69",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=69；推荐数 无公开；素材 7图/1视频。\n玩法：Stack, train and collect 100+ powerful Stackmon in this creature-collector with a card-stacking twist! Build your camp, challenge rival Scouts in combat and face the mysterious corruption spreading throughout your land.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
       "source": "Steam Store / AppDetails",
       "links": [
         "https://store.steampowered.com/app/3729550/",
         "https://steamdb.info/app/3729550/"
       ],
       "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "reason": "可进入CRM观察或推进候选",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
       "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
+      "captured_at": "2026-05-27T22:39:27+08:00"
+    },
+    {
+      "id": "steam_trend_2026_05_27_3926070",
+      "title": "The Bestest Alchemist",
+      "steam_app_id": "3926070",
+      "rank_bucket": "Strategy Upcoming",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=69；推荐数 无公开；素材 6图/1视频。\n玩法：Solve puzzles and brew potions in The Bestest Alchemist, a strategic puzzle roguelike! Freely arrange ingredients to create magical combinations, discover 100+ new recipes, and upgrade your collection to build powerful synergies. Your journey to becoming a master alchemist starts now!。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3926070/",
+        "https://steamdb.info/app/3926070/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
+      "auto_import": true,
+      "captured_at": "2026-05-27T22:39:27+08:00"
     },
     {
       "id": "steam_trend_2026_05_27_3929630",
       "title": "Terrinoth®: Heroes of Descent",
       "steam_app_id": "3929630",
       "rank_bucket": "Strategy Upcoming",
-      "signal": "Strategy Upcoming；Q2 2026；score=69",
+      "signal": "数据：Strategy Upcoming；发售窗口 Q2 2026；score=69；推荐数 无公开；素材 15图/1视频。\n玩法：Step into the epic world of Descent with the first fantasy co-op tactical RPG forged from the legendary dungeon crawling board game. Lead a company of fearless heroes across Terrinoth®, survive against epic boss battles in turn-based combat, and settle the fate of a world facing unending darkness.。\n优势：玩法具备机制表达空间；截图/视频素材较完整；有可尝试联系入口。\n短板：发售窗口不精确；缺愿望单/口碑/社区强数据。",
       "source": "Steam Store / AppDetails",
       "links": [
         "https://store.steampowered.com/app/3929630/",
         "https://steamdb.info/app/3929630/"
       ],
       "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
+      "reason": "B站赋能：多人协作适合直播切片、挑战局和UP主联动。 BD动作：优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。",
       "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_3756340",
-      "title": "Cheat Death",
-      "steam_app_id": "3756340",
-      "rank_bucket": "Strategy Upcoming",
-      "signal": "Strategy Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/3756340/",
-        "https://steamdb.info/app/3756340/"
-      ],
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_3908940",
-      "title": "Inferno Protocol",
-      "steam_app_id": "3908940",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/3908940/",
-        "https://steamdb.info/app/3908940/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_3712080",
-      "title": "Funnel Runners",
-      "steam_app_id": "3712080",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/3712080/",
-        "https://steamdb.info/app/3712080/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_4038080",
-      "title": "Entity Research Group",
-      "steam_app_id": "4038080",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/4038080/",
-        "https://steamdb.info/app/4038080/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_4112070",
-      "title": "An Eggstremely Hard Game",
-      "steam_app_id": "4112070",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/4112070/",
-        "https://steamdb.info/app/4112070/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_4465980",
-      "title": "The Declutterers : No Dumpster Left Empty",
-      "steam_app_id": "4465980",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/4465980/",
-        "https://steamdb.info/app/4465980/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_3968160",
-      "title": "Island Beekeeper",
-      "steam_app_id": "3968160",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/3968160/",
-        "https://steamdb.info/app/3968160/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_3394840",
-      "title": "Clawed",
-      "steam_app_id": "3394840",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/3394840/",
-        "https://steamdb.info/app/3394840/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
-    },
-    {
-      "id": "steam_trend_2026_05_27_3539320",
-      "title": "Scribble Wolf",
-      "steam_app_id": "3539320",
-      "rank_bucket": "Co-op Upcoming",
-      "signal": "Co-op Upcoming；Q2 2026；score=69",
-      "source": "Steam Store / AppDetails",
-      "links": [
-        "https://store.steampowered.com/app/3539320/",
-        "https://steamdb.info/app/3539320/"
-      ],
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "reason": "可进入CRM观察或推进候选",
-      "auto_import": true,
-      "captured_at": "2026-05-27T17:58:30+08:00"
+      "captured_at": "2026-05-27T22:39:27+08:00"
     }
   ],
   "crm_candidates": [
     {
-      "id": "lead_steam_3934270_2026-05-27",
-      "project": "How Many Dudes?",
-      "steam_app_id": "3934270",
-      "team": "Butterscotch Shenanigans",
+      "id": "lead_steam_2433630_2026-05-27",
+      "project": "The Left Behind",
+      "steam_app_id": "2433630",
+      "team": "Extrude",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -288,41 +232,46 @@
       "bucket": "推进池",
       "stage": "active",
       "priority": "P1",
-      "priority_reason": "Roguelike Upcoming 前置信号 + 高视觉 + 系统型玩法，距发售约64天，值得优先确认中国区窗口",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力；距发售约64天；窗口仍在，允许优先触达",
-      "genre": "Casual / Indie / Strategy / Free To Play",
-      "gameplay": "How many dudes does it take to beat up a gorilla? A thousand toddlers? A horse-sized duck? A GOD? Enter the Dude Ranch and find out in this roguelike dudebuilder where you recruit an army of dudes to fight ridiculous battles.",
-      "progress": "Steam Roguelike Upcoming；发售窗口：2026-07-30",
-      "release_window": "2026-07-30",
+      "priority_reason": "Co-op Upcoming 前置信号 + 高视觉 + 系统型玩法，距发售约61天，值得优先确认中国区窗口",
+      "rule_fit": "海外保留条件成立；玩法具备内容化潜力；距发售约61天；窗口仍在，允许优先触达",
+      "genre": "Action / Adventure",
+      "gameplay": "The Left Behind is a solo and co-op post-apocalyptic survival game. Explore a typical Dutch open-world landscape at daytime and beware of hordes of enemies coming in at night. Loot and hunt to survive. Each night, the game becomes increasingly challenging. How long will you survive?",
+      "progress": "Steam Co-op Upcoming；发售窗口：2026-07-27",
+      "release_window": "2026-07-27",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Butterscotch Shenanigans；未见成熟中国发行能力占位",
-      "publisher_name": "Butterscotch Shenanigans",
+      "publisher_status": "Extrude；未见成熟中国发行能力占位",
+      "publisher_name": "Extrude",
       "china_capability_occupied": false,
-      "traction_summary": "Roguelike Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Roguelike Upcoming / Steam App 3934270",
-      "contact": "官网: https://www.bscotch.net/games/how-many-dudes；官网: https://www.bscotch.net/support",
+      "traction_summary": "Co-op Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Co-op Upcoming / Steam App 2433630",
+      "contact": "Email: info@trudex.nl；官网: https://www.extrude3d.nl/theleftbehind；官网: https://www.trudex.nl/",
       "contact_methods": [
         {
+          "type": "Email",
+          "value": "info@trudex.nl",
+          "note": "Steam support email"
+        },
+        {
           "type": "官网",
-          "value": "https://www.bscotch.net/games/how-many-dudes",
+          "value": "https://www.extrude3d.nl/theleftbehind",
           "note": "Steam official website"
         },
         {
           "type": "官网",
-          "value": "https://www.bscotch.net/support",
+          "value": "https://www.trudex.nl/",
           "note": "Steam support URL"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3934270/",
-        "https://steamdb.info/app/3934270/",
-        "https://www.bscotch.net/games/how-many-dudes"
+        "https://store.steampowered.com/app/2433630/",
+        "https://steamdb.info/app/2433630/",
+        "https://www.extrude3d.nl/theleftbehind"
       ],
-      "exposure_trail": "最早自动捕捉：Roguelike Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "exposure_trail": "最早自动捕捉：Co-op Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "amplification": "可做多人首测、主播局和社交传播节点。",
       "risks": "缺少愿望单/口碑/社区强数据",
       "verdict": "符合V2推进标准，建议优先确认中国区合作窗口与开发者真实需求",
       "next_action": "确认团队地区、商务邮箱/Discord、中文计划、Demo数据和是否已有中国能力发行商",
@@ -332,10 +281,10 @@
       "notes": "V2判断：窗口仍在，玩法/视觉/公开信号可支撑优先触达；下一步验证中国区权益空间。"
     },
     {
-      "id": "lead_steam_3330210_2026-05-27",
-      "project": "Kinny and the Cosmic Cauldron",
-      "steam_app_id": "3330210",
-      "team": "Kinnymoms",
+      "id": "lead_steam_3323490_2026-05-27",
+      "project": "Truxton Extreme",
+      "steam_app_id": "3323490",
+      "team": "Tatsujin",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -344,41 +293,46 @@
       "bucket": "推进池",
       "stage": "active",
       "priority": "P1",
-      "priority_reason": "Roguelike Upcoming 前置信号 + 高视觉 + 系统型玩法，距发售约66天，值得优先确认中国区窗口",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力；距发售约66天；窗口仍在，允许优先触达",
-      "genre": "Casual / Indie / Strategy",
-      "gameplay": "Cook or be cooked! In this cosmic deck-building roguelike, ingredients crash, merge, and react in chaotic ways. As the witch chef of Stewpendous Spoons, craft the perfect stew, master strategic combos, and satisfy bizarre patrons, before you end up in the cauldron yourself!",
-      "progress": "Steam Roguelike Upcoming；发售窗口：2026-08-01",
-      "release_window": "2026-08-01",
+      "priority_reason": "Co-op Upcoming 前置信号 + 高视觉 + 系统型玩法，距发售约64天，值得优先确认中国区窗口",
+      "rule_fit": "海外保留条件成立；玩法具备内容化潜力；距发售约64天；窗口仍在，允许优先触达",
+      "genre": "Action",
+      "gameplay": "Take down hordes of alien invaders with your Power Shot, Truxton Beam, Thunder Laser, Homing Shot, Star‑mine Shot, and more! Don't forget to breathe as you face off against gigantic bosses in the ultimate battle for humanity’s survival!",
+      "progress": "Steam Co-op Upcoming；发售窗口：2026-07-30",
+      "release_window": "2026-07-30",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Rogue Duck Interactive / Lazy Otter /  Gamersky Games；未见成熟中国发行能力占位",
-      "publisher_name": "Rogue Duck Interactive",
+      "publisher_status": "Clear River Games AB；未见成熟中国发行能力占位",
+      "publisher_name": "Clear River Games AB",
       "china_capability_occupied": false,
-      "traction_summary": "Roguelike Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Roguelike Upcoming / Steam App 3330210",
-      "contact": "Email: tokakburak@gmail.com；官网: https://rogueduck.net",
+      "traction_summary": "Co-op Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Co-op Upcoming / Steam App 3323490",
+      "contact": "Email: support@clearrivergames.com；官网: https://truxtonextreme.com；官网: https://www.clearrivergames.com/contact.html",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "tokakburak@gmail.com",
+          "value": "support@clearrivergames.com",
           "note": "Steam support email"
         },
         {
           "type": "官网",
-          "value": "https://rogueduck.net",
+          "value": "https://truxtonextreme.com",
           "note": "Steam official website"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.clearrivergames.com/contact.html",
+          "note": "Steam support URL"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3330210/",
-        "https://steamdb.info/app/3330210/",
-        "https://rogueduck.net"
+        "https://store.steampowered.com/app/3323490/",
+        "https://steamdb.info/app/3323490/",
+        "https://truxtonextreme.com"
       ],
-      "exposure_trail": "最早自动捕捉：Roguelike Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "exposure_trail": "最早自动捕捉：Co-op Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "amplification": "可做多人首测、主播局和社交传播节点。",
       "risks": "缺少愿望单/口碑/社区强数据",
       "verdict": "符合V2推进标准，建议优先确认中国区合作窗口与开发者真实需求",
       "next_action": "确认团队地区、商务邮箱/Discord、中文计划、Demo数据和是否已有中国能力发行商",
@@ -388,54 +342,54 @@
       "notes": "V2判断：窗口仍在，玩法/视觉/公开信号可支撑优先触达；下一步验证中国区权益空间。"
     },
     {
-      "id": "lead_steam_2372240_2026-05-27",
-      "project": "Re:Night",
-      "steam_app_id": "2372240",
-      "team": "Seahorse Games",
+      "id": "lead_steam_3910140_2026-05-27",
+      "project": "残阳 1645/1937",
+      "steam_app_id": "3910140",
+      "team": "未雪游戏(NotsnowyGame)",
       "team_size": null,
-      "country": "海外",
-      "region": "海外",
+      "country": "中国（待确认）",
+      "region": "中国",
       "city": null,
-      "region_priority": "海外-高视觉",
-      "bucket": "推进池",
-      "stage": "active",
-      "priority": "P1",
-      "priority_reason": "Roguelike Upcoming 前置信号 + 高视觉 + 系统型玩法，距发售约77天，值得优先确认中国区窗口",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力；距发售约77天；窗口仍在，允许优先触达",
-      "genre": "Indie / RPG / Strategy",
-      "gameplay": "Re:Night is a strategy game that blends turn based tactics with roguelike deckbuilding. In each run, build your deck, plan your tactics, and experiment with countless 3-character team combinations. Journey to a mysterious town, break the endless cycle of night, and bring dawn back to the world.",
-      "progress": "Steam Roguelike Upcoming；发售窗口：2026-08-12",
-      "release_window": "2026-08-12",
+      "region_priority": "国内优先",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Strategy Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力",
+      "genre": "Adventure",
+      "gameplay": "As a Ming officer in 1645’s Yangzhou &amp; Jiangyin massacres, shield a girl from shouma fate while obeying orders. In 1937’s Battle of Yangzhou, protect a war journalist returned from Japan. Your choices decide their survival and shape their fates across 300 years.",
+      "progress": "Steam Strategy Upcoming；发售窗口：Q2 2026",
+      "release_window": "Q2 2026",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "HARRISONWORLD CO.,LTD；未见成熟中国发行能力占位",
-      "publisher_name": "HARRISONWORLD CO.,LTD",
+      "publisher_status": "未雪游戏(NotsnowyGame)；未见成熟中国发行能力占位",
+      "publisher_name": "未雪游戏(NotsnowyGame)",
       "china_capability_occupied": false,
-      "traction_summary": "Roguelike Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Roguelike Upcoming / Steam App 2372240",
-      "contact": "Email: support@2pgames.net",
+      "traction_summary": "Strategy Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Strategy Upcoming / Steam App 3910140",
+      "contact": "Email: 1207216724@qq.com",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "support@2pgames.net",
+          "value": "1207216724@qq.com",
           "note": "Steam support email"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/2372240/",
-        "https://steamdb.info/app/2372240/"
+        "https://store.steampowered.com/app/3910140/",
+        "https://steamdb.info/app/3910140/"
       ],
-      "exposure_trail": "最早自动捕捉：Roguelike Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "exposure_trail": "最早自动捕捉：Strategy Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
       "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "缺少愿望单/口碑/社区强数据",
-      "verdict": "符合V2推进标准，建议优先确认中国区合作窗口与开发者真实需求",
-      "next_action": "确认团队地区、商务邮箱/Discord、中文计划、Demo数据和是否已有中国能力发行商",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够推进，先留在观察池等待更强公开信号",
+      "next_action": "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式",
       "owner": null,
       "due_date": null,
       "first_seen": "2026-05-27",
-      "notes": "V2判断：窗口仍在，玩法/视觉/公开信号可支撑优先触达；下一步验证中国区权益空间。"
+      "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
     },
     {
       "id": "lead_steam_3634340_2026-05-27",
@@ -488,43 +442,49 @@
       "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
     },
     {
-      "id": "lead_steam_3729550_2026-05-27",
-      "project": "Stackmon",
-      "steam_app_id": "3729550",
-      "team": "Riftpoint Entertainment",
+      "id": "lead_steam_2505590_2026-05-27",
+      "project": "T.K. Punk - G.O.L.D",
+      "steam_app_id": "2505590",
+      "team": "桑尼游戏(Sunny Game)",
       "team_size": null,
-      "country": "海外",
-      "region": "海外",
+      "country": "中国（待确认）",
+      "region": "中国",
       "city": null,
-      "region_priority": "海外-高视觉",
+      "region_priority": "国内优先",
       "bucket": "观察池",
       "stage": "watch",
       "priority": "P2",
       "priority_reason": "Strategy Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Adventure / Indie / Strategy",
-      "gameplay": "Stack, train and collect 100+ powerful Stackmon in this creature-collector with a card-stacking twist! Build your camp, challenge rival Scouts in combat and face the mysterious corruption spreading throughout your land.",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力",
+      "genre": "Adventure / Indie / RPG / Strategy",
+      "gameplay": "Cyber Three Kingdoms Turn-Based Strategy RPG— As the latest humanoid AI developed, you were kidnapped by Zhang Jiao and joined the resistance organization—GOLD. Develop yourself, accept commissions, research prosthetics, cultivate companions and pursue the love and destruction in your heart!",
       "progress": "Steam Strategy Upcoming；发售窗口：Q2 2026",
       "release_window": "Q2 2026",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Alibi Games；未见成熟中国发行能力占位",
-      "publisher_name": "Alibi Games",
+      "publisher_status": "桑尼游戏(Sunny Game) / LoveStoryProject；未见成熟中国发行能力占位",
+      "publisher_name": "桑尼游戏(Sunny Game)",
       "china_capability_occupied": false,
       "traction_summary": "Strategy Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Strategy Upcoming / Steam App 3729550",
-      "contact": "Email: contact@riftpoint.com.br",
+      "public_signals": "Strategy Upcoming / Steam App 2505590",
+      "contact": "Email: 199101046@qq.com；官网: https://space.bilibili.com/98325736",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "contact@riftpoint.com.br",
+          "value": "199101046@qq.com",
           "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://space.bilibili.com/98325736",
+          "note": "Steam official website"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3729550/",
-        "https://steamdb.info/app/3729550/"
+        "https://store.steampowered.com/app/2505590/",
+        "https://steamdb.info/app/2505590/",
+        "https://space.bilibili.com/98325736"
       ],
       "exposure_trail": "最早自动捕捉：Strategy Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
@@ -538,144 +498,43 @@
       "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
     },
     {
-      "id": "lead_steam_3929630_2026-05-27",
-      "project": "Terrinoth®: Heroes of Descent",
-      "steam_app_id": "3929630",
-      "team": "Artefacts Studio",
+      "id": "lead_steam_3918200_2026-05-27",
+      "project": "港警成雙：來自城寨 Dual Fire Walled City",
+      "steam_app_id": "3918200",
+      "team": "Team DF",
       "team_size": null,
-      "country": "海外",
-      "region": "海外",
+      "country": "中国（待确认）",
+      "region": "中国",
       "city": null,
-      "region_priority": "海外-高视觉",
-      "bucket": "观察池",
-      "stage": "watch",
-      "priority": "P2",
-      "priority_reason": "Strategy Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Adventure / RPG / Strategy",
-      "gameplay": "Step into the epic world of Descent with the first fantasy co-op tactical RPG forged from the legendary dungeon crawling board game. Lead a company of fearless heroes across Terrinoth®, survive against epic boss battles in turn-based combat, and settle the fate of a world facing unending darkness.",
-      "progress": "Steam Strategy Upcoming；发售窗口：Q2 2026",
-      "release_window": "Q2 2026",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "New Tales；未见成熟中国发行能力占位",
-      "publisher_name": "New Tales",
-      "china_capability_occupied": false,
-      "traction_summary": "Strategy Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Strategy Upcoming / Steam App 3929630",
-      "contact": "Email: support@newtales.com",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "support@newtales.com",
-          "note": "Steam support email"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/3929630/",
-        "https://steamdb.info/app/3929630/"
-      ],
-      "exposure_trail": "最早自动捕捉：Strategy Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "amplification": "可做多人首测、主播局和社交传播节点。",
-      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
-      "verdict": "方向可看但还不够推进，先留在观察池等待更强公开信号",
-      "next_action": "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-05-27",
-      "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
-    },
-    {
-      "id": "lead_steam_3756340_2026-05-27",
-      "project": "Cheat Death",
-      "steam_app_id": "3756340",
-      "team": "GG Studio",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "海外-高视觉",
-      "bucket": "观察池",
-      "stage": "watch",
-      "priority": "P2",
-      "priority_reason": "Strategy Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Indie / Simulation / Strategy",
-      "gameplay": "Play dice poker with the Grim Reaper in a dark strategic roguelite. Build powerful poker hands from cursed dice, stack upgrades, rig the odds, sabotage Death, and survive deadly mini-games with your life on the line.",
-      "progress": "Steam Strategy Upcoming；发售窗口：Q2 2026",
-      "release_window": "Q2 2026",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "Polden Publishing；未见成熟中国发行能力占位",
-      "publisher_name": "Polden Publishing",
-      "china_capability_occupied": false,
-      "traction_summary": "Strategy Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Strategy Upcoming / Steam App 3756340",
-      "contact": "Email: info@ggstudio.pw",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "info@ggstudio.pw",
-          "note": "Steam support email"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/3756340/",
-        "https://steamdb.info/app/3756340/"
-      ],
-      "exposure_trail": "最早自动捕捉：Strategy Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
-      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
-      "verdict": "方向可看但还不够推进，先留在观察池等待更强公开信号",
-      "next_action": "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-05-27",
-      "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
-    },
-    {
-      "id": "lead_steam_3908940_2026-05-27",
-      "project": "Inferno Protocol",
-      "steam_app_id": "3908940",
-      "team": "Tektonic Interactive",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "海外-高视觉",
+      "region_priority": "国内优先",
       "bucket": "观察池",
       "stage": "watch",
       "priority": "P2",
       "priority_reason": "Co-op Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Action / Adventure / Indie",
-      "gameplay": "A survival horror set in a massive maze. Play solo or 6-player co-op. Scavenge resources to craft gear and survive against terrifying enemies. Unlock unique abilities and find the exit.",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力",
+      "genre": "Adventure / Indie",
+      "gameplay": "Dual Fire Walled City is a story-driven co-op game for two players. Featuring close friends who grew up together in the Kowloon Walled City, only to be pulled onto vastly different life paths by a twist of fate. Get ready to immerse yourself in a classic Hong Kong-style movie.",
       "progress": "Steam Co-op Upcoming；发售窗口：Q2 2026",
       "release_window": "Q2 2026",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Tektonic Interactive；未见成熟中国发行能力占位",
-      "publisher_name": "Tektonic Interactive",
+      "publisher_status": "Team DF；未见成熟中国发行能力占位",
+      "publisher_name": "Team DF",
       "china_capability_occupied": false,
       "traction_summary": "Co-op Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Co-op Upcoming / Steam App 3908940",
-      "contact": "官网: https://tektonicinteractive.com/",
+      "public_signals": "Co-op Upcoming / Steam App 3918200",
+      "contact": "Email: duocop2gether@gmail.com",
       "contact_methods": [
         {
-          "type": "官网",
-          "value": "https://tektonicinteractive.com/",
-          "note": "Steam official website"
+          "type": "Email",
+          "value": "duocop2gether@gmail.com",
+          "note": "Steam support email"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3908940/",
-        "https://steamdb.info/app/3908940/",
-        "https://tektonicinteractive.com/"
+        "https://store.steampowered.com/app/3918200/",
+        "https://steamdb.info/app/3918200/"
       ],
       "exposure_trail": "最早自动捕捉：Co-op Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
@@ -689,43 +548,43 @@
       "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
     },
     {
-      "id": "lead_steam_3712080_2026-05-27",
-      "project": "Funnel Runners",
-      "steam_app_id": "3712080",
-      "team": "Supernova Studios LLC",
+      "id": "lead_steam_4380740_2026-05-27",
+      "project": "Butcher Shop Simulator",
+      "steam_app_id": "4380740",
+      "team": "Game Discovery",
       "team_size": null,
-      "country": "海外",
-      "region": "海外",
+      "country": "中国（待确认）",
+      "region": "中国",
       "city": null,
-      "region_priority": "海外-高视觉",
+      "region_priority": "国内优先",
       "bucket": "观察池",
       "stage": "watch",
       "priority": "P2",
       "priority_reason": "Co-op Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Action / Indie / Simulation",
-      "gameplay": "Trapped in a doomed city, you and up to 7 friends must scavenge parts, fix your van, and escape the brutal tornado that approaches. A first-person co-op survival game with escalating disasters and total environmental destruction.",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力",
+      "genre": "Casual / Indie / Simulation / Free To Play",
+      "gameplay": "Run your own butcher shop! Cut, weigh, package, and sell fresh meat while managing stock, customers, and hygiene. Master the knife, keep the fridge cold, and grow a small neighborhood butcher into a thriving meat empire. Play solo or in co-op.",
       "progress": "Steam Co-op Upcoming；发售窗口：Q2 2026",
       "release_window": "Q2 2026",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Supernova Studios LLC；未见成熟中国发行能力占位",
-      "publisher_name": "Supernova Studios LLC",
+      "publisher_status": "吉娃娃游戏；未见成熟中国发行能力占位",
+      "publisher_name": "吉娃娃游戏",
       "china_capability_occupied": false,
       "traction_summary": "Co-op Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Co-op Upcoming / Steam App 3712080",
-      "contact": "Email: elwood@supernovastudios.com ",
+      "public_signals": "Co-op Upcoming / Steam App 4380740",
+      "contact": "Email: contactbvd@gmail.com",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "elwood@supernovastudios.com ",
+          "value": "contactbvd@gmail.com",
           "note": "Steam support email"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3712080/",
-        "https://steamdb.info/app/3712080/"
+        "https://store.steampowered.com/app/4380740/",
+        "https://steamdb.info/app/4380740/"
       ],
       "exposure_trail": "最早自动捕捉：Co-op Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
@@ -739,10 +598,10 @@
       "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
     },
     {
-      "id": "lead_steam_4038080_2026-05-27",
-      "project": "Entity Research Group",
-      "steam_app_id": "4038080",
-      "team": "Faceless Smile Corp.",
+      "id": "lead_steam_3326670_2026-05-27",
+      "project": "Dreamstranded",
+      "steam_app_id": "3326670",
+      "team": "MagicStone23",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -751,35 +610,90 @@
       "bucket": "观察池",
       "stage": "watch",
       "priority": "P2",
-      "priority_reason": "Co-op Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
-      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Action / Indie",
-      "gameplay": "Entity Research Group — a cooperative first-person horror game where you become part of a special unit investigating highly dangerous anomalous entities. Collect evidence and samples, complete technical objectives, and survive within the ever-changing Backrooms clusters.",
-      "progress": "Steam Co-op Upcoming；发售窗口：Q2 2026",
-      "release_window": "Q2 2026",
+      "priority_reason": "Steam Popular Upcoming 有前置信号，距发售约-26天；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
+      "rule_fit": "海外保留条件成立；玩法具备内容化潜力；距发售约-26天",
+      "genre": "Casual / Indie / Simulation",
+      "gameplay": "Dive into a cozy world, enjoy gathering, crafting, building, and running your own tavern!",
+      "progress": "Steam Steam Popular Upcoming；发售窗口：2026-05-01",
+      "release_window": "2026-05-01",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Faceless Smile Corp.；未见成熟中国发行能力占位",
-      "publisher_name": "Faceless Smile Corp.",
+      "publisher_status": "MagicStone23；未见成熟中国发行能力占位",
+      "publisher_name": "MagicStone23",
       "china_capability_occupied": false,
-      "traction_summary": "Co-op Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Co-op Upcoming / Steam App 4038080",
-      "contact": "官网: faceless.smile.corp@gmail.com",
+      "traction_summary": "Steam Popular Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam Popular Upcoming / Steam App 3326670",
+      "contact": "官网: https://x.com/MagicStone23",
       "contact_methods": [
         {
           "type": "官网",
-          "value": "faceless.smile.corp@gmail.com",
+          "value": "https://x.com/MagicStone23",
           "note": "Steam support URL"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/4038080/",
-        "https://steamdb.info/app/4038080/"
+        "https://store.steampowered.com/app/3326670/",
+        "https://steamdb.info/app/3326670/"
       ],
-      "exposure_trail": "最早自动捕捉：Co-op Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "amplification": "可做多人首测、主播局和社交传播节点。",
+      "exposure_trail": "最早自动捕捉：Steam Popular Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够推进，先留在观察池等待更强公开信号",
+      "next_action": "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-05-27",
+      "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
+    },
+    {
+      "id": "lead_steam_2873070_2026-05-27",
+      "project": "Endless Tactics",
+      "steam_app_id": "2873070",
+      "team": "Dead Battery Games",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "海外-高视觉",
+      "bucket": "观察池",
+      "stage": "watch",
+      "priority": "P2",
+      "priority_reason": "Strategy Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
+      "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
+      "genre": "Indie / Strategy",
+      "gameplay": "Endless Tactics is a Turn-Based Roguelite game. Play as the commander of a high-risk planetary mining expedition, defend your base from alien creatures while trying not to get overrun. Use resources to upgrade your starship, unlock new technologies, powerups, and deadly new worlds to harvest!",
+      "progress": "Steam Strategy Upcoming；发售窗口：Q2 2026",
+      "release_window": "Q2 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "GIGATANK 3000；未见成熟中国发行能力占位",
+      "publisher_name": "GIGATANK 3000",
+      "china_capability_occupied": false,
+      "traction_summary": "Strategy Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Strategy Upcoming / Steam App 2873070",
+      "contact": "Email: support@gigatank3000.com；官网: www.gigatank3000.com",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "support@gigatank3000.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "www.gigatank3000.com",
+          "note": "Steam support URL"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/2873070/",
+        "https://steamdb.info/app/2873070/"
+      ],
+      "exposure_trail": "最早自动捕捉：Strategy Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
       "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
       "verdict": "方向可看但还不够推进，先留在观察池等待更强公开信号",
       "next_action": "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式",
@@ -789,10 +703,10 @@
       "notes": "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。"
     },
     {
-      "id": "lead_steam_4112070_2026-05-27",
-      "project": "An Eggstremely Hard Game",
-      "steam_app_id": "4112070",
-      "team": "BBear Studio",
+      "id": "lead_steam_3435610_2026-05-27",
+      "project": "Exark",
+      "steam_app_id": "3435610",
+      "team": "Robot Cat Limited",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -801,35 +715,35 @@
       "bucket": "观察池",
       "stage": "watch",
       "priority": "P2",
-      "priority_reason": "Co-op Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
+      "priority_reason": "Strategy Upcoming 有前置信号，窗口待确认；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认",
       "rule_fit": "海外保留条件成立；玩法具备内容化潜力",
-      "genre": "Casual",
-      "gameplay": "Two geese. One fragile egg. Infinite chaos. Work together to carry it through unpredictable challenges without breaking it, every crack makes it harder, every mistake more hilarious. A co-op physics game about teamwork, clumsiness, and the unstoppable power of honking.",
-      "progress": "Steam Co-op Upcoming；发售窗口：Q2 2026",
+      "genre": "Indie / Strategy",
+      "gameplay": "Exark is a run-based engine builder where you command a gigantic ark-ship. Construct buildings, hire crew with unique skills, and exploit powerful synergies to survive your voyage to the rim of the world.",
+      "progress": "Steam Strategy Upcoming；发售窗口：Q2 2026",
       "release_window": "Q2 2026",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Devotion Interactive；未见成熟中国发行能力占位",
-      "publisher_name": "Devotion Interactive",
+      "publisher_status": "Goblinz Publishing；未见成熟中国发行能力占位",
+      "publisher_name": "Goblinz Publishing",
       "china_capability_occupied": false,
-      "traction_summary": "Co-op Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Co-op Upcoming / Steam App 4112070",
-      "contact": "Email: press@devotioninteractive.com",
+      "traction_summary": "Strategy Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Strategy Upcoming / Steam App 3435610",
+      "contact": "Email: robotcatgames@gmail.com",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "press@devotioninteractive.com",
+          "value": "robotcatgames@gmail.com",
           "note": "Steam support email"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/4112070/",
-        "https://steamdb.info/app/4112070/"
+        "https://store.steampowered.com/app/3435610/",
+        "https://steamdb.info/app/3435610/"
       ],
-      "exposure_trail": "最早自动捕捉：Co-op Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "amplification": "可做多人首测、主播局和社交传播节点。",
+      "exposure_trail": "最早自动捕捉：Strategy Upcoming（2026-05-27）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
       "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
       "verdict": "方向可看但还不够推进，先留在观察池等待更强公开信号",
       "next_action": "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式",
