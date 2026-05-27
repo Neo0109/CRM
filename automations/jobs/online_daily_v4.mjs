@@ -534,22 +534,27 @@ async function fetchIndustrySignals() {
     .filter((item) => item.score >= 12)
     .sort((a, b) => b.score - a.score);
 
-  return dedupeMediaSignals(scored).slice(0, 6);
+  return selectDiverseMediaSignals(dedupeMediaSignals(scored), 6);
 }
 
 function mediaSources() {
   return [
-    { name: "GameSpot", url: "https://www.gamespot.com/feeds/news/", type: "feed" },
-    { name: "PC Gamer", url: "https://www.pcgamer.com/rss/", type: "feed" },
-    { name: "IGN", url: "https://www.ign.com/rss/articles/feed?tags=games", type: "feed" },
-    { name: "GameDeveloper", url: "https://www.gamedeveloper.com/rss.xml", type: "feed" },
-    { name: "3DM", url: "https://www.3dmgame.com/news/", type: "page" },
-    { name: "游民星空", url: "https://www.gamersky.com/news/", type: "page" },
-    { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed" },
-    { name: "证券时报", url: "https://www.stcn.com/", type: "page" },
-    { name: "GameSpot", url: "https://www.gamespot.com/articles/cd-projekt-red-is-returning-to-the-witcher-3-with-new-expansion-in-2027/", type: "article", activeUntil: "2026-05-31" },
-    { name: "证券时报", url: "https://stcn.com/live/video-detail/23201.html", type: "article", activeUntil: "2026-05-31" },
-    { name: "澎湃新闻", url: "https://m.thepaper.cn/newsDetail_forward_33237012", type: "article", activeUntil: "2026-05-31" }
+    { name: "GamesIndustry.biz", url: "https://www.gamesindustry.biz/feed", type: "feed", quality: 14, focus: ["business", "publishing"] },
+    { name: "GameDeveloper", url: "https://www.gamedeveloper.com/rss.xml", type: "feed", quality: 13, focus: ["development", "business"] },
+    { name: "VGC", url: "https://www.videogameschronicle.com/feed/", type: "feed", quality: 12, focus: ["industry", "platform"] },
+    { name: "Eurogamer", url: "https://www.eurogamer.net/feed/news", type: "feed", quality: 11, focus: ["industry", "product"] },
+    { name: "PC Gamer", url: "https://www.pcgamer.com/rss/", type: "feed", quality: 10, focus: ["pc", "community"] },
+    { name: "IGN", url: "https://www.ign.com/rss/articles/feed?tags=games", type: "feed", quality: 10, focus: ["product", "mainstream"] },
+    { name: "Gematsu", url: "https://www.gematsu.com/feed", type: "feed", quality: 9, focus: ["product", "asia"] },
+    { name: "The Verge Gaming", url: "https://www.theverge.com/rss/games/index.xml", type: "feed", quality: 9, focus: ["platform", "technology"] },
+    { name: "GameSpot", url: "https://www.gamespot.com/feeds/news/", type: "feed", quality: 8, focus: ["mainstream", "product"] },
+    { name: "GameLook", url: "http://www.gamelook.com.cn/feed", type: "feed", quality: 12, focus: ["china", "business"] },
+    { name: "触乐", url: "https://www.chuapp.com/?feed=rss2", type: "feed", quality: 11, focus: ["china", "culture"] },
+    { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed", quality: 7, focus: ["china", "technology"] },
+    { name: "3DM", url: "https://www.3dmgame.com/news/", type: "page", quality: 6, focus: ["china", "product"] },
+    { name: "游民星空", url: "https://www.gamersky.com/news/", type: "page", quality: 6, focus: ["china", "product"] },
+    { name: "证券时报", url: "https://www.stcn.com/", type: "page", quality: 10, focus: ["china", "capital", "legal"] },
+    { name: "澎湃新闻", url: "https://m.thepaper.cn/", type: "page", quality: 9, focus: ["china", "legal", "society"] }
   ].filter((source) => !source.activeUntil || reportDate <= source.activeUntil);
 }
 
@@ -574,7 +579,7 @@ function parseFeedItems(xml, source) {
     const link = absolutizeUrl(decodeHtml(stripTags(rawLink)).trim(), source.url);
     const summary = decodeHtml(stripTags(readXmlTag(block, "description") || readXmlTag(block, "summary") || "")).trim();
     const publishedAt = decodeHtml(stripTags(readXmlTag(block, "pubDate") || readXmlTag(block, "published") || "")).trim();
-    if (title && link) items.push({ title, link, summary, published_at: publishedAt, source: source.name });
+    if (title && link) items.push(sourceTaggedItem({ title, link, summary, published_at: publishedAt }, source));
   }
   return items;
 }
@@ -585,13 +590,12 @@ function parsePageItems(html, source) {
   for (const match of String(html).matchAll(anchorPattern)) {
     const title = decodeHtml(stripTags(match[2])).trim();
     if (title.length < 8 || title.length > 100) continue;
-    items.push({
+    items.push(sourceTaggedItem({
       title,
       link: absolutizeUrl(match[1], source.url),
       summary: title,
-      published_at: "",
-      source: source.name
-    });
+      published_at: ""
+    }, source));
     if (items.length >= 30) break;
   }
   return items;
@@ -608,7 +612,7 @@ function parseArticleItem(html, source) {
     ?? String(html).match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i)?.[1]
     ?? title
   )).trim();
-  return title ? { title, link: source.url, summary, published_at: "", source: source.name } : null;
+  return title ? sourceTaggedItem({ title, link: source.url, summary, published_at: "" }, source) : null;
 }
 
 function readXmlTag(block, tagName) {
@@ -618,15 +622,17 @@ function readXmlTag(block, tagName) {
 
 function scoreMediaSignal(item) {
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
-  let score = 0;
-  for (const keyword of ["witcher", "巫师", "cd projekt", "cdpr", "expansion", "资料片", "dlc", "许垚", "林奇", "游族", "三体", "死刑", "执行死刑"]) {
-    if (text.includes(keyword.toLowerCase())) score += 20;
-  }
-  for (const keyword of ["steam", "发行", "publisher", "publishing", "indie", "独立游戏", "bilibili", "b站", "ue5", "switch", "xbox", "playstation", "demo", "next fest"]) {
-    if (text.includes(keyword.toLowerCase())) score += 5;
-  }
-  if (/\bai\b|artificial intelligence|人工智能|生成式|aigc/.test(text)) score += 5;
-  if (/rumor|leak|传闻|曝/.test(text)) score -= 3;
+  let score = item.source_quality ?? 0;
+  score += topicScore(text, /\b(publisher|publishing|acquisition|investment|funding|layoffs?|union|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/, 18);
+  score += topicScore(text, /\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation)\b|资料片|大型更新|公布|发布会|延期|重制|续作|改编|影视化|动画|联动|周年/, 14);
+  score += topicScore(text, /\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/, 12);
+  score += topicScore(text, /\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/, 10);
+  score += topicScore(text, /\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i, 10);
+  score += topicScore(text, /\b(china|chinese|bilibili|asia|netease|tencent)\b|中国|国产|出海|B站|哔哩哔哩|腾讯|网易|米哈游|莉莉丝|心动|鹰角/, 12);
+  score += topicScore(text, /\b(report|analysis|interview|confirmed|official|financial results)\b|报告|分析|专访|确认|官方|公告|财报/, 4);
+
+  if (/\b(review|guide|walkthrough|tips|best settings|deal|sale|discount|cosplay|quiz)\b|攻略|评测|折扣|促销|史低|壁纸|图赏|盘点/.test(text)) score -= 10;
+  if (/rumor|leak|传闻|曝/.test(text) && !/\b(confirmed|official)\b|确认|官方|公告/.test(text)) score -= 4;
   return score;
 }
 
@@ -640,6 +646,30 @@ function dedupeMediaSignals(items) {
     out.push(item);
   }
   return out;
+}
+
+function selectDiverseMediaSignals(items, limit) {
+  const selected = [];
+  const sourceCount = new Map();
+  const familyCount = new Map();
+
+  for (const item of items) {
+    const family = mediaTopicFamily(item);
+    if ((sourceCount.get(item.source) ?? 0) >= 2) continue;
+    if ((familyCount.get(family) ?? 0) >= 2) continue;
+    selected.push(item);
+    sourceCount.set(item.source, (sourceCount.get(item.source) ?? 0) + 1);
+    familyCount.set(family, (familyCount.get(family) ?? 0) + 1);
+    if (selected.length >= limit) return selected;
+  }
+
+  for (const item of items) {
+    if (selected.includes(item)) continue;
+    selected.push(item);
+    if (selected.length >= limit) break;
+  }
+
+  return selected;
 }
 
 function mediaSignalToRadarItem(item, index) {
@@ -659,9 +689,9 @@ function mediaSignalToRadarItem(item, index) {
 
 function categoryForMediaSignal(item) {
   const text = `${item.title} ${item.summary}`.toLowerCase();
-  if (/许垚|林奇|游族|三体|投毒|死刑|执行死刑/.test(text)) return "发行八卦";
+  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|ip|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人/.test(text)) return "发行八卦";
   if (/\bai\b|artificial intelligence|人工智能|生成式|aigc/.test(text)) return "AI 游戏";
-  if (/bilibili|b站|up主|视频|直播/.test(text)) return "B站趋势";
+  if (/bilibili|b站|哔哩哔哩|up主|视频|直播|创作者|二创/.test(text)) return "B站趋势";
   if (/梗|meme|社区热议|玩家/.test(text)) return "新梗热点";
   return "行业新闻";
 }
@@ -669,23 +699,56 @@ function categoryForMediaSignal(item) {
 function conciseMediaSummary(item) {
   const text = [item.summary, item.title].filter(Boolean).join(" ");
   const cleaned = text.replace(/\s+/g, " ").trim();
-  if (/witcher|巫师/i.test(cleaned)) return "CD Projekt Red确认《巫师3》多年后仍有新内容窗口，说明长线精品IP可通过资料片、直播节点和社区讨论重新激活。";
-  if (/许垚|林奇|游族|三体|死刑|执行死刑/.test(cleaned)) return "林奇案进入司法终局，提醒游戏/IP公司治理、创始人风险和重大IP管理仍会影响行业信任与合作判断。";
+  const family = mediaTopicFamily(item);
+  if (family === "product_ip") return "产品/IP出现新的内容节点，重点看它是否能带来UP主选题、社区回流、愿望单/复购转化或长线运营案例。";
+  if (family === "business_legal") return "公司、IP、法律、资本或发行结构出现变化，重点看它是否影响合作方可信度、权属风险或BD切入窗口。";
+  if (family === "platform_market") return "平台、商店、渠道或市场节奏出现变化，重点看它是否改变发现入口、曝光成本或中国区发行窗口。";
+  if (family === "creator_community") return "社区或创作者信号出现变化，重点看它是否能转化为B站内容打法、达人合作或话题运营。";
+  if (family === "ai_production") return "AI/工具链/引擎相关变化，重点看它是否改变研发效率、内容风险或小团队供给质量。";
   return cleaned.slice(0, 120);
 }
 
 function relevanceForMediaSignal(item) {
-  const text = `${item.title} ${item.summary}`;
-  if (/witcher|巫师/i.test(text)) return "对B站商务的价值在于：老IP新内容能重新制造UP主选题、怀旧传播和平台内容节点。";
-  if (/许垚|林奇|游族|三体|死刑|执行死刑/.test(text)) return "对BD判断的价值在于：合作方公司治理、IP权属和关键人风险必须进入尽调视野。";
+  const family = mediaTopicFamily(item);
+  if (family === "product_ip") return "对B站商务的价值在于识别可被内容节点重新点燃的产品/IP。";
+  if (family === "business_legal") return "对BD判断的价值在于把合作方治理、IP权属、发行占位和关键人风险纳入尽调。";
+  if (family === "platform_market") return "对BD判断的价值在于判断平台流量规则、窗口期和发行资源配置是否变化。";
+  if (family === "creator_community") return "对B站商务的价值在于判断是否能形成UP主选题、直播节点和社区扩散。";
+  if (family === "ai_production") return "对BD判断的价值在于理解供给侧变化、研发效率和内容合规风险。";
   return "用于判断游戏行业外部环境、发行节奏和内容平台可介入窗口。";
 }
 
 function actionForMediaSignal(item) {
-  const text = `${item.title} ${item.summary}`;
-  if (/witcher|巫师/i.test(text)) return "记录为经典IP长线运营案例；关注CDPR直播、二创热度和中文社区讨论，判断B站内容节点。";
-  if (/许垚|林奇|游族|三体|死刑|执行死刑/.test(text)) return "对潜在合作方补公司治理、股权/IP权属、关键人和重大诉讼风险检查。";
+  const family = mediaTopicFamily(item);
+  if (family === "product_ip") return "记录内容节点和社区反应；判断是否能做B站专题、UP主共创或发行前置沟通。";
+  if (family === "business_legal") return "补公司治理、股权/IP权属、发行协议、诉讼和关键人风险检查。";
+  if (family === "platform_market") return "复核平台窗口、榜单入口、Demo/愿望单数据和中国区资源位机会。";
+  if (family === "creator_community") return "观察B站/YouTube/Twitch等内容扩散，筛选可合作达人和可复制选题。";
+  if (family === "ai_production") return "关注产品是否涉及AI披露、素材争议、产能变化或平台合规风险。";
   return "只保留有BD启发的媒体信号；无业务动作的普通新闻不进雷达。";
+}
+
+function sourceTaggedItem(item, source) {
+  return {
+    ...item,
+    source: source.name,
+    source_focus: source.focus ?? [],
+    source_quality: source.quality ?? 0
+  };
+}
+
+function topicScore(text, pattern, points) {
+  return pattern.test(text) ? points : 0;
+}
+
+function mediaTopicFamily(item) {
+  const text = `${item.title} ${item.summary}`.toLowerCase();
+  if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|发行|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/.test(text)) return "business_legal";
+  if (/\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/.test(text)) return "platform_market";
+  if (/\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation)\b|资料片|大型更新|公布|发布会|延期|重制|续作|改编|影视化|动画|联动|周年/.test(text)) return "product_ip";
+  if (/\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/.test(text)) return "creator_community";
+  if (/\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i.test(text)) return "ai_production";
+  return "industry_context";
 }
 
 function buildV3SteamSignal(candidate) {

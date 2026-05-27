@@ -26,7 +26,7 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.7.0";
+const version = "v1.7.1";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
 const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];

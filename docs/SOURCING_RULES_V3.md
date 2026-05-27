@@ -48,6 +48,29 @@ Allowed sources include:
 
 Internal CRM rules, automation notes, or "we scanned Steam today" must not be placed under "行业新闻".
 
+Named news items from the user are examples, not targets. The automation must learn the signal type behind them:
+
+- A new expansion, remake, sequel, showcase, or long-tail content beat is a product/IP lifecycle signal.
+- A lawsuit, execution, founder incident, rights dispute, acquisition, funding, layoff, or leadership change is a company/IP risk signal.
+- A platform rule, store event, data change, or distribution shift is a publishing-window signal.
+- A creator/community meme, mod, livestream, or content surge is a Bilibili amplification signal.
+
+Do not hard-code one or two known stories as the daily answer. Use them to calibrate what high-quality signals look like.
+
+## Media Quality Standard
+
+Prefer sources that improve BD judgment:
+
+- Industry/business media: GamesIndustry.biz, GameDeveloper, VGC, Eurogamer, PC Gamer, IGN, Gematsu, The Verge Gaming.
+- Domestic industry and business media: GameLook, 触乐, IT之家, 证券时报, 澎湃新闻, plus credible Chinese game media pages when they produce verifiable source links.
+- Official sources: developer/publisher posts, platform announcements, court/company/exchange/regulator announcements.
+
+Penalize low-value noise:
+
+- Pure review, guide, discount, ranking, screenshot gallery, cosplay, wallpaper, or generic rumor posts.
+- Duplicate copies of the same event.
+- News with no plausible BD implication.
+
 ## Radar Categories
 
 - 行业新闻: real industry events that change market context.
