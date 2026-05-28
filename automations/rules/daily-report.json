@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "rule_version": "sourcing-rules-v3",
+  "updated_at": "2026-05-28",
+  "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V3.md",
+  "compatible_generators": [
+    "automations/jobs/online_daily_v4.mjs"
+  ],
+  "reader": {
+    "role": "Bilibili game publishing BD owner",
+    "job_to_be_done": "Decide whether a game project deserves BD attention and what to do next."
+  },
+  "report_contract": {
+    "daily_report": "Separate discovery from BD recommendation. Push pool can be empty.",
+    "steam_trends": "Output BD decision cards, not generic tag-frequency trends.",
+    "industry_radar": "Use real external media, company, legal, platform, or community signals. Never use internal CRM notes as industry news."
+  },
+  "required_decision_fields": [
+    "product",
+    "strengths",
+    "weaknesses",
+    "public_data_or_source_signal",
+    "gameplay_loop_or_content_hook",
+    "bilibili_leverage",
+    "next_bd_action"
+  ],
+  "push_pool_guardrails": [
+    "A push-pool lead must usually be at least 60 days before launch.",
+    "PC Early Access projects must not enter push pool.",
+    "Narrative-first or visual-novel-like projects must not enter push pool by default.",
+    "India-led teams must not enter push pool.",
+    "Projects occupied by a mature publisher with China capability must not enter push pool by default.",
+    "Weak overseas projects without high visual appeal or strong public data must not enter push pool."
+  ],
+  "automation_guardrails": [
+    "Fail fast when this rule file is missing or incompatible.",
+    "Log the active rule version at the start of each automation run.",
+    "Workflow path filters must include this file and SOURCING_RULES documents.",
+    "Rule iteration and online automation must be updated together."
+  ]
+}
