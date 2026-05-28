@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export const headerLabel = "Neo's BD Matrix · v1.7.3";
+export const headerLabel = "Neo's BD Matrix · v1.8.0";
 
 export function HeaderUiRefinement() {
   useEffect(() => {
