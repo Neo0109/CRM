@@ -1,0 +1,48 @@
+# Current Daily Report Rules
+
+Date: 2026-05-28
+
+The current daily report rule version is `sourcing-rules-v3`.
+
+Canonical human-readable rule document:
+
+```text
+docs/SOURCING_RULES_V3.md
+```
+
+Machine-readable automation rule source:
+
+```text
+automations/rules/daily-report.json
+```
+
+## Operating Principle
+
+The daily report is for a Bilibili game publishing BD owner. It must reduce BD judgment cost. It should not produce generic trend text, internal automation notes, or category filler.
+
+Every important output should answer:
+
+- What is the product or external signal?
+- What are its strengths and weaknesses?
+- What public data or source supports the judgment?
+- What is the gameplay loop, content hook, or BD implication?
+- Can Bilibili amplify it through creators, video content, community, localization, events, or China publishing context?
+- What should BD do next?
+
+## Update Protocol
+
+Rules are living product infrastructure.
+
+When the report logic is iterated:
+
+1. Update the canonical rule document.
+2. Update `automations/rules/daily-report.json` when machine-readable expectations change.
+3. Update the online generator or wrapper in the same PR/commit if behavior must change.
+4. Keep `.github/workflows/sync-daily-report.yml` watching rule files so a rules-only change can exercise the automation.
+5. Confirm the next automation run logs the active rule version.
+
+Rule changes must live in GitHub, not on a local machine, because the operator may switch computers.
+
+## Current Known Gap
+
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V3 scoring and formatting logic. The new rule JSON is now the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, and exclusion rules out of the generator and into the rule file.
