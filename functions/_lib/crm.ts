@@ -17,7 +17,7 @@ type ContactMethod = {
 const reportRepoFullName = "Neo0109/CRM";
 const reportBranch = "main";
 const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
-const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
+const bucketValues: Bucket[] = ["待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
 const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 
@@ -154,7 +154,7 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   }
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
-    const bucketOrder: Record<Bucket, number> = { "待评测": 0, "测试中": 1, "跟进中": 2, "观察池": 3, "推进池": 4, "淘汰池": 5 };
+    const bucketOrder: Record<Bucket, number> = { "待评测": 0, "测试中": 1, "观察池": 2, "跟进中": 3, "推进池": 4, "淘汰池": 5 };
     return reviewOrder(a.review_status) - reviewOrder(b.review_status)
       || bucketOrder[a.bucket] - bucketOrder[b.bucket]
       || priorityOrder(a.priority) - priorityOrder(b.priority)
@@ -299,20 +299,21 @@ function normalizeLead(raw: Partial<Lead>): Lead {
 }
 
 function mergeLead(current: Lead, incoming: Lead): Lead {
-  const manuallyRouted = current.review_status !== "未处理" || (current.bucket !== "观察池" && current.bucket !== incoming.bucket);
   return normalizeLead({
     ...current,
     ...incoming,
     id: current.id,
     first_seen: current.first_seen,
-    bucket: manuallyRouted ? current.bucket : incoming.bucket,
-    stage: manuallyRouted ? current.stage : incoming.stage,
+    bucket: current.bucket,
+    stage: current.stage,
+    priority: current.priority,
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
     calendar_enabled: current.calendar_enabled || incoming.calendar_enabled,
     follow_up_interval: current.follow_up_interval ?? incoming.follow_up_interval,
     review_status: current.review_status,
     reviewed_at: current.reviewed_at,
+    next_action: current.next_action ?? incoming.next_action,
     contact_methods: mergeContactMethods(current.contact_methods, incoming.contact_methods),
     links: mergeStringArrays(current.links, incoming.links),
     notes: mergeNotes(current.notes, incoming.notes)
