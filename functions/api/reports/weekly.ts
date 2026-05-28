@@ -19,6 +19,9 @@ type WeeklyLeadSummary = {
   priority_reason: string | null;
   rule_fit: string | null;
   verdict: string;
+  evaluation_grade: Lead["evaluation_grade"];
+  evaluation_result: string | null;
+  evaluated_at: string | null;
   first_seen: string;
   reviewed_at: string | null;
   steam_store_url: string | null;
@@ -26,6 +29,7 @@ type WeeklyLeadSummary = {
   links: string[];
   basic_summary: string;
   recommendation_summary: string;
+  follow_summary: string;
 };
 
 type WeeklyReport = {
@@ -37,7 +41,11 @@ type WeeklyReport = {
   summary: string;
   stats: {
     sourced: number;
+    submitted_for_test: number;
+    test_queue: number;
+    testing_pool: number;
     entered_follow_up: number;
+    active_following: number;
     push_pool: number;
     follow_pool: number;
     watch_pool: number;
@@ -52,6 +60,7 @@ type WeeklyReport = {
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const followBuckets: Lead["bucket"][] = ["推进池", "跟进中"];
+const testBuckets: Lead["bucket"][] = ["待评测", "测试中"];
 
 export const onRequestGet = async ({ request, env }: PagesContext) => {
   const denied = await requireAccess(request, env);
@@ -74,8 +83,10 @@ function buildWeeklyReport(leads: Lead[], anchorDate: string): WeeklyReport {
   const sourced = leads.filter((lead) => inRange(dateOnly(lead.first_seen), start, end));
   const followed = uniqueLeads(leads.filter((lead) => isFollowedThisWeek(lead, start, end)));
   const dropped = uniqueLeads(leads.filter((lead) => isDroppedThisWeek(lead, start, end)));
+  const submittedForTest = uniqueLeads(leads.filter((lead) => isSubmittedForTestThisWeek(lead, start, end)));
+  const activeFollowing = leads.filter((lead) => followBuckets.includes(lead.bucket));
   const sourcedSummaries = sourced.map(toWeeklyLeadSummary).sort(compareWeeklyLead);
-  const followSummaries = followed.map(toWeeklyLeadSummary).sort(compareWeeklyLead);
+  const followSummaries = activeFollowing.map(toWeeklyLeadSummary).sort(compareWeeklyLead);
   const droppedSummaries = dropped.map(toWeeklyLeadSummary).sort(compareWeeklyLead);
   const pendingReview = sourced.filter((lead) => lead.review_status === "未处理").length;
   const missingSteamLinks = followSummaries.filter((lead) => !lead.steam_store_url).length;
@@ -85,13 +96,17 @@ function buildWeeklyReport(leads: Lead[], anchorDate: string): WeeklyReport {
     week_end: end,
     generated_at: new Date().toISOString(),
     source: "crm_leads",
-    method: "No OpenAI API. The report is calculated from CRM fields: first_seen, reviewed_at, bucket, review_status, priority_reason, rule_fit, product links.",
-    summary: `本周共 sourcing ${sourced.length} 款游戏，${followSummaries.length} 款进入跟进/推进，淘汰 ${droppedSummaries.length} 款，仍有 ${pendingReview} 款未处理。`,
+    method: "No OpenAI API. The report is calculated from CRM fields: first_seen, reviewed_at, evaluated_at, bucket, review_status, evaluation_grade, evaluation_result, priority_reason, rule_fit, product links.",
+    summary: `本周共 sourcing ${sourced.length} 款游戏，提测 ${submittedForTest.length} 款，进入跟进/推进 ${followed.length} 款，当前正在跟进 ${activeFollowing.length} 款，淘汰 ${droppedSummaries.length} 款。`,
     stats: {
       sourced: sourced.length,
-      entered_follow_up: followSummaries.length,
-      push_pool: followed.filter((lead) => lead.bucket === "推进池").length,
-      follow_pool: followed.filter((lead) => lead.bucket === "跟进中").length,
+      submitted_for_test: submittedForTest.length,
+      test_queue: leads.filter((lead) => lead.bucket === "待评测").length,
+      testing_pool: leads.filter((lead) => lead.bucket === "测试中").length,
+      entered_follow_up: followed.length,
+      active_following: activeFollowing.length,
+      push_pool: activeFollowing.filter((lead) => lead.bucket === "推进池").length,
+      follow_pool: activeFollowing.filter((lead) => lead.bucket === "跟进中").length,
       watch_pool: sourced.filter((lead) => lead.bucket === "观察池").length,
       dropped: droppedSummaries.length,
       pending_review: pendingReview,
@@ -117,6 +132,15 @@ function isDroppedThisWeek(lead: Lead, start: string, end: string) {
   return inRange(dateOnly(lead.first_seen), start, end);
 }
 
+function isSubmittedForTestThisWeek(lead: Lead, start: string, end: string) {
+  const evaluatedDate = dateFromIso(lead.evaluated_at);
+  if (evaluatedDate && inRange(evaluatedDate, start, end)) return true;
+  if (!testBuckets.includes(lead.bucket)) return false;
+  const reviewedDate = dateFromIso(lead.reviewed_at);
+  if (reviewedDate) return inRange(reviewedDate, start, end);
+  return inRange(dateOnly(lead.first_seen), start, end);
+}
+
 function toWeeklyLeadSummary(lead: Lead): WeeklyLeadSummary {
   const steamStoreUrl = steamStoreLink(lead);
   const steamdbUrl = steamDbLink(lead);
@@ -131,10 +155,19 @@ function toWeeklyLeadSummary(lead: Lead): WeeklyLeadSummary {
     lead.publisher_status ? `发行：${lead.publisher_status}` : null
   ]);
   const recommendationSummary = compactJoin([
+    lead.evaluation_grade ? `评测评级：${lead.evaluation_grade}` : null,
+    lead.evaluation_result ? `评测结论：${lead.evaluation_result}` : null,
     lead.priority_reason,
     lead.rule_fit,
     lead.bilibili_fit ? `B站适配：${lead.bilibili_fit}` : null,
     lead.verdict ? `结论：${lead.verdict}` : null
+  ]);
+  const followSummary = compactJoin([
+    lead.evaluation_grade ? `评级 ${lead.evaluation_grade}` : null,
+    lead.evaluation_result,
+    lead.next_action ? `下一步：${lead.next_action}` : null,
+    !lead.evaluation_result && lead.priority_reason ? `跟进依据：${lead.priority_reason}` : null,
+    !lead.evaluation_result && lead.bilibili_fit ? `B站价值：${lead.bilibili_fit}` : null
   ]);
 
   return {
@@ -156,13 +189,17 @@ function toWeeklyLeadSummary(lead: Lead): WeeklyLeadSummary {
     priority_reason: lead.priority_reason,
     rule_fit: lead.rule_fit,
     verdict: lead.verdict,
+    evaluation_grade: lead.evaluation_grade,
+    evaluation_result: lead.evaluation_result,
+    evaluated_at: lead.evaluated_at,
     first_seen: lead.first_seen,
     reviewed_at: lead.reviewed_at,
     steam_store_url: steamStoreUrl,
     steamdb_url: steamdbUrl,
     links,
     basic_summary: basicSummary || "基础信息待补充",
-    recommendation_summary: recommendationSummary || "推荐理由待补充"
+    recommendation_summary: recommendationSummary || "推荐理由待补充",
+    follow_summary: followSummary || "跟进总结待补充：建议在右侧“评测结果”写明测试结论、评级和下一步商务动作。"
   };
 }
 
@@ -208,7 +245,7 @@ function priorityRank(priority: Lead["priority"]) {
 }
 
 function bucketRank(bucket: Lead["bucket"]) {
-  return { "推进池": 0, "跟进中": 1, "观察池": 2, "淘汰池": 3 }[bucket] ?? 9;
+  return { "推进池": 0, "跟进中": 1, "测试中": 2, "待评测": 3, "观察池": 4, "淘汰池": 5 }[bucket] ?? 9;
 }
 
 function weekRange(anchorDate: string) {

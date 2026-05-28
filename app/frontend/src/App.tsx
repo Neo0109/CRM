@@ -5,7 +5,7 @@ import { AssistantPage } from "./AssistantPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
-import type { Bucket, ContactMethod, ContactType, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
+import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
 type View = "leads" | "assistant" | "radar" | "steam" | "settings";
 type Filters = {
@@ -26,13 +26,14 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.8.0";
+const version = "v1.8.3";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", "negotiating", "won", "rejected"];
 const stageValues: Stage[] = ["new", "watch", "active", "negotiating", "won", "rejected"];
 const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
+const evaluationGradeOptions: ("未评级" | EvaluationGrade)[] = ["未评级", "S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
 const regionValues: Region[] = ["中国", "海外"];
 const regionOptions: ("全部" | Region)[] = ["全部", ...regionValues];
 const regionPriorityValues: RegionPriority[] = ["国内优先", "海外-高视觉", "海外-强数据", "其他"];
@@ -72,7 +73,7 @@ export default function App() {
 
   const filteredLeads = useMemo(() => leads.filter((lead) => {
     const contacts = visibleContacts(lead.contact_methods).map((method) => `${method.type} ${method.value} ${method.note ?? ""}`).join(" ");
-    const haystack = [lead.project, lead.team, lead.genre, lead.gameplay, lead.progress, lead.publisher_status, lead.priority_reason, lead.rule_fit, lead.next_action, lead.notes, lead.country, lead.city, contacts]
+    const haystack = [lead.project, lead.team, lead.genre, lead.gameplay, lead.progress, lead.publisher_status, lead.priority_reason, lead.rule_fit, lead.evaluation_grade, lead.evaluation_result, lead.next_action, lead.notes, lead.country, lead.city, contacts]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
@@ -322,7 +323,14 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
     setDraft({ ...nextLead, ...patch });
     await onMove(nextLead, bucket);
   };
-  const save = () => onPatch(lead.id, draft);
+  const save = () => {
+    const evaluationChanged = draft.evaluation_grade !== lead.evaluation_grade || draft.evaluation_result !== lead.evaluation_result;
+    const nextDraft = evaluationChanged && (draft.evaluation_grade || draft.evaluation_result)
+      ? { ...draft, evaluated_at: new Date().toISOString() }
+      : draft;
+    if (nextDraft !== draft) setDraft(nextDraft);
+    return onPatch(lead.id, nextDraft);
+  };
 
   return <aside className="detail-panel">
     <div className="detail-head">
@@ -373,6 +381,16 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
       <TextareaField label="是否符合规则" value={draft.rule_fit} onChange={(value) => setField("rule_fit", value)} />
       <TextareaField label="下一步动作" value={draft.next_action} onChange={(value) => setField("next_action", value)} />
       <TextareaField label="备注" value={draft.notes} onChange={(value) => setField("notes", value)} />
+    </div>
+
+    <div className="form-section evaluation-section">
+      <h3>评测结果</h3>
+      <div className="form-grid two">
+        <Select label="评级" value={draft.evaluation_grade ?? "未评级"} options={evaluationGradeOptions} onChange={(value) => setField("evaluation_grade", value === "未评级" ? null : value)} />
+        <TextField label="评测时间" value={draft.evaluated_at?.slice(0, 10) ?? ""} type="date" onChange={(value) => setField("evaluated_at", value || null)} />
+      </div>
+      <TextareaField label="具体评测内容" value={draft.evaluation_result} onChange={(value) => setField("evaluation_result", value)} />
+      <p className="field-hint">这里写运营/测试后的真实判断：玩法手感、内容看点、数据表现、B站可放大点、主要风险和是否建议商务深入。</p>
     </div>
 
     <div className="form-section">

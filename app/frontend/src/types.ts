@@ -5,6 +5,7 @@ export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强�
 export type Region = "中国" | "海外";
 export type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";
 export type ContactType = "微信/QQ" | "Email" | "电话" | "官网" | "Steam" | "Discord" | "B站" | "X/Twitter" | "其他";
+export type EvaluationGrade = "S" | "A+" | "A" | "A-" | "B+" | "B" | "B-" | "C+" | "C" | "C-";
 
 export type ContactMethod = {
   type: ContactType;
@@ -49,6 +50,9 @@ export type Lead = {
   amplification: string;
   risks: string | null;
   verdict: string;
+  evaluation_grade: EvaluationGrade | null;
+  evaluation_result: string | null;
+  evaluated_at: string | null;
   next_action: string | null;
   owner: string | null;
   due_date: string | null;
@@ -200,6 +204,9 @@ export type WeeklyLeadSummary = {
   priority_reason: string | null;
   rule_fit: string | null;
   verdict: string;
+  evaluation_grade: EvaluationGrade | null;
+  evaluation_result: string | null;
+  evaluated_at: string | null;
   first_seen: string;
   reviewed_at: string | null;
   steam_store_url: string | null;
@@ -207,6 +214,7 @@ export type WeeklyLeadSummary = {
   links: string[];
   basic_summary: string;
   recommendation_summary: string;
+  follow_summary: string;
 };
 
 export type WeeklyReport = {
@@ -218,7 +226,11 @@ export type WeeklyReport = {
   summary: string;
   stats: {
     sourced: number;
+    submitted_for_test: number;
+    test_queue: number;
+    testing_pool: number;
     entered_follow_up: number;
+    active_following: number;
     push_pool: number;
     follow_pool: number;
     watch_pool: number;

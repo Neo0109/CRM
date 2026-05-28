@@ -77,6 +77,12 @@
     "amplification": { "type": "string" },
     "risks": { "type": ["string", "null"] },
     "verdict": { "type": "string" },
+    "evaluation_grade": {
+      "type": ["string", "null"],
+      "enum": ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", null]
+    },
+    "evaluation_result": { "type": ["string", "null"] },
+    "evaluated_at": { "type": ["string", "null"] },
     "next_action": { "type": ["string", "null"] },
     "owner": { "type": ["string", "null"] },
     "due_date": { "type": ["string", "null"], "format": "date" },

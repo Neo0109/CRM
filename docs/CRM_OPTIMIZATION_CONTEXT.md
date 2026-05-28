@@ -2,7 +2,7 @@
 
 Date: 2026-05-28
 
-This document is a handoff note for future CRM optimization conversations. It preserves the context from daily-report automation debugging, online sourcing-rule cleanup, the v1.8 funnel workflow change, the v1.8.1 sync-state protection fix, and the v1.8.2 automation sync-receipt update.
+This document is a handoff note for future CRM optimization conversations. It preserves the context from daily-report automation debugging, online sourcing-rule cleanup, the v1.8 funnel workflow change, the v1.8.1 sync-state protection fix, the v1.8.2 automation sync-receipt update, and the v1.8.3 weekly evaluation report update.
 
 ## Current Repository
 
@@ -14,7 +14,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V3 rules: `docs/SOURCING_RULES_V3.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after the latest automation traceability fix: `v1.8.2`
+- Current product version after the latest weekly evaluation report fix: `v1.8.3`
 
 ## Automation Status On 2026-05-28
 
@@ -119,6 +119,20 @@ Important implementation points:
 - Header version reads `Neo's BD Matrix · v1.8.1` until a visible UI version bump is made.
 
 Version record: `docs/releases/v1.8.1-sync-state-and-tab-order.md`.
+
+## CRM Product Logic V1.8.3
+
+Weekly reporting now follows the explicit review funnel rather than the old push/watch/drop-only mental model.
+
+Important implementation points:
+
+- Leads have structured evaluation fields: `evaluation_grade`, `evaluation_result`, and `evaluated_at`.
+- Evaluation grade options are `S`, `A+`, `A`, `A-`, `B+`, `B`, `B-`, `C+`, `C`, `C-`.
+- The Leads Review detail panel has a dedicated `评测结果` section for product test notes and grade.
+- Weekly report stats include this week's sourced count, submitted-for-test count, entered-follow-up count, current active follow-up count, and dropped count.
+- Weekly follow-up cards should include a short product summary and prefer the structured evaluation result when it exists.
+
+Version record: `docs/releases/v1.8.3-weekly-evaluation-report.md`.
 
 ## Principle For Future Changes
 

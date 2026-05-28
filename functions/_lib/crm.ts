@@ -7,6 +7,7 @@ type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" |
 type Region = "中国" | "海外";
 type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";
 type ContactType = "微信/QQ" | "Email" | "电话" | "官网" | "Steam" | "Discord" | "B站" | "X/Twitter" | "其他";
+type EvaluationGrade = "S" | "A+" | "A" | "A-" | "B+" | "B" | "B-" | "C+" | "C" | "C-";
 
 type ContactMethod = {
   type: ContactType;
@@ -20,6 +21,7 @@ const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const bucketValues: Bucket[] = ["待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
 const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
+const evaluationGrades: EvaluationGrade[] = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
 
 export type Env = {
   SUPABASE_URL: string;
@@ -74,6 +76,9 @@ export type Lead = {
   amplification: string;
   risks: string | null;
   verdict: string;
+  evaluation_grade: EvaluationGrade | null;
+  evaluation_result: string | null;
+  evaluated_at: string | null;
   next_action: string | null;
   owner: string | null;
   due_date: string | null;
@@ -216,7 +221,7 @@ export function isDailyReport(value: unknown): value is DailyReport {
 }
 
 export function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "calendar_enabled", "follow_up_interval", "notes", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "evaluation_grade", "evaluation_result", "evaluated_at", "next_action", "owner", "due_date", "calendar_enabled", "follow_up_interval", "notes", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;
@@ -288,6 +293,9 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     amplification: raw.amplification ?? "待评估",
     risks: valueOrNull(raw.risks),
     verdict: raw.verdict ?? "待判断",
+    evaluation_grade: normalizeEvaluationGrade(raw.evaluation_grade),
+    evaluation_result: valueOrNull(raw.evaluation_result),
+    evaluated_at: valueOrNull(raw.evaluated_at),
     next_action: valueOrNull(raw.next_action),
     owner: valueOrNull(raw.owner),
     due_date: valueOrNull(raw.due_date),
@@ -313,6 +321,9 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     follow_up_interval: current.follow_up_interval ?? incoming.follow_up_interval,
     review_status: current.review_status,
     reviewed_at: current.reviewed_at,
+    evaluation_grade: current.evaluation_grade ?? incoming.evaluation_grade,
+    evaluation_result: current.evaluation_result ?? incoming.evaluation_result,
+    evaluated_at: current.evaluated_at ?? incoming.evaluated_at,
     next_action: current.next_action ?? incoming.next_action,
     contact_methods: mergeContactMethods(current.contact_methods, incoming.contact_methods),
     links: mergeStringArrays(current.links, incoming.links),
@@ -431,6 +442,10 @@ function normalizeReviewStatus(value: unknown, bucket: Bucket): ReviewStatus {
   if (bucket === "待评测") return "已查看";
   if (bucket === "淘汰池") return "已淘汰";
   return "未处理";
+}
+
+function normalizeEvaluationGrade(value: unknown): EvaluationGrade | null {
+  return evaluationGrades.includes(value as EvaluationGrade) ? value as EvaluationGrade : null;
 }
 
 function stageFromBucket(bucket: Bucket | undefined): Stage {

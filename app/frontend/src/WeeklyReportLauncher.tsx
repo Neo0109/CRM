@@ -52,7 +52,7 @@ function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
         <div>
           <p className="eyebrow">WEEKLY REPORT · NO OPENAI API</p>
           <h2>本周 Sourcing 周报</h2>
-          <p>从 CRM 已有字段自动计算，不调用 OpenAI：统计本周新增、进入跟进、淘汰，并把跟进产品整理成可读卡片。</p>
+          <p>从 CRM 已有字段自动计算，不调用 OpenAI：统计本周 sourcing、提测、淘汰、进入跟进和当前正在跟进的产品。</p>
         </div>
         <div className="weekly-head-actions">
           <label className="weekly-date-picker"><span>选择周内任意一天</span><input type="date" value={anchorDate} onChange={(event) => setAnchorDate(event.target.value || todayKey())} /></label>
@@ -75,22 +75,24 @@ function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
 
         <section className="weekly-metrics">
           <Metric label="本周 Sourcing" value={report.stats.sourced} tone="blue" />
-          <Metric label="进入跟进/推进" value={report.stats.entered_follow_up} tone="green" />
-          <Metric label="推进池" value={report.stats.push_pool} tone="cyan" />
+          <Metric label="本周提测" value={report.stats.submitted_for_test} tone="amber" />
+          <Metric label="测试中" value={report.stats.testing_pool} tone="cyan" />
+          <Metric label="本周进跟进" value={report.stats.entered_follow_up} tone="green" />
+          <Metric label="正在跟进" value={report.stats.active_following} tone="purple" />
+          <Metric label="推进池" value={report.stats.push_pool} tone="green" />
           <Metric label="跟进中" value={report.stats.follow_pool} tone="purple" />
           <Metric label="淘汰" value={report.stats.dropped} tone="red" />
           <Metric label="未处理" value={report.stats.pending_review} tone="amber" />
-          <Metric label="缺 Steam 链接" value={report.stats.missing_steam_links} tone="neutral" />
         </section>
 
         <section className="weekly-section">
           <div className="weekly-section-head">
-            <div><p className="eyebrow">FOLLOW-UP PRODUCTS</p><h3>本周进入跟进的产品</h3></div>
+            <div><p className="eyebrow">ACTIVE FOLLOW-UP PRODUCTS</p><h3>正在跟进的产品</h3></div>
             <span>{report.follow_up_leads.length}</span>
           </div>
           {report.follow_up_leads.length ? <div className="weekly-card-grid">
             {report.follow_up_leads.map((lead) => <WeeklyLeadCard lead={lead} key={lead.id} />)}
-          </div> : <div className="weekly-empty">本周还没有进入跟进/推进的项目。</div>}
+          </div> : <div className="weekly-empty">当前还没有跟进中/推进池项目。</div>}
         </section>
 
         <section className="weekly-columns">
@@ -119,9 +121,11 @@ function WeeklyLeadCard({ lead }: { lead: WeeklyLeadSummary }) {
         <p className="eyebrow">{lead.bucket} · {lead.priority} · {lead.region}</p>
         <h3>{lead.project}</h3>
       </div>
+      {lead.evaluation_grade && <span className={`weekly-grade grade-${lead.evaluation_grade.replace("+", "plus").replace("-", "minus")}`}>{lead.evaluation_grade}</span>}
       {lead.steam_store_url ? <a className="ghost-button" href={lead.steam_store_url} target="_blank" rel="noreferrer"><ExternalLink size={14} />Steam</a> : <span className="weekly-missing-link">缺 Steam 链接</span>}
     </div>
     <dl className="weekly-lead-facts">
+      <div><dt>跟进总结</dt><dd>{lead.follow_summary}</dd></div>
       <div><dt>基本情况</dt><dd>{lead.basic_summary}</dd></div>
       <div><dt>推荐理由</dt><dd>{lead.recommendation_summary}</dd></div>
     </dl>
