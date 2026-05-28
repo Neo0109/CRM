@@ -1,4 +1,4 @@
-export type Bucket = "推进池" | "跟进中" | "观察池" | "淘汰池";
+export type Bucket = "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
 export type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 export type Priority = "P0" | "P1" | "P2" | "P3";
 export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
