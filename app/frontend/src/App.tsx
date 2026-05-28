@@ -1,4 +1,4 @@
-import { ArrowDownToLine, Bot, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
@@ -26,10 +26,10 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.7.3";
+const version = "v1.8.0";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
-const bucketOptions: ("全部" | Bucket)[] = ["全部", "推进池", "跟进中", "观察池", "淘汰池"];
-const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
+const bucketOptions: ("全部" | Bucket)[] = ["全部", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
+const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", "negotiating", "won", "rejected"];
 const stageValues: Stage[] = ["new", "watch", "active", "negotiating", "won", "rejected"];
 const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
@@ -61,6 +61,8 @@ export default function App() {
 
   const stats = useMemo(() => ({
     unread: leads.filter((lead) => lead.review_status === "未处理").length,
+    evaluation: leads.filter((lead) => lead.bucket === "待评测").length,
+    testing: leads.filter((lead) => lead.bucket === "测试中").length,
     push: leads.filter((lead) => lead.bucket === "推进池").length,
     follow: leads.filter((lead) => lead.bucket === "跟进中").length,
     watch: leads.filter((lead) => lead.bucket === "观察池").length,
@@ -165,7 +167,7 @@ export default function App() {
       <header className="topbar">
         <div className="hero-copy">
           <span className="brand-mark">B</span>
-          <p className="eyebrow">B站游戏发行 BD · {version}</p>
+          <p className="eyebrow">Neo's BD Matrix · {version}</p>
           <h1>Sourcing CRM</h1>
           <p className="hero-subtitle">把 Steam 信号、B站内容适配和发行跟进收束到一个 review 工作台。</p>
         </div>
@@ -208,7 +210,7 @@ export default function App() {
 function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, handleLeadPatch, moveBucket }: {
   filters: Filters;
   setFilters: (filters: Filters) => void;
-  stats: { unread: number; push: number; follow: number; watch: number; drop: number; missingLinks: number };
+  stats: { unread: number; evaluation: number; testing: number; push: number; follow: number; watch: number; drop: number; missingLinks: number };
   loading: boolean;
   filteredLeads: Lead[];
   selectedLead: Lead | null;
@@ -224,11 +226,12 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
   return <>
     <section className="metric-strip">
       <Metric label="未处理" value={stats.unread} tone="purple" active={filters.reviewStatus === "未处理"} onClick={() => applyMetricFilter({ reviewStatus: "未处理" })} />
-      <Metric label="推进池" value={stats.push} tone="green" active={filters.bucket === "推进池"} onClick={() => applyMetricFilter({ bucket: "推进池" })} />
-      <Metric label="跟进中" value={stats.follow} tone="cyan" active={filters.bucket === "跟进中"} onClick={() => applyMetricFilter({ bucket: "跟进中" })} />
-      <Metric label="观察池" value={stats.watch} tone="amber" active={filters.bucket === "观察池"} onClick={() => applyMetricFilter({ bucket: "观察池" })} />
+      <Metric label="待评测" value={stats.evaluation} tone="amber" active={filters.bucket === "待评测"} onClick={() => applyMetricFilter({ bucket: "待评测" })} />
+      <Metric label="测试中" value={stats.testing} tone="cyan" active={filters.bucket === "测试中"} onClick={() => applyMetricFilter({ bucket: "测试中" })} />
+      <Metric label="跟进中" value={stats.follow} tone="green" active={filters.bucket === "跟进中"} onClick={() => applyMetricFilter({ bucket: "跟进中" })} />
+      <Metric label="观察池" value={stats.watch} tone="blue" active={filters.bucket === "观察池"} onClick={() => applyMetricFilter({ bucket: "观察池" })} />
       <Metric label="淘汰池" value={stats.drop} tone="red" active={filters.bucket === "淘汰池"} onClick={() => applyMetricFilter({ bucket: "淘汰池" })} />
-      <Metric label="缺链接" value={stats.missingLinks} tone="blue" active={filters.missingLinks} onClick={() => applyMetricFilter({ missingLinks: true })} />
+      <Metric label="缺链接" value={stats.missingLinks} tone="neutral" active={filters.missingLinks} onClick={() => applyMetricFilter({ missingLinks: true })} />
     </section>
 
     <section className="filters">
@@ -256,8 +259,8 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
           <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th></tr></thead>
           <tbody>
             {loading ? <tr><td colSpan={6} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
-              <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
-                <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.review_status}</small></div></div></td>
+              <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""} priority-${priorityTone(lead.priority)} ${isTestingOverdue(lead) ? "testing-overdue-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
+                <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{isTestingOverdue(lead) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={14} /></span>}{lead.project}</strong><small><span className={`priority-pill priority-${priorityTone(lead.priority)}`}>{priorityLabel(lead.priority)}</span> · {lead.bucket} · {lead.review_status}</small></div></div></td>
                 <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
                 <td><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
                 <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
@@ -301,6 +304,16 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
     await onPatch(lead.id, nextDraft);
   }
 
+  async function confirmCalendarReminder() {
+    if (!draft.due_date) {
+      window.alert("请先选择 Due Date，再确认放入日历。");
+      return;
+    }
+    const nextDraft = { ...draft, calendar_enabled: true };
+    setDraft(nextDraft);
+    await onPatch(lead.id, { due_date: draft.due_date, calendar_enabled: true });
+  }
+
   const addContact = () => setField("contact_methods", [...draft.contact_methods, { type: "微信/QQ", value: "", note: null }]);
   const updateContact = (index: number, patch: Partial<ContactMethod>) => setField("contact_methods", draft.contact_methods.map((method, methodIndex) => methodIndex === index ? { ...method, ...patch } : method));
   const removeContact = (index: number) => setField("contact_methods", draft.contact_methods.filter((_, methodIndex) => methodIndex !== index));
@@ -313,7 +326,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
 
   return <aside className="detail-panel">
     <div className="detail-head">
-      <div><p className="eyebrow">{draft.bucket} · {draft.priority} · {draft.review_status}</p><h2>{draft.project}</h2></div>
+      <div><p className="eyebrow">{draft.bucket} · {draft.priority} · {draft.review_status}</p><h2>{isTestingOverdue(draft) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={16} /></span>}{draft.project}</h2></div>
       <button className="primary-button" onClick={save}><Save size={16} />保存</button>
     </div>
 
@@ -351,6 +364,10 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
         <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
         <TextField label="Due Date" type="date" value={draft.due_date} onChange={(value) => setField("due_date", value || null)} />
         <TextField label="发售窗口" value={draft.release_window} onChange={(value) => setField("release_window", value)} />
+        <div className="due-date-actions span-2">
+          <button className="ghost-button" onClick={confirmCalendarReminder}><CalendarCheck size={16} />确认放入日历</button>
+          {draft.calendar_enabled && draft.due_date ? <span>已在日历显示：{draft.due_date}</span> : <span>只有点确认后才会进入日历，避免页面被系统自动塞满。</span>}
+        </div>
       </div>
       <TextareaField label="优先级高/低的原因" value={draft.priority_reason} onChange={(value) => setField("priority_reason", value)} />
       <TextareaField label="是否符合规则" value={draft.rule_fit} onChange={(value) => setField("rule_fit", value)} />
@@ -438,7 +455,7 @@ type QuickActionSpec = {
   label: string;
   compactLabel: string;
   title: string;
-  tone: "follow" | "watch" | "drop" | "push";
+  tone: "evaluate" | "testing" | "follow" | "watch" | "drop" | "push";
   icon: ReactElement;
   patch: () => Partial<Lead>;
 };
@@ -458,6 +475,24 @@ function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false
 function quickActionSpecs(lead: Lead, missingLinksMode: boolean): QuickActionSpec[] {
   const reviewed_at = new Date().toISOString();
   const isUnread = lead.review_status === "未处理";
+  const evaluate = {
+    key: "evaluate",
+    label: "待评测",
+    compactLabel: "测",
+    title: "进入待评测队列，由同事提测",
+    tone: "evaluate" as const,
+    icon: <ListChecks size={15} />,
+    patch: () => ({ bucket: "待评测" as const, stage: "watch" as const, review_status: "已查看" as const, reviewed_at })
+  };
+  const testing = {
+    key: "testing",
+    label: "测试中",
+    compactLabel: "试",
+    title: "提测完成，进入测试中；默认两周后提醒",
+    tone: "testing" as const,
+    icon: <CalendarCheck size={15} />,
+    patch: () => ({ bucket: "测试中" as const, stage: "active" as const, review_status: "跟进中" as const, reviewed_at, due_date: addDaysIso(14), calendar_enabled: true })
+  };
   const follow = {
     key: "follow",
     label: lead.bucket === "淘汰池" ? "放入跟进" : "跟进",
@@ -478,9 +513,9 @@ function quickActionSpecs(lead: Lead, missingLinksMode: boolean): QuickActionSpe
   };
   const watch = {
     key: "watch",
-    label: isUnread ? "观望" : lead.bucket === "淘汰池" ? "放入观察" : "转观察",
+    label: lead.bucket === "淘汰池" ? "放入观察" : "观望",
     compactLabel: "观",
-    title: isUnread ? "暂时放入观察池" : lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : "转入观察池",
+    title: lead.bucket === "淘汰池" ? "从淘汰池恢复到观察池" : "转入观察池",
     tone: "watch" as const,
     icon: <ListChecks size={15} />,
     patch: () => ({ bucket: "观察池" as const, stage: "watch" as const, review_status: "已查看" as const, reviewed_at })
@@ -495,12 +530,15 @@ function quickActionSpecs(lead: Lead, missingLinksMode: boolean): QuickActionSpe
     patch: () => ({ bucket: "淘汰池" as const, stage: "rejected" as const, review_status: "已淘汰" as const, reviewed_at })
   };
 
-  if (missingLinksMode) return [follow, watch, drop];
-  if (isUnread) return [follow, watch, drop];
-  if (lead.bucket === "淘汰池") return [follow, watch];
-  if (lead.bucket === "跟进中") return [push, watch, drop];
+  if (isUnread) return [evaluate, drop];
+  if (lead.bucket === "待评测") return [testing];
+  if (lead.bucket === "测试中") return [follow, watch, drop];
+  if (lead.bucket === "观察池") return [evaluate, follow, drop];
+  if (lead.bucket === "淘汰池") return [watch, evaluate];
+  if (lead.bucket === "跟进中") return [watch, evaluate, drop];
   if (lead.bucket === "推进池") return [follow, watch, drop];
-  return [follow, drop];
+  if (missingLinksMode) return [evaluate, follow, watch, drop];
+  return [evaluate, drop];
 }
 
 function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: (lead: Lead, bucket: Bucket) => Promise<void>; compact?: boolean }) {
@@ -587,24 +625,55 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
 }
 
 function reviewPatchForBucket(bucket: Bucket): Partial<Lead> {
-  if (bucket === "推进池") return { review_status: "跟进中", reviewed_at: new Date().toISOString() };
-  if (bucket === "跟进中") return { review_status: "跟进中", reviewed_at: new Date().toISOString() };
-  if (bucket === "淘汰池") return { review_status: "已淘汰", reviewed_at: new Date().toISOString() };
-  return { review_status: "已查看", reviewed_at: new Date().toISOString() };
+  const reviewed_at = new Date().toISOString();
+  if (bucket === "推进池") return { review_status: "跟进中", reviewed_at };
+  if (bucket === "跟进中") return { review_status: "跟进中", reviewed_at };
+  if (bucket === "测试中") return { review_status: "跟进中", reviewed_at, due_date: addDaysIso(14), calendar_enabled: true };
+  if (bucket === "待评测") return { review_status: "已查看", reviewed_at };
+  if (bucket === "淘汰池") return { review_status: "已淘汰", reviewed_at };
+  return { review_status: "已查看", reviewed_at };
 }
 
 function stageFromBucket(bucket: Bucket): Stage {
   if (bucket === "推进池") return "negotiating";
-  if (bucket === "跟进中") return "active";
+  if (bucket === "跟进中" || bucket === "测试中") return "active";
   if (bucket === "淘汰池") return "rejected";
   return "watch";
 }
 
 function bucketClass(bucket: Bucket) {
   if (bucket === "推进池") return "push";
+  if (bucket === "待评测") return "evaluate";
+  if (bucket === "测试中") return "testing";
   if (bucket === "跟进中") return "follow";
   if (bucket === "淘汰池") return "drop";
   return "watch";
+}
+
+function priorityTone(priority: Priority) {
+  if (priority === "P0" || priority === "P1") return "high";
+  if (priority === "P2") return "medium";
+  return "low";
+}
+
+function priorityLabel(priority: Priority) {
+  if (priority === "P0" || priority === "P1") return `${priority} 高`;
+  if (priority === "P2") return `${priority} 中`;
+  return `${priority} 低`;
+}
+
+function addDaysIso(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isTestingOverdue(lead: Lead) {
+  return lead.bucket === "测试中" && Boolean(lead.due_date) && lead.due_date! < todayIso();
 }
 
 function visibleContacts(contacts: ContactMethod[]) {
