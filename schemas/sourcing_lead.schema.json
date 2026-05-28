@@ -33,7 +33,7 @@
     },
     "bucket": {
       "type": "string",
-      "enum": ["推进池", "跟进中", "观察池", "淘汰池"]
+      "enum": ["推进池", "待评测", "测试中", "跟进中", "观察池", "淘汰池"]
     },
     "stage": {
       "type": "string",
@@ -43,6 +43,11 @@
       "type": "string",
       "enum": ["P0", "P1", "P2", "P3"]
     },
+    "review_status": {
+      "type": "string",
+      "enum": ["未处理", "已查看", "跟进中", "已淘汰"]
+    },
+    "reviewed_at": { "type": ["string", "null"] },
     "priority_reason": { "type": ["string", "null"] },
     "rule_fit": { "type": ["string", "null"] },
     "genre": { "type": ["string", "null"] },
@@ -75,6 +80,8 @@
     "next_action": { "type": ["string", "null"] },
     "owner": { "type": ["string", "null"] },
     "due_date": { "type": ["string", "null"], "format": "date" },
+    "calendar_enabled": { "type": "boolean" },
+    "follow_up_interval": { "type": ["string", "null"] },
     "first_seen": { "type": "string", "format": "date" },
     "notes": { "type": ["string", "null"] }
   },
