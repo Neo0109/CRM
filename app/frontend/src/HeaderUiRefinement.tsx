@@ -25,10 +25,11 @@ export function HeaderUiRefinement() {
   useEffect(() => {
     const apply = () => {
       const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
-      if (versionLabel) versionLabel.textContent = headerLabel;
+      if (versionLabel && versionLabel.textContent !== headerLabel) versionLabel.textContent = headerLabel;
 
       document.querySelectorAll<HTMLButtonElement>(".topbar .actions .tab-button").forEach((button) => {
         if (!button.textContent?.includes("设置")) return;
+        if (button.hidden && button.style.display === "none") return;
         button.hidden = true;
         button.style.display = "none";
         button.setAttribute("aria-hidden", "true");
