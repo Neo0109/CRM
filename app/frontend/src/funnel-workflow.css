@@ -1,0 +1,126 @@
+.lead-table tr.priority-high td:first-child {
+  border-left: 4px solid #16a34a;
+}
+
+.lead-table tr.priority-medium td:first-child {
+  border-left: 4px solid #f59e0b;
+}
+
+.lead-table tr.priority-low td:first-child {
+  border-left: 4px solid #ef4444;
+}
+
+.priority-pill {
+  display: inline-flex;
+  align-items: center;
+  min-width: 48px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.priority-pill.priority-high {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.priority-pill.priority-medium {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+}
+
+.priority-pill.priority-low {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
+
+.bucket-dot.evaluate,
+.bucket-button.evaluate {
+  --bucket-color: #f59e0b;
+}
+
+.bucket-dot.testing,
+.bucket-button.testing {
+  --bucket-color: #06b6d4;
+}
+
+.bucket-dot.evaluate,
+.bucket-dot.testing {
+  background: var(--bucket-color);
+}
+
+.bucket-button.evaluate,
+.bucket-button.testing {
+  border-color: color-mix(in srgb, var(--bucket-color) 55%, white);
+  color: #0f172a;
+}
+
+.bucket-button.evaluate.active,
+.bucket-button.testing.active {
+  background: color-mix(in srgb, var(--bucket-color) 18%, white);
+  border-color: var(--bucket-color);
+}
+
+.quick-button.evaluate {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fbbf24;
+}
+
+.quick-button.testing {
+  color: #155e75;
+  background: #ecfeff;
+  border-color: #67e8f9;
+}
+
+.quick-button.evaluate:hover,
+.quick-button.testing:hover {
+  transform: translateY(-1px);
+}
+
+.overdue-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border-radius: 999px;
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  vertical-align: -4px;
+}
+
+.testing-overdue-row {
+  background: linear-gradient(90deg, rgba(254, 226, 226, 0.42), rgba(255, 255, 255, 0));
+}
+
+.due-date-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0 2px;
+}
+
+.due-date-actions span {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .priority-pill {
+    min-width: 42px;
+    padding-inline: 6px;
+  }
+
+  .due-date-actions {
+    align-items: stretch;
+  }
+}
