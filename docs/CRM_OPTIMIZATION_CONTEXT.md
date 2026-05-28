@@ -2,7 +2,7 @@
 
 Date: 2026-05-28
 
-This document is a handoff note for future CRM optimization conversations. It preserves the context from daily-report automation debugging, online sourcing-rule cleanup, the v1.8 funnel workflow change, and the v1.8.1 sync-state protection fix.
+This document is a handoff note for future CRM optimization conversations. It preserves the context from daily-report automation debugging, online sourcing-rule cleanup, the v1.8 funnel workflow change, the v1.8.1 sync-state protection fix, and the v1.8.2 automation sync-receipt update.
 
 ## Current Repository
 
@@ -14,22 +14,44 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V3 rules: `docs/SOURCING_RULES_V3.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after the latest workflow fix: `v1.8.1`
+- Current product version after the latest automation traceability fix: `v1.8.2`
 
-## What Happened
+## Automation Status On 2026-05-28
 
-On 2026-05-28, the morning automated daily report did not appear.
+The user reported that the afternoon automated report did not appear in CRM.
 
-Observed from GitHub:
+What was verified from GitHub:
 
-- The latest generated automation commit was for `2026-05-27`.
-- No `Generate 2026-05-28 online CRM automation` commit existed when checked.
-- These files were missing:
+- Today's canonical generated files exist on `main`:
   - `data/reports/2026-05-28.json`
   - `data/radar/2026-05-28.json`
   - `data/steam_trends/2026-05-28.json`
+- GitHub contains multiple generated commits for today's report:
+  - `45bccb3325cf35fce36c8ba418423989768aeb78` at 2026-05-28 11:08 Asia/Shanghai
+  - `c89ac38a7fbf6f50c8e295273ec6f7ab1cb49533` at 2026-05-28 13:49 Asia/Shanghai
+  - `f866b18460ae3dd272ebf976803ea41afb0efec3` at 2026-05-28 18:09 Asia/Shanghai
+- The workflow schedule is correctly expressed in UTC:
+  - `30 1 * * *` = 09:30 Asia/Shanghai
+  - `0 6 * * *` = 14:00 Asia/Shanghai
+- The sync endpoint is unauthenticated by design and calls `syncReportFromRepository(env, reportDate)`.
+- Sync reads the canonical raw GitHub file `data/reports/YYYY-MM-DD.json` and imports it into Supabase.
 
-The failure therefore happened before Cloudflare CRM sync could import the report. Cloudflare sync reads the generated GitHub raw report file; it cannot generate the report by itself.
+Current diagnosis:
+
+- Generation was not completely absent. The generated data files and later generated commits exist.
+- The product currently writes both morning and afternoon runs to the same canonical daily files. The CRM therefore shows the latest daily state, not separate morning/afternoon report cards.
+- Before v1.8.2, there was no persistent run receipt after the CRM sync step. If sync failed after committing data, the repo still had generated data but no easy durable proof of the sync response.
+
+v1.8.2 fix:
+
+- The workflow now resolves a run slot: `morning`, `afternoon`, `manual`, or a custom dispatch slot.
+- After sync, it writes a durable receipt under `data/automation_runs/YYYY-MM-DD-slot.json`.
+- The receipt includes status, retry count, trigger type, schedule, GitHub run URL, generated-change flag, timestamp, and CRM sync response.
+- If CRM sync does not return `"synced": true`, the workflow records the receipt and then fails the run.
+
+Version records:
+
+- `docs/releases/v1.8.2-automation-sync-receipts.md`
 
 ## Sourcing Rules V3 Iteration
 
@@ -54,7 +76,7 @@ The cleanup added:
 - `docs/SOURCING_RULES_CURRENT.md` as the human current-rule pointer.
 - `automations/rules/daily-report.json` as the machine-readable rule source.
 - `automations/jobs/online_daily_runner.mjs` as a fail-fast rule guard before the existing generator.
-- Workflow path filters should include rule files so rule-only changes exercise the automation.
+- Workflow path filters include rule files so rule-only changes exercise the automation.
 
 Known remaining cleanup:
 
@@ -94,7 +116,7 @@ Important implementation points:
 - Daily automation may still enrich an existing lead with merged contacts, links, notes, and newly discovered context.
 - Backend bucket ordering now places `观察池` before `跟进中`.
 - Frontend dashboard and bucket filter visually place `观察池` before `跟进中`.
-- Header version now reads `Neo's BD Matrix · v1.8.1`.
+- Header version reads `Neo's BD Matrix · v1.8.1` until a visible UI version bump is made.
 
 Version record: `docs/releases/v1.8.1-sync-state-and-tab-order.md`.
 
@@ -105,3 +127,5 @@ When daily report rules change, update the rule source and online automation tog
 For product-flow changes, keep automation broad and keep human decisions explicit. Do not let daily automation automatically promote leads into downstream human workflow buckets unless the user explicitly asks for that behavior.
 
 Most importantly, for existing leads, automation should enrich rather than reroute. Bucket and review-state decisions are human state and should be preserved unless the user explicitly changes them in the CRM.
+
+For automation debugging, inspect generated daily files first, then inspect `data/automation_runs/YYYY-MM-DD-slot.json` receipts. Generated files prove the report step ran; receipts prove whether the CRM sync endpoint confirmed `synced=true`.
