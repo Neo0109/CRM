@@ -7,6 +7,11 @@ on:
         description: Report date to generate, formatted as YYYY-MM-DD. Defaults to today's Shanghai date.
         required: false
         type: string
+      slot:
+        description: Run slot label for traceability, such as morning, afternoon, or manual.
+        required: false
+        default: manual
+        type: string
       force:
         description: Force CRM sync after generation.
         required: false
@@ -52,7 +57,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Resolve report date
+      - name: Resolve report date and run slot
         id: resolve
         shell: bash
         run: |
@@ -67,9 +72,26 @@ jobs:
             exit 1
           fi
 
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.slot }}" ]; then
+            run_slot="${{ inputs.slot }}"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "30 1 * * *" ]; then
+            run_slot="morning"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "0 6 * * *" ]; then
+            run_slot="afternoon"
+          else
+            run_slot="${{ github.event_name }}"
+          fi
+
+          run_slot="$(printf '%s' "$run_slot" | tr '[:upper:] ' '[:lower:]-' | sed 's/[^a-z0-9_-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-32)"
+          if [ -z "$run_slot" ]; then
+            run_slot="manual"
+          fi
+
           echo "date=$report_date" >> "$GITHUB_OUTPUT"
+          echo "slot=$run_slot" >> "$GITHUB_OUTPUT"
           echo "REPORT_DATE=$report_date" >> "$GITHUB_ENV"
-          echo "Generating online CRM automation for $report_date"
+          echo "RUN_SLOT=$run_slot" >> "$GITHUB_ENV"
+          echo "Generating online CRM automation for $report_date ($run_slot)"
 
       - name: Generate daily report, radar, and Steam trends
         shell: bash
@@ -95,8 +117,10 @@ jobs:
           fi
 
       - name: Sync daily report into CRM
+        id: sync
         shell: bash
         run: |
+          set +e
           sync_url="https://crm-pages.pages.dev/api/reports/sync?date=$REPORT_DATE"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "false" ]; then
             echo "Workflow dispatch force=false; syncing without force."
@@ -105,31 +129,91 @@ jobs:
           fi
 
           response=""
+          sync_status="failed"
+          sync_attempts=0
           for attempt in 1 2 3 4 5; do
+            sync_attempts="$attempt"
             echo "CRM sync attempt $attempt"
-            response="$(curl -fsS "$sync_url")"
+            response="$(curl -fsS "$sync_url" 2>&1)"
+            curl_status=$?
             echo "$response"
 
-            if echo "$response" | grep -q '"synced":true'; then
-              exit 0
-            fi
-
-            if echo "$response" | grep -q '"error"'; then
-              echo "CRM sync returned an error" >&2
-              exit 1
+            if [ "$curl_status" -ne 0 ]; then
+              sync_status="failed"
+            elif echo "$response" | grep -q '"synced":true'; then
+              sync_status="success"
+              break
+            elif echo "$response" | grep -q '"error"'; then
+              sync_status="failed"
+              break
             fi
 
             sleep 12
           done
 
-          echo "CRM sync did not confirm synced=true after retries" >&2
+          echo "sync_status=$sync_status" >> "$GITHUB_OUTPUT"
+          echo "sync_attempts=$sync_attempts" >> "$GITHUB_OUTPUT"
+          echo "sync_response_b64=$(printf '%s' "$response" | base64 -w 0)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit sync receipt
+        if: always()
+        shell: bash
+        env:
+          GENERATED_CHANGED: ${{ steps.commit.outputs.changed }}
+          SYNC_STATUS: ${{ steps.sync.outputs.sync_status }}
+          SYNC_ATTEMPTS: ${{ steps.sync.outputs.sync_attempts }}
+          SYNC_RESPONSE_B64: ${{ steps.sync.outputs.sync_response_b64 }}
+          GITHUB_EVENT_NAME_VALUE: ${{ github.event_name }}
+          GITHUB_EVENT_SCHEDULE_VALUE: ${{ github.event.schedule }}
+          GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+          GITHUB_RUN_NUMBER_VALUE: ${{ github.run_number }}
+          GITHUB_REPOSITORY_VALUE: ${{ github.repository }}
+        run: |
+          mkdir -p data/automation_runs
+          node <<'NODE'
+          const fs = require('node:fs');
+          const response = Buffer.from(process.env.SYNC_RESPONSE_B64 || '', 'base64').toString('utf8');
+          const reportDate = process.env.REPORT_DATE;
+          const runSlot = process.env.RUN_SLOT;
+          const payload = {
+            report_date: reportDate,
+            slot: runSlot,
+            status: process.env.SYNC_STATUS || 'unknown',
+            attempts: Number(process.env.SYNC_ATTEMPTS || 0),
+            generated_changed: process.env.GENERATED_CHANGED === 'true',
+            event_name: process.env.GITHUB_EVENT_NAME_VALUE,
+            event_schedule: process.env.GITHUB_EVENT_SCHEDULE_VALUE || null,
+            run_id: process.env.GITHUB_RUN_ID_VALUE,
+            run_number: process.env.GITHUB_RUN_NUMBER_VALUE,
+            run_url: `https://github.com/${process.env.GITHUB_REPOSITORY_VALUE}/actions/runs/${process.env.GITHUB_RUN_ID_VALUE}`,
+            captured_at: new Date().toISOString(),
+            sync_response: response
+          };
+          fs.writeFileSync(`data/automation_runs/${reportDate}-${runSlot}.json`, `${JSON.stringify(payload, null, 2)}\n`);
+          NODE
+
+          git add "data/automation_runs/$REPORT_DATE-$RUN_SLOT.json"
+          if git diff --cached --quiet; then
+            echo "No automation sync receipt changes to commit."
+          else
+            git commit -m "Record $REPORT_DATE $RUN_SLOT automation sync"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Fail if CRM sync did not succeed
+        if: steps.sync.outputs.sync_status != 'success'
+        shell: bash
+        run: |
+          echo "CRM sync did not confirm synced=true" >&2
           exit 1
 
       - name: Summary
         shell: bash
         run: |
-          echo "Generated and synced CRM data for $REPORT_DATE"
+          echo "Generated and synced CRM data for $REPORT_DATE ($RUN_SLOT)"
           echo "Files:"
           echo "- data/reports/$REPORT_DATE.json"
           echo "- data/radar/$REPORT_DATE.json"
           echo "- data/steam_trends/$REPORT_DATE.json"
+          echo "- data/automation_runs/$REPORT_DATE-$RUN_SLOT.json"
