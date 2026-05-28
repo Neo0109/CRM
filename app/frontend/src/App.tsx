@@ -327,25 +327,27 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
   }, [lead]);
 
   if (!lead || !draft) return <aside className="detail-panel"><div className="empty-cell">暂无 lead</div></aside>;
+  const activeLead = lead;
+  const activeDraft = draft;
 
   function setField<K extends keyof Lead>(key: K, value: Lead[K]) {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   }
 
   async function applySteamLink(normalized: NormalizedSteamLink) {
-    const nextDraft = applySteamLinkToLead(draft, normalized);
+    const nextDraft = applySteamLinkToLead(activeDraft, normalized);
     setDraft(nextDraft);
-    await onPatch(lead.id, nextDraft);
+    await onPatch(activeLead.id, nextDraft);
   }
 
   async function confirmCalendarReminder() {
-    if (!draft.due_date) {
+    if (!activeDraft.due_date) {
       window.alert("请先选择 Due Date，再确认放入日历。");
       return;
     }
-    const nextDraft = { ...draft, calendar_enabled: true };
+    const nextDraft = { ...activeDraft, calendar_enabled: true };
     setDraft(nextDraft);
-    await onPatch(lead.id, { due_date: draft.due_date, calendar_enabled: true });
+    await onPatch(activeLead.id, { due_date: activeDraft.due_date, calendar_enabled: true });
   }
 
   const addContact = () => setField("contact_methods", [...draft.contact_methods, { type: "微信/QQ", value: "", note: null }]);
