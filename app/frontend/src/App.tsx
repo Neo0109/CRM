@@ -26,7 +26,7 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.8.4";
+const version = "v1.8.5";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
@@ -225,6 +225,18 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
   }
 
   return <>
+    <section className="dashboard-head">
+      <div>
+        <p className="eyebrow">Today Workspace</p>
+        <h2>早上好，Neo0109</h2>
+        <p>今天是 {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}。当前聚焦：{activeFilterLabel(filters)}。</p>
+      </div>
+      <div className="dashboard-head-meta">
+        <span>{filteredLeads.length} 条记录</span>
+        <span>{stats.follow + stats.push} 个重点推进</span>
+      </div>
+    </section>
+
     <section className="metric-strip">
       <Metric label="未处理" value={stats.unread} tone="purple" active={filters.reviewStatus === "未处理"} onClick={() => applyMetricFilter({ reviewStatus: "未处理" })} />
       <Metric label="待评测" value={stats.evaluation} tone="amber" active={filters.bucket === "待评测"} onClick={() => applyMetricFilter({ bucket: "待评测" })} />
@@ -233,6 +245,19 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
       <Metric label="观察池" value={stats.watch} tone="blue" active={filters.bucket === "观察池"} onClick={() => applyMetricFilter({ bucket: "观察池" })} />
       <Metric label="淘汰池" value={stats.drop} tone="red" active={filters.bucket === "淘汰池"} onClick={() => applyMetricFilter({ bucket: "淘汰池" })} />
       <Metric label="缺链接" value={stats.missingLinks} tone="neutral" active={filters.missingLinks} onClick={() => applyMetricFilter({ missingLinks: true })} />
+    </section>
+
+    <section className="sourcing-brief">
+      <article>
+        <span className="brief-kicker">Review Focus</span>
+        <strong>先处理能进入商务推进的产品</strong>
+        <p>跟进中 {stats.follow}，推进池 {stats.push}。优先看 P1/P2、窗口明确、B站内容适配度高的项目。</p>
+      </article>
+      <article>
+        <span className="brief-kicker">Pipeline Health</span>
+        <strong>观察和淘汰保持清晰边界</strong>
+        <p>观察池 {stats.watch}，淘汰池 {stats.drop}。不确定的项目先保留证据，明确不合适的及时淘汰。</p>
+      </article>
     </section>
 
     <section className="filters">
@@ -276,6 +301,14 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
       <LeadDetail lead={selectedLead} onPatch={handleLeadPatch} onMove={moveBucket} missingLinksMode={filters.missingLinks} />
     </section>
   </>;
+}
+
+function activeFilterLabel(filters: Filters) {
+  if (filters.missingLinks) return "缺链接补全";
+  if (filters.reviewStatus !== "全部") return filters.reviewStatus;
+  if (filters.bucket !== "全部") return filters.bucket;
+  if (filters.query) return "搜索结果";
+  return "Leads Review";
 }
 
 function Metric({ label, value, tone, active, onClick }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple"; active?: boolean; onClick?: () => void }) {

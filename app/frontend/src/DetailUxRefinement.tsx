@@ -53,8 +53,8 @@ function syncVersionLabel() {
   if (!versionLabel) return;
 
   const text = versionLabel.textContent ?? "";
-  if (text.includes("v1.8.4")) return;
-  versionLabel.textContent = text.replace(/v\d+\.\d+(?:\.\d+)?(?:-[^\s]+)?/, "v1.8.4");
+  if (text.includes("v1.8.5")) return;
+  versionLabel.textContent = text.replace(/v\d+\.\d+(?:\.\d+)?(?:-[^\s]+)?/, "v1.8.5");
 }
 
 function relabelStageOptions() {
