@@ -2,7 +2,7 @@
 
 Date: 2026-05-28
 
-This document is a handoff note for future CRM optimization conversations. It preserves the context from the daily-report automation debugging, rule-online-source cleanup, and the v1.8 CRM funnel workflow change.
+This document is a handoff note for future CRM optimization conversations. It preserves the context from daily-report automation debugging, online sourcing-rule cleanup, the v1.8 funnel workflow change, and the v1.8.1 sync-state protection fix.
 
 ## Current Repository
 
@@ -14,7 +14,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V3 rules: `docs/SOURCING_RULES_V3.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after funnel update: `v1.8.0`
+- Current product version after the latest workflow fix: `v1.8.1`
 
 ## What Happened
 
@@ -74,10 +74,9 @@ The CRM funnel was changed from mixed automatic buckets to an explicit human rev
 
 Important implementation points:
 
-- Backend `Bucket` now includes `待评测` and `测试中`.
+- Backend `Bucket` includes `待评测` and `测试中`.
 - `leadsFromReport` maps report `push_pool` and `watch_pool` into CRM `观察池` + `review_status: 未处理` so automation does not bypass human review.
-- `drop_pool` still imports directly into `淘汰池`.
-- Repeated daily sync preserves manually routed bucket/review state so old automation runs should not pull handled leads back into the wrong queue.
+- `drop_pool` imports directly into `淘汰池`.
 - Priority color is derived from `priority`: P0/P1 = high/green, P2 = medium/yellow, P3 = low/red.
 - Moving a lead to `测试中` sets a default two-week due date and enables calendar visibility.
 - A testing lead past due date shows an overdue warning marker.
@@ -85,8 +84,24 @@ Important implementation points:
 
 Version record: `docs/releases/v1.8.0-funnel-workflow.md`.
 
+## CRM Product Logic V1.8.1
+
+This follow-up fixes the rollback behavior the user noticed after iterations or refreshes.
+
+Important implementation points:
+
+- Existing leads keep human workflow fields during sync: `bucket`, `stage`, `priority`, `owner`, `due_date`, `calendar_enabled`, `follow_up_interval`, `review_status`, `reviewed_at`, and `next_action`.
+- Daily automation may still enrich an existing lead with merged contacts, links, notes, and newly discovered context.
+- Backend bucket ordering now places `观察池` before `跟进中`.
+- Frontend dashboard and bucket filter visually place `观察池` before `跟进中`.
+- Header version now reads `Neo's BD Matrix · v1.8.1`.
+
+Version record: `docs/releases/v1.8.1-sync-state-and-tab-order.md`.
+
 ## Principle For Future Changes
 
 When daily report rules change, update the rule source and online automation together. A rules iteration must not silently break scheduled generation.
 
 For product-flow changes, keep automation broad and keep human decisions explicit. Do not let daily automation automatically promote leads into downstream human workflow buckets unless the user explicitly asks for that behavior.
+
+Most importantly, for existing leads, automation should enrich rather than reroute. Bucket and review-state decisions are human state and should be preserved unless the user explicitly changes them in the CRM.
