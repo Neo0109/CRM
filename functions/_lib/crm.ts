@@ -1,6 +1,6 @@
 import { readCrmSettings } from "./settings";
 
-type Bucket = "推进池" | "跟进中" | "观察池" | "淘汰池";
+type Bucket = "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
 type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
 type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
@@ -17,7 +17,7 @@ type ContactMethod = {
 const reportRepoFullName = "Neo0109/CRM";
 const reportBranch = "main";
 const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
-const bucketValues: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
+const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 
@@ -154,7 +154,7 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   }
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
-    const bucketOrder: Record<Bucket, number> = { "推进池": 0, "跟进中": 1, "观察池": 2, "淘汰池": 3 };
+    const bucketOrder: Record<Bucket, number> = { "待评测": 0, "测试中": 1, "跟进中": 2, "观察池": 3, "推进池": 4, "淘汰池": 5 };
     return reviewOrder(a.review_status) - reviewOrder(b.review_status)
       || bucketOrder[a.bucket] - bucketOrder[b.bucket]
       || priorityOrder(a.priority) - priorityOrder(b.priority)
@@ -168,9 +168,9 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
 export function leadsFromReport(report: DailyReport): Partial<Lead>[] {
   if (!report.report_date || !Array.isArray(report.push_pool) || !Array.isArray(report.watch_pool) || !Array.isArray(report.drop_pool)) throw new Error("Invalid daily report");
   return [
-    ...report.push_pool.map((lead) => ({ ...lead, bucket: "推进池" as const })),
-    ...report.watch_pool.map((lead) => ({ ...lead, bucket: "观察池" as const })),
-    ...report.drop_pool.map((lead) => ({ ...lead, bucket: "淘汰池" as const, stage: lead.stage ?? "rejected" }))
+    ...report.push_pool.map((lead) => ({ ...lead, bucket: "观察池" as const, stage: "new" as const, review_status: "未处理" as const })),
+    ...report.watch_pool.map((lead) => ({ ...lead, bucket: "观察池" as const, stage: "new" as const, review_status: "未处理" as const })),
+    ...report.drop_pool.map((lead) => ({ ...lead, bucket: "淘汰池" as const, stage: lead.stage ?? "rejected", review_status: "已淘汰" as const }))
   ].map((lead) => ({
     ...lead,
     first_seen: lead.first_seen ?? report.report_date,
@@ -299,11 +299,14 @@ function normalizeLead(raw: Partial<Lead>): Lead {
 }
 
 function mergeLead(current: Lead, incoming: Lead): Lead {
+  const manuallyRouted = current.review_status !== "未处理" || (current.bucket !== "观察池" && current.bucket !== incoming.bucket);
   return normalizeLead({
     ...current,
     ...incoming,
     id: current.id,
     first_seen: current.first_seen,
+    bucket: manuallyRouted ? current.bucket : incoming.bucket,
+    stage: manuallyRouted ? current.stage : incoming.stage,
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
     calendar_enabled: current.calendar_enabled || incoming.calendar_enabled,
@@ -342,7 +345,8 @@ function inferRegion(country: string | undefined): Region {
 
 function inferPriorityReason(raw: Partial<Lead>) {
   if (raw.priority_reason) return raw.priority_reason;
-  if (raw.bucket === "推进池" || raw.bucket === "跟进中") return raw.traction_summary ?? raw.verdict ?? "进入重点处理队列，需要优先 review";
+  if (raw.bucket === "推进池" || raw.bucket === "跟进中" || raw.bucket === "测试中") return raw.traction_summary ?? raw.verdict ?? "进入重点处理队列，需要优先 review";
+  if (raw.bucket === "待评测") return raw.traction_summary ?? raw.verdict ?? "已进入提测队列，等待产品验证";
   if (raw.bucket === "淘汰池") return raw.risks ?? raw.verdict ?? "触发淘汰规则";
   return raw.traction_summary ?? raw.public_signals ?? "等待更强公开信号";
 }
@@ -422,19 +426,23 @@ function normalizeBucket(value: unknown): Bucket {
 
 function normalizeReviewStatus(value: unknown, bucket: Bucket): ReviewStatus {
   if (reviewStatusValues.includes(value as ReviewStatus)) return value as ReviewStatus;
-  if (bucket === "跟进中") return "跟进中";
+  if (bucket === "跟进中" || bucket === "推进池" || bucket === "测试中") return "跟进中";
+  if (bucket === "待评测") return "已查看";
   if (bucket === "淘汰池") return "已淘汰";
   return "未处理";
 }
 
 function stageFromBucket(bucket: Bucket | undefined): Stage {
-  if (bucket === "推进池" || bucket === "跟进中") return "active";
+  if (bucket === "推进池") return "negotiating";
+  if (bucket === "跟进中" || bucket === "测试中") return "active";
   if (bucket === "淘汰池") return "rejected";
+  if (bucket === "待评测") return "watch";
   return "watch";
 }
 
 function priorityFromBucket(bucket: Bucket | undefined): Priority {
-  if (bucket === "推进池" || bucket === "跟进中") return "P1";
+  if (bucket === "推进池" || bucket === "跟进中" || bucket === "测试中") return "P1";
+  if (bucket === "待评测" || bucket === "观察池") return "P2";
   if (bucket === "淘汰池") return "P3";
   return "P2";
 }
