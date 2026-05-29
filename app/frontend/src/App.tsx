@@ -1,6 +1,6 @@
-import { AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
+import { clearAccessToken, excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
@@ -50,7 +50,7 @@ type SourcingInsights = {
   actions: string[];
 };
 
-const version = "v1.8.9";
+const version = "v1.8.10";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
@@ -188,6 +188,21 @@ export default function App() {
     window.location.assign(excelExportUrl(password.trim()));
   }
 
+  function logout() {
+    clearAccessToken();
+    setTokenDraft("");
+    setLeads([]);
+    setSelectedId(null);
+    setRadar(null);
+    setSteamTrends(null);
+    setStatus(null);
+    setLoading(false);
+    setRadarLoading(false);
+    setSteamLoading(false);
+    setView("leads");
+    setError("CRM access token required");
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -212,6 +227,9 @@ export default function App() {
             <a className="ghost-button" href="/api/export/json"><FileJson size={16} />JSON</a>
             <a className="ghost-button" href="/api/export/csv"><ArrowDownToLine size={16} />CSV</a>
           </div>
+          <div className="nav-group nav-extension-host" />
+          <div className="nav-spacer" aria-hidden="true" />
+          <button className="ghost-button logout-button" type="button" onClick={logout}><LogOut size={16} />退出登录</button>
         </div>
       </header>
 

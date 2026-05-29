@@ -9,7 +9,7 @@ export function WeeklyReportLauncher() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const updateHost = () => setHost(document.querySelector(".actions"));
+    const updateHost = () => setHost(document.querySelector(".nav-extension-host") ?? document.querySelector(".actions"));
     updateHost();
     const observer = new MutationObserver(updateHost);
     observer.observe(document.body, { childList: true, subtree: true });

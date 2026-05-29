@@ -14,7 +14,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V4 rules: `docs/SOURCING_RULES_V4.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after the domestic-first sourcing fix: `v1.8.9`
+- Current product version after the logout button fix: `v1.8.10`
 
 ## Automation Status On 2026-05-28
 

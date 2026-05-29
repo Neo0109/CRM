@@ -41,7 +41,7 @@ export function CalendarLauncher() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const updateHost = () => setHost(document.querySelector(".actions"));
+    const updateHost = () => setHost(document.querySelector(".nav-extension-host") ?? document.querySelector(".actions"));
     updateHost();
     const observer = new MutationObserver(updateHost);
     observer.observe(document.body, { childList: true, subtree: true });
@@ -51,7 +51,7 @@ export function CalendarLauncher() {
   useEffect(() => {
     const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
     if (versionLabel && /v\d+\.\d+(?:\.\d+)?/.test(versionLabel.textContent ?? "")) {
-      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v1.8.9");
+      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v1.8.10");
     }
   }, []);
 

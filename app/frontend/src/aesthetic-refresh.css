@@ -96,10 +96,28 @@ button:hover {
   gap: 10px;
 }
 
+.nav-spacer {
+  display: none;
+}
+
+.logout-button {
+  color: #9f1d1d;
+}
+
+.logout-button:hover {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.24);
+  color: #b91c1c;
+}
+
 .nav-group {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+.nav-extension-host:empty {
+  display: none;
 }
 
 .nav-section-label {
@@ -783,8 +801,16 @@ button:hover {
   .actions {
     align-items: stretch;
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     justify-content: flex-start;
+    min-height: 0;
+  }
+
+  .nav-spacer {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 18px;
   }
 
   .nav-group {
@@ -807,6 +833,10 @@ button:hover {
     justify-content: flex-start;
     padding-left: 12px;
     width: 100%;
+  }
+
+  .logout-button {
+    margin-top: auto;
   }
 
   .topbar ~ * {
