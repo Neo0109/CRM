@@ -86,6 +86,7 @@ Empty categories should not be forced. If there is no meaningful item, omit the 
 V2 pool discipline remains:
 
 - Push pool can be empty.
+- Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
 - Near-launch, PC Early Access, narrative-first, India-led, mature-publisher-occupied, or weak overseas projects should not consume push-pool time.
 - Watch pool is allowed to be broad, but each item must explain what signal is missing.
 - Drop pool should record why a lead should not be revisited soon.

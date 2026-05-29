@@ -18,17 +18,24 @@ const rawCandidates = dedupeByAppId((await Promise.all([
   fetchSteamSearch("popularcomingsoon", "Co-op Upcoming", [1685]),
   fetchSteamSearch("popularcomingsoon", "Roguelike Upcoming", [1716]),
   fetchSteamSearch("popularcomingsoon", "Deckbuilder Upcoming", [32322]),
-  fetchSteamSearch("popularnew", "Popular New Context"),
   fetchFeaturedCategories()
 ])).flat())
   .filter((candidate) => candidate.appId && candidate.title && !existingProjects.has(normalizeText(candidate.title)))
   .slice(0, maxCandidates);
+
+if (!rawCandidates.length) {
+  throw new Error("No Steam candidates were fetched; refusing to overwrite daily reports with an empty run.");
+}
 
 const enrichedCandidates = [];
 for (const candidate of rawCandidates) {
   const details = await fetchAppDetails(candidate.appId);
   enrichedCandidates.push(await enrichCandidate(candidate, details));
   await sleep(120);
+}
+
+if (!enrichedCandidates.length) {
+  throw new Error("No Steam candidates were enriched; refusing to overwrite daily reports with an empty run.");
 }
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
@@ -209,6 +216,7 @@ async function enrichCandidate(candidate, details) {
   const lower = text.toLowerCase();
   const releaseDate = normalizeReleaseDate(details?.release_date?.date ?? candidate.release);
   const daysToRelease = daysUntil(releaseDate);
+  const alreadyReleased = typeof daysToRelease === "number" && daysToRelease < 0;
   const releaseTooSoon = typeof daysToRelease === "number" && daysToRelease >= 0 && daysToRelease < 60;
   const comingSoon = Boolean(details?.release_date?.coming_soon) || /coming soon|tba|to be announced/i.test(candidate.release ?? "");
   const earlyAccess = /early access|抢先体验/i.test(text);
@@ -220,7 +228,7 @@ async function enrichCandidate(candidate, details) {
   const domestic = looksDomestic([candidate.title, details?.name, ...developers, ...publishers, details?.website].join(" "));
   const strongData = hasStrongPublicData(candidate.reviewText, candidate.source, details);
   const contactMethods = await collectContactMethods(details, candidate.appId);
-  const score = scoreCandidate({ source: candidate.source, domestic, strongGameplay, highVisual, strongData, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
+  const score = scoreCandidate({ source: candidate.source, domestic, strongGameplay, highVisual, strongData, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
 
   return {
     appId: candidate.appId,
@@ -237,6 +245,7 @@ async function enrichCandidate(candidate, details) {
     shortDescription: details?.short_description ?? "",
     releaseDate: releaseDate ?? candidate.release ?? "待确认",
     daysToRelease,
+    alreadyReleased,
     comingSoon,
     earlyAccess,
     narrativeHeavy,
@@ -336,6 +345,7 @@ function scoreCandidate(input) {
   if (input.comingSoon) score += 6;
   if (input.hasDetails) score += 5;
   if (input.contactCount) score += 4;
+  if (input.alreadyReleased) score -= 80;
   if (input.releaseTooSoon) score -= 30;
   if (input.publisherOccupied) score -= 24;
   if (input.earlyAccess) score -= 50;
@@ -411,6 +421,7 @@ function hardDropReason(candidate) {
   if (candidate.narrativeHeavy) return "命中排除项：叙事主导/视觉小说倾向";
   if (candidate.indiaTeam) return "命中排除项：印度团队/印度开发主体";
   if (candidate.publisherOccupied) return "成熟发行商占位，BD切入价值低";
+  if (candidate.alreadyReleased) return "Steam 页面显示已发售，不符合前置BD窗口";
   if (candidate.releaseTooSoon) return "发售窗口不足60天，默认不进正式推进";
   if (candidate.region === "海外" && !candidate.highVisual && !candidate.strongData && !candidate.strongGameplay) return "海外项目缺少高视觉、强数据或清晰内容化玩法";
   return null;
@@ -426,9 +437,15 @@ function isPushEligible(candidate, dropReason) {
 
 function buildPriorityReason(candidate, className, dropReason) {
   if (className === "drop") return dropReason;
-  const windowText = typeof candidate.daysToRelease === "number" ? `距发售约${candidate.daysToRelease}天` : "窗口待确认";
+  const windowText = releaseWindowText(candidate);
   if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : candidate.highVisual ? "高视觉" : "强数据"} + 系统型玩法，${windowText}，值得优先确认中国区窗口`;
   return `${candidate.source} 有前置信号，${windowText}；先进入未处理 inbox，由人工决定是否进观察池、待评测或跟进`;
+}
+
+function releaseWindowText(candidate) {
+  if (typeof candidate.daysToRelease !== "number") return "窗口待确认";
+  if (candidate.daysToRelease < 0) return `已发售约${Math.abs(candidate.daysToRelease)}天`;
+  return `距发售约${candidate.daysToRelease}天`;
 }
 
 function buildRuleFit(candidate, dropReason, className) {
@@ -436,7 +453,7 @@ function buildRuleFit(candidate, dropReason, className) {
   if (candidate.region === "中国") parts.push("国内项目优先");
   if (candidate.region === "海外" && (candidate.highVisual || candidate.strongData)) parts.push("海外保留条件成立");
   if (candidate.strongGameplay) parts.push("玩法具备内容化潜力");
-  if (typeof candidate.daysToRelease === "number") parts.push(`距发售约${candidate.daysToRelease}天`);
+  if (typeof candidate.daysToRelease === "number") parts.push(releaseWindowText(candidate));
   if (className === "push") parts.push("窗口仍在，允许优先触达");
   if (dropReason) parts.push(dropReason);
   if (!parts.length) parts.push("基础入口成立，待人工复核");
@@ -513,7 +530,7 @@ function buildDailyReport(pools, rawCount, enrichedCount) {
       "V3把日报读者明确为B站商务负责人：不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步动作。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
-      "发售不足60天、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入推进池。",
+      "已发售、发售不足60天、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
       "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。"
     ],
@@ -809,6 +826,7 @@ function buildV3SteamSignal(candidate) {
 }
 
 function buildV3TrendReason(candidate) {
+  if (candidate.alreadyReleased) return "不建议推进：Steam 显示已发售，已错过前置BD窗口，只可作为市场复盘。";
   if (candidate.releaseTooSoon) return "不建议推进：窗口过近，只作为市场背景。";
   if (candidate.earlyAccess) return "不建议推进：Early Access命中排除项。";
   if (candidate.publisherOccupied) return "不建议推进：成熟发行商可能已占位。";
@@ -829,6 +847,7 @@ function buildProductWeakness(candidate) {
   if (typeof candidate.daysToRelease !== "number") weaknesses.push("发售窗口不精确");
   if (!candidate.strongData) weaknesses.push("缺愿望单/口碑/社区强数据");
   if (!candidate.highVisual) weaknesses.push("视觉素材不足，内容转化需验证");
+  if (candidate.alreadyReleased) weaknesses.push("已发售，前置BD窗口已过");
   if (candidate.releaseTooSoon) weaknesses.push("发售过近");
   if (candidate.publisherOccupied) weaknesses.push("发行可能已占位");
   return weaknesses.join("；") || "主要风险在团队地区、发行结构和中国区权益空间";

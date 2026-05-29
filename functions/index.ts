@@ -16,8 +16,8 @@ function renderHtml() {
     <meta name="robots" content="noindex" />
     <title>Sourcing CRM</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="stylesheet" crossorigin href="${assetBase}/assets/index-DmMdg9iS.css" />
-    <script type="module" crossorigin src="${assetBase}/assets/index-3gbqOlV1.js"></script>
+    <link rel="stylesheet" crossorigin href="${assetBase}/assets/index-N85BrHoh.css" />
+    <script type="module" crossorigin src="${assetBase}/assets/index-CfM4RRTI.js"></script>
   </head>
   <body>
     <div id="root"></div>

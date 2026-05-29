@@ -27,6 +27,7 @@
   ],
   "push_pool_guardrails": [
     "A push-pool lead must usually be at least 60 days before launch.",
+    "Already released projects must not enter push or watch candidates; they can only be dropped or used as market background.",
     "PC Early Access projects must not enter push pool.",
     "Narrative-first or visual-novel-like projects must not enter push pool by default.",
     "India-led teams must not enter push pool.",
@@ -38,6 +39,7 @@
     "Log the active rule version at the start of each automation run.",
     "Workflow path filters must include this file and SOURCING_RULES documents.",
     "Rule iteration and online automation must be updated together.",
-    "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading."
+    "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
+    "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources."
   ]
 }

@@ -37,6 +37,8 @@ Automation may still rank candidates as strong-signal or ordinary review candida
 
 Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
 
+Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
+
 ## Update Protocol
 
 Rules are living product infrastructure.
