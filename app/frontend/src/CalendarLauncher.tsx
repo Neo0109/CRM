@@ -51,7 +51,7 @@ export function CalendarLauncher() {
   useEffect(() => {
     const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
     if (versionLabel && /v\d+\.\d+(?:\.\d+)?/.test(versionLabel.textContent ?? "")) {
-      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v1.8.10");
+      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v1.9");
     }
   }, []);
 
