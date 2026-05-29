@@ -12,8 +12,9 @@ export function ReviewQueueBehavior() {
       if (!table || !bucketSelect) return;
 
       const missingLinksOnly = isMissingLinksMetricActive();
-      const queueOnly = shouldUseDefaultReviewQueue(bucketSelect);
       const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tbody tr"));
+      const hasUnhandledRows = rows.some((row) => (row.querySelector(".project-cell small")?.textContent ?? "").includes("未处理"));
+      const queueOnly = shouldUseDefaultReviewQueue(bucketSelect) && hasUnhandledRows;
       let firstVisibleRow: HTMLTableRowElement | null = null;
       let selectedRowHidden = false;
       let visibleMissingLinkRows = 0;

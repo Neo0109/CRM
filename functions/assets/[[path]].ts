@@ -1,7 +1,6 @@
 import type { PagesContext } from "../_lib/crm";
 
-const commit = "68dd9b6";
-const assetBase = `https://cdn.jsdelivr.net/gh/Neo0109/CRM@${commit}/app/frontend/dist/assets`;
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist/assets";
 
 const assetRedirects = new Map([
   ["crm-paper-texture-BjGXa_NP.png", `${assetBase}/crm-paper-texture-BjGXa_NP.png`],

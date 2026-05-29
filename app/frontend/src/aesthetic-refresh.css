@@ -93,7 +93,21 @@ button:hover {
 }
 
 .actions {
+  gap: 10px;
+}
+
+.nav-group {
+  display: flex;
+  flex-wrap: wrap;
   gap: 5px;
+}
+
+.nav-section-label {
+  color: #8a92a0;
+  font-size: 11px;
+  font-weight: 820;
+  letter-spacing: 0;
+  padding: 2px 6px 0;
 }
 
 .ghost-button,
@@ -262,17 +276,118 @@ button:hover {
 
 .sourcing-brief {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
-.sourcing-brief article {
+.brief-head {
+  align-items: end;
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: space-between;
+}
+
+.brief-head h3 {
+  color: #16181d;
+  font-size: 18px;
+  line-height: 1.25;
+  margin: 4px 0 0;
+}
+
+.brief-head > span {
+  background: rgba(255, 253, 250, 0.72);
+  border: 1px solid rgba(216, 209, 197, 0.82);
+  border-radius: 999px;
+  color: #626b78;
+  font-size: 12px;
+  font-weight: 780;
+  padding: 7px 10px;
+}
+
+.sourcing-brief article,
+.brief-card {
   border: 1px solid rgba(216, 209, 197, 0.86);
   border-radius: 16px;
   display: grid;
-  gap: 8px;
+  gap: 13px;
   padding: 17px;
+}
+
+.brief-card-head {
+  align-items: center;
+  display: flex;
+  gap: 11px;
+}
+
+.brief-card-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.brief-icon {
+  align-items: center;
+  background: #f3f7ff;
+  border: 1px solid #dbe7ff;
+  border-radius: 12px;
+  color: #2563eb;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.brief-metrics {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.brief-metrics span {
+  background: rgba(250, 249, 246, 0.75);
+  border: 1px solid rgba(230, 225, 216, 0.88);
+  border-radius: 12px;
+  color: #626b78;
+  display: grid;
+  font-size: 11px;
+  font-weight: 760;
+  gap: 2px;
+  min-height: 58px;
+  padding: 9px 10px;
+}
+
+.brief-metrics b {
+  color: #16181d;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.brief-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.brief-list li {
+  align-items: baseline;
+  border-top: 1px solid rgba(230, 225, 216, 0.72);
+  display: grid;
+  gap: 3px;
+  grid-template-columns: minmax(128px, 0.42fr) minmax(0, 1fr);
+  padding-top: 8px;
+}
+
+.brief-list b {
+  color: #20252d;
+  font-size: 13px;
+}
+
+.brief-list span {
+  color: #626b78;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .brief-kicker {
@@ -622,22 +737,29 @@ button:hover {
   .app-shell {
     align-items: start;
     display: grid;
-    grid-template-columns: 216px minmax(0, 1fr);
+    gap: 0;
+    grid-template-columns: 236px minmax(0, 1fr);
+    padding: 0;
   }
 
   .topbar {
     align-content: start;
     align-self: start;
+    background: rgba(255, 253, 250, 0.78);
+    border-color: rgba(216, 209, 197, 0.72);
+    border-radius: 0;
+    border-width: 0 1px 0 0;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     grid-column: 1;
     grid-row: 1 / span 40;
     margin: 0;
-    min-height: calc(100vh - 44px);
-    padding: 20px 14px;
+    min-height: 100vh;
+    padding: 28px 18px;
     position: sticky;
-    top: 22px;
+    top: 0;
   }
 
   .hero-copy {
@@ -658,6 +780,21 @@ button:hover {
     justify-content: flex-start;
   }
 
+  .nav-group {
+    display: grid;
+    gap: 6px;
+  }
+
+  .nav-tools {
+    padding-bottom: 14px;
+  }
+
+  .nav-section-label {
+    border-top: 1px solid rgba(230, 225, 216, 0.9);
+    margin-top: 8px;
+    padding: 16px 8px 2px;
+  }
+
   .actions .ghost-button,
   .actions .tab-button {
     justify-content: flex-start;
@@ -665,21 +802,21 @@ button:hover {
     width: 100%;
   }
 
-  .actions .ghost-button:nth-of-type(6) {
-    margin-top: 10px;
-  }
-
   .topbar ~ * {
     grid-column: 2;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100%;
+    margin-left: 28px;
+    margin-right: 28px;
+    width: auto;
+  }
+
+  .dashboard-head {
+    margin-top: 28px;
   }
 
   .detail-panel {
-    max-height: calc(100vh - 44px);
+    max-height: calc(100vh - 56px);
     position: sticky;
-    top: 22px;
+    top: 28px;
   }
 }
 

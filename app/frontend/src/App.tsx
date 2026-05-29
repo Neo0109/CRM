@@ -26,7 +26,31 @@ type NormalizedSteamLink = {
   steamDbUrl: string;
 };
 
-const version = "v1.8.5";
+type DashboardStats = {
+  total: number;
+  unread: number;
+  evaluation: number;
+  testing: number;
+  push: number;
+  follow: number;
+  watch: number;
+  drop: number;
+  missingLinks: number;
+};
+
+type SourcingInsights = {
+  weekLabel: string;
+  weekSourced: number;
+  enteredFollowThisWeek: number;
+  pipelineCount: number;
+  highPriorityPipeline: number;
+  dueSoon: number;
+  dropReasons: { label: string; count: number }[];
+  focusLeads: Lead[];
+  actions: string[];
+};
+
+const version = "v1.8.6";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
@@ -61,6 +85,7 @@ export default function App() {
   }, []);
 
   const stats = useMemo(() => ({
+    total: leads.length,
     unread: leads.filter((lead) => lead.review_status === "未处理").length,
     evaluation: leads.filter((lead) => lead.bucket === "待评测").length,
     testing: leads.filter((lead) => lead.bucket === "测试中").length,
@@ -173,15 +198,20 @@ export default function App() {
           <p className="hero-subtitle">把 Steam 信号、B站内容适配和发行跟进收束到一个 review 工作台。</p>
         </div>
         <div className="actions">
-          <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
-          <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}><Bot size={16} />线索助手</button>
-          <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
-          <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
-          <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
-          <button className="ghost-button" onClick={refreshCurrentView}><RefreshCw size={16} />刷新</button>
-          <button className="ghost-button" onClick={downloadExcel}><FileSpreadsheet size={16} />Excel</button>
-          <a className="ghost-button" href="/api/export/json"><FileJson size={16} />JSON</a>
-          <a className="ghost-button" href="/api/export/csv"><ArrowDownToLine size={16} />CSV</a>
+          <div className="nav-group">
+            <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
+            <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}><Bot size={16} />线索助手</button>
+            <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
+            <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
+            <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
+          </div>
+          <div className="nav-section-label">数据操作</div>
+          <div className="nav-group nav-tools">
+            <button className="ghost-button" onClick={refreshCurrentView}><RefreshCw size={16} />刷新</button>
+            <button className="ghost-button" onClick={downloadExcel}><FileSpreadsheet size={16} />Excel</button>
+            <a className="ghost-button" href="/api/export/json"><FileJson size={16} />JSON</a>
+            <a className="ghost-button" href="/api/export/csv"><ArrowDownToLine size={16} />CSV</a>
+          </div>
         </div>
       </header>
 
@@ -194,6 +224,7 @@ export default function App() {
       </section>}
 
       {view === "leads" ? <LeadsView
+        leads={leads}
         filters={filters}
         setFilters={setFilters}
         stats={stats}
@@ -208,10 +239,11 @@ export default function App() {
   );
 }
 
-function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, handleLeadPatch, moveBucket }: {
+function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, handleLeadPatch, moveBucket }: {
+  leads: Lead[];
   filters: Filters;
   setFilters: (filters: Filters) => void;
-  stats: { unread: number; evaluation: number; testing: number; push: number; follow: number; watch: number; drop: number; missingLinks: number };
+  stats: DashboardStats;
   loading: boolean;
   filteredLeads: Lead[];
   selectedLead: Lead | null;
@@ -219,6 +251,8 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
   handleLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
   moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
 }) {
+  const insights = useMemo(() => buildSourcingInsights(leads, stats), [leads, stats]);
+
   function applyMetricFilter(patch: Partial<Filters>) {
     setFilters({ ...emptyFilters, ...patch });
     setSelectedId(null);
@@ -227,12 +261,12 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
   return <>
     <section className="dashboard-head">
       <div>
-        <p className="eyebrow">Today Workspace</p>
+        <p className="eyebrow">工作台</p>
         <h2>早上好，Neo0109</h2>
         <p>今天是 {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}。当前聚焦：{activeFilterLabel(filters)}。</p>
       </div>
       <div className="dashboard-head-meta">
-        <span>{filteredLeads.length} 条记录</span>
+        <span>{filteredLeads.length} / {stats.total} 条记录</span>
         <span>{stats.follow + stats.push} 个重点推进</span>
       </div>
     </section>
@@ -248,15 +282,49 @@ function LeadsView({ filters, setFilters, stats, loading, filteredLeads, selecte
     </section>
 
     <section className="sourcing-brief">
-      <article>
-        <span className="brief-kicker">Review Focus</span>
-        <strong>先处理能进入商务推进的产品</strong>
-        <p>跟进中 {stats.follow}，推进池 {stats.push}。优先看 P1/P2、窗口明确、B站内容适配度高的项目。</p>
+      <div className="brief-head">
+        <div>
+          <p className="eyebrow">本周 Sourcing 概览</p>
+          <h3>把可商务推进、待验证、应淘汰的边界看清楚</h3>
+        </div>
+        <span>{insights.weekLabel}</span>
+      </div>
+      <article className="brief-card">
+        <div className="brief-card-head">
+          <span className="brief-icon"><TrendingUp size={16} /></span>
+          <div>
+            <span className="brief-kicker">重点推进</span>
+            <strong>{insights.pipelineCount} 个项目需要继续动作</strong>
+          </div>
+        </div>
+        <div className="brief-metrics">
+          <span><b>{insights.weekSourced}</b>本周新增</span>
+          <span><b>{insights.enteredFollowThisWeek}</b>本周进跟进/推进</span>
+          <span><b>{insights.highPriorityPipeline}</b>P1/P2 重点</span>
+        </div>
+        <ul className="brief-list">
+          {insights.focusLeads.length ? insights.focusLeads.map((lead) => (
+            <li key={lead.id}><b>{lead.project}</b><span>{lead.priority} · {lead.bucket} · {lead.release_window || "窗口待确认"}</span></li>
+          )) : <li><b>暂无高优先级积压</b><span>可以从待评测或观察池补充新候选。</span></li>}
+        </ul>
       </article>
-      <article>
-        <span className="brief-kicker">Pipeline Health</span>
-        <strong>观察和淘汰保持清晰边界</strong>
-        <p>观察池 {stats.watch}，淘汰池 {stats.drop}。不确定的项目先保留证据，明确不合适的及时淘汰。</p>
+      <article className="brief-card">
+        <div className="brief-card-head">
+          <span className="brief-icon"><AlertTriangle size={16} /></span>
+          <div>
+            <span className="brief-kicker">风险与复盘</span>
+            <strong>先补证据，再决定保留或淘汰</strong>
+          </div>
+        </div>
+        <div className="brief-metrics">
+          <span><b>{stats.evaluation + stats.testing}</b>待评测/测试中</span>
+          <span><b>{insights.dueSoon}</b>7 天内到期</span>
+          <span><b>{stats.missingLinks}</b>缺 Steam 链接</span>
+        </div>
+        <ul className="brief-list">
+          {insights.actions.map((action) => <li key={action}><b>下一步</b><span>{action}</span></li>)}
+          {insights.dropReasons.slice(0, 2).map((reason) => <li key={reason.label}><b>{reason.label}</b><span>{reason.count} 个淘汰记录，适合回看规则是否过严。</span></li>)}
+        </ul>
       </article>
     </section>
 
@@ -309,6 +377,109 @@ function activeFilterLabel(filters: Filters) {
   if (filters.bucket !== "全部") return filters.bucket;
   if (filters.query) return "搜索结果";
   return "Leads Review";
+}
+
+function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingInsights {
+  const { start, end } = currentWeekRange();
+  const weekSourced = leads.filter((lead) => isWithinRange(lead.first_seen, start, end)).length;
+  const enteredFollowThisWeek = leads.filter((lead) => (lead.bucket === "跟进中" || lead.bucket === "推进池") && isWithinRange(lead.reviewed_at, start, end)).length;
+  const activeBuckets: Bucket[] = ["待评测", "测试中", "跟进中", "推进池"];
+  const pipelineLeads = leads.filter((lead) => activeBuckets.includes(lead.bucket));
+  const highPriorityPipeline = pipelineLeads.filter((lead) => lead.priority === "P0" || lead.priority === "P1" || lead.priority === "P2").length;
+  const dueSoon = pipelineLeads.filter((lead) => isDueSoon(lead.due_date)).length;
+  const focusLeads = [...pipelineLeads]
+    .sort((a, b) => priorityScore(a.priority) - priorityScore(b.priority) || dateScore(b.reviewed_at) - dateScore(a.reviewed_at))
+    .slice(0, 3);
+  const actions = buildInsightActions(stats, dueSoon, pipelineLeads);
+  const dropReasons = buildDropReasons(leads.filter((lead) => lead.bucket === "淘汰池" || lead.review_status === "已淘汰"));
+
+  return {
+    weekLabel: `${formatShortDate(start)} - ${formatShortDate(end)}`,
+    weekSourced,
+    enteredFollowThisWeek,
+    pipelineCount: stats.follow + stats.push + stats.evaluation + stats.testing,
+    highPriorityPipeline,
+    dueSoon,
+    dropReasons,
+    focusLeads,
+    actions
+  };
+}
+
+function buildInsightActions(stats: DashboardStats, dueSoon: number, pipelineLeads: Lead[]) {
+  const actions: string[] = [];
+  if (stats.evaluation || stats.testing) actions.push(`${stats.evaluation} 个待评测、${stats.testing} 个测试中，需要拿到运营/测试结论。`);
+  if (dueSoon) actions.push(`${dueSoon} 个项目 7 天内到期，优先确认 Demo、排期或商务回复。`);
+  if (stats.missingLinks) actions.push(`${stats.missingLinks} 个项目缺 Steam 链接，先补证据再判断价值。`);
+  const noOwner = pipelineLeads.filter((lead) => !lead.owner).length;
+  if (noOwner) actions.push(`${noOwner} 个推进相关项目没有 Owner，容易丢跟进。`);
+  if (!actions.length) actions.push("今天没有明显积压，可以复看观察池里 P1/P2 项目的 B站适配点。");
+  return actions.slice(0, 3);
+}
+
+function buildDropReasons(droppedLeads: Lead[]) {
+  const reasons = new Map<string, number>();
+  const add = (label: string) => reasons.set(label, (reasons.get(label) ?? 0) + 1);
+
+  for (const lead of droppedLeads) {
+    let matched = false;
+    if (lead.china_capability_occupied) { add("中国发行能力已占位"); matched = true; }
+    if (lead.narrative_heavy) { add("叙事重，B站视频表达风险"); matched = true; }
+    if (lead.early_access) { add("Early Access / 版本不稳定"); matched = true; }
+    if (lead.india_team) { add("印度团队或区域匹配度低"); matched = true; }
+    if (!gameLinks(lead.links).length) { add("缺少 Steam 数据证据"); matched = true; }
+    if (lead.priority === "P3") { add("优先级偏低"); matched = true; }
+    if (!matched) add("数据或规则不足");
+  }
+
+  return Array.from(reasons, ([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+function currentWeekRange() {
+  const start = new Date();
+  const day = (start.getDay() + 6) % 7;
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - day);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+}
+
+function isWithinRange(value: string | null, start: Date, end: Date) {
+  const date = parseMaybeDate(value);
+  return Boolean(date && date >= start && date <= end);
+}
+
+function isDueSoon(value: string | null) {
+  const due = parseMaybeDate(value);
+  if (!due) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const limit = new Date(today);
+  limit.setDate(today.getDate() + 7);
+  return due >= today && due <= limit;
+}
+
+function parseMaybeDate(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+function dateScore(value: string | null) {
+  return parseMaybeDate(value)?.valueOf() ?? 0;
+}
+
+function priorityScore(priority: Priority) {
+  if (priority === "P0") return 0;
+  if (priority === "P1") return 1;
+  if (priority === "P2") return 2;
+  return 3;
+}
+
+function formatShortDate(date: Date) {
+  return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }).replace(/\//g, ".");
 }
 
 function Metric({ label, value, tone, active, onClick }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple"; active?: boolean; onClick?: () => void }) {
