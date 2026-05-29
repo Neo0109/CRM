@@ -1,6 +1,6 @@
 import { readCrmSettings } from "./settings";
 
-type Bucket = "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
+type Bucket = "未处理" | "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
 type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
 type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
@@ -18,7 +18,7 @@ type ContactMethod = {
 const reportRepoFullName = "Neo0109/CRM";
 const reportBranch = "main";
 const reportDatePattern = /^\d{4}-\d{2}-\d{2}$/;
-const bucketValues: Bucket[] = ["待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
+const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
 const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 const evaluationGrades: EvaluationGrade[] = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
@@ -159,7 +159,7 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   }
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
-    const bucketOrder: Record<Bucket, number> = { "待评测": 0, "测试中": 1, "观察池": 2, "跟进中": 3, "推进池": 4, "淘汰池": 5 };
+    const bucketOrder: Record<Bucket, number> = { "未处理": 0, "待评测": 1, "测试中": 2, "观察池": 3, "跟进中": 4, "推进池": 5, "淘汰池": 6 };
     return reviewOrder(a.review_status) - reviewOrder(b.review_status)
       || bucketOrder[a.bucket] - bucketOrder[b.bucket]
       || priorityOrder(a.priority) - priorityOrder(b.priority)
@@ -173,8 +173,8 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
 export function leadsFromReport(report: DailyReport): Partial<Lead>[] {
   if (!report.report_date || !Array.isArray(report.push_pool) || !Array.isArray(report.watch_pool) || !Array.isArray(report.drop_pool)) throw new Error("Invalid daily report");
   return [
-    ...report.push_pool.map((lead) => ({ ...lead, bucket: "观察池" as const, stage: "new" as const, review_status: "未处理" as const })),
-    ...report.watch_pool.map((lead) => ({ ...lead, bucket: "观察池" as const, stage: "new" as const, review_status: "未处理" as const })),
+    ...report.push_pool.map((lead) => ({ ...lead, bucket: "未处理" as const, stage: "new" as const, review_status: "未处理" as const })),
+    ...report.watch_pool.map((lead) => ({ ...lead, bucket: "未处理" as const, stage: "new" as const, review_status: "未处理" as const })),
     ...report.drop_pool.map((lead) => ({ ...lead, bucket: "淘汰池" as const, stage: lead.stage ?? "rejected", review_status: "已淘汰" as const }))
   ].map((lead) => ({
     ...lead,
@@ -307,13 +307,14 @@ function normalizeLead(raw: Partial<Lead>): Lead {
 }
 
 function mergeLead(current: Lead, incoming: Lead): Lead {
+  const keepCurrentWorkflow = shouldKeepCurrentWorkflow(current, incoming);
   return normalizeLead({
     ...current,
     ...incoming,
     id: current.id,
     first_seen: current.first_seen,
-    bucket: current.bucket,
-    stage: current.stage,
+    bucket: keepCurrentWorkflow ? current.bucket : incoming.bucket,
+    stage: keepCurrentWorkflow ? current.stage : incoming.stage,
     priority: current.priority,
     owner: current.owner ?? incoming.owner,
     due_date: current.due_date ?? incoming.due_date,
@@ -329,6 +330,13 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     links: mergeStringArrays(current.links, incoming.links),
     notes: mergeNotes(current.notes, incoming.notes)
   });
+}
+
+function shouldKeepCurrentWorkflow(current: Lead, incoming: Lead) {
+  if (incoming.bucket === "未处理" && incoming.review_status === "未处理" && current.review_status === "未处理" && current.bucket === "观察池") {
+    return false;
+  }
+  return true;
 }
 
 function leadKeys(lead: Lead) {
@@ -433,10 +441,11 @@ function isDomestic(country: string | undefined) {
 }
 
 function normalizeBucket(value: unknown): Bucket {
-  return bucketValues.includes(value as Bucket) ? value as Bucket : "观察池";
+  return bucketValues.includes(value as Bucket) ? value as Bucket : "未处理";
 }
 
 function normalizeReviewStatus(value: unknown, bucket: Bucket): ReviewStatus {
+  if (bucket === "未处理") return "未处理";
   if (reviewStatusValues.includes(value as ReviewStatus)) return value as ReviewStatus;
   if (bucket === "跟进中" || bucket === "推进池" || bucket === "测试中") return "跟进中";
   if (bucket === "待评测") return "已查看";
@@ -449,6 +458,7 @@ function normalizeEvaluationGrade(value: unknown): EvaluationGrade | null {
 }
 
 function stageFromBucket(bucket: Bucket | undefined): Stage {
+  if (bucket === "未处理") return "new";
   if (bucket === "推进池") return "negotiating";
   if (bucket === "跟进中" || bucket === "测试中") return "active";
   if (bucket === "淘汰池") return "rejected";

@@ -16,7 +16,7 @@
 
 - 输出符合 `schemas/steam_trends.schema.json` 的 JSON。
 - `items` 用于页面展示每日趋势。
-- `crm_candidates` 只放值得自动写入 CRM 的候选，默认进入观察池，review 状态为未处理。
+- `crm_candidates` 只放值得自动写入 CRM 的候选；默认进入 `未处理` inbox，review 状态为未处理。不要自动放入观察池、待评测、跟进中或推进池。
 - `crm_candidates` 每条至少包含：project、steam_app_id、country、bucket、stage、priority、progress、publisher_status、bilibili_fit、amplification、verdict、first_seen、links、priority_reason、rule_fit。
 
 ## JSON 示例
@@ -45,14 +45,14 @@
       "project": "示例游戏",
       "steam_app_id": "123456",
       "country": "中国",
-      "bucket": "观察池",
-      "stage": "watch",
+      "bucket": "未处理",
+      "stage": "new",
       "priority": "P2",
       "progress": "Demo 已上线，Steam 趋势上升",
       "publisher_status": "待确认发行结构",
       "bilibili_fit": "适合挑战、攻略和直播切片",
       "amplification": "可做 UP 主挑战栏目化内容",
-      "verdict": "方向对，进入观察池复核",
+      "verdict": "方向对，进入未处理 inbox 等人工分池",
       "first_seen": "2026-05-22",
       "links": ["https://store.steampowered.com/app/123456/", "https://steamdb.info/app/123456/"],
       "priority_reason": "Steam 趋势信号上升且有内容传播点",

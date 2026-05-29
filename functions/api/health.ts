@@ -8,7 +8,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
 
   return json({
     ok: true,
-    version: "v1.8.6-bd-workbench",
+    version: "v1.8.7-auto-inbox-contacts",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,

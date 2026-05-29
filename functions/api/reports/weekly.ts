@@ -245,7 +245,7 @@ function priorityRank(priority: Lead["priority"]) {
 }
 
 function bucketRank(bucket: Lead["bucket"]) {
-  return { "推进池": 0, "跟进中": 1, "测试中": 2, "待评测": 3, "观察池": 4, "淘汰池": 5 }[bucket] ?? 9;
+  return { "未处理": 0, "待评测": 1, "测试中": 2, "跟进中": 3, "推进池": 4, "观察池": 5, "淘汰池": 6 }[bucket] ?? 9;
 }
 
 function weekRange(anchorDate: string) {

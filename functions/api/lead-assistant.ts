@@ -81,7 +81,7 @@ type AiExtractionResult = {
 const contactTypes: ContactMethod["type"][] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 const priorityValues: AssistantPriority[] = ["P0", "P1", "P2", "P3"];
 const regionPriorityValues: AssistantRegionPriority[] = ["国内优先", "海外-高视觉", "海外-强数据", "其他"];
-const bucketValues: AssistantBucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
+const bucketValues: AssistantBucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const openAiResponsesUrl = "https://api.openai.com/v1/responses";
 const defaultVisionModel = "gpt-4.1-mini";
 
@@ -329,7 +329,7 @@ async function buildAiLead(raw: AiExtractedLead, context: { text: string; attach
     city: valueOrNull(raw.city) ?? inferCity(allText),
     region_priority: regionPriority,
     bucket: normalizeBucket(raw.bucket),
-    stage: normalizeBucket(raw.bucket) === "淘汰池" ? "rejected" : "watch",
+    stage: stageFromBucket(normalizeBucket(raw.bucket)),
     priority: normalizePriority(raw.priority, regionPriority),
     review_status: "未处理",
     genre: valueOrNull(raw.genre) ?? steamGenres(details),
@@ -383,8 +383,8 @@ function buildSteamLead({ steamAppId, details, text, links, contacts, attachment
     country,
     city: inferCity(text),
     region_priority: regionPriority,
-    bucket: "观察池",
-    stage: "watch",
+    bucket: "未处理",
+    stage: "new",
     priority: inferPriority(text, regionPriority),
     review_status: "未处理",
     genre: steamGenres(details),
@@ -429,8 +429,8 @@ function buildManualLead({ text, links, contacts, attachments, today }: {
     country,
     city: inferCity(text),
     region_priority: regionPriority,
-    bucket: "观察池",
-    stage: "watch",
+    bucket: "未处理",
+    stage: "new",
     priority: inferPriority(text, regionPriority),
     review_status: "未处理",
     progress: hasGameLink ? "线索助手录入，待复核页面信息" : "线索助手录入，待补 Steam/官网信息",
@@ -562,7 +562,15 @@ function normalizeRegionPriority(value: string | null | undefined, text: string,
 }
 
 function normalizeBucket(value: string | null | undefined): AssistantBucket {
-  return bucketValues.includes(value as AssistantBucket) ? value as AssistantBucket : "观察池";
+  return bucketValues.includes(value as AssistantBucket) ? value as AssistantBucket : "未处理";
+}
+
+function stageFromBucket(bucket: AssistantBucket): Lead["stage"] {
+  if (bucket === "未处理") return "new";
+  if (bucket === "推进池") return "negotiating";
+  if (bucket === "跟进中" || bucket === "测试中") return "active";
+  if (bucket === "淘汰池") return "rejected";
+  return "watch";
 }
 
 function inferPriority(text: string, regionPriority: AssistantRegionPriority): AssistantPriority {
@@ -583,7 +591,7 @@ function inferBilibiliFit(text: string) {
 
 function inferPriorityReason(text: string, regionPriority: AssistantRegionPriority) {
   if (/wishlist|愿望单|销量|在线|峰值|爆火|viral/i.test(text)) return "文本中出现公开强数据或热度异动信号";
-  if (regionPriority === "国内优先") return "国内项目优先，值得进入观察池复核";
+  if (regionPriority === "国内优先") return "国内项目优先，值得进入未处理 inbox 复核";
   if (regionPriority === "海外-高视觉") return "海外项目疑似具备高视觉/内容传播潜力";
   return "用户通过线索助手主动提交，待补充强信号";
 }

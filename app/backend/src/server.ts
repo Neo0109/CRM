@@ -7,7 +7,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-type Bucket = "推进池" | "观察池" | "淘汰池";
+type Bucket = "未处理" | "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
 type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
 type Priority = "P0" | "P1" | "P2" | "P3";
 type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
@@ -254,7 +254,7 @@ async function mergeIncomingLeads(rawLeads: Partial<Lead>[]) {
   }
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
-    const bucketOrder: Record<Bucket, number> = { "推进池": 0, "观察池": 1, "淘汰池": 2 };
+    const bucketOrder: Record<Bucket, number> = { "未处理": 0, "待评测": 1, "测试中": 2, "观察池": 3, "跟进中": 4, "推进池": 5, "淘汰池": 6 };
     return bucketOrder[a.bucket] - bucketOrder[b.bucket] || a.project.localeCompare(b.project, "zh-CN");
   });
 
@@ -277,8 +277,8 @@ function assertValidLead(lead: Lead) {
 function leadsFromReport(report: DailyReport): Partial<Lead>[] {
   assertValidDailyReport(report);
   return [
-    ...report.push_pool.map((lead) => ({ ...lead, bucket: "推进池" as const })),
-    ...report.watch_pool.map((lead) => ({ ...lead, bucket: "观察池" as const })),
+    ...report.push_pool.map((lead) => ({ ...lead, bucket: "未处理" as const, stage: "new" as const, review_status: "未处理" as const })),
+    ...report.watch_pool.map((lead) => ({ ...lead, bucket: "未处理" as const, stage: "new" as const, review_status: "未处理" as const })),
     ...report.drop_pool.map((lead) => ({ ...lead, bucket: "淘汰池" as const, stage: lead.stage ?? "rejected" }))
   ].map((lead) => ({
     ...lead,
@@ -298,7 +298,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     team_size: valueOrNull(raw.team_size),
     country: raw.country ?? "未知",
     region_priority: raw.region_priority ?? inferRegionPriority(raw.country, raw.public_signals),
-    bucket: raw.bucket ?? "观察池",
+    bucket: raw.bucket ?? "未处理",
     stage: raw.stage ?? stageFromBucket(raw.bucket),
     priority: raw.priority ?? priorityFromBucket(raw.bucket),
     genre: valueOrNull(raw.genre),
@@ -370,13 +370,15 @@ function isDomestic(country: string | undefined) {
 }
 
 function stageFromBucket(bucket: Bucket | undefined): Stage {
-  if (bucket === "推进池") return "active";
+  if (bucket === "未处理") return "new";
+  if (bucket === "推进池") return "negotiating";
+  if (bucket === "跟进中" || bucket === "测试中") return "active";
   if (bucket === "淘汰池") return "rejected";
   return "watch";
 }
 
 function priorityFromBucket(bucket: Bucket | undefined): Priority {
-  if (bucket === "推进池") return "P1";
+  if (bucket === "推进池" || bucket === "跟进中" || bucket === "测试中") return "P1";
   if (bucket === "淘汰池") return "P3";
   return "P2";
 }

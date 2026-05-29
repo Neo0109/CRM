@@ -14,7 +14,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V3 rules: `docs/SOURCING_RULES_V3.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after the BD workbench insight refresh: `v1.8.6`
+- Current product version after the auto-inbox/contact recovery fix: `v1.8.7`
 
 ## Automation Status On 2026-05-28
 
@@ -88,7 +88,7 @@ Known remaining cleanup:
 The CRM funnel was changed from mixed automatic buckets to an explicit human review workflow:
 
 - Qualified sourced leads enter `未处理` first.
-- `未处理` quick actions: `待评测`, `淘汰`.
+- `未处理` quick actions: `待评测`, `观察池`, `淘汰`.
 - `待评测` quick action: `测试中`.
 - `测试中` quick actions: `跟进`, `观望`, `淘汰`.
 - `观察池` quick actions: `待评测`, `跟进中`, `淘汰`.
@@ -97,7 +97,7 @@ The CRM funnel was changed from mixed automatic buckets to an explicit human rev
 Important implementation points:
 
 - Backend `Bucket` includes `待评测` and `测试中`.
-- `leadsFromReport` maps report `push_pool` and `watch_pool` into CRM `观察池` + `review_status: 未处理` so automation does not bypass human review.
+- `leadsFromReport` maps report `push_pool` and `watch_pool` into CRM `未处理` + `review_status: 未处理` so automation never pre-assigns a human workflow bucket.
 - `drop_pool` imports directly into `淘汰池`.
 - Priority color is derived from `priority`: P0/P1 = high/green, P2 = medium/yellow, P3 = low/red.
 - Moving a lead to `测试中` sets a default two-week due date and enables calendar visibility.

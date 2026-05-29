@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "rule_version": "sourcing-rules-v3",
-  "updated_at": "2026-05-28",
+  "updated_at": "2026-05-29",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V3.md",
   "compatible_generators": [
@@ -12,7 +12,7 @@
     "job_to_be_done": "Decide whether a game project deserves BD attention and what to do next."
   },
   "report_contract": {
-    "daily_report": "Separate discovery from BD recommendation. Push pool can be empty.",
+    "daily_report": "Separate discovery from BD recommendation. Push pool can be empty. Non-dropped auto leads must enter the unprocessed inbox, not observation or follow-up buckets.",
     "steam_trends": "Output BD decision cards, not generic tag-frequency trends.",
     "industry_radar": "Use real external media, company, legal, platform, or community signals. Never use internal CRM notes as industry news."
   },
@@ -37,6 +37,7 @@
     "Fail fast when this rule file is missing or incompatible.",
     "Log the active rule version at the start of each automation run.",
     "Workflow path filters must include this file and SOURCING_RULES documents.",
-    "Rule iteration and online automation must be updated together."
+    "Rule iteration and online automation must be updated together.",
+    "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading."
   ]
 }

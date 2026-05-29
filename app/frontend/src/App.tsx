@@ -50,10 +50,10 @@ type SourcingInsights = {
   actions: string[];
 };
 
-const version = "v1.8.6";
+const version = "v1.8.7";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
-const bucketOptions: ("全部" | Bucket)[] = ["全部", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
-const bucketValues: Bucket[] = ["待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
+const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
+const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", "negotiating", "won", "rejected"];
 const stageValues: Stage[] = ["new", "watch", "active", "negotiating", "won", "rejected"];
 const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
@@ -86,7 +86,7 @@ export default function App() {
 
   const stats = useMemo(() => ({
     total: leads.length,
-    unread: leads.filter((lead) => lead.review_status === "未处理").length,
+    unread: leads.filter((lead) => lead.bucket === "未处理" || lead.review_status === "未处理").length,
     evaluation: leads.filter((lead) => lead.bucket === "待评测").length,
     testing: leads.filter((lead) => lead.bucket === "测试中").length,
     push: leads.filter((lead) => lead.bucket === "推进池").length,
@@ -754,7 +754,7 @@ function quickActionSpecs(lead: Lead, missingLinksMode: boolean): QuickActionSpe
     patch: () => ({ bucket: "淘汰池" as const, stage: "rejected" as const, review_status: "已淘汰" as const, reviewed_at })
   };
 
-  if (isUnread) return [evaluate, drop];
+  if (isUnread) return [evaluate, watch, drop];
   if (lead.bucket === "待评测") return [testing];
   if (lead.bucket === "测试中") return [follow, watch, drop];
   if (lead.bucket === "观察池") return [evaluate, follow, drop];
@@ -850,6 +850,7 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
 
 function reviewPatchForBucket(bucket: Bucket): Partial<Lead> {
   const reviewed_at = new Date().toISOString();
+  if (bucket === "未处理") return { review_status: "未处理", reviewed_at: null };
   if (bucket === "推进池") return { review_status: "跟进中", reviewed_at };
   if (bucket === "跟进中") return { review_status: "跟进中", reviewed_at };
   if (bucket === "测试中") return { review_status: "跟进中", reviewed_at, due_date: addDaysIso(14), calendar_enabled: true };
@@ -859,6 +860,7 @@ function reviewPatchForBucket(bucket: Bucket): Partial<Lead> {
 }
 
 function stageFromBucket(bucket: Bucket): Stage {
+  if (bucket === "未处理") return "new";
   if (bucket === "推进池") return "negotiating";
   if (bucket === "跟进中" || bucket === "测试中") return "active";
   if (bucket === "淘汰池") return "rejected";
@@ -866,6 +868,7 @@ function stageFromBucket(bucket: Bucket): Stage {
 }
 
 function bucketClass(bucket: Bucket) {
+  if (bucket === "未处理") return "unread";
   if (bucket === "推进池") return "push";
   if (bucket === "待评测") return "evaluate";
   if (bucket === "测试中") return "testing";

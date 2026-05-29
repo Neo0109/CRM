@@ -274,11 +274,54 @@ function hasStrongPublicData(reviewText, source, details) {
 async function collectContactMethods(details, appId) {
   const methods = [];
   const support = details?.support_info ?? {};
-  if (support.email) methods.push({ type: "Email", value: support.email, note: "Steam support email" });
-  if (details?.website) methods.push({ type: "官网", value: details.website, note: "Steam official website" });
-  if (support.url && support.url !== details?.website) methods.push({ type: "官网", value: support.url, note: "Steam support URL" });
-  if (!methods.length) methods.push({ type: "Steam", value: `https://steamcommunity.com/app/${appId}/discussions/`, note: "Official Steam community fallback" });
-  return methods.slice(0, 3);
+  const website = firstRealWebsite(details?.website, support.url);
+  addContact(methods, "Email", support.email, "Steam support email");
+  addContact(methods, "官网", website, "Steam official website");
+  if (support.url !== website) addContact(methods, "官网", support.url, "Steam support URL");
+
+  if (website) {
+    for (const method of await contactsFromWebsite(website)) addContact(methods, method.type, method.value, method.note);
+  }
+
+  addContact(methods, "Steam", `https://steamcommunity.com/app/${appId}/discussions/`, methods.length ? "Steam community backup" : "Official Steam community fallback");
+  return methods.slice(0, 4);
+}
+
+async function contactsFromWebsite(website) {
+  try {
+    const html = await fetchText(website, 7000, "text/html,*/*;q=0.8");
+    const methods = [];
+    const mailto = decodeHtml(String(html).match(/mailto:([^"'?#>\s]+)/i)?.[1] ?? "");
+    const plainEmail = String(html).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? "";
+    addContact(methods, "Email", mailto || plainEmail, "Found on official site");
+    for (const [type, pattern] of [
+      ["Discord", /https?:\/\/(?:www\.)?(?:discord\.gg|discord\.com\/invite)\/[^"'<>\s]+/i],
+      ["X/Twitter", /https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/[^"'<>\s]+/i],
+      ["B站", /https?:\/\/(?:space\.)?bilibili\.com\/[^"'<>\s]+/i]
+    ]) {
+      const value = String(html).match(pattern)?.[0];
+      addContact(methods, type, value, "Found on official site");
+    }
+    return methods;
+  } catch {
+    return [];
+  }
+}
+
+function firstRealWebsite(...values) {
+  return values.find((value) => value && /^https?:\/\//i.test(value) && !isSteamStoreLike(value)) ?? null;
+}
+
+function isSteamStoreLike(value) {
+  return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(String(value));
+}
+
+function addContact(methods, type, value, note) {
+  const cleanValue = typeof value === "string" ? value.trim() : "";
+  if (!cleanValue || isSteamStoreLike(cleanValue)) return;
+  const key = normalizeUrl(cleanValue);
+  if (methods.some((method) => normalizeUrl(method.value) === key)) return;
+  methods.push({ type, value: cleanValue, note });
 }
 
 function scoreCandidate(input) {
@@ -315,7 +358,7 @@ function toLead(candidate) {
   const dropReason = hardDropReason(candidate);
   const pushEligible = isPushEligible(candidate, dropReason);
   const className = dropReason ? "drop" : pushEligible ? "push" : "watch";
-  const bucket = className === "push" ? "推进池" : className === "drop" ? "淘汰池" : "观察池";
+  const bucket = className === "drop" ? "淘汰池" : "未处理";
   const priority = className === "push" ? "P1" : className === "drop" ? "P3" : candidate.score >= 34 ? "P2" : "P3";
   const genre = candidate.genres.join(" / ") || null;
   const priorityReason = buildPriorityReason(candidate, className, dropReason);
@@ -331,7 +374,7 @@ function toLead(candidate) {
     city: null,
     region_priority: candidate.region === "中国" ? "国内优先" : candidate.highVisual ? "海外-高视觉" : candidate.strongData ? "海外-强数据" : "其他",
     bucket,
-    stage: className === "push" ? "active" : className === "drop" ? "rejected" : "watch",
+    stage: className === "drop" ? "rejected" : "new",
     priority,
     priority_reason: priorityReason,
     rule_fit: buildRuleFit(candidate, dropReason, className),
@@ -385,7 +428,7 @@ function buildPriorityReason(candidate, className, dropReason) {
   if (className === "drop") return dropReason;
   const windowText = typeof candidate.daysToRelease === "number" ? `距发售约${candidate.daysToRelease}天` : "窗口待确认";
   if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : candidate.highVisual ? "高视觉" : "强数据"} + 系统型玩法，${windowText}，值得优先确认中国区窗口`;
-  return `${candidate.source} 有前置信号，${windowText}；先入观察池，等待 Demo/愿望单/社区扩散或发行结构进一步确认`;
+  return `${candidate.source} 有前置信号，${windowText}；先进入未处理 inbox，由人工决定是否进观察池、待评测或跟进`;
 }
 
 function buildRuleFit(candidate, dropReason, className) {
@@ -430,19 +473,19 @@ function buildRisks(candidate, dropReason) {
 function buildVerdict(className, dropReason) {
   if (className === "push") return "符合V2推进标准，建议优先确认中国区合作窗口与开发者真实需求";
   if (className === "drop") return `${dropReason}，暂不投入BD时间`;
-  return "方向可看但还不够推进，先留在观察池等待更强公开信号";
+  return "方向可看但还不够推进，先进入未处理 inbox，等待人工 review 后再分池";
 }
 
 function buildNextAction(className) {
   if (className === "drop") return "归档原因，避免重复讨论";
   if (className === "push") return "确认团队地区、商务邮箱/Discord、中文计划、Demo数据和是否已有中国能力发行商";
-  return "补曝光轨迹、Demo/愿望单/社区反馈、发行结构和联系方式";
+  return "人工 review 后决定进观察池/待评测/淘汰，并补曝光轨迹、数据和联系方式";
 }
 
 function buildLeadNote(candidate, className, dropReason) {
   if (className === "drop") return `V2判断：${dropReason}。`;
   if (className === "push") return "V2判断：窗口仍在，玩法/视觉/公开信号可支撑优先触达；下一步验证中国区权益空间。";
-  return "V2判断：前置信号成立，但还缺强数据或明确可切入理由，先观察。";
+  return "V3判断：前置信号成立，但还缺强数据或明确可切入理由，先放入未处理 inbox 等人工分池。";
 }
 
 function buildBilibiliFit(candidate) {
@@ -465,13 +508,14 @@ function buildAmplification(candidate) {
 function buildDailyReport(pools, rawCount, enrichedCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V3线上自动化：扫描候选 ${rawCount} 条、输出可review游戏 ${enrichedCount} 条；推进池 ${pools.push.length} 条、观察池 ${pools.watch.length} 条、淘汰池 ${pools.drop.length} 条。V3要求每条重点信息都回答产品优劣、数据、玩法、B站能否赋能和下一步BD动作。`,
+    summary: `Sourcing V3线上自动化：扫描候选 ${rawCount} 条、输出可review游戏 ${enrichedCount} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
       "V3把日报读者明确为B站商务负责人：不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步动作。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "发售不足60天、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入推进池。",
-      "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。"
+      "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
+      "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。"
     ],
     push_pool: pools.push,
     watch_pool: pools.watch,
@@ -491,7 +535,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
     "这是给BD选品的背景信号，不是新闻，也不直接进入推进池。",
-    `优先复核推进池 ${pools.push.length} 个项目；观察池只补缺失数据、玩法视频、联系方式和发行占位。`
+    `优先复核 ${pools.push.length} 个强信号项目；其余候选先在未处理 inbox 等人工分池。`
   );
   return {
     report_date: reportDate,
@@ -507,7 +551,7 @@ function buildSteamTrendReport(candidates, pools) {
     summary: `今日Steam趋势V3：扫描 ${candidates.length} 个候选，推进 ${pools.push.length}、观察 ${pools.watch.length}、淘汰 ${pools.drop.length}。本页只服务BD判断：看产品优劣、数据、玩法、B站能否赋能和下一步动作。`,
     market_insights: [
       steamInsight("bd_decision_cards", "趋势页改为BD判断卡", "V3不再把Indie、Adventure这类标签当趋势结论；每个候选必须写清玩法、公开数据、优势短板、B站赋能和BD动作。", "高", "CRM Sourcing V3", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V3.md", "只把能辅助商务判断的信息留在趋势页。"),
-      steamInsight("push_watch_drop", `今日池子结构：推进${pools.push.length} / 观察${pools.watch.length} / 淘汰${pools.drop.length}`, "推进池可以为空；观察池用于保留缺数据但可能有内容潜力的项目，淘汰池记录原因避免重复消耗时间。", "中", "CRM Online Scan", "https://store.steampowered.com/search/?filter=popularcomingsoon", "先读推进池，再看观察池缺什么信号，不再按品类标签无差别浏览。")
+      steamInsight("push_watch_drop", `今日复核结构：强信号${pools.push.length} / 普通候选${pools.watch.length} / 淘汰${pools.drop.length}`, "自动化只给优先级和淘汰理由，非淘汰项目统一进入未处理 inbox，避免误把未读线索塞进观察池。", "中", "CRM Online Scan", "https://store.steampowered.com/search/?filter=popularcomingsoon", "先处理未处理 inbox，再由人工分配观察池、待评测或跟进。")
     ],
     genre_signals: [],
     items: candidates.slice(0, 12).map((candidate) => ({
@@ -905,6 +949,16 @@ function hasGameOrBdContext(text, item) {
 
 function normalizeText(value) {
   return String(value ?? "").toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+
+function normalizeUrl(value) {
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    return url.toString().replace(/\/$/, "").toLowerCase();
+  } catch {
+    return String(value ?? "").trim().replace(/\/$/, "").toLowerCase();
+  }
 }
 
 function absolutizeUrl(value, baseUrl) {

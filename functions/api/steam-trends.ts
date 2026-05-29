@@ -30,7 +30,7 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
     });
 
     const report = result.report as SteamTrendReport;
-    const candidates = Array.isArray(report.crm_candidates) ? report.crm_candidates : [];
+    const candidates = Array.isArray(report.crm_candidates) ? report.crm_candidates.map(toUnprocessedCandidate) : [];
     const shouldSyncCandidates = candidates.length > 0 && !url.searchParams.has("date") && url.searchParams.get("sync") !== "0";
     const sync_result = shouldSyncCandidates ? await mergeIncomingLeads(env, candidates) : null;
     return json({
@@ -48,3 +48,12 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
     return json({ error: "Steam trends fetch failed" }, 502);
   }
 };
+
+function toUnprocessedCandidate(candidate: Partial<Lead>): Partial<Lead> {
+  return {
+    ...candidate,
+    bucket: "未处理",
+    stage: "new",
+    review_status: "未处理"
+  };
+}

@@ -27,7 +27,7 @@ type ManualLeadForm = {
   notes: string;
 };
 
-const bucketOptions: Bucket[] = ["推进池", "跟进中", "观察池", "淘汰池"];
+const bucketOptions: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const priorityOptions: Priority[] = ["P0", "P1", "P2", "P3"];
 const contactTypeOptions: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 
@@ -37,7 +37,7 @@ const defaultForm: ManualLeadForm = {
   steam_app_id: "",
   country: "中国",
   city: "",
-  bucket: "观察池",
+  bucket: "未处理",
   priority: "P2",
   genre: "",
   progress: "待补充",
@@ -52,7 +52,7 @@ const defaultForm: ManualLeadForm = {
 const jsonPlaceholder = `{
   "project": "示例游戏",
   "country": "中国",
-  "bucket": "观察池",
+  "bucket": "未处理",
   "priority": "P2",
   "progress": "Demo 已上线",
   "publisher_status": "待确认",
@@ -64,7 +64,7 @@ const jsonPlaceholder = `{
   "links": ["https://store.steampowered.com/app/123456/"],
   "bilibili_fit": "适合UP主试玩和挑战内容",
   "amplification": "可做栏目化内容",
-  "verdict": "先进入观察池"
+  "verdict": "先进入未处理 inbox"
 }`;
 
 export function ManualImportPage({ onImported, onStatus }: ManualImportPageProps) {

@@ -1,6 +1,6 @@
 # Sourcing Rules V3
 
-Date: 2026-05-27
+Date: 2026-05-29
 
 ## One-Line Standard
 
@@ -89,6 +89,14 @@ V2 pool discipline remains:
 - Near-launch, PC Early Access, narrative-first, India-led, mature-publisher-occupied, or weak overseas projects should not consume push-pool time.
 - Watch pool is allowed to be broad, but each item must explain what signal is missing.
 - Drop pool should record why a lead should not be revisited soon.
+
+## CRM Inbox Discipline
+
+Automation may rank candidates in the report, but non-dropped leads must enter CRM as `bucket = 未处理`, `stage = new`, and `review_status = 未处理`.
+
+Do not auto-place new daily-report leads into 观察池, 待评测, 跟进中, or 推进池. Those are human review outcomes. The inbox is the holding area for new discoveries until the BD owner decides whether to observe, test, follow up, push, or drop.
+
+Contact methods must be real touch points. Prefer Steam support email, official website, support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB URLs belong in `links`, not `contact_methods`. If no public business contact is available, keep the Steam community discussion URL as a fallback and explicitly treat it as a fallback, not as an email or official website.
 
 ## Iteration Rule
 
