@@ -525,7 +525,7 @@ function buildAmplification(candidate) {
 function buildDailyReport(pools, rawCount, enrichedCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V3线上自动化：扫描候选 ${rawCount} 条、输出可review游戏 ${enrichedCount} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V3线上自动化：扫描候选 ${rawCount} 条、富化 ${enrichedCount} 条、进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
       "V3把日报读者明确为B站商务负责人：不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步动作。",
