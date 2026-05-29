@@ -1,4 +1,4 @@
-// Online CRM generator v4: Sourcing Rules V3.
+// Online CRM generator v4: Sourcing Rules V4.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -11,6 +11,8 @@ const maxCandidates = Number(args.maxCandidates ?? 60);
 const existingProjects = await readExistingProjectNames(reportDate);
 
 const rawCandidates = dedupeByAppId((await Promise.all([
+  fetchSteamSearch("popularcomingsoon", "Steam CN Popular Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Demo/Next Fest Window", [21], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam Popular Upcoming"),
   fetchSteamSearch("popularcomingsoon", "Steam Demo/Next Fest Window", [21]),
   fetchSteamSearch("popularcomingsoon", "Strategy Upcoming", [9]),
@@ -48,7 +50,7 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport(en
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v3",
+  generator: "online_daily_v4_sourcing_rules_v4",
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
@@ -114,7 +116,9 @@ function previousDatePaths(date, days) {
   return paths;
 }
 
-async function fetchSteamSearch(filter, source, tags = []) {
+async function fetchSteamSearch(filter, source, tags = [], options = {}) {
+  const cc = options.cc ?? "us";
+  const language = options.l ?? "english";
   const resultUrl = new URL("https://store.steampowered.com/search/results/");
   resultUrl.searchParams.set("query", "");
   resultUrl.searchParams.set("start", "0");
@@ -124,25 +128,31 @@ async function fetchSteamSearch(filter, source, tags = []) {
   resultUrl.searchParams.set("filter", filter);
   resultUrl.searchParams.set("category1", "998");
   resultUrl.searchParams.set("os", "win");
-  resultUrl.searchParams.set("l", "english");
+  resultUrl.searchParams.set("cc", cc);
+  resultUrl.searchParams.set("l", language);
   if (tags.length) resultUrl.searchParams.set("tags", tags.join(","));
 
   const pageUrl = new URL("https://store.steampowered.com/search/");
   pageUrl.searchParams.set("filter", filter);
   pageUrl.searchParams.set("category1", "998");
   pageUrl.searchParams.set("os", "win");
-  pageUrl.searchParams.set("l", "english");
+  pageUrl.searchParams.set("cc", cc);
+  pageUrl.searchParams.set("l", language);
   if (tags.length) pageUrl.searchParams.set("tags", tags.join(","));
 
   try {
     const text = await fetchText(resultUrl.toString(), 12000, "application/json,text/html;q=0.9,*/*;q=0.8");
-    const parsed = parseSteamSearchHtml(parseMaybeJsonHtml(text), source);
+    const parsed = tagSearchCandidates(parseSteamSearchHtml(parseMaybeJsonHtml(text), source), options);
     if (parsed.length) return parsed;
-    return parseSteamSearchHtml(await fetchText(pageUrl.toString(), 12000, "text/html,*/*;q=0.8"), source);
+    return tagSearchCandidates(parseSteamSearchHtml(await fetchText(pageUrl.toString(), 12000, "text/html,*/*;q=0.8"), source), options);
   } catch (error) {
     console.warn(`Steam search failed for ${source}: ${error.message}`);
     return [];
   }
+}
+
+function tagSearchCandidates(items, options) {
+  return items.map((item) => ({ ...item, domesticLens: Boolean(options.domesticLens) }));
 }
 
 function parseMaybeJsonHtml(text) {
@@ -219,16 +229,20 @@ async function enrichCandidate(candidate, details) {
   const alreadyReleased = typeof daysToRelease === "number" && daysToRelease < 0;
   const releaseTooSoon = typeof daysToRelease === "number" && daysToRelease >= 0 && daysToRelease < 60;
   const comingSoon = Boolean(details?.release_date?.coming_soon) || /coming soon|tba|to be announced/i.test(candidate.release ?? "");
+  const hasDemoSignal = /demo|next fest|试玩|新品节/i.test(`${candidate.source} ${candidate.release} ${text}`) || Boolean(details?.demos?.length);
   const earlyAccess = /early access|抢先体验/i.test(text);
   const narrativeHeavy = isNarrativeHeavy(lower, genres);
   const indiaTeam = /india|indian studio|bengaluru|bangalore|mumbai|pune|hyderabad|chennai/i.test(text);
   const strongGameplay = /co-op|multiplayer|strategy|simulation|management|automation|base building|colony|roguelike|deckbuilder|tactical|sandbox|survival|crafting|city builder|card game|tower defense|factory|physics/i.test(lower);
   const highVisual = (details?.screenshots?.length ?? 0) >= 4 || (details?.movies?.length ?? 0) > 0;
   const publisherOccupied = hasMaturePublisher(publishers);
-  const domestic = looksDomestic([candidate.title, details?.name, ...developers, ...publishers, details?.website].join(" "));
+  const localizedTitleSignal = candidate.domesticLens ? "" : candidate.title;
+  const domestic = looksDomestic([localizedTitleSignal, details?.name, ...developers, ...publishers, details?.website].join(" "));
   const strongData = hasStrongPublicData(candidate.reviewText, candidate.source, details);
+  const validatedPcHit = hasValidatedPcHit(candidate.reviewText, details);
+  const mobileAdaptationPotential = hasMobileAdaptationPotential(text, genres, categories);
   const contactMethods = await collectContactMethods(details, candidate.appId);
-  const score = scoreCandidate({ source: candidate.source, domestic, strongGameplay, highVisual, strongData, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
+  const score = scoreCandidate({ source: candidate.source, domestic, domesticLens: Boolean(candidate.domesticLens), hasDemoSignal, strongGameplay, highVisual, strongData, validatedPcHit, mobileAdaptationPotential, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
 
   return {
     appId: candidate.appId,
@@ -247,12 +261,15 @@ async function enrichCandidate(candidate, details) {
     daysToRelease,
     alreadyReleased,
     comingSoon,
+    hasDemoSignal,
     earlyAccess,
     narrativeHeavy,
     indiaTeam,
     strongGameplay,
     highVisual,
     strongData,
+    validatedPcHit,
+    mobileAdaptationPotential,
     publisherOccupied,
     contactMethods,
     website: details?.website ?? null,
@@ -278,6 +295,20 @@ function hasStrongPublicData(reviewText, source, details) {
   if (/very positive|overwhelmingly positive|好评如潮|特别好评|wishlist|愿望单/.test(text)) return true;
   if ((details?.recommendations?.total ?? 0) >= 500) return true;
   return false;
+}
+
+function hasValidatedPcHit(reviewText, details) {
+  const recommendations = details?.recommendations?.total ?? 0;
+  const text = `${reviewText ?? ""} ${details?.name ?? ""} ${details?.short_description ?? ""}`.toLowerCase();
+  if (recommendations >= 5000) return true;
+  if (recommendations >= 1500 && /very positive|overwhelmingly positive|好评如潮|特别好评/.test(text)) return true;
+  if (/overwhelmingly positive|好评如潮/.test(text)) return true;
+  return false;
+}
+
+function hasMobileAdaptationPotential(text, genres, categories) {
+  const joined = `${text} ${genres.join(" ")} ${categories.join(" ")}`.toLowerCase();
+  return /card|deckbuilder|turn[- ]?based|strategy|simulation|management|tycoon|puzzle|idle|roguelike|tactical|auto battler|tower defense|city builder|colony|survivors-like|卡牌|构筑|回合|策略|模拟|经营|放置|肉鸽|塔防|战棋|自走棋/.test(joined);
 }
 
 async function collectContactMethods(details, appId) {
@@ -338,10 +369,15 @@ function scoreCandidate(input) {
   if (input.source.includes("Upcoming")) score += 24;
   if (input.source.includes("Demo") || input.source.includes("Next Fest")) score += 14;
   if (input.source.includes("Featured Coming")) score += 10;
-  if (input.domestic) score += 12;
+  if (input.source.includes("CN") || input.domesticLens) score += 6;
+  if (input.domestic) score += 30;
+  if (input.domestic && input.hasDemoSignal) score += 22;
   if (input.strongGameplay) score += 18;
   if (input.highVisual) score += 12;
   if (input.strongData) score += 14;
+  if (!input.domestic) score -= 10;
+  if (!input.domestic && input.validatedPcHit) score += 22;
+  if (!input.domestic && input.mobileAdaptationPotential) score += 10;
   if (input.comingSoon) score += 6;
   if (input.hasDetails) score += 5;
   if (input.contactCount) score += 4;
@@ -382,7 +418,7 @@ function toLead(candidate) {
     country: candidate.country,
     region: candidate.region,
     city: null,
-    region_priority: candidate.region === "中国" ? "国内优先" : candidate.highVisual ? "海外-高视觉" : candidate.strongData ? "海外-强数据" : "其他",
+    region_priority: candidate.region === "中国" ? "国内优先" : candidate.validatedPcHit && candidate.mobileAdaptationPotential ? "海外-PC验证手游化" : "其他",
     bucket,
     stage: className === "drop" ? "rejected" : "new",
     priority,
@@ -390,7 +426,7 @@ function toLead(candidate) {
     rule_fit: buildRuleFit(candidate, dropReason, className),
     genre,
     gameplay: candidate.shortDescription || `${genre ?? "玩法待复核"}。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。`,
-    progress: `Steam ${candidate.source}；发售窗口：${candidate.releaseDate}`,
+    progress: `Steam ${candidate.source}；发售窗口：${candidate.releaseDate}${candidate.hasDemoSignal ? "；Demo/试玩信号需优先复核" : ""}`,
     release_window: candidate.releaseDate,
     early_access: candidate.earlyAccess,
     narrative_heavy: candidate.narrativeHeavy,
@@ -422,23 +458,27 @@ function hardDropReason(candidate) {
   if (candidate.indiaTeam) return "命中排除项：印度团队/印度开发主体";
   if (candidate.publisherOccupied) return "成熟发行商占位，BD切入价值低";
   if (candidate.alreadyReleased) return "Steam 页面显示已发售，不符合前置BD窗口";
-  if (candidate.releaseTooSoon) return "发售窗口不足60天，默认不进正式推进";
-  if (candidate.region === "海外" && !candidate.highVisual && !candidate.strongData && !candidate.strongGameplay) return "海外项目缺少高视觉、强数据或清晰内容化玩法";
+  if (candidate.region === "海外" && !candidate.validatedPcHit) return "海外项目缺少PC大数据验证，不符合当前国内BD优先策略";
+  if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) return "海外项目缺少明确手游化/移动端改编角度";
+  if (candidate.releaseTooSoon && !(candidate.region === "中国" && candidate.hasDemoSignal)) return "发售窗口不足60天，默认不进正式推进";
   return null;
 }
 
 function isPushEligible(candidate, dropReason) {
   if (dropReason) return false;
-  if (typeof candidate.daysToRelease !== "number" || candidate.daysToRelease < 60) return false;
   if (!candidate.strongGameplay) return false;
-  if (candidate.region === "中国") return candidate.score >= 48;
-  return candidate.score >= 58 && (candidate.highVisual || candidate.strongData);
+  if (candidate.region === "中国") {
+    if (candidate.releaseTooSoon && !candidate.hasDemoSignal) return false;
+    return candidate.score >= 54;
+  }
+  if (typeof candidate.daysToRelease === "number" && candidate.daysToRelease < 60) return false;
+  return candidate.score >= 72 && candidate.validatedPcHit && candidate.mobileAdaptationPotential;
 }
 
 function buildPriorityReason(candidate, className, dropReason) {
   if (className === "drop") return dropReason;
   const windowText = releaseWindowText(candidate);
-  if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : candidate.highVisual ? "高视觉" : "强数据"} + 系统型玩法，${windowText}，值得优先确认中国区窗口`;
+  if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : "海外PC验证/手游化角度"} + 系统型玩法，${windowText}，值得优先确认中国区窗口`;
   return `${candidate.source} 有前置信号，${windowText}；先进入未处理 inbox，由人工决定是否进观察池、待评测或跟进`;
 }
 
@@ -451,7 +491,8 @@ function releaseWindowText(candidate) {
 function buildRuleFit(candidate, dropReason, className) {
   const parts = [];
   if (candidate.region === "中国") parts.push("国内项目优先");
-  if (candidate.region === "海外" && (candidate.highVisual || candidate.strongData)) parts.push("海外保留条件成立");
+  if (candidate.region === "中国" && candidate.hasDemoSignal) parts.push("国内开发者Demo测试提权");
+  if (candidate.region === "海外" && candidate.validatedPcHit && candidate.mobileAdaptationPotential) parts.push("海外PC爆款验证 + 手游化角度成立");
   if (candidate.strongGameplay) parts.push("玩法具备内容化潜力");
   if (typeof candidate.daysToRelease === "number") parts.push(releaseWindowText(candidate));
   if (className === "push") parts.push("窗口仍在，允许优先触达");
@@ -468,6 +509,7 @@ function buildPublisherStatus(candidate) {
 function buildTractionSummary(candidate) {
   const signals = [candidate.source];
   if (candidate.highVisual) signals.push("素材/截图/视频可验证");
+  if (candidate.hasDemoSignal) signals.push("Demo/试玩信号");
   if (candidate.strongData) signals.push("存在强公开数据信号");
   if (candidate.strongGameplay) signals.push("玩法具备内容化空间");
   return `${signals.join("；")}。`;
@@ -482,6 +524,8 @@ function buildRisks(candidate, dropReason) {
   const risks = [];
   if (typeof candidate.daysToRelease !== "number") risks.push("发售窗口未精确");
   if (!candidate.strongData) risks.push("缺少愿望单/口碑/社区强数据");
+  if (candidate.region === "海外" && !candidate.validatedPcHit) risks.push("海外项目缺少PC爆款验证");
+  if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) risks.push("海外项目缺少手游化角度");
   if (!candidate.developers.length) risks.push("团队信息待确认");
   if (!candidate.contactMethods.length) risks.push("联系入口待确认");
   return risks.length ? risks.join("；") : "需要人工确认团队地区、中文计划、发行占位和商务合作意愿。";
@@ -501,8 +545,8 @@ function buildNextAction(className) {
 
 function buildLeadNote(candidate, className, dropReason) {
   if (className === "drop") return `V2判断：${dropReason}。`;
-  if (className === "push") return "V2判断：窗口仍在，玩法/视觉/公开信号可支撑优先触达；下一步验证中国区权益空间。";
-  return "V3判断：前置信号成立，但还缺强数据或明确可切入理由，先放入未处理 inbox 等人工分池。";
+  if (className === "push") return "V4判断：国内优先或海外PC验证/手游化角度成立；下一步验证中国区权益空间、Demo数据和联系方式。";
+  return "V4判断：前置信号成立，但还缺强数据或明确可切入理由，先放入未处理 inbox 等人工分池。";
 }
 
 function buildBilibiliFit(candidate) {
@@ -525,12 +569,14 @@ function buildAmplification(candidate) {
 function buildDailyReport(pools, rawCount, enrichedCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V3线上自动化：扫描候选 ${rawCount} 条、富化 ${enrichedCount} 条、进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V4线上自动化：扫描候选 ${rawCount} 条、富化 ${enrichedCount} 条、进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V3把日报读者明确为B站商务负责人：不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V4把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步动作。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
-      "已发售、发售不足60天、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
+      "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断。",
+      "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
+      "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
       "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。"
     ],
@@ -547,7 +593,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
     "bilibili_bd_lens",
     "B站趋势",
     `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
-    `样本高频不等于推荐。V3只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
+    `样本高频不等于推荐。V4只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
     "中",
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
@@ -556,7 +602,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V3行业雷达：今日抓到 ${industrySignals.length} 条主流媒体/行业信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放真实外部事件；Steam样本只作为B站BD选品背景。`,
+    summary: `Sourcing V4行业雷达：今日抓到 ${industrySignals.length} 条主流媒体/行业信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放真实外部事件；Steam样本只作为B站BD选品背景。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -565,9 +611,10 @@ function buildSteamTrendReport(candidates, pools) {
   const genres = summarizeGenres(candidates);
   return {
     report_date: reportDate,
-    summary: `今日Steam趋势V3：扫描 ${candidates.length} 个候选，推进 ${pools.push.length}、观察 ${pools.watch.length}、淘汰 ${pools.drop.length}。本页只服务BD判断：看产品优劣、数据、玩法、B站能否赋能和下一步动作。`,
+    summary: `今日Steam趋势V4：扫描 ${candidates.length} 个候选，推进 ${pools.push.length}、观察 ${pools.watch.length}、淘汰 ${pools.drop.length}。本页只服务BD判断：国内优先、海外看PC验证与手游化角度。`,
     market_insights: [
-      steamInsight("bd_decision_cards", "趋势页改为BD判断卡", "V3不再把Indie、Adventure这类标签当趋势结论；每个候选必须写清玩法、公开数据、优势短板、B站赋能和BD动作。", "高", "CRM Sourcing V3", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V3.md", "只把能辅助商务判断的信息留在趋势页。"),
+      steamInsight("bd_decision_cards", "趋势页改为BD判断卡", "V4不再把Indie、Adventure这类标签当趋势结论；每个候选必须写清玩法、公开数据、优势短板、B站赋能和BD动作。", "高", "CRM Sourcing V4", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V4.md", "只把能辅助商务判断的信息留在趋势页。"),
+      steamInsight("domestic_first", "国内项目优先，国内Demo提权", "国内团队在配合度、沟通效率、画风文化适配和B站内容协同上成功率更高；国内开发者Demo/试玩信号进入更高优先级。", "高", "CRM Sourcing V4", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V4.md", "优先看国内项目的Demo质量、联系方式、发行占位和B站可放大点。"),
       steamInsight("push_watch_drop", `今日复核结构：强信号${pools.push.length} / 普通候选${pools.watch.length} / 淘汰${pools.drop.length}`, "自动化只给优先级和淘汰理由，非淘汰项目统一进入未处理 inbox，避免误把未读线索塞进观察池。", "中", "CRM Online Scan", "https://store.steampowered.com/search/?filter=popularcomingsoon", "先处理未处理 inbox，再由人工分配观察池、待评测或跟进。")
     ],
     genre_signals: [],
@@ -576,12 +623,12 @@ function buildSteamTrendReport(candidates, pools) {
       title: candidate.title,
       steam_app_id: candidate.appId,
       rank_bucket: candidate.source,
-      signal: buildV3SteamSignal(candidate),
+      signal: buildV4SteamSignal(candidate),
       source: "Steam Store / AppDetails",
       links: [candidate.storeUrl, candidate.steamDbUrl],
       bilibili_fit: buildBilibiliFit(candidate),
-      reason: buildV3TrendReason(candidate),
-      auto_import: candidate.score >= 24 && !candidate.earlyAccess && !candidate.publisherOccupied,
+      reason: buildV4TrendReason(candidate),
+      auto_import: candidate.score >= 24 && !hardDropReason(candidate),
       captured_at: capturedAt
     })),
     crm_candidates: [...pools.push, ...pools.watch.slice(0, 8)]
@@ -600,6 +647,15 @@ async function fetchIndustrySignals() {
 
 function mediaSources() {
   return [
+    { name: "GameLook", url: "http://www.gamelook.com.cn/feed", type: "feed", quality: 16, focus: ["china", "business", "domestic_sourcing"] },
+    { name: "游戏葡萄", url: "https://youxiputao.com/", type: "page", quality: 14, focus: ["china", "business", "domestic_sourcing"] },
+    { name: "GameRes游资网", url: "https://www.gameres.com/", type: "page", quality: 13, focus: ["china", "development", "domestic_sourcing"] },
+    { name: "游戏陀螺", url: "https://www.youxituoluo.com/", type: "page", quality: 13, focus: ["china", "business", "mobile", "domestic_sourcing"] },
+    { name: "手游那点事", url: "https://www.nadianshi.com/", type: "page", quality: 12, focus: ["china", "mobile", "domestic_sourcing"] },
+    { name: "游戏茶馆", url: "https://www.youxichaguan.com/news", type: "page", quality: 12, focus: ["china", "business", "domestic_sourcing"] },
+    { name: "indienova", url: "https://indienova.com/feed", type: "feed", quality: 12, focus: ["china", "indie", "domestic_sourcing"] },
+    { name: "B站搜索-国产独立游戏", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E7%8B%AC%E7%AB%8B%E6%B8%B8%E6%88%8F%20Demo%20Steam", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站搜索-国产游戏试玩", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "GamesIndustry.biz", url: "https://www.gamesindustry.biz/feed", type: "feed", quality: 14, focus: ["business", "publishing"] },
     { name: "GameDeveloper", url: "https://www.gamedeveloper.com/rss.xml", type: "feed", quality: 13, focus: ["development", "business"] },
     { name: "VGC", url: "https://www.videogameschronicle.com/feed/", type: "feed", quality: 12, focus: ["industry", "platform"] },
@@ -609,7 +665,6 @@ function mediaSources() {
     { name: "Gematsu", url: "https://www.gematsu.com/feed", type: "feed", quality: 9, focus: ["product", "asia"] },
     { name: "The Verge Gaming", url: "https://www.theverge.com/rss/games/index.xml", type: "feed", quality: 9, focus: ["platform", "technology"] },
     { name: "GameSpot", url: "https://www.gamespot.com/feeds/news/", type: "feed", quality: 8, focus: ["mainstream", "product"] },
-    { name: "GameLook", url: "http://www.gamelook.com.cn/feed", type: "feed", quality: 12, focus: ["china", "business"] },
     { name: "触乐", url: "https://www.chuapp.com/?feed=rss2", type: "feed", quality: 11, focus: ["china", "culture"] },
     { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed", quality: 7, focus: ["china", "technology"] },
     { name: "3DM", url: "https://www.3dmgame.com/news/", type: "page", quality: 6, focus: ["china", "product"] },
@@ -693,6 +748,10 @@ function scoreMediaSignal(item) {
   topicPoints += topicScore(text, /\b(report|analysis|interview|confirmed|official|financial results)\b|报告|分析|专访|确认|官方|公告|财报/, 4);
 
   let score = (item.source_quality ?? 0) + topicPoints;
+  const sourceFocus = new Set(item.source_focus ?? []);
+  if (sourceFocus.has("domestic_sourcing")) score += 10;
+  if (sourceFocus.has("bilibili") && /国产|独立游戏|试玩|demo|制作人|开发者|steam|实机|首曝|PV|视频/i.test(text)) score += 10;
+  if (sourceFocus.has("mobile") && /手游|移动端|买量|发行|渠道|小游戏|版号|出海/i.test(text)) score += 6;
   if (topicPoints < 8) score -= 12;
   if (!hasGameOrBdContext(text, item)) score -= 30;
 
@@ -816,7 +875,7 @@ function mediaTopicFamily(item) {
   return "industry_context";
 }
 
-function buildV3SteamSignal(candidate) {
+function buildV4SteamSignal(candidate) {
   return [
     `数据：${candidate.source}；发售窗口 ${candidate.releaseDate}；score=${candidate.score}；推荐数 ${candidate.recommendationCount || "无公开"}；素材 ${candidate.screenshotCount}图/${candidate.movieCount}视频。`,
     `玩法：${candidate.shortDescription || candidate.genres.join(" / ") || "待打开Steam页确认玩法循环"}。`,
@@ -825,9 +884,9 @@ function buildV3SteamSignal(candidate) {
   ].join("\n");
 }
 
-function buildV3TrendReason(candidate) {
+function buildV4TrendReason(candidate) {
   if (candidate.alreadyReleased) return "不建议推进：Steam 显示已发售，已错过前置BD窗口，只可作为市场复盘。";
-  if (candidate.releaseTooSoon) return "不建议推进：窗口过近，只作为市场背景。";
+  if (candidate.releaseTooSoon && !(candidate.region === "中国" && candidate.hasDemoSignal)) return "不建议推进：窗口过近，只作为市场背景。";
   if (candidate.earlyAccess) return "不建议推进：Early Access命中排除项。";
   if (candidate.publisherOccupied) return "不建议推进：成熟发行商可能已占位。";
   return `B站赋能：${buildBilibiliFit(candidate)} BD动作：${candidate.score >= 58 ? "优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。" : "先补公开数据、视频素材、社区反馈和发行占位，再决定是否触达。"}`;
@@ -838,6 +897,9 @@ function buildProductStrength(candidate) {
   if (candidate.strongGameplay) strengths.push("玩法具备机制表达空间");
   if (candidate.highVisual) strengths.push("截图/视频素材较完整");
   if (candidate.strongData) strengths.push("存在公开数据或榜单信号");
+  if (candidate.region === "中国") strengths.push("国内项目，沟通效率和文化适配优先");
+  if (candidate.region === "中国" && candidate.hasDemoSignal) strengths.push("国内开发者Demo/试玩信号，适合优先提测");
+  if (candidate.region === "海外" && candidate.validatedPcHit && candidate.mobileAdaptationPotential) strengths.push("海外PC数据已验证，可从手游化/移动端改编角度观察");
   if (candidate.contactMethods.length) strengths.push("有可尝试联系入口");
   return strengths.join("；") || "目前只有基础Steam曝光，优势待复核";
 }
@@ -848,7 +910,9 @@ function buildProductWeakness(candidate) {
   if (!candidate.strongData) weaknesses.push("缺愿望单/口碑/社区强数据");
   if (!candidate.highVisual) weaknesses.push("视觉素材不足，内容转化需验证");
   if (candidate.alreadyReleased) weaknesses.push("已发售，前置BD窗口已过");
-  if (candidate.releaseTooSoon) weaknesses.push("发售过近");
+  if (candidate.releaseTooSoon && !(candidate.region === "中国" && candidate.hasDemoSignal)) weaknesses.push("发售过近");
+  if (candidate.region === "海外" && !candidate.validatedPcHit) weaknesses.push("海外项目缺少PC爆款数据验证");
+  if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) weaknesses.push("海外项目缺少手游化角度");
   if (candidate.publisherOccupied) weaknesses.push("发行可能已占位");
   return weaknesses.join("；") || "主要风险在团队地区、发行结构和中国区权益空间";
 }

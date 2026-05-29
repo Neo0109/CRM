@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v3",
+  "rule_version": "sourcing-rules-v4",
   "updated_at": "2026-05-29",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
-  "canonical_rules_doc": "docs/SOURCING_RULES_V3.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V4.md",
   "compatible_generators": [
     "automations/jobs/online_daily_v4.mjs"
   ],
@@ -26,13 +26,21 @@
     "next_bd_action"
   ],
   "push_pool_guardrails": [
-    "A push-pool lead must usually be at least 60 days before launch.",
+    "Domestic products are the sourcing default because cooperation, efficiency, visual/cultural fit, and signing probability are materially better.",
+    "Domestic developer Demo/test signals must be promoted in priority and can override the old 60-day-only launch-window heuristic.",
+    "The launch window can be earlier and longer than 60 days; do not discard early domestic products merely because the release date is far away or imprecise.",
+    "Overseas projects must not consume review slots unless they have clear PC data validation and a credible mobile-adaptation angle.",
     "Already released projects must not enter push or watch candidates; they can only be dropped or used as market background.",
     "PC Early Access projects must not enter push pool.",
     "Narrative-first or visual-novel-like projects must not enter push pool by default.",
     "India-led teams must not enter push pool.",
     "Projects occupied by a mature publisher with China capability must not enter push pool by default.",
-    "Weak overseas projects without high visual appeal or strong public data must not enter push pool."
+    "Weak overseas projects without PC hit validation and mobile-adaptation potential must not enter push or watch candidates."
+  ],
+  "source_strategy": [
+    "Expand domestic discovery through Chinese game/business media, domestic indie/developer communities, Bilibili video/search signals, indienova, TapTap-style developer signals, and official studio posts.",
+    "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
+    "Industry radar should prioritize high-quality domestic sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, or Bilibili content angles."
   ],
   "automation_guardrails": [
     "Fail fast when this rule file is missing or incompatible.",

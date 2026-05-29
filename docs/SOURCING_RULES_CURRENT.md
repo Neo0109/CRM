@@ -2,12 +2,12 @@
 
 Date: 2026-05-29
 
-The current daily report rule version is `sourcing-rules-v3`.
+The current daily report rule version is `sourcing-rules-v4`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V3.md
+docs/SOURCING_RULES_V4.md
 ```
 
 Machine-readable automation rule source:
@@ -23,6 +23,7 @@ The daily report is for a Bilibili game publishing BD owner. It must reduce BD j
 Every important output should answer:
 
 - What is the product or external signal?
+- Is it domestic or overseas, and does it realistically fit Bilibili BD signing probability?
 - What are its strengths and weaknesses?
 - What public data or source supports the judgment?
 - What is the gameplay loop, content hook, or BD implication?
@@ -38,6 +39,12 @@ Automation may still rank candidates as strong-signal or ordinary review candida
 Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
 
 Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
+
+Domestic products are the default sourcing priority. Domestic developer Demo/test signals should be promoted because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better.
+
+Overseas products should only consume review slots when they have PC data validation and a credible mobile-adaptation angle. Creative novelty alone is not enough.
+
+The old 60-day window is no longer the only useful window. Domestic early-stage projects can be reviewed earlier and over a longer horizon, especially when there is a Demo, Bilibili signal, domestic media signal, or clear developer contact path.
 
 ## Update Protocol
 
@@ -55,4 +62,4 @@ Rule changes must live in GitHub, not on a local machine, because the operator m
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V3 scoring and formatting logic. The new rule JSON is now the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V4 scoring and formatting logic. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, and exclusion rules out of the generator and into the rule file.
