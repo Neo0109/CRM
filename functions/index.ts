@@ -1,4 +1,6 @@
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist";
+const stylesheetFile = "index.css";
+const scriptFile = "index.js";
 
 export const onRequestGet = async () => new Response(renderHtml(), {
   headers: {
@@ -16,8 +18,8 @@ function renderHtml() {
     <meta name="robots" content="noindex" />
     <title>Sourcing CRM</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="stylesheet" crossorigin href="${assetBase}/assets/index-BUaZ3SJz.css" />
-    <script type="module" crossorigin src="${assetBase}/assets/index-jp1SlYhX.js"></script>
+    <link rel="stylesheet" crossorigin href="${assetBase}/assets/${stylesheetFile}" />
+    <script type="module" crossorigin src="${assetBase}/assets/${scriptFile}"></script>
   </head>
   <body>
     <div id="root"></div>

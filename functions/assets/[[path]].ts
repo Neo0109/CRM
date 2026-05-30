@@ -3,6 +3,8 @@ import type { PagesContext } from "../_lib/crm";
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist/assets";
 
 const assetRedirects = new Map([
+  ["index.css", `${assetBase}/index.css`],
+  ["index.js", `${assetBase}/index.js`],
   ["crm-paper-texture-BjGXa_NP.png", `${assetBase}/crm-paper-texture-BjGXa_NP.png`],
   ["bili-crm-dashboard-DIye6pxa.png", `${assetBase}/bili-crm-dashboard-DIye6pxa.png`]
 ]);
