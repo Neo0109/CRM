@@ -45,12 +45,24 @@ type SourcingInsights = {
   pipelineCount: number;
   highPriorityPipeline: number;
   dueSoon: number;
+  decisionLanes: DecisionLane[];
   dropReasons: { label: string; count: number }[];
   focusLeads: Lead[];
   actions: string[];
 };
 
-const version = "v1.9";
+type DecisionLane = {
+  key: string;
+  kicker: string;
+  title: string;
+  description: string;
+  count: number;
+  filter: Partial<Filters>;
+  leads: Lead[];
+  empty: string;
+};
+
+const version = "v1.10";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
@@ -299,6 +311,31 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
       <Metric label="缺链接" value={stats.missingLinks} tone="neutral" active={filters.missingLinks} onClick={() => applyMetricFilter({ missingLinks: true })} />
     </section>
 
+    <section className="decision-board" aria-label="今日决策流">
+      {insights.decisionLanes.map((lane) => (
+        <article className="decision-lane" key={lane.key}>
+          <div className="decision-lane-head">
+            <div>
+              <p className="eyebrow">{lane.kicker}</p>
+              <h3>{lane.title}</h3>
+            </div>
+            <button className="lane-count" type="button" onClick={() => applyMetricFilter(lane.filter)}>{lane.count}</button>
+          </div>
+          <p>{lane.description}</p>
+          <ul className="decision-lead-list">
+            {lane.leads.length ? lane.leads.map((lead) => (
+              <li key={lead.id}>
+                <button type="button" onClick={() => { setFilters({ ...emptyFilters, ...lane.filter }); setSelectedId(lead.id); }}>
+                  <span>{lead.project}</span>
+                  <small>{lead.priority} · {lead.bucket} · {lead.region === "中国" ? lead.country : lead.region_priority}</small>
+                </button>
+              </li>
+            )) : <li className="empty-lane">{lane.empty}</li>}
+          </ul>
+        </article>
+      ))}
+    </section>
+
     <section className="sourcing-brief">
       <div className="brief-head">
         <div>
@@ -405,9 +442,50 @@ function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingIn
   const pipelineLeads = leads.filter((lead) => activeBuckets.includes(lead.bucket));
   const highPriorityPipeline = pipelineLeads.filter((lead) => lead.priority === "P0" || lead.priority === "P1" || lead.priority === "P2").length;
   const dueSoon = pipelineLeads.filter((lead) => isDueSoon(lead.due_date)).length;
+  const unreadLeads = leads
+    .filter((lead) => lead.review_status === "未处理" || lead.bucket === "未处理")
+    .sort(sortLeadByBdPriority);
+  const commercialLeads = leads
+    .filter((lead) => lead.bucket === "跟进中" || lead.bucket === "推进池")
+    .sort((a, b) => missingActionScore(b) - missingActionScore(a) || sortLeadByBdPriority(a, b));
+  const evidenceGapLeads = leads
+    .filter((lead) => lead.bucket !== "淘汰池" && lead.review_status !== "已淘汰" && (needsSteamLinkTriage(lead) || !hasUsefulContact(lead) || !lead.evaluation_grade))
+    .sort(sortLeadByBdPriority);
   const focusLeads = [...pipelineLeads]
     .sort((a, b) => priorityScore(a.priority) - priorityScore(b.priority) || dateScore(b.reviewed_at) - dateScore(a.reviewed_at))
     .slice(0, 3);
+  const decisionLanes: DecisionLane[] = [
+    {
+      key: "review",
+      kicker: "DECIDE FIRST",
+      title: "先清未处理",
+      description: "日报新进只进未处理，先人工决定待评测、观察或淘汰。",
+      count: unreadLeads.length,
+      filter: { reviewStatus: "未处理" },
+      leads: unreadLeads.slice(0, 3),
+      empty: "没有待你判断的新 lead。"
+    },
+    {
+      key: "commerce",
+      kicker: "BD MOTION",
+      title: "推进要有下一步",
+      description: "跟进中和推进池必须有 owner、下一步和时间点，否则容易断档。",
+      count: commercialLeads.length,
+      filter: { reviewStatus: "跟进中" },
+      leads: commercialLeads.slice(0, 3),
+      empty: "当前没有商务推进队列。"
+    },
+    {
+      key: "evidence",
+      kicker: "EVIDENCE",
+      title: "补齐证据再判断",
+      description: "缺 Steam、联系方式或评测评级的项目，先补证据再推进。",
+      count: evidenceGapLeads.length,
+      filter: evidenceGapLeads.some((lead) => needsSteamLinkTriage(lead)) ? { missingLinks: true } : { bucket: "全部" },
+      leads: evidenceGapLeads.slice(0, 3),
+      empty: "证据字段暂时齐整。"
+    }
+  ];
   const actions = buildInsightActions(stats, dueSoon, pipelineLeads);
   const dropReasons = buildDropReasons(leads.filter((lead) => lead.bucket === "淘汰池" || lead.review_status === "已淘汰"));
 
@@ -418,6 +496,7 @@ function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingIn
     pipelineCount: stats.follow + stats.push + stats.evaluation + stats.testing,
     highPriorityPipeline,
     dueSoon,
+    decisionLanes,
     dropReasons,
     focusLeads,
     actions
@@ -451,6 +530,19 @@ function buildDropReasons(droppedLeads: Lead[]) {
   }
 
   return Array.from(reasons, ([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+function sortLeadByBdPriority(a: Lead, b: Lead) {
+  const domesticScore = Number(b.region === "中国") - Number(a.region === "中国");
+  return domesticScore || priorityScore(a.priority) - priorityScore(b.priority) || dateScore(b.first_seen) - dateScore(a.first_seen) || a.project.localeCompare(b.project, "zh-CN");
+}
+
+function missingActionScore(lead: Lead) {
+  return Number(!lead.next_action) + Number(!lead.owner) + Number(!lead.due_date) + Number(!lead.evaluation_grade);
+}
+
+function hasUsefulContact(lead: Lead) {
+  return visibleContacts(lead.contact_methods).some((method) => method.value.trim().length > 0);
 }
 
 function currentWeekRange() {
@@ -555,6 +647,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
     if (nextDraft !== draft) setDraft(nextDraft);
     return onPatch(lead.id, nextDraft);
   };
+  const reviewEvidence = buildReviewEvidence(draft);
 
   return <aside className="detail-panel">
     <div className="detail-head">
@@ -564,6 +657,25 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
 
     <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />
     <BucketButtons lead={draft} onMove={moveDraft} />
+
+    <section className="review-command-card">
+      <div className="review-command-summary">
+        <div>
+          <p className="eyebrow">BD Review Card</p>
+          <h3>{leadDecisionHeadline(draft)}</h3>
+          <p>{leadDecisionSummary(draft)}</p>
+        </div>
+        <span className={`grade-badge ${gradeClass(draft.evaluation_grade)}`}>{draft.evaluation_grade ?? "未评级"}</span>
+      </div>
+      <div className="review-command-form">
+        <Select label="评级" value={draft.evaluation_grade ?? "未评级"} options={evaluationGradeOptions} onChange={(value) => setField("evaluation_grade", value === "未评级" ? null : value)} />
+        <label className="field"><span>一句话评测结论</span><textarea value={draft.evaluation_result ?? ""} onChange={(event) => setField("evaluation_result", event.target.value || null)} /></label>
+        <label className="field"><span>下一步动作</span><textarea value={draft.next_action ?? ""} onChange={(event) => setField("next_action", event.target.value || null)} /></label>
+      </div>
+      <div className="review-evidence-grid">
+        {reviewEvidence.map((item) => <div key={item.label}><small>{item.label}</small><strong>{item.value}</strong></div>)}
+      </div>
+    </section>
 
     <div className="signal-grid three">
       <Signal label="推荐理由" value={draft.priority_reason ?? "待补充"} />
@@ -654,6 +766,49 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
       </div>
     </div>
   </aside>;
+}
+
+function leadDecisionHeadline(lead: Lead) {
+  if (lead.bucket === "推进池") return "已进入深度商务推进";
+  if (lead.bucket === "跟进中") return "值得继续商务跟进";
+  if (lead.bucket === "测试中") return "等待测试结论定级";
+  if (lead.bucket === "待评测") return "先拿运营/测试判断";
+  if (lead.bucket === "淘汰池") return "已淘汰，保留反例";
+  if (lead.bucket === "观察池") return "保留信号，暂缓推进";
+  return "等待人工首轮判断";
+}
+
+function leadDecisionSummary(lead: Lead) {
+  return firstText([
+    lead.evaluation_result,
+    lead.verdict,
+    lead.priority_reason,
+    lead.bilibili_fit,
+    lead.next_action
+  ], "还没有形成评审结论，先补产品亮点、B站适配、商务可行性和风险反证。");
+}
+
+function buildReviewEvidence(lead: Lead) {
+  return [
+    { label: "产品亮点", value: firstText([lead.priority_reason, lead.gameplay, lead.genre], "待补充玩法钩子、视觉或数据亮点。") },
+    { label: "B站赋能", value: firstText([lead.bilibili_fit, lead.amplification], "待判断直播、切片、二创或 UP 主传播空间。") },
+    { label: "商务可行", value: firstText([lead.publisher_status, `${lead.region_priority} · ${lead.release_window ?? "窗口待确认"}`], "待确认团队地区、发行空位和发售窗口。") },
+    { label: "风险反证", value: firstText([lead.risks, lead.rule_fit], "待补充为什么不该推进，避免只看亮点。") }
+  ];
+}
+
+function firstText(values: Array<string | null | undefined>, fallback: string) {
+  const value = values.find((item) => item && item.trim());
+  return value ? truncateText(value.trim(), 76) : fallback;
+}
+
+function truncateText(value: string, maxLength: number) {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
+}
+
+function gradeClass(grade: EvaluationGrade | null) {
+  if (!grade) return "grade-empty";
+  return `grade-${grade.toLowerCase().replace("+", "plus").replace("-", "minus")}`;
 }
 
 function SteamLinkEditor({ lead, onApply }: { lead: Lead; onApply: (link: NormalizedSteamLink) => Promise<void> }) {

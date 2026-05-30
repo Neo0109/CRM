@@ -299,6 +299,98 @@ button:hover {
   color: #be185d;
 }
 
+.decision-board {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.decision-lane {
+  background: rgba(255, 253, 250, 0.84);
+  border: 1px solid rgba(216, 209, 197, 0.86);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 11px;
+  min-height: 176px;
+  padding: 16px;
+}
+
+.decision-lane-head {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.decision-lane h3 {
+  color: #16181d;
+  font-size: 18px;
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.decision-lane p {
+  color: #626b78;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.lane-count {
+  background: #16181d;
+  border: 1px solid #16181d;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 820;
+  min-width: 42px;
+  padding: 7px 10px;
+}
+
+.decision-lead-list {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.decision-lead-list button,
+.empty-lane {
+  background: rgba(250, 249, 246, 0.72);
+  border: 1px solid rgba(230, 225, 216, 0.9);
+  border-radius: 12px;
+  color: #1f2937;
+  display: grid;
+  gap: 2px;
+  min-height: 46px;
+  padding: 8px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.decision-lead-list button:hover {
+  background: #f8fbff;
+  border-color: #c5d7ff;
+}
+
+.decision-lead-list span {
+  font-size: 13px;
+  font-weight: 780;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.decision-lead-list small,
+.empty-lane {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .sourcing-brief {
   display: grid;
   gap: 14px;
@@ -655,6 +747,129 @@ button:hover {
   max-width: 260px;
 }
 
+.review-command-card {
+  background: linear-gradient(180deg, rgba(255, 253, 250, 0.92), rgba(250, 249, 246, 0.82));
+  border: 1px solid rgba(216, 209, 197, 0.9);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.review-command-summary {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.review-command-summary h3 {
+  color: #16181d;
+  font-size: 20px;
+  line-height: 1.25;
+  margin: 3px 0 6px;
+}
+
+.review-command-summary p {
+  color: #596273;
+  font-size: 13px;
+  line-height: 1.62;
+  margin: 0;
+}
+
+.grade-badge {
+  align-items: center;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  color: #4b5563;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 860;
+  justify-content: center;
+  min-height: 36px;
+  min-width: 48px;
+  padding: 7px 9px;
+}
+
+.grade-s,
+.grade-aplus {
+  background: #ecfdf3;
+  border-color: #86efac;
+  color: #047857;
+}
+
+.grade-a,
+.grade-aminus,
+.grade-bplus {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.grade-b,
+.grade-bminus,
+.grade-cplus {
+  background: #fff8df;
+  border-color: #fde68a;
+  color: #9a5b00;
+}
+
+.grade-c,
+.grade-cminus {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.review-command-form {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(92px, 0.35fr) minmax(0, 1fr);
+}
+
+.review-command-form .field {
+  margin: 0;
+}
+
+.review-command-form .field:last-child {
+  grid-column: 1 / -1;
+}
+
+.review-command-form textarea {
+  min-height: 72px;
+}
+
+.review-evidence-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.review-evidence-grid div {
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(230, 225, 216, 0.88);
+  border-radius: 12px;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+}
+
+.review-evidence-grid small {
+  color: #69717f;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.review-evidence-grid strong {
+  color: #252b35;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .signal,
 .checkbox-field,
 .evaluation-section,
@@ -862,6 +1077,10 @@ button:hover {
     grid-template-columns: repeat(4, minmax(130px, 1fr));
   }
 
+  .decision-board {
+    grid-template-columns: 1fr;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
   }
@@ -889,6 +1108,15 @@ button:hover {
   .sourcing-brief {
     grid-template-columns: 1fr;
   }
+
+  .review-command-form,
+  .review-evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-command-form .field:last-child {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 720px) {
@@ -906,5 +1134,9 @@ button:hover {
 
   .metric {
     min-height: 82px;
+  }
+
+  .review-command-summary {
+    display: grid;
   }
 }
