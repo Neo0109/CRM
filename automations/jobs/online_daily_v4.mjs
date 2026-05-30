@@ -13,6 +13,14 @@ const existingProjects = await readExistingProjectNames(reportDate);
 const rawCandidates = dedupeByAppId((await Promise.all([
   fetchSteamSearch("popularcomingsoon", "Steam CN Popular Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam CN Demo/Next Fest Window", [21], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 游戏" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Indie Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 独立游戏" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN China Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "中国" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Strategy Upcoming", [9], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Simulation Upcoming", [599], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Co-op Upcoming", [1685], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Roguelike Upcoming", [1716], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Deckbuilder Upcoming", [32322], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam Popular Upcoming"),
   fetchSteamSearch("popularcomingsoon", "Steam Demo/Next Fest Window", [21]),
   fetchSteamSearch("popularcomingsoon", "Strategy Upcoming", [9]),
@@ -119,8 +127,9 @@ function previousDatePaths(date, days) {
 async function fetchSteamSearch(filter, source, tags = [], options = {}) {
   const cc = options.cc ?? "us";
   const language = options.l ?? "english";
+  const query = options.query ?? "";
   const resultUrl = new URL("https://store.steampowered.com/search/results/");
-  resultUrl.searchParams.set("query", "");
+  resultUrl.searchParams.set("query", query);
   resultUrl.searchParams.set("start", "0");
   resultUrl.searchParams.set("count", "50");
   resultUrl.searchParams.set("dynamic_data", "");
@@ -133,6 +142,7 @@ async function fetchSteamSearch(filter, source, tags = [], options = {}) {
   if (tags.length) resultUrl.searchParams.set("tags", tags.join(","));
 
   const pageUrl = new URL("https://store.steampowered.com/search/");
+  if (query) pageUrl.searchParams.set("term", query);
   pageUrl.searchParams.set("filter", filter);
   pageUrl.searchParams.set("category1", "998");
   pageUrl.searchParams.set("os", "win");
@@ -460,7 +470,7 @@ function hardDropReason(candidate) {
   if (candidate.alreadyReleased) return "Steam 页面显示已发售，不符合前置BD窗口";
   if (candidate.region === "海外" && !candidate.validatedPcHit) return "海外项目缺少PC大数据验证，不符合当前国内BD优先策略";
   if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) return "海外项目缺少明确手游化/移动端改编角度";
-  if (candidate.releaseTooSoon && !(candidate.region === "中国" && candidate.hasDemoSignal)) return "发售窗口不足60天，默认不进正式推进";
+  if (candidate.releaseTooSoon && candidate.region !== "中国") return "海外项目发售窗口不足60天，默认不进正式推进";
   return null;
 }
 
@@ -478,8 +488,9 @@ function isPushEligible(candidate, dropReason) {
 function buildPriorityReason(candidate, className, dropReason) {
   if (className === "drop") return dropReason;
   const windowText = releaseWindowText(candidate);
-  if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : "海外PC验证/手游化角度"} + 系统型玩法，${windowText}，值得优先确认中国区窗口`;
-  return `${candidate.source} 有前置信号，${windowText}；先进入未处理 inbox，由人工决定是否进观察池、待评测或跟进`;
+  if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : "海外PC验证/手游化角度"} + 系统型玩法，${windowText}，先提测验证再决定商务深聊`;
+  if (candidate.region === "中国") return `${candidate.source} 有国内前置信号，${windowText}；先进入未处理 inbox，由人工决定是否提测或观察`;
+  return `${candidate.source} 有前置信号，${windowText}；海外项目只在PC数据/手游化角度成立时继续占用复核名额`;
 }
 
 function releaseWindowText(candidate) {
@@ -532,21 +543,21 @@ function buildRisks(candidate, dropReason) {
 }
 
 function buildVerdict(className, dropReason) {
-  if (className === "push") return "符合V2推进标准，建议优先确认中国区合作窗口与开发者真实需求";
+  if (className === "push") return "符合V4重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求";
   if (className === "drop") return `${dropReason}，暂不投入BD时间`;
-  return "方向可看但还不够推进，先进入未处理 inbox，等待人工 review 后再分池";
+  return "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰";
 }
 
 function buildNextAction(className) {
   if (className === "drop") return "归档原因，避免重复讨论";
-  if (className === "push") return "确认团队地区、商务邮箱/Discord、中文计划、Demo数据和是否已有中国能力发行商";
-  return "人工 review 后决定进观察池/待评测/淘汰，并补曝光轨迹、数据和联系方式";
+  if (className === "push") return "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位";
+  return "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试";
 }
 
 function buildLeadNote(candidate, className, dropReason) {
-  if (className === "drop") return `V2判断：${dropReason}。`;
-  if (className === "push") return "V4判断：国内优先或海外PC验证/手游化角度成立；下一步验证中国区权益空间、Demo数据和联系方式。";
-  return "V4判断：前置信号成立，但还缺强数据或明确可切入理由，先放入未处理 inbox 等人工分池。";
+  if (className === "drop") return `V4判断：${dropReason}。`;
+  if (className === "push") return "V4判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。";
+  return "V4判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。";
 }
 
 function buildBilibiliFit(candidate) {
@@ -572,9 +583,9 @@ function buildDailyReport(pools, rawCount, enrichedCount) {
     summary: `Sourcing V4线上自动化：扫描候选 ${rawCount} 条、富化 ${enrichedCount} 条、进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
       "V4把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
-      "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步动作。",
+      "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
-      "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断。",
+      "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断，国内项目先测再商务。",
       "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
@@ -886,10 +897,11 @@ function buildV4SteamSignal(candidate) {
 
 function buildV4TrendReason(candidate) {
   if (candidate.alreadyReleased) return "不建议推进：Steam 显示已发售，已错过前置BD窗口，只可作为市场复盘。";
-  if (candidate.releaseTooSoon && !(candidate.region === "中国" && candidate.hasDemoSignal)) return "不建议推进：窗口过近，只作为市场背景。";
+  if (candidate.releaseTooSoon && candidate.region !== "中国") return "不建议推进：海外项目窗口过近，只作为市场背景。";
   if (candidate.earlyAccess) return "不建议推进：Early Access命中排除项。";
   if (candidate.publisherOccupied) return "不建议推进：成熟发行商可能已占位。";
-  return `B站赋能：${buildBilibiliFit(candidate)} BD动作：${candidate.score >= 58 ? "优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。" : "先补公开数据、视频素材、社区反馈和发行占位，再决定是否触达。"}`;
+  if (candidate.region === "中国") return `B站赋能：${buildBilibiliFit(candidate)} BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。`;
+  return `B站赋能：${buildBilibiliFit(candidate)} BD动作：${candidate.score >= 58 ? "优先确认中国区权益、联系方式、中文计划和Demo/愿望单数据。" : "先看PC数据和手游化角度，证据不足就不占用BD队列。"}`;
 }
 
 function buildProductStrength(candidate) {

@@ -62,7 +62,7 @@ type DecisionLane = {
   empty: string;
 };
 
-const version = "v1.10";
+const version = "v2.0";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
@@ -367,8 +367,8 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
         <div className="brief-card-head">
           <span className="brief-icon"><AlertTriangle size={16} /></span>
           <div>
-            <span className="brief-kicker">风险与复盘</span>
-            <strong>先补证据，再决定保留或淘汰</strong>
+            <span className="brief-kicker">测试优先</span>
+            <strong>先测游戏，测不过直接淘汰</strong>
           </div>
         </div>
         <div className="brief-metrics">
@@ -448,8 +448,8 @@ function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingIn
   const commercialLeads = leads
     .filter((lead) => lead.bucket === "跟进中" || lead.bucket === "推进池")
     .sort((a, b) => missingActionScore(b) - missingActionScore(a) || sortLeadByBdPriority(a, b));
-  const evidenceGapLeads = leads
-    .filter((lead) => lead.bucket !== "淘汰池" && lead.review_status !== "已淘汰" && (needsSteamLinkTriage(lead) || !hasUsefulContact(lead) || !lead.evaluation_grade))
+  const testingLeads = leads
+    .filter((lead) => lead.bucket === "待评测" || lead.bucket === "测试中")
     .sort(sortLeadByBdPriority);
   const focusLeads = [...pipelineLeads]
     .sort((a, b) => priorityScore(a.priority) - priorityScore(b.priority) || dateScore(b.reviewed_at) - dateScore(a.reviewed_at))
@@ -459,31 +459,31 @@ function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingIn
       key: "review",
       kicker: "DECIDE FIRST",
       title: "先清未处理",
-      description: "日报新进只进未处理，先人工决定待评测、观察或淘汰。",
+      description: "日报新进只进未处理，先粗判：提测、观察或淘汰。",
       count: unreadLeads.length,
       filter: { reviewStatus: "未处理" },
       leads: unreadLeads.slice(0, 3),
       empty: "没有待你判断的新 lead。"
     },
     {
+      key: "test",
+      kicker: "PLAYTEST",
+      title: "先测游戏",
+      description: "待评测/测试中先拿实机结论；测不动、体验差就直接淘汰。",
+      count: testingLeads.length,
+      filter: testingLeads.some((lead) => lead.bucket === "测试中") ? { bucket: "测试中" } : { bucket: "待评测" },
+      leads: testingLeads.slice(0, 3),
+      empty: "当前没有等待测试的项目。"
+    },
+    {
       key: "commerce",
-      kicker: "BD MOTION",
-      title: "推进要有下一步",
-      description: "跟进中和推进池必须有 owner、下一步和时间点，否则容易断档。",
+      kicker: "BD AFTER TEST",
+      title: "测过再商务",
+      description: "只有测试通过/明确要深谈的项目，才补 owner、下一步和联系方式。",
       count: commercialLeads.length,
       filter: { reviewStatus: "跟进中" },
       leads: commercialLeads.slice(0, 3),
       empty: "当前没有商务推进队列。"
-    },
-    {
-      key: "evidence",
-      kicker: "EVIDENCE",
-      title: "补齐证据再判断",
-      description: "缺 Steam、联系方式或评测评级的项目，先补证据再推进。",
-      count: evidenceGapLeads.length,
-      filter: evidenceGapLeads.some((lead) => needsSteamLinkTriage(lead)) ? { missingLinks: true } : { bucket: "全部" },
-      leads: evidenceGapLeads.slice(0, 3),
-      empty: "证据字段暂时齐整。"
     }
   ];
   const actions = buildInsightActions(stats, dueSoon, pipelineLeads);
@@ -505,10 +505,12 @@ function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingIn
 
 function buildInsightActions(stats: DashboardStats, dueSoon: number, pipelineLeads: Lead[]) {
   const actions: string[] = [];
-  if (stats.evaluation || stats.testing) actions.push(`${stats.evaluation} 个待评测、${stats.testing} 个测试中，需要拿到运营/测试结论。`);
+  const commerceLeads = pipelineLeads.filter((lead) => lead.bucket === "跟进中" || lead.bucket === "推进池");
+  const commerceMissingTouchPoint = commerceLeads.filter((lead) => needsSteamLinkTriage(lead) || !hasUsefulContact(lead)).length;
+  if (stats.evaluation || stats.testing) actions.push(`${stats.evaluation} 个待评测、${stats.testing} 个测试中，先拿实机/运营结论；不行就淘汰。`);
   if (dueSoon) actions.push(`${dueSoon} 个项目 7 天内到期，优先确认 Demo、排期或商务回复。`);
-  if (stats.missingLinks) actions.push(`${stats.missingLinks} 个项目缺 Steam 链接，先补证据再判断价值。`);
-  const noOwner = pipelineLeads.filter((lead) => !lead.owner).length;
+  if (commerceMissingTouchPoint) actions.push(`${commerceMissingTouchPoint} 个已进入商务推进的项目缺触达入口，测过后再补联系人/官网。`);
+  const noOwner = commerceLeads.filter((lead) => !lead.owner).length;
   if (noOwner) actions.push(`${noOwner} 个推进相关项目没有 Owner，容易丢跟进。`);
   if (!actions.length) actions.push("今天没有明显积压，可以复看观察池里 P1/P2 项目的 B站适配点。");
   return actions.slice(0, 3);
@@ -524,7 +526,6 @@ function buildDropReasons(droppedLeads: Lead[]) {
     if (lead.narrative_heavy) { add("叙事重，B站视频表达风险"); matched = true; }
     if (lead.early_access) { add("Early Access / 版本不稳定"); matched = true; }
     if (lead.india_team) { add("印度团队或区域匹配度低"); matched = true; }
-    if (!gameLinks(lead.links).length) { add("缺少 Steam 数据证据"); matched = true; }
     if (lead.priority === "P3") { add("优先级偏低"); matched = true; }
     if (!matched) add("数据或规则不足");
   }
@@ -785,7 +786,7 @@ function leadDecisionSummary(lead: Lead) {
     lead.priority_reason,
     lead.bilibili_fit,
     lead.next_action
-  ], "还没有形成评审结论，先补产品亮点、B站适配、商务可行性和风险反证。");
+  ], "还没有形成评审结论，先完成实机/运营测试；不成立就淘汰，成立后再补商务判断。");
 }
 
 function buildReviewEvidence(lead: Lead) {

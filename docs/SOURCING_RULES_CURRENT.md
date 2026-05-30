@@ -36,6 +36,8 @@ Automatic daily reports are discovery, not final human review. Any non-dropped l
 
 Automation may still rank candidates as strong-signal or ordinary review candidates inside the report, but it must not directly place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`. The human reviewer decides the real bucket after reading the product, contacts, data, and Bilibili fit.
 
+The default operating flow is efficiency-first: first test or inspect the game, then decide. If the game does not pass playtest/content judgment, move it to `淘汰池` immediately. Do not require the BD owner to补官网、邮箱、联系人或长资料 before the product itself has passed the first test.
+
 Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
 
 Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.

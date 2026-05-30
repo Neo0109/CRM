@@ -32,6 +32,8 @@ Reasons:
 
 Domestic developer Demo/test signals should always be promoted. A domestic product with an active Demo, playtest, Steam Next Fest entry, Bilibili video, Chinese community discussion, or domestic media signal should receive higher review priority than a generic overseas upcoming game.
 
+The CRM workflow is testing-first. For new leads, the first useful action is to test or inspect the game. If the playtest/content judgment fails, drop it directly. Contact补全、官网补全、长资料整理 and商务深聊 happen only after the product passes the first test or is clearly worth deeper discussion.
+
 ## Overseas Standard
 
 Overseas creativity alone is not enough.
@@ -98,6 +100,7 @@ Named news items from the user are calibration examples, not fixed targets.
 - PC Early Access, narrative-first, India-led, mature-publisher-occupied, or weak overseas projects should not consume review time.
 - Overseas projects without PC hit validation and mobile-adaptation potential should not enter push/watch candidates.
 - Watch pool is allowed to be broad for domestic products, but each item must explain what signal is missing.
+- Domestic near-window products should not be hard-dropped merely because they are within 60 days. If they are unreleased and testable, put them in the review queue for playtest/inspection first.
 - Drop pool should record why a lead should not be revisited soon.
 
 ## CRM Inbox Discipline

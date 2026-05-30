@@ -14,7 +14,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V4 rules: `docs/SOURCING_RULES_V4.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after the BD decision workbench update: `v1.10`
+- Current product version after the BD efficiency workflow update: `v2.0`
 
 ## Automation Status On 2026-05-28
 
