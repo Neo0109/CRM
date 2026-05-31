@@ -28,7 +28,7 @@ function renderHtml() {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <title>Sourcing CRM</title>
+    <title>BD 决策工作台</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" crossorigin href="${assetBase}/assets/${stylesheetFile}" />
     <script type="module" crossorigin src="${assetBase}/assets/${scriptFile}"></script>
