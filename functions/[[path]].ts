@@ -1,11 +1,17 @@
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
+const assetVersion = "20260531-bd-workbench-v2";
+
+function versionedAsset(fileName: string) {
+  return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
+}
+
 const assetRedirects = new Map([
   ["/assets/crm-paper-texture-BjGXa_NP.png", `${assetBase}/assets/crm-paper-texture-BjGXa_NP.png`],
   ["/assets/bili-crm-dashboard-DIye6pxa.png", `${assetBase}/assets/bili-crm-dashboard-DIye6pxa.png`],
-  [`/assets/${stylesheetFile}`, `${assetBase}/assets/${stylesheetFile}`],
-  [`/assets/${scriptFile}`, `${assetBase}/assets/${scriptFile}`]
+  [`/assets/${stylesheetFile}`, versionedAsset(stylesheetFile)],
+  [`/assets/${scriptFile}`, versionedAsset(scriptFile)]
 ]);
 
 export const onRequestGet = async ({ request }: { request: Request }) => {
@@ -30,8 +36,8 @@ function renderHtml() {
     <meta name="robots" content="noindex" />
     <title>BD 决策工作台</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="stylesheet" crossorigin href="${assetBase}/assets/${stylesheetFile}" />
-    <script type="module" crossorigin src="${assetBase}/assets/${scriptFile}"></script>
+    <link rel="stylesheet" crossorigin href="${versionedAsset(stylesheetFile)}" />
+    <script type="module" crossorigin src="${versionedAsset(scriptFile)}"></script>
   </head>
   <body>
     <div id="root"></div>

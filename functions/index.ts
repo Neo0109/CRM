@@ -1,6 +1,11 @@
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
+const assetVersion = "20260531-bd-workbench-v2";
+
+function versionedAsset(fileName: string) {
+  return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
+}
 
 export const onRequestGet = async () => new Response(renderHtml(), {
   headers: {
@@ -18,8 +23,8 @@ function renderHtml() {
     <meta name="robots" content="noindex" />
     <title>BD 决策工作台</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="stylesheet" crossorigin href="${assetBase}/assets/${stylesheetFile}" />
-    <script type="module" crossorigin src="${assetBase}/assets/${scriptFile}"></script>
+    <link rel="stylesheet" crossorigin href="${versionedAsset(stylesheetFile)}" />
+    <script type="module" crossorigin src="${versionedAsset(scriptFile)}"></script>
   </head>
   <body>
     <div id="root"></div>
