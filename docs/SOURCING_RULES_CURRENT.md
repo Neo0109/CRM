@@ -40,7 +40,7 @@ The default operating flow is efficiency-first: first test or inspect the game, 
 
 Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
 
-Domestic media and Bilibili product signals are now first-class lead sources, not only radar background. If an article, video, TapTap/indienova page, official site, or developer post points to a concrete game, the automation may create a `未处理` lead with that original URL even when no Steam AppID exists yet.
+Domestic media and Bilibili product signals are now first-class lead sources, not only radar background. If an article, video, TapTap/indienova page, official site, or developer post points to a concrete game, the automation may create a `未处理` lead with that original URL even when no Steam AppID exists yet. A named game plus edition approval, first reveal, playtest, Demo, trailer/PV, store page, reservation, developer post, or domestic studio/publisher context is enough for first-pass review.
 
 Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
 

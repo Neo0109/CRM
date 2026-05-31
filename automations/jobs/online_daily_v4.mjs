@@ -634,9 +634,10 @@ function isProductSourcingSignal(item) {
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
 
   const hasProductName = /《[^》]{2,48}》/.test(item.title) || (/bilibili|b站/i.test(`${item.source} ${item.link}`) && /[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff:'’&.\-\s]{3,48}/.test(item.title));
-  const hasDomesticLeadContext = /国产|国人|华人|中国团队|国内团队|独立游戏|开发日志|b站|bilibili|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
-  const hasDiscoverySignal = /新作|首曝|公布|发布|上线|定档|测试|试玩|demo|实机|pv|预告|steam|taptap|好游快爆|开发者|制作人|愿望单|商店页|b站|bilibili|肉鸽|卡牌|策略|模拟|经营|二次元|国风|武侠|修仙/i.test(text);
-  const hasActionableFormat = /demo|试玩|测试|实机|pv|预告|商店页|愿望单|开发者|制作人|上线steam|开启预约|首曝|公布/i.test(text);
+  const domesticCompanySignal = /网易|腾讯|字节|朝夕光年|巨人|西山居|莉莉丝|心动|鹰角|米哈游|散爆|库洛|叠纸|沐瞳|灵犀|祖龙|完美世界|中手游|B站游戏|哔哩哔哩游戏/i.test(text);
+  const hasDomesticLeadContext = focus.has("china") || /国产|国人|华人|中国团队|国内团队|国内开发|版号|过审|获批|独立游戏|开发日志|b站|bilibili|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text) || domesticCompanySignal;
+  const hasDiscoverySignal = /新作|首曝|公布|发布|上线|定档|测试|试玩|demo|实机|pv|预告|steam|taptap|好游快爆|开发者|制作人|愿望单|商店页|b站|bilibili|版号|过审|获批|预约|肉鸽|卡牌|策略|模拟|经营|二次元|国风|武侠|修仙/i.test(text);
+  const hasActionableFormat = /demo|试玩|测试|实机|pv|预告|商店页|愿望单|开发者|制作人|上线steam|开启预约|首曝|公布|版号|过审|获批|预约/i.test(text);
   return hasProductName && hasDomesticLeadContext && hasDiscoverySignal && hasActionableFormat;
 }
 
@@ -701,7 +702,7 @@ function mediaLeadScore(item) {
   if (focus.has("bilibili")) score += 12;
   if (focus.has("domestic_sourcing")) score += 10;
   if (/demo|试玩|测试|实机|pv|预告|商店页|愿望单/i.test(text)) score += 10;
-  if (/国产|中国|独立游戏|开发者|制作人|国风|武侠|修仙|二次元/i.test(text)) score += 8;
+  if (/国产|中国|独立游戏|开发者|制作人|国风|武侠|修仙|二次元|版号|过审|首曝|获批/i.test(text)) score += 8;
   if (/steam|taptap|好游快爆|indienova|b站|bilibili/i.test(text)) score += 6;
   if (/肉鸽|rogue|卡牌|deck|策略|strategy|模拟|经营|simulation|management|塔防|战棋|合作|多人/i.test(text)) score += 6;
   return score;

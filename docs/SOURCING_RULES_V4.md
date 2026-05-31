@@ -65,6 +65,8 @@ Domestic discovery should expand beyond Steam:
 
 Concrete product signals from domestic media or Bilibili must become daily lead candidates, not only Industry Radar cards. A first-pass lead can start from a Bilibili video, media article, TapTap page, indienova page, official site, or developer post. Steam AppID is useful but not mandatory for the first review pass.
 
+For domestic media, a named product plus edition approval, first reveal, playtest, Demo, trailer/PV, store page, reservation, developer post, or domestic studio/publisher context is enough to enter the unprocessed inbox. Do not require Steam data before the first product judgment.
+
 For media/Bilibili leads, the first action is simple: open the original link, identify the product and gameplay hook, decide whether it deserves a test/inspection, then either move it to testing/watch or drop it. Do not force contact completion before the product judgment.
 
 ## Steam Trend Standard
