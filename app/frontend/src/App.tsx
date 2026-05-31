@@ -221,8 +221,8 @@ export default function App() {
         <div className="hero-copy">
           <span className="brand-mark">B</span>
           <p className="eyebrow">Neo's BD Matrix · {version}</p>
-          <h1>Sourcing CRM</h1>
-          <p className="hero-subtitle">把 Steam 信号、B站内容适配和发行跟进收束到一个 review 工作台。</p>
+          <h1>BD 决策工作台</h1>
+          <p className="hero-subtitle">集中处理每日 sourcing 线索、游戏评测、跟进动作和发行判断，帮助快速决定提测、推进或淘汰。</p>
         </div>
         <div className="actions">
           <div className="nav-group">
