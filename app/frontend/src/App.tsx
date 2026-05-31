@@ -653,7 +653,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
   return <aside className="detail-panel">
     <div className="detail-head">
       <div><p className="eyebrow">{draft.bucket} · {draft.priority} · {draft.review_status}</p><h2>{isTestingOverdue(draft) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={16} /></span>}{draft.project}</h2></div>
-      <button className="primary-button" onClick={save}><Save size={16} />保存</button>
+      <button className="primary-button save-icon-button" type="button" onClick={save} aria-label="保存" title="保存"><Save size={18} /></button>
     </div>
 
     <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />

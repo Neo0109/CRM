@@ -736,6 +736,7 @@ button:hover {
 }
 
 .detail-head {
+  align-items: flex-start;
   border-bottom: 1px solid rgba(230, 225, 216, 0.92);
   margin-bottom: 16px;
   padding-bottom: 16px;
@@ -745,6 +746,21 @@ button:hover {
   font-size: 23px;
   line-height: 1.2;
   max-width: 260px;
+}
+
+.detail-head .save-icon-button {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  flex: 0 0 40px;
+  gap: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  width: 40px;
+}
+
+.detail-head .save-icon-button svg {
+  flex: 0 0 auto;
 }
 
 .review-command-card {
@@ -978,7 +994,7 @@ button:hover {
     align-items: start;
     display: grid;
     gap: 0;
-    grid-template-columns: 196px minmax(0, 1fr);
+    grid-template-columns: 168px minmax(0, 1fr);
     padding: 0;
   }
 
@@ -992,36 +1008,45 @@ button:hover {
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 18px;
     grid-column: 1;
     grid-row: 1 / span 40;
     margin: 0;
     min-height: 100vh;
-    padding: 22px 10px;
+    padding: 18px 8px;
     position: sticky;
     top: 0;
   }
 
   .hero-copy {
     align-self: stretch;
+    gap: 6px;
     max-width: none;
-    padding: 0 0 8px;
+    padding: 0 0 2px;
     width: 100%;
   }
 
   .brand-mark {
-    height: 38px;
-    width: 38px;
+    border-radius: 9px;
+    font-size: 15px;
+    height: 32px;
+    width: 32px;
+  }
+
+  .hero-copy .eyebrow::after {
+    font-size: 10px;
+    white-space: nowrap;
   }
 
   h1 {
-    font-size: 22px;
-    line-height: 1.12;
+    font-size: 18px;
+    line-height: 1.16;
   }
 
   .hero-subtitle {
-    font-size: 12.5px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.48;
+    max-width: 148px;
   }
 
   .actions {
@@ -1037,12 +1062,12 @@ button:hover {
   .nav-spacer {
     display: block;
     flex: 1 1 auto;
-    min-height: 18px;
+    min-height: 14px;
   }
 
   .nav-group {
     display: grid;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
   }
 
@@ -1053,15 +1078,25 @@ button:hover {
   .nav-section-label {
     border-top: 1px solid rgba(230, 225, 216, 0.9);
     margin-top: 8px;
-    padding: 16px 10px 2px;
+    padding: 12px 8px 0;
   }
 
   .actions .ghost-button,
   .actions .tab-button {
+    border-radius: 9px;
+    font-size: 13px;
+    gap: 7px;
     justify-content: flex-start;
-    padding-left: 8px;
-    padding-right: 8px;
+    min-height: 32px;
+    padding: 6px 7px;
     width: 100%;
+  }
+
+  .actions .ghost-button svg,
+  .actions .tab-button svg {
+    flex: 0 0 auto;
+    height: 15px;
+    width: 15px;
   }
 
   .logout-button {
@@ -1070,8 +1105,8 @@ button:hover {
 
   .topbar ~ * {
     grid-column: 2;
-    margin-left: 18px;
-    margin-right: 18px;
+    margin-left: 14px;
+    margin-right: 14px;
     width: auto;
   }
 
