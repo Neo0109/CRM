@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "rule_version": "sourcing-rules-v4",
-  "updated_at": "2026-05-29",
+  "updated_at": "2026-05-31",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V4.md",
   "compatible_generators": [
@@ -42,7 +42,8 @@
   "source_strategy": [
     "Expand domestic discovery through Chinese game/business media, domestic indie/developer communities, Bilibili video/search signals, indienova, TapTap-style developer signals, and official studio posts.",
     "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
-    "Industry radar should prioritize high-quality domestic sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, or Bilibili content angles."
+    "Industry radar should prioritize high-quality domestic sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, or Bilibili content angles.",
+    "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID."
   ],
   "automation_guardrails": [
     "Fail fast when this rule file is missing or incompatible.",
@@ -50,6 +51,7 @@
     "Workflow path filters must include this file and SOURCING_RULES documents.",
     "Rule iteration and online automation must be updated together.",
     "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
-    "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources."
+    "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources.",
+    "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries."
   ]
 }

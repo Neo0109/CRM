@@ -7,15 +7,24 @@ const rootDir = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
-const maxCandidates = Number(args.maxCandidates ?? 60);
+const requestedMaxCandidates = Number(args.maxCandidates ?? 260);
+const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.max(requestedMaxCandidates, 260) : 260;
 const existingProjects = await readExistingProjectNames(reportDate);
 
 const rawCandidates = dedupeByAppId((await Promise.all([
-  fetchSteamSearch("popularcomingsoon", "Steam CN Popular Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Demo/Next Fest Window", [21], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 游戏" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Demo Keyword", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 Demo" }),
   fetchSteamSearch("popularcomingsoon", "Steam CN Indie Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 独立游戏" }),
   fetchSteamSearch("popularcomingsoon", "Steam CN China Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "中国" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Guofeng Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国风" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Xianxia Wuxia Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "修仙 武侠" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Shanhai Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "山海" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Three Kingdoms Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "三国" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Deckbuilder Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "卡牌 构筑" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Roguelike Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "肉鸽" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Management Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "模拟经营" }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Popular Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true }),
+  fetchSteamSearch("popularcomingsoon", "Steam CN Demo/Next Fest Window", [21], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam CN Strategy Upcoming", [9], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam CN Simulation Upcoming", [599], { cc: "cn", l: "schinese", domesticLens: true }),
   fetchSteamSearch("popularcomingsoon", "Steam CN Co-op Upcoming", [1685], { cc: "cn", l: "schinese", domesticLens: true }),
@@ -101,7 +110,7 @@ function nowInShanghaiIso() {
 
 async function readExistingProjectNames(date) {
   const names = new Set();
-  for (const reportPath of previousDatePaths(date, 3)) {
+  for (const reportPath of previousDatePaths(date, 45)) {
     try {
       const report = JSON.parse(await readFile(path.join(rootDir, reportPath), "utf8"));
       for (const bucket of ["push_pool", "watch_pool", "drop_pool"]) {
@@ -129,7 +138,6 @@ async function fetchSteamSearch(filter, source, tags = [], options = {}) {
   const language = options.l ?? "english";
   const query = options.query ?? "";
   const resultUrl = new URL("https://store.steampowered.com/search/results/");
-  resultUrl.searchParams.set("query", query);
   resultUrl.searchParams.set("start", "0");
   resultUrl.searchParams.set("count", "50");
   resultUrl.searchParams.set("dynamic_data", "");
@@ -139,6 +147,7 @@ async function fetchSteamSearch(filter, source, tags = [], options = {}) {
   resultUrl.searchParams.set("os", "win");
   resultUrl.searchParams.set("cc", cc);
   resultUrl.searchParams.set("l", language);
+  if (query) resultUrl.searchParams.set("term", query);
   if (tags.length) resultUrl.searchParams.set("tags", tags.join(","));
 
   const pageUrl = new URL("https://store.steampowered.com/search/");
@@ -162,7 +171,11 @@ async function fetchSteamSearch(filter, source, tags = [], options = {}) {
 }
 
 function tagSearchCandidates(items, options) {
-  return items.map((item) => ({ ...item, domesticLens: Boolean(options.domesticLens) }));
+  return items.map((item) => ({
+    ...item,
+    domesticLens: Boolean(options.domesticLens),
+    domesticQuery: Boolean(options.domesticQuery ?? isDomesticDiscoveryQuery(options.query ?? ""))
+  }));
 }
 
 function parseMaybeJsonHtml(text) {
@@ -243,16 +256,16 @@ async function enrichCandidate(candidate, details) {
   const earlyAccess = /early access|抢先体验/i.test(text);
   const narrativeHeavy = isNarrativeHeavy(lower, genres);
   const indiaTeam = /india|indian studio|bengaluru|bangalore|mumbai|pune|hyderabad|chennai/i.test(text);
-  const strongGameplay = /co-op|multiplayer|strategy|simulation|management|automation|base building|colony|roguelike|deckbuilder|tactical|sandbox|survival|crafting|city builder|card game|tower defense|factory|physics/i.test(lower);
+  const strongGameplay = /co-op|multiplayer|strategy|simulation|management|automation|base building|colony|roguelike|deckbuilder|tactical|sandbox|survival|crafting|city builder|card game|tower defense|factory|physics|合作|多人|策略|模拟|经营|自动化|基地|殖民|城市|肉鸽|类Rogue|卡牌|构筑|战棋|沙盒|生存|建造|塔防|工厂|物理/i.test(lower);
   const highVisual = (details?.screenshots?.length ?? 0) >= 4 || (details?.movies?.length ?? 0) > 0;
   const publisherOccupied = hasMaturePublisher(publishers);
-  const localizedTitleSignal = candidate.domesticLens ? "" : candidate.title;
-  const domestic = looksDomestic([localizedTitleSignal, details?.name, ...developers, ...publishers, details?.website].join(" "));
+  const localizedTitleSignal = candidate.domesticLens && !candidate.domesticQuery ? "" : candidate.title;
+  const domestic = Boolean(candidate.domesticQuery) || looksDomestic([localizedTitleSignal, details?.name, ...developers, ...publishers, details?.website].join(" "));
   const strongData = hasStrongPublicData(candidate.reviewText, candidate.source, details);
   const validatedPcHit = hasValidatedPcHit(candidate.reviewText, details);
   const mobileAdaptationPotential = hasMobileAdaptationPotential(text, genres, categories);
   const contactMethods = await collectContactMethods(details, candidate.appId);
-  const score = scoreCandidate({ source: candidate.source, domestic, domesticLens: Boolean(candidate.domesticLens), hasDemoSignal, strongGameplay, highVisual, strongData, validatedPcHit, mobileAdaptationPotential, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
+  const score = scoreCandidate({ source: candidate.source, domestic, domesticLens: Boolean(candidate.domesticLens), domesticQuery: Boolean(candidate.domesticQuery), hasDemoSignal, strongGameplay, highVisual, strongData, validatedPcHit, mobileAdaptationPotential, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
 
   return {
     appId: candidate.appId,
@@ -288,6 +301,7 @@ async function enrichCandidate(candidate, details) {
     screenshotCount: details?.screenshots?.length ?? 0,
     movieCount: details?.movies?.length ?? 0,
     reviewText: candidate.reviewText ?? "",
+    domesticQuery: Boolean(candidate.domesticQuery),
     releaseTooSoon,
     score
   };
@@ -380,6 +394,7 @@ function scoreCandidate(input) {
   if (input.source.includes("Demo") || input.source.includes("Next Fest")) score += 14;
   if (input.source.includes("Featured Coming")) score += 10;
   if (input.source.includes("CN") || input.domesticLens) score += 6;
+  if (input.domesticQuery) score += 18;
   if (input.domestic) score += 30;
   if (input.domestic && input.hasDemoSignal) score += 22;
   if (input.strongGameplay) score += 18;
@@ -402,9 +417,9 @@ function scoreCandidate(input) {
 
 function buildPools(candidates) {
   const leads = candidates.map(toLead);
-  const push = leads.filter((lead) => lead._class === "push").slice(0, 3);
+  const push = leads.filter((lead) => lead._class === "push").slice(0, 5);
   const used = new Set(push.map((lead) => lead.steam_app_id));
-  const watch = leads.filter((lead) => lead._class === "watch" && !used.has(lead.steam_app_id)).slice(0, 15);
+  const watch = leads.filter((lead) => lead._class === "watch" && !used.has(lead.steam_app_id)).slice(0, 30);
   for (const lead of watch) used.add(lead.steam_app_id);
   const drop = leads.filter((lead) => lead._class === "drop" && !used.has(lead.steam_app_id)).slice(0, 12);
   return { push: push.map(stripPrivate), watch: watch.map(stripPrivate), drop: drop.map(stripPrivate) };
@@ -428,7 +443,7 @@ function toLead(candidate) {
     country: candidate.country,
     region: candidate.region,
     city: null,
-    region_priority: candidate.region === "中国" ? "国内优先" : candidate.validatedPcHit && candidate.mobileAdaptationPotential ? "海外-PC验证手游化" : "其他",
+    region_priority: candidate.region === "中国" ? "国内优先" : candidate.validatedPcHit && candidate.mobileAdaptationPotential ? "海外-强数据" : "其他",
     bucket,
     stage: className === "drop" ? "rejected" : "new",
     priority,
@@ -972,14 +987,25 @@ async function writeJson(relativePath, payload) {
 }
 
 function dedupeByAppId(items) {
-  const seen = new Set();
-  const out = [];
+  const byAppId = new Map();
   for (const item of items) {
-    if (!item?.appId || seen.has(String(item.appId))) continue;
-    seen.add(String(item.appId));
-    out.push({ ...item, appId: String(item.appId) });
+    if (!item?.appId) continue;
+    const appId = String(item.appId);
+    const normalized = { ...item, appId };
+    const current = byAppId.get(appId);
+    if (!current || sourcePriority(normalized) > sourcePriority(current)) byAppId.set(appId, normalized);
   }
-  return out;
+  return [...byAppId.values()];
+}
+
+function sourcePriority(item) {
+  let priority = 0;
+  if (item.domesticQuery) priority += 100;
+  if (item.domesticLens) priority += 25;
+  if (/Demo|Next Fest|试玩|新品节/i.test(item.source)) priority += 20;
+  if (/Keyword|国产|中国|国风|修仙|武侠|肉鸽|卡牌|模拟经营/i.test(`${item.source} ${item.title}`)) priority += 15;
+  if (/CN/.test(item.source)) priority += 5;
+  return priority;
 }
 
 function stripPrivate(lead) {
@@ -994,6 +1020,10 @@ function hasMaturePublisher(publishers) {
 
 function looksDomestic(text) {
   return /[\u4e00-\u9fff]/.test(text) || /china|beijing|shanghai|shenzhen|guangzhou|chengdu|hangzhou|wuhan|xiamen|nanjing|suzhou|chongqing/i.test(text);
+}
+
+function isDomesticDiscoveryQuery(query) {
+  return /国产|中国|国风|武侠|修仙|仙侠|山海|三国|水墨|国潮|中式|古风/i.test(String(query));
 }
 
 function normalizeReleaseDate(value) {

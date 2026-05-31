@@ -1,6 +1,6 @@
 # Current Daily Report Rules
 
-Date: 2026-05-29
+Date: 2026-05-31
 
 The current daily report rule version is `sourcing-rules-v4`.
 
@@ -62,6 +62,17 @@ When the report logic is iterated:
 
 Rule changes must live in GitHub, not on a local machine, because the operator may switch computers.
 
+## Execution Requirements
+
+The online generator must preserve the product intent of these rules:
+
+- Domestic Steam keyword searches must use actual search-term filtering, not just China-locale generic popular lists.
+- The same Steam AppID should keep the strongest discovery source, especially domestic keyword, Demo, or Next Fest signals.
+- Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
+- Candidate pools should be large enough for practical BD review. Small push pools are acceptable, but the unprocessed inbox should not collapse to one or two items when the upstream candidate scan is healthy.
+
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V4 scoring and formatting logic. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V4 scoring and formatting logic. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+
+Domestic media and Bilibili sources currently improve the radar, but the lead generator still needs a safer product-entity extraction layer before article/video titles can become CRM leads automatically.
