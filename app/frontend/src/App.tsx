@@ -374,7 +374,7 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
         <div className="brief-metrics">
           <span><b>{stats.evaluation + stats.testing}</b>待评测/测试中</span>
           <span><b>{insights.dueSoon}</b>7 天内到期</span>
-          <span><b>{stats.missingLinks}</b>缺 Steam 链接</span>
+          <span><b>{stats.missingLinks}</b>缺可验证链接</span>
         </div>
         <ul className="brief-list">
           {insights.actions.map((action) => <li key={action}><b>下一步</b><span>{action}</span></li>)}
@@ -1135,7 +1135,7 @@ function isHttpUrl(value: string) {
 }
 
 function isGameLink(link: string) {
-  return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(link);
+  return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+|bilibili\.com|taptap\.cn|indienova\.com|gcores\.com|yystv\.cn|gamelook\.com\.cn|youxiputao\.com|gameres\.com|youxituoluo\.com|nadianshi\.com|youxichaguan\.com|chuapp\.com|gamersky\.com|3dmgame\.com/i.test(link);
 }
 
 function contactLabel(method: ContactMethod) {

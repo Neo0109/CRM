@@ -63,6 +63,10 @@ Domestic discovery should expand beyond Steam:
 - Bilibili signals: search pages, official videos, creator videos, PV/demo reactions, developer account posts, and community discussion around domestic indie or Steam Demo projects.
 - Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.
 
+Concrete product signals from domestic media or Bilibili must become daily lead candidates, not only Industry Radar cards. A first-pass lead can start from a Bilibili video, media article, TapTap page, indienova page, official site, or developer post. Steam AppID is useful but not mandatory for the first review pass.
+
+For media/Bilibili leads, the first action is simple: open the original link, identify the product and gameplay hook, decide whether it deserves a test/inspection, then either move it to testing/watch or drop it. Do not force contact completion before the product judgment.
+
 ## Steam Trend Standard
 
 Steam Trends is not a tag-frequency dashboard.
@@ -110,6 +114,8 @@ Automation may rank candidates in the report, but non-dropped leads must enter C
 Do not auto-place new daily-report leads into 观察池, 待评测, 跟进中, or 推进池. Those are human review outcomes.
 
 Contact methods must be real touch points. Prefer Steam support email, official website, support URL, official-site email, Discord, X/Twitter, Bilibili, official account pages, or developer community links. Steam store and SteamDB URLs belong in `links`, not `contact_methods`.
+
+For non-Steam leads, `links` may contain Bilibili videos, media originals, TapTap, indienova, official sites, or developer posts. These count as valid verification links for first-pass review.
 
 ## Iteration Rule
 

@@ -40,6 +40,8 @@ The default operating flow is efficiency-first: first test or inspect the game, 
 
 Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
 
+Domestic media and Bilibili product signals are now first-class lead sources, not only radar background. If an article, video, TapTap/indienova page, official site, or developer post points to a concrete game, the automation may create a `未处理` lead with that original URL even when no Steam AppID exists yet.
+
 Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
 
 Domestic products are the default sourcing priority. Domestic developer Demo/test signals should be promoted because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better.
@@ -70,9 +72,10 @@ The online generator must preserve the product intent of these rules:
 - The same Steam AppID should keep the strongest discovery source, especially domestic keyword, Demo, or Next Fest signals.
 - Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
 - Candidate pools should be large enough for practical BD review. Small push pools are acceptable, but the unprocessed inbox should not collapse to one or two items when the upstream candidate scan is healthy.
+- Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 
 ## Current Known Gap
 
 `automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V4 scoring and formatting logic. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
-Domestic media and Bilibili sources currently improve the radar, but the lead generator still needs a safer product-entity extraction layer before article/video titles can become CRM leads automatically.
+Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
