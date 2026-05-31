@@ -60,7 +60,7 @@ Domestic discovery should expand beyond Steam:
 
 - Domestic game/business media: GameLook, 游戏葡萄, GameRes, 游戏陀螺, 手游那点事, 游戏茶馆, 触乐, IT之家, 证券时报, 澎湃新闻.
 - Domestic indie/developer communities: indienova, developer blogs, official studio posts, TapTap/好游快爆/other domestic test platforms when accessible.
-- Bilibili signals: search pages, official videos, creator videos, PV/demo reactions, developer account posts, and community discussion around domestic indie or Steam Demo projects.
+- Bilibili signals: video-search API, search pages, official videos, creator videos, PV/demo reactions, developer account posts, and community discussion around domestic indie or Steam Demo projects.
 - Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.
 
 Concrete product signals from domestic media or Bilibili must become daily lead candidates, not only Industry Radar cards. A first-pass lead can start from a Bilibili video, media article, TapTap page, indienova page, official site, or developer post. Steam AppID is useful but not mandatory for the first review pass.

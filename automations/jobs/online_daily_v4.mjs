@@ -849,6 +849,11 @@ function mediaSources() {
     { name: "游研社", url: "https://www.yystv.cn/", type: "page", quality: 12, focus: ["china", "product", "creator", "domestic_sourcing"] },
     { name: "机核", url: "https://www.gcores.com/", type: "page", quality: 11, focus: ["china", "product", "creator", "domestic_sourcing"] },
     { name: "TapTap发现", url: "https://www.taptap.cn/discover", type: "page", quality: 10, focus: ["china", "mobile", "product", "domestic_sourcing"] },
+    { name: "B站视频-国产独立游戏", url: bilibiliSearchApi("国产独立游戏 Demo Steam"), fallbackUrl: bilibiliSearchPage("国产独立游戏 Demo Steam"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产游戏试玩", url: bilibiliSearchApi("国产游戏 试玩 Demo"), fallbackUrl: bilibiliSearchPage("国产游戏 试玩 Demo"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产游戏实机", url: bilibiliSearchApi("国产游戏 实机 PV"), fallbackUrl: bilibiliSearchPage("国产游戏 实机 PV"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产肉鸽卡牌", url: bilibiliSearchApi("国产 肉鸽 卡牌 Steam"), fallbackUrl: bilibiliSearchPage("国产 肉鸽 卡牌 Steam"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-独立游戏开发日志", url: bilibiliSearchApi("独立游戏 开发日志 试玩"), fallbackUrl: bilibiliSearchPage("独立游戏 开发日志 试玩"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站搜索-国产独立游戏", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E7%8B%AC%E7%AB%8B%E6%B8%B8%E6%88%8F%20Demo%20Steam", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站搜索-国产游戏试玩", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站搜索-国产游戏实机", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E5%AE%9E%E6%9C%BA%20PV", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
@@ -876,10 +881,55 @@ async function fetchMediaSource(source) {
   try {
     const text = await fetchText(source.url, 12000, "text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8");
     if (source.type === "feed") return parseFeedItems(text, source);
+    if (source.type === "bilibili_video_search") return parseBilibiliVideoSearch(text, source);
     if (source.type === "article") return [parseArticleItem(text, source)].filter(Boolean);
     return parsePageItems(text, source);
   } catch (error) {
+    if (source.type === "bilibili_video_search" && source.fallbackUrl) {
+      try {
+        return parsePageItems(await fetchText(source.fallbackUrl, 12000, "text/html,*/*;q=0.8"), source);
+      } catch (fallbackError) {
+        console.warn(`Media source failed for ${source.name}: ${error.message}; fallback failed: ${fallbackError.message}`);
+        return [];
+      }
+    }
     console.warn(`Media source failed for ${source.name}: ${error.message}`);
+    return [];
+  }
+}
+
+function bilibiliSearchApi(keyword) {
+  const url = new URL("https://api.bilibili.com/x/web-interface/search/type");
+  url.searchParams.set("search_type", "video");
+  url.searchParams.set("keyword", keyword);
+  url.searchParams.set("page", "1");
+  url.searchParams.set("order", "pubdate");
+  return url.toString();
+}
+
+function bilibiliSearchPage(keyword) {
+  const url = new URL("https://search.bilibili.com/all");
+  url.searchParams.set("keyword", keyword);
+  return url.toString();
+}
+
+function parseBilibiliVideoSearch(text, source) {
+  try {
+    const payload = JSON.parse(text);
+    const result = Array.isArray(payload?.data?.result) ? payload.data.result : [];
+    return result.slice(0, 15).map((item) => {
+      const bvid = item.bvid ?? "";
+      const title = cleanExtractedText(item.title ?? "");
+      const description = cleanExtractedText(item.description ?? "");
+      const author = cleanExtractedText(item.author ?? item.mid ?? "");
+      return sourceTaggedItem({
+        title,
+        link: bvid ? `https://www.bilibili.com/video/${bvid}/` : absolutizeUrl(item.arcurl ?? "", "https://www.bilibili.com/"),
+        summary: [description, author ? `UP主：${author}` : ""].filter(Boolean).join(" "),
+        published_at: item.pubdate ? new Date(Number(item.pubdate) * 1000).toISOString() : ""
+      }, source);
+    }).filter((item) => item.title && item.link);
+  } catch {
     return [];
   }
 }
@@ -1138,7 +1188,12 @@ async function fetchText(url, timeoutMs, accept) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { signal: controller.signal, headers: defaultHeaders(accept) });
+    const headers = defaultHeaders(accept);
+    if (/\.bilibili\.com/i.test(url)) {
+      headers.Referer = "https://search.bilibili.com/";
+      headers.Origin = "https://search.bilibili.com";
+    }
+    const response = await fetch(url, { signal: controller.signal, headers });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     return await response.text();
   } finally {
