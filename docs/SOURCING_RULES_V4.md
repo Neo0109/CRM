@@ -67,6 +67,8 @@ Concrete product signals from domestic media or Bilibili must become daily lead 
 
 For domestic media, a named product plus edition approval, first reveal, playtest, Demo, trailer/PV, store page, reservation, developer post, or domestic studio/publisher context is enough to enter the unprocessed inbox. Do not require Steam data before the first product judgment.
 
+For Bilibili search results, only concrete game/project videos should become leads. Steam Next Fest signup tutorials, wishlist-growth data sharing, courses, generic developer experience, or how-to videos may inform methodology, but they must not enter the CRM lead queue as products.
+
 For media/Bilibili leads, the first action is simple: open the original link, identify the product and gameplay hook, decide whether it deserves a test/inspection, then either move it to testing/watch or drop it. Do not force contact completion before the product judgment.
 
 ## Steam Trend Standard

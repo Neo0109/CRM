@@ -42,6 +42,8 @@ Contact methods must prefer real business touch points: Steam support email, off
 
 Domestic media and Bilibili product signals are now first-class lead sources, not only radar background. If an article, video, TapTap/indienova page, official site, or developer post points to a concrete game, the automation may create a `未处理` lead with that original URL even when no Steam AppID exists yet. A named game plus edition approval, first reveal, playtest, Demo, trailer/PV, store page, reservation, developer post, or domestic studio/publisher context is enough for first-pass review.
 
+Bilibili search results must still be concrete games. Steam Next Fest signup tutorials, wishlist-growth data sharing, courses, or generic developer-experience videos are useful methodology references, but they should not be inserted into the lead queue as products.
+
 Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
 
 Domestic products are the default sourcing priority. Domestic developer Demo/test signals should be promoted because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better.

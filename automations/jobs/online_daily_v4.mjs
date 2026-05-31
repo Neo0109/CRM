@@ -628,14 +628,25 @@ function buildMediaLeadCandidates(items, existingProjects) {
 function isProductSourcingSignal(item) {
   const focus = new Set(item.source_focus ?? []);
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
+  const title = normalizeDisplayText(item.title);
+  const isBilibili = isBilibiliSignal(item);
   const hasUsefulSource = focus.has("domestic_sourcing") || focus.has("bilibili") || (focus.has("china") && (focus.has("product") || focus.has("indie") || focus.has("mobile")));
   if (!hasUsefulSource) return false;
-  if (/招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|cosplay|壁纸|周边|赛事战报|补丁说明|停服|维护|安卓|android|pixel|iphone|手机也能升|主机情报|次世代|硬件|显卡|处理器|大会|峰会|获奖名单|招聘|财报|流水|营收/i.test(text)) return false;
+  if (/招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|如何报名|报名steam新品节|愿望单经验|曝光量|经验分享|开发经验|开发教程|cosplay|壁纸|周边|赛事战报|补丁说明|停服|维护|安卓|android|pixel|iphone|手机也能升|主机情报|次世代|硬件|显卡|处理器|大会|峰会|获奖名单|招聘|财报|流水|营收/i.test(text)) return false;
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
 
-  const hasProductName = /《[^》]{2,48}》/.test(item.title) || (/bilibili|b站/i.test(`${item.source} ${item.link}`) && /[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff:'’&.\-\s]{3,48}/.test(item.title));
+  const hasQuotedName = /《[^》]{2,48}》/.test(item.title);
+  const hasBilibiliProjectShape = isBilibili
+    && !hasQuotedName
+    && title.length >= 2
+    && title.length <= 34
+    && /^[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff:'’&.\-\s]+$/.test(title)
+    && !/steam|demo|新品节|愿望单|曝光|免费|分享|数据|教程|报名|开发日志|制作人|开发者|自学|课程|指南|经验/i.test(title);
+  const hasProductName = hasQuotedName || hasBilibiliProjectShape;
   const domesticCompanySignal = /网易|腾讯|字节|朝夕光年|巨人|西山居|莉莉丝|心动|鹰角|米哈游|散爆|库洛|叠纸|沐瞳|灵犀|祖龙|完美世界|中手游|B站游戏|哔哩哔哩游戏/i.test(text);
-  const hasDomesticLeadContext = focus.has("china") || /国产|国人|华人|中国团队|国内团队|国内开发|版号|过审|获批|独立游戏|开发日志|b站|bilibili|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text) || domesticCompanySignal;
+  const domesticTextSignal = /国产|国人|华人|中国团队|国内团队|国内开发|版号|过审|获批|独立游戏|开发日志|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
+  const domesticSourceSignal = focus.has("domestic_sourcing") && /版号|过审|获批|首曝|国产|国内|中国|中式|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
+  const hasDomesticLeadContext = isBilibili || domesticTextSignal || domesticCompanySignal || domesticSourceSignal;
   const hasDiscoverySignal = /新作|首曝|公布|发布|上线|定档|测试|试玩|demo|实机|pv|预告|steam|taptap|好游快爆|开发者|制作人|愿望单|商店页|b站|bilibili|版号|过审|获批|预约|肉鸽|卡牌|策略|模拟|经营|二次元|国风|武侠|修仙/i.test(text);
   const hasActionableFormat = /demo|试玩|测试|实机|pv|预告|商店页|愿望单|开发者|制作人|上线steam|开启预约|首曝|公布|版号|过审|获批|预约/i.test(text);
   return hasProductName && hasDomesticLeadContext && hasDiscoverySignal && hasActionableFormat;
