@@ -51,17 +51,21 @@
 
 .login-mark {
   align-items: center;
-  background: linear-gradient(135deg, #111827, #07130d);
-  border: 1px solid rgba(134, 239, 172, 0.25);
-  border-radius: 16px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  color: #d8ffe8;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   display: inline-flex;
-  font-size: 24px;
-  font-weight: 950;
-  height: 64px;
+  height: 42px;
   justify-content: center;
-  width: 64px;
+  width: 105px;
+}
+
+.login-mark img {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
 }
 
 .login-kicker {

@@ -6,6 +6,7 @@ import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
+import bilibiliLogo from "./assets/bilibili-pink-logo.svg";
 import { productVersion, productVersionLabel } from "./productVersion";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
@@ -257,7 +258,7 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div className="hero-copy">
-          <span className="brand-mark">B</span>
+          <span className="brand-mark"><img src={bilibiliLogo} alt="bilibili" /></span>
           <p className="eyebrow" data-brand-label={productVersionLabel}>Neo's BD Matrix · {productVersion}</p>
           <h1>BD 决策工作台</h1>
           <p className="hero-subtitle">集中处理每日 sourcing 线索、游戏评测、跟进动作和发行判断，帮助快速决定提测、推进或淘汰。</p>

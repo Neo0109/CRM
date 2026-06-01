@@ -1,5 +1,6 @@
 import { ArrowRight, LockKeyhole, ShieldCheck, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import bilibiliLogo from "./assets/bilibili-pink-logo.svg";
 import "./login.css";
 
 type LoginPageProps = {
@@ -29,7 +30,7 @@ export function LoginPage({ error, loading, onLogin }: LoginPageProps) {
       <div className="matrix-noise" aria-hidden="true" />
       <section className="login-shell" aria-label="CRM 登录">
         <div className="login-brand">
-          <span className="login-mark">B</span>
+          <span className="login-mark"><img src={bilibiliLogo} alt="bilibili" /></span>
           <p className="login-kicker">Neo's BD Matrix</p>
           <h1>BD 决策工作台</h1>
           <p>进入每日 sourcing、评测、跟进和发行判断的安全工作区。</p>

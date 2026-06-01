@@ -75,17 +75,21 @@ a { color: var(--blue-dark); text-decoration: none; }
 
 .brand-mark {
   align-items: center;
-  background: linear-gradient(135deg, var(--blue), var(--pink));
-  border-radius: 8px;
-  box-shadow: 0 12px 26px rgba(0, 167, 225, 0.22);
-  color: #fff;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
   display: inline-flex;
-  font-size: 18px;
-  font-weight: 950;
-  height: 42px;
+  height: 30px;
   justify-content: center;
   line-height: 1;
-  width: 42px;
+  width: 76px;
+}
+
+.brand-mark img {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
 }
 
 .hero-subtitle {
