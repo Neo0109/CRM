@@ -12,6 +12,7 @@ const assetRedirects = new Map([
   ["index.js", versionedAsset("index.js")],
   ["crm-paper-texture-BjGXa_NP.png", `${assetBase}/crm-paper-texture-BjGXa_NP.png`],
   ["bili-crm-dashboard-DIye6pxa.png", `${assetBase}/bili-crm-dashboard-DIye6pxa.png`],
+  ["bilibili-game-logo-IUcC7daF.png", `${assetBase}/bilibili-game-logo-IUcC7daF.png`],
   ["matrix-code-rain-CoRfJN-o.jpg", `${assetBase}/matrix-code-rain-CoRfJN-o.jpg`]
 ]);
 

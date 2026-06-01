@@ -1,6 +1,6 @@
 import { ArrowRight, LockKeyhole, ShieldCheck, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import bilibiliLogo from "./assets/bilibili-pink-logo.svg";
+import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import "./login.css";
 
 type LoginPageProps = {

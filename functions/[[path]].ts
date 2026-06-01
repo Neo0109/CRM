@@ -11,6 +11,7 @@ function versionedAsset(fileName: string) {
 const assetRedirects = new Map([
   ["/assets/crm-paper-texture-BjGXa_NP.png", `${assetBase}/assets/crm-paper-texture-BjGXa_NP.png`],
   ["/assets/bili-crm-dashboard-DIye6pxa.png", `${assetBase}/assets/bili-crm-dashboard-DIye6pxa.png`],
+  ["/assets/bilibili-game-logo-IUcC7daF.png", `${assetBase}/assets/bilibili-game-logo-IUcC7daF.png`],
   ["/assets/matrix-code-rain-CoRfJN-o.jpg", `${assetBase}/assets/matrix-code-rain-CoRfJN-o.jpg`],
   [`/assets/${stylesheetFile}`, versionedAsset(stylesheetFile)],
   [`/assets/${scriptFile}`, versionedAsset(scriptFile)]

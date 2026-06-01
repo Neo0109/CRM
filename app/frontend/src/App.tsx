@@ -6,7 +6,7 @@ import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
-import bilibiliLogo from "./assets/bilibili-pink-logo.svg";
+import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { productVersion, productVersionLabel } from "./productVersion";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
