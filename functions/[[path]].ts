@@ -1,7 +1,7 @@
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260602-v2-1-version-governance";
+const assetVersion = "20260602-bilibili-brand-mark";
 const brandLabel = "Neo's BD Matrix · v2.1";
 
 function versionedAsset(fileName: string) {
