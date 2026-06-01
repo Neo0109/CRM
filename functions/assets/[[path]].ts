@@ -1,7 +1,7 @@
 import type { PagesContext } from "../_lib/crm";
 
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@7fb27d1da7213f38b96d3532a5f7cc1f2e29f8f8/app/frontend/dist/assets";
-const assetVersion = "20260602-sidebar-rhythm-v22";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@ec6567dfffad355c071e820f83e00b09175dd6b4/app/frontend/dist/assets";
+const assetVersion = "20260602-dashboard-rhythm-v23";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/${fileName}?v=${assetVersion}`;

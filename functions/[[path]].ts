@@ -1,7 +1,7 @@
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@7fb27d1da7213f38b96d3532a5f7cc1f2e29f8f8/app/frontend/dist";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@ec6567dfffad355c071e820f83e00b09175dd6b4/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260602-sidebar-rhythm-v22";
+const assetVersion = "20260602-dashboard-rhythm-v23";
 const brandLabel = "Neo's BD Matrix · v2.3";
 
 function versionedAsset(fileName: string) {
