@@ -1,4 +1,4 @@
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@433a081/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
 const assetVersion = "20260601-multi-user-login-v1";

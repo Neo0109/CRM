@@ -1,6 +1,6 @@
 import type { PagesContext } from "../_lib/crm";
 
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist/assets";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@433a081/app/frontend/dist/assets";
 const assetVersion = "20260601-multi-user-login-v1";
 
 function versionedAsset(fileName: string) {
