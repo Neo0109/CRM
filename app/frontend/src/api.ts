@@ -24,6 +24,8 @@ export type LoginPayload = {
 export type LoginResult = {
   ok: boolean;
   username: string;
+  role?: string;
+  permissions?: string[];
 };
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {

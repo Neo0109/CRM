@@ -86,7 +86,7 @@ export function LoginPage({ error, loading, onLogin }: LoginPageProps) {
             <ArrowRight size={18} />
           </button>
 
-          <p className="login-note">账号和密码都由 Cloudflare 环境变量管理，本机只保存登录凭证。</p>
+          <p className="login-note">多人账号由 Cloudflare 环境变量管理，本机只保存当前登录凭证。</p>
         </form>
       </section>
     </main>

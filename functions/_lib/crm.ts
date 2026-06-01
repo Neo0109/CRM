@@ -27,11 +27,19 @@ export type Env = {
   SUPABASE_URL: string;
   SUPABASE_SECRET_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
+  CRM_USERS_JSON?: string;
   CRM_USERNAME?: string;
   CRM_ACCESS_TOKEN?: string;
   EXCEL_EXPORT_PASSWORD?: string;
   RESEND_API_KEY?: string;
   CRM_FROM_EMAIL?: string;
+};
+
+export type CrmUser = {
+  username: string;
+  password: string;
+  role: string;
+  permissions: string[];
 };
 
 export type PagesContext = {
@@ -110,10 +118,37 @@ export async function requireAccess(request: Request, env: Env) {
 }
 
 export async function validateLoginCredentials(env: Env, username: string | null | undefined, password: string | null | undefined, requireUsername = true) {
-  const validPasswords = await readAccessPasswords(env);
+  const hasUsersJson = Boolean(cleanAuthValue(env.CRM_USERS_JSON));
+  const configuredUsers = await readConfiguredUsers(env);
   const configuredUsername = cleanAuthValue(env.CRM_USERNAME);
   const submittedUsername = cleanAuthValue(username);
   const submittedPassword = password ?? "";
+
+  if (hasUsersJson && !configuredUsers.length) {
+    return { ok: false, reason: "invalid_user_config" as const };
+  }
+
+  if (configuredUsers.length) {
+    const matchedUser = configuredUsers.find((user) => user.username === submittedUsername);
+
+    if (!submittedUsername || !matchedUser) {
+      return { ok: false, reason: "invalid_username" as const };
+    }
+
+    if (submittedPassword !== matchedUser.password) {
+      return { ok: false, reason: "invalid_password" as const };
+    }
+
+    return {
+      ok: true,
+      reason: "ok" as const,
+      username: matchedUser.username,
+      role: matchedUser.role,
+      permissions: matchedUser.permissions
+    };
+  }
+
+  const validPasswords = await readAccessPasswords(env);
 
   if (configuredUsername && submittedUsername !== configuredUsername) {
     return { ok: false, reason: "invalid_username" as const };
@@ -124,14 +159,20 @@ export async function validateLoginCredentials(env: Env, username: string | null
   }
 
   if (!validPasswords.length) {
-    return { ok: !requireUsername || Boolean(submittedUsername), reason: "no_password_configured" as const, username: configuredUsername || submittedUsername };
+    return {
+      ok: !requireUsername || Boolean(submittedUsername),
+      reason: "no_password_configured" as const,
+      username: configuredUsername || submittedUsername,
+      role: "admin",
+      permissions: ["*"]
+    };
   }
 
   if (!validPasswords.includes(submittedPassword)) {
     return { ok: false, reason: "invalid_password" as const };
   }
 
-  return { ok: true, reason: "ok" as const, username: configuredUsername || submittedUsername };
+  return { ok: true, reason: "ok" as const, username: configuredUsername || submittedUsername, role: "admin", permissions: ["*"] };
 }
 
 async function readAccessPasswords(env: Env) {
@@ -144,6 +185,100 @@ async function readAccessPasswords(env: Env) {
   }
 
   return candidateTokens.map(cleanAuthValue).filter(Boolean);
+}
+
+async function readConfiguredUsers(env: Env) {
+  const users = parseCrmUsersJson(env.CRM_USERS_JSON);
+  const legacyUsername = cleanAuthValue(env.CRM_USERNAME);
+  const legacyPassword = cleanAuthValue(env.CRM_ACCESS_TOKEN);
+
+  if (legacyUsername && legacyPassword) {
+    users.push({ username: legacyUsername, password: legacyPassword, role: "admin", permissions: ["*"] });
+  }
+
+  if (legacyUsername && !legacyPassword) {
+    try {
+      const settings = await readCrmSettings(env);
+      const settingsPassword = cleanAuthValue(settings.login_password);
+      if (settingsPassword) {
+        users.push({ username: legacyUsername, password: settingsPassword, role: "admin", permissions: ["*"] });
+      }
+    } catch {
+      // Login should still work from env-only credentials if settings storage is unavailable.
+    }
+  }
+
+  return dedupeCrmUsers(users);
+}
+
+export function parseCrmUsersJson(rawValue: string | null | undefined): CrmUser[] {
+  const raw = cleanAuthValue(rawValue);
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) return parsed.map(userFromArrayItem).filter(isCrmUser);
+    if (parsed && typeof parsed === "object") return Object.entries(parsed).map(userFromObjectEntry).filter(isCrmUser);
+  } catch {
+    return [];
+  }
+
+  return [];
+}
+
+function userFromArrayItem(item: unknown): CrmUser | null {
+  if (!item || typeof item !== "object") return null;
+  const record = item as Record<string, unknown>;
+  const username = cleanAuthValue(readString(record.username) ?? readString(record.name));
+  const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
+  if (!username || !password) return null;
+  return {
+    username,
+    password,
+    role: cleanAuthValue(readString(record.role)) || "member",
+    permissions: readPermissions(record.permissions)
+  };
+}
+
+function userFromObjectEntry([username, value]: [string, unknown]): CrmUser | null {
+  const cleanUsername = cleanAuthValue(username);
+  if (!cleanUsername) return null;
+
+  if (typeof value === "string") {
+    const password = cleanAuthValue(value);
+    return password ? { username: cleanUsername, password, role: "member", permissions: [] } : null;
+  }
+
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
+  if (!password) return null;
+  return {
+    username: cleanUsername,
+    password,
+    role: cleanAuthValue(readString(record.role)) || "member",
+    permissions: readPermissions(record.permissions)
+  };
+}
+
+function isCrmUser(user: CrmUser | null): user is CrmUser {
+  return Boolean(user?.username && user.password);
+}
+
+function dedupeCrmUsers(users: CrmUser[]) {
+  const byUsername = new Map<string, CrmUser>();
+  for (const user of users) byUsername.set(user.username, user);
+  return [...byUsername.values()];
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function readPermissions(value: unknown) {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string").map(cleanAuthValue).filter(Boolean);
+  if (typeof value === "string") return value.split(",").map(cleanAuthValue).filter(Boolean);
+  return [];
 }
 
 function cleanAuthValue(value: string | null | undefined) {

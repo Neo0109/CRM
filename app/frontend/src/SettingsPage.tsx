@@ -26,14 +26,14 @@ export function SettingsPage({ onStatus }: { onStatus: (message: string) => void
     <div className="form-grid two">
       <section className="form-section">
         <h3>密码管理</h3>
-        <p className="subline">登录密码和 Excel 导出密码都统一在 Cloudflare 管理，CRM 里不再单独保存账号信息。</p>
+        <p className="subline">登录账号、角色和 Excel 导出密码都统一在 Cloudflare 管理，CRM 里不再单独保存账号信息。</p>
         <div className="insight-card">
-          <strong>登录账号</strong>
-          <p className="subline">在 Cloudflare 的 Variables and Secrets 里设置 <code>CRM_USERNAME</code>。</p>
+          <strong>多人登录账号</strong>
+          <p className="subline">在 Cloudflare 的 Variables and Secrets 里设置 <code>CRM_USERS_JSON</code>，可为每个人配置独立密码和角色。</p>
         </div>
         <div className="insight-card">
-          <strong>登录密码</strong>
-          <p className="subline">在 Cloudflare 的 Variables and Secrets 里设置或修改 <code>CRM_ACCESS_TOKEN</code>。</p>
+          <strong>兼容旧登录</strong>
+          <p className="subline">旧的 <code>CRM_USERNAME</code> + <code>CRM_ACCESS_TOKEN</code> 仍可用，但后续权限和操作记录会优先基于多人账号扩展。</p>
         </div>
         <div className="insight-card">
           <strong>Excel 导出密码</strong>

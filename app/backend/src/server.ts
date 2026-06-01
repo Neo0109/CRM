@@ -58,6 +58,13 @@ type DailyReport = {
   drop_pool: Partial<Lead>[];
 };
 
+type CrmUser = {
+  username: string;
+  password: string;
+  role: string;
+  permissions: string[];
+};
+
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(dirname, "../../..");
 const dataPath = path.join(rootDir, "data/leads.json");
@@ -66,8 +73,11 @@ const leadSchemaPath = path.join(rootDir, "schemas/sourcing_lead.schema.json");
 const dailyReportSchemaPath = path.join(rootDir, "schemas/daily_report.schema.json");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+const crmUsersJson = process.env.CRM_USERS_JSON;
 const crmUsername = process.env.CRM_USERNAME?.trim();
 const crmAccessToken = process.env.CRM_ACCESS_TOKEN;
+const configuredCrmUsers = parseCrmUsersConfig(crmUsersJson, crmUsername, crmAccessToken);
+const hasCrmAuthConfig = Boolean(cleanAuthValue(crmUsersJson) || crmUsername || crmAccessToken);
 const supabase = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false }
@@ -91,7 +101,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "4mb" }));
 app.use((req, res, next) => {
-  if (!crmAccessToken || req.path === "/api/health" || req.path === "/api/auth/login" || !req.path.startsWith("/api")) {
+  if (!hasCrmAuthConfig || req.path === "/api/health" || req.path === "/api/auth/login" || !req.path.startsWith("/api")) {
     next();
     return;
   }
@@ -105,21 +115,30 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, storage: supabase ? "supabase" : "json", version: "v2.0-bd-efficiency-workflow", env: { hasCrmUsername: Boolean(crmUsername), hasCrmAccessToken: Boolean(crmAccessToken) } });
+  res.json({
+    ok: true,
+    storage: supabase ? "supabase" : "json",
+    version: "v2.0-bd-efficiency-workflow",
+    env: {
+      hasCrmUsersJson: Boolean(crmUsersJson),
+      crmUserCount: configuredCrmUsers.length,
+      hasCrmUsername: Boolean(crmUsername),
+      hasCrmAccessToken: Boolean(crmAccessToken)
+    }
+  });
 });
 
 app.post("/api/auth/login", (req, res) => {
   const username = cleanAuthValue(req.body?.username);
   const password = typeof req.body?.password === "string" ? req.body.password : "";
-  const validUsername = crmUsername ? username === crmUsername : Boolean(username);
-  const validPassword = crmAccessToken ? password === crmAccessToken : Boolean(password);
+  const result = validateLocalLogin(username, password);
 
-  if (!validUsername || !validPassword) {
+  if (!result.ok) {
     res.status(401).json({ error: "账号或密码无效" });
     return;
   }
 
-  res.json({ ok: true, username: crmUsername || username });
+  res.json({ ok: true, username: result.user.username, role: result.user.role, permissions: result.user.permissions });
 });
 
 app.get("/api/leads", async (_req, res, next) => {
@@ -434,9 +453,115 @@ function readCookie(header: string | undefined, name: string) {
 function isValidLocalLogin(rawUsername: string | string[] | undefined, rawToken: string | string[] | undefined, cookieHeader: string | undefined) {
   const submittedUsername = cleanAuthValue(Array.isArray(rawUsername) ? rawUsername[0] : rawUsername) || readCookie(cookieHeader, "crm_username") || "";
   const submittedToken = (Array.isArray(rawToken) ? rawToken[0] : rawToken) || readCookie(cookieHeader, "crm_access_token") || "";
-  const validUsername = crmUsername ? cleanAuthValue(submittedUsername) === crmUsername : true;
-  const validToken = crmAccessToken ? submittedToken === crmAccessToken : true;
-  return validUsername && validToken;
+  return validateLocalLogin(submittedUsername, submittedToken).ok;
+}
+
+function validateLocalLogin(username: string, password: string): { ok: true; user: CrmUser } | { ok: false } {
+  const submittedUsername = cleanAuthValue(username);
+  const submittedPassword = password ?? "";
+
+  if (cleanAuthValue(crmUsersJson) && !configuredCrmUsers.length) {
+    return { ok: false };
+  }
+
+  if (configuredCrmUsers.length) {
+    const user = configuredCrmUsers.find((item) => item.username === submittedUsername);
+    return user && submittedPassword === user.password ? { ok: true, user } : { ok: false };
+  }
+
+  const validUsername = crmUsername ? submittedUsername === crmUsername : Boolean(submittedUsername);
+  const validPassword = crmAccessToken ? submittedPassword === crmAccessToken : Boolean(submittedPassword);
+  if (!validUsername || !validPassword) return { ok: false };
+
+  return {
+    ok: true,
+    user: {
+      username: crmUsername || submittedUsername,
+      password: submittedPassword,
+      role: "admin",
+      permissions: ["*"]
+    }
+  };
+}
+
+function parseCrmUsersConfig(rawUsers: string | undefined, legacyUsername: string | undefined, legacyPassword: string | undefined) {
+  const users = parseCrmUsersJson(rawUsers);
+  const cleanLegacyUsername = cleanAuthValue(legacyUsername);
+  const cleanLegacyPassword = cleanAuthValue(legacyPassword);
+  if (cleanLegacyUsername && cleanLegacyPassword) {
+    users.push({ username: cleanLegacyUsername, password: cleanLegacyPassword, role: "admin", permissions: ["*"] });
+  }
+  return dedupeCrmUsers(users);
+}
+
+function parseCrmUsersJson(rawValue: string | null | undefined): CrmUser[] {
+  const raw = cleanAuthValue(rawValue);
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) return parsed.map(userFromArrayItem).filter(isCrmUser);
+    if (parsed && typeof parsed === "object") return Object.entries(parsed).map(userFromObjectEntry).filter(isCrmUser);
+  } catch {
+    return [];
+  }
+
+  return [];
+}
+
+function userFromArrayItem(item: unknown): CrmUser | null {
+  if (!item || typeof item !== "object") return null;
+  const record = item as Record<string, unknown>;
+  const username = cleanAuthValue(readString(record.username) ?? readString(record.name));
+  const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
+  if (!username || !password) return null;
+  return {
+    username,
+    password,
+    role: cleanAuthValue(readString(record.role)) || "member",
+    permissions: readPermissions(record.permissions)
+  };
+}
+
+function userFromObjectEntry([username, value]: [string, unknown]): CrmUser | null {
+  const cleanUsername = cleanAuthValue(username);
+  if (!cleanUsername) return null;
+
+  if (typeof value === "string") {
+    const password = cleanAuthValue(value);
+    return password ? { username: cleanUsername, password, role: "member", permissions: [] } : null;
+  }
+
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
+  if (!password) return null;
+  return {
+    username: cleanUsername,
+    password,
+    role: cleanAuthValue(readString(record.role)) || "member",
+    permissions: readPermissions(record.permissions)
+  };
+}
+
+function isCrmUser(user: CrmUser | null): user is CrmUser {
+  return Boolean(user?.username && user.password);
+}
+
+function dedupeCrmUsers(users: CrmUser[]) {
+  const byUsername = new Map<string, CrmUser>();
+  for (const user of users) byUsername.set(user.username, user);
+  return [...byUsername.values()];
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function readPermissions(value: unknown) {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string").map(cleanAuthValue).filter(Boolean);
+  if (typeof value === "string") return value.split(",").map(cleanAuthValue).filter(Boolean);
+  return [];
 }
 
 function cleanAuthValue(value: string | null | undefined) {

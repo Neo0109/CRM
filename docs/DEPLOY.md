@@ -45,8 +45,7 @@ Build output directory: app/frontend/dist
 ```text
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
-CRM_USERNAME=Neo
-CRM_ACCESS_TOKEN=choose-a-private-password
+CRM_USERS_JSON=[{"username":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]}]
 ```
 
 Do not set `NODE_ENV=production` in Cloudflare Pages build variables. It can make npm skip type-related dev packages during build.
@@ -78,8 +77,7 @@ npm run start --workspace app/backend
 ```text
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
-CRM_USERNAME=Neo
-CRM_ACCESS_TOKEN=choose-a-private-password
+CRM_USERS_JSON=[{"username":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]}]
 NODE_ENV=production
 ```
 
@@ -106,8 +104,7 @@ Environment variables:
 ```text
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
-CRM_USERNAME=Neo
-CRM_ACCESS_TOKEN=choose-a-private-password
+CRM_USERS_JSON=[{"username":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]}]
 NODE_ENV=production
 ```
 
@@ -117,7 +114,50 @@ The app will serve the React CRM and API from the same online URL.
 
 Open the deployed URL in any browser.
 
-If `CRM_USERNAME` and `CRM_ACCESS_TOKEN` are configured, enter them on the CRM login page. The browser saves the credentials locally and sends them with API requests.
+If `CRM_USERS_JSON` is configured, enter one of its usernames and passwords on the CRM login page. The browser saves the current user's credentials locally and sends them with API requests.
+
+Single-user legacy variables are still supported:
+
+```text
+CRM_USERNAME=Neo
+CRM_ACCESS_TOKEN=choose-a-private-password
+```
+
+For multiple users, set one Cloudflare secret named `CRM_USERS_JSON`. Do not create multiple `CRM_USERNAME` variables. Recommended format:
+
+```json
+[
+  {
+    "username": "Neo",
+    "password": "choose-a-private-password",
+    "role": "admin",
+    "permissions": ["*"]
+  },
+  {
+    "username": "BDUser",
+    "password": "choose-another-private-password",
+    "role": "operator",
+    "permissions": ["leads:read", "leads:write"]
+  }
+]
+```
+
+Object-map format is also accepted if it is easier to edit in Cloudflare:
+
+```json
+{
+  "Neo": {
+    "password": "choose-a-private-password",
+    "role": "admin",
+    "permissions": ["*"]
+  },
+  "BDUser": {
+    "password": "choose-another-private-password",
+    "role": "operator",
+    "permissions": ["leads:read", "leads:write"]
+  }
+}
+```
 
 ## 6. Storage Mode
 
