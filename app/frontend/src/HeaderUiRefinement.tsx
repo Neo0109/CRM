@@ -1,6 +1,7 @@
 import { useEffect } from "react";
+import { productVersionLabel } from "./productVersion";
 
-export const headerLabel = "Neo's BD Matrix · v2.0.5";
+export const headerLabel = productVersionLabel;
 
 function moveBefore(container: Element, beforeLabel: string, afterLabel: string) {
   const items = Array.from(container.children);
@@ -25,7 +26,10 @@ export function HeaderUiRefinement() {
   useEffect(() => {
     const apply = () => {
       const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
-      if (versionLabel && versionLabel.textContent !== headerLabel) versionLabel.textContent = headerLabel;
+      if (versionLabel) {
+        versionLabel.dataset.brandLabel = headerLabel;
+        if (versionLabel.textContent !== headerLabel) versionLabel.textContent = headerLabel;
+      }
 
       document.querySelectorAll<HTMLButtonElement>(".topbar .actions .tab-button").forEach((button) => {
         if (!button.textContent?.includes("设置")) return;

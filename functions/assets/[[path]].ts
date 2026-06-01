@@ -1,7 +1,7 @@
 import type { PagesContext } from "../_lib/crm";
 
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@433a081/app/frontend/dist/assets";
-const assetVersion = "20260601-multi-user-login-v1";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist/assets";
+const assetVersion = "20260602-v2-1-version-governance";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/${fileName}?v=${assetVersion}`;
@@ -11,7 +11,8 @@ const assetRedirects = new Map([
   ["index.css", versionedAsset("index.css")],
   ["index.js", versionedAsset("index.js")],
   ["crm-paper-texture-BjGXa_NP.png", `${assetBase}/crm-paper-texture-BjGXa_NP.png`],
-  ["bili-crm-dashboard-DIye6pxa.png", `${assetBase}/bili-crm-dashboard-DIye6pxa.png`]
+  ["bili-crm-dashboard-DIye6pxa.png", `${assetBase}/bili-crm-dashboard-DIye6pxa.png`],
+  ["matrix-code-rain-CoRfJN-o.jpg", `${assetBase}/matrix-code-rain-CoRfJN-o.jpg`]
 ]);
 
 export const onRequestGet = async ({ params }: PagesContext) => {

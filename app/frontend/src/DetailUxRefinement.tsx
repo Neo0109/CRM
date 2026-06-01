@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { productVersion, productVersionLabel } from "./productVersion";
 
 const stageLabels: Record<string, string> = {
   new: "New",
@@ -53,8 +54,9 @@ function syncVersionLabel() {
   if (!versionLabel) return;
 
   const text = versionLabel.textContent ?? "";
-  if (text.includes("v2.0.5")) return;
-  versionLabel.textContent = text.replace(/v\d+\.\d+(?:\.\d+)?(?:-[^\s]+)?/, "v2.0.5");
+  versionLabel.dataset.brandLabel = productVersionLabel;
+  if (text.includes(productVersion)) return;
+  versionLabel.textContent = text.replace(/v\d+\.\d+(?:\.\d+)?(?:-[^\s]+)?/, productVersion);
 }
 
 function relabelStageOptions() {

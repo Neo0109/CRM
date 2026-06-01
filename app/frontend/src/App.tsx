@@ -6,6 +6,7 @@ import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
+import { productVersion, productVersionLabel } from "./productVersion";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
 type View = "leads" | "assistant" | "radar" | "steam" | "settings";
@@ -63,7 +64,6 @@ type DecisionLane = {
   empty: string;
 };
 
-const version = "v2.0.5";
 const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
@@ -258,7 +258,7 @@ export default function App() {
       <header className="topbar">
         <div className="hero-copy">
           <span className="brand-mark">B</span>
-          <p className="eyebrow">Neo's BD Matrix · {version}</p>
+          <p className="eyebrow" data-brand-label={productVersionLabel}>Neo's BD Matrix · {productVersion}</p>
           <h1>BD 决策工作台</h1>
           <p className="hero-subtitle">集中处理每日 sourcing 线索、游戏评测、跟进动作和发行判断，帮助快速决定提测、推进或淘汰。</p>
         </div>

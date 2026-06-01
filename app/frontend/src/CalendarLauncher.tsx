@@ -2,6 +2,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Clock3, ExternalLink, RefreshC
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { fetchLeads, updateLead } from "./api";
+import { productVersion } from "./productVersion";
 import { officialSteamEvents, steamEventsSource, type SteamEventKind } from "./steamEvents";
 import type { Lead } from "./types";
 
@@ -51,7 +52,7 @@ export function CalendarLauncher() {
   useEffect(() => {
     const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
     if (versionLabel && /v\d+\.\d+(?:\.\d+)?/.test(versionLabel.textContent ?? "")) {
-      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, "v2.0.5");
+      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, productVersion);
     }
   }, []);
 
