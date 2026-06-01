@@ -160,3 +160,7 @@ For product-flow changes, keep automation broad and keep human decisions explici
 Most importantly, for existing leads, automation should enrich rather than reroute. Bucket and review-state decisions are human state and should be preserved unless the user explicitly changes them in the CRM.
 
 For automation debugging, inspect generated daily files first, then inspect `data/automation_runs/YYYY-MM-DD-slot.json` receipts. Generated files prove the report step ran; receipts prove whether the CRM sync endpoint confirmed `synced=true`.
+
+## Codex Cloud 工作说明
+
+本项目当前以 `Neo0109/CRM` 仓库和 `main` 分支作为 Codex Cloud 的云端工作源。后续云端任务应默认从该来源继续，保持自动日报规则、产品功能迭代和 UI 迭代分开处理，并在完成修改后通过 PR 合并，避免直接修改 `main`。
