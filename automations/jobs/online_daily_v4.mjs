@@ -432,17 +432,27 @@ function scoreCandidate(input) {
 
 function buildPools(candidates, mediaLeads = []) {
   const leads = candidates.map(toLead);
-  const steamPush = leads.filter((lead) => lead._class === "push").slice(0, 5);
-  const mediaPush = mediaLeads.filter((lead) => lead._class === "push").slice(0, 5);
+  const used = new Set();
+  const steamPush = selectUniqueLeads(leads.filter((lead) => lead._class === "push"), 5, used);
+  const mediaPush = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "push"), 5, used);
   const push = [...steamPush, ...mediaPush].slice(0, 10);
-  const used = new Set(push.map(poolLeadKey));
-  const steamWatch = leads.filter((lead) => lead._class === "watch" && !used.has(poolLeadKey(lead))).slice(0, 30);
-  for (const lead of steamWatch) used.add(poolLeadKey(lead));
-  const mediaWatch = mediaLeads.filter((lead) => lead._class === "watch" && !used.has(poolLeadKey(lead))).slice(0, 12);
+  const steamWatch = selectUniqueLeads(leads.filter((lead) => lead._class === "watch"), 30, used);
+  const mediaWatch = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "watch"), 12, used);
   const watch = [...steamWatch, ...mediaWatch].slice(0, 36);
-  for (const lead of watch) used.add(poolLeadKey(lead));
-  const drop = leads.filter((lead) => lead._class === "drop" && !used.has(poolLeadKey(lead))).slice(0, 12);
+  const drop = selectUniqueLeads(leads.filter((lead) => lead._class === "drop"), 12, used);
   return { push: push.map(stripPrivate), watch: watch.map(stripPrivate), drop: drop.map(stripPrivate) };
+}
+
+function selectUniqueLeads(leads, limit, used) {
+  const selected = [];
+  for (const lead of leads) {
+    const key = poolLeadKey(lead);
+    if (used.has(key)) continue;
+    selected.push(lead);
+    used.add(key);
+    if (selected.length >= limit) break;
+  }
+  return selected;
 }
 
 function poolLeadKey(lead) {
