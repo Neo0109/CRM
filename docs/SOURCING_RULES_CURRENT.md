@@ -76,6 +76,8 @@ The online generator must preserve the product intent of these rules:
 - Candidate pools should be large enough for practical BD review. Small push pools are acceptable, but the unprocessed inbox should not collapse to one or two items when the upstream candidate scan is healthy.
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
+- Industry Radar is a compact China + overseas news board. `行业新闻` is reserved for macro market/platform/regulatory/company-level news. Concrete game recommendations, fun products, IP moments, legal/company gossip, and former `发行八卦` items belong in `今日亮点`.
+- Radar output should be broad enough to show trends, not just a few similar cards. When sources are available, include both domestic and global signals across macro news, product highlights, AI/tooling, memes/community, and Bilibili trends.
 
 ## Current Known Gap
 

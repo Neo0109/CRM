@@ -43,7 +43,7 @@ const rawCandidates = dedupeByAppId((await Promise.all([
   .slice(0, maxCandidates);
 
 const mediaSignals = await fetchMediaSignals();
-const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 6);
+const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 14);
 const mediaLeadCandidates = buildMediaLeadCandidates(mediaSignals, existingProjects);
 
 const enrichedCandidates = await enrichCandidates(rawCandidates);
@@ -803,7 +803,7 @@ function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
 
 function buildRadarReport(candidates, pools, industrySignals) {
   const genres = summarizeGenres(candidates);
-  const mediaItems = industrySignals.slice(0, 6).map(mediaSignalToRadarItem);
+  const mediaItems = industrySignals.slice(0, 14).map(mediaSignalToRadarItem);
   const bilibiliSignal = radarItem(
     "bilibili_bd_lens",
     "B站趋势",
@@ -817,7 +817,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V4行业雷达：今日抓到 ${industrySignals.length} 条主流媒体/行业信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放真实外部事件；Steam样本只作为B站BD选品背景。`,
+    summary: `Sourcing V4行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -891,6 +891,11 @@ function mediaSources() {
     { name: "Gematsu", url: "https://www.gematsu.com/feed", type: "feed", quality: 9, focus: ["product", "asia"] },
     { name: "The Verge Gaming", url: "https://www.theverge.com/rss/games/index.xml", type: "feed", quality: 9, focus: ["platform", "technology"] },
     { name: "GameSpot", url: "https://www.gamespot.com/feeds/news/", type: "feed", quality: 8, focus: ["mainstream", "product"] },
+    { name: "Polygon", url: "https://www.polygon.com/rss/index.xml", type: "feed", quality: 10, focus: ["mainstream", "product", "culture"] },
+    { name: "Rock Paper Shotgun", url: "https://www.rockpapershotgun.com/feed", type: "feed", quality: 9, focus: ["pc", "product", "culture"] },
+    { name: "PocketGamer.biz", url: "https://www.pocketgamer.biz/rss/", type: "feed", quality: 10, focus: ["business", "mobile"] },
+    { name: "GamesBeat", url: "https://venturebeat.com/category/games/feed/", type: "feed", quality: 9, focus: ["business", "technology"] },
+    { name: "Siliconera", url: "https://www.siliconera.com/feed/", type: "feed", quality: 8, focus: ["product", "asia"] },
     { name: "触乐", url: "https://www.chuapp.com/?feed=rss2", type: "feed", quality: 11, focus: ["china", "culture"] },
     { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed", quality: 7, focus: ["china", "technology"] },
     { name: "3DM", url: "https://www.3dmgame.com/news/", type: "page", quality: 6, focus: ["china", "product"] },
@@ -1012,9 +1017,9 @@ function scoreMediaSignal(item) {
   let topicPoints = 0;
   topicPoints += topicScore(text, /\b(publisher|publishing|acquisition|investment|funding|layoffs?|union|lawsuit|court|rights?|licen[cs]e|ip|studio closure|executive|leadership)\b|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/, 18);
   topicPoints += topicScore(text, /\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation|restarted from scratch)\b|资料片|大型更新|公布|发布会|延期|重制|续作|新作|改编|影视化|动画|联动|周年|上线|定档|发售|手游|端游/, 14);
-  topicPoints += topicScore(text, /\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/, 12);
+  topicPoints += topicScore(text, /\b(steam|steam deck|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform|hardware|pricing|price|showcase|direct|state of play|summer game fest)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|掌机|硬件|涨价|降价|定价|移动端|渠道|发布会|直面会/, 12);
   topicPoints += topicScore(text, /\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/, 10);
-  topicPoints += topicScore(text, /\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i, 12);
+  topicPoints += topicScore(text, /\b(artificial intelligence|generative ai|genai|machine learning|deepmind|large language model|llm)\b|人工智能|生成式|aigc/i, 12);
   topicPoints += topicScore(text, /\b(china|chinese|bilibili|asia|netease|tencent)\b|中国|国产|出海|B站|哔哩哔哩|腾讯|网易|米哈游|莉莉丝|心动|鹰角/, 12);
   topicPoints += topicScore(text, /\b(report|analysis|interview|confirmed|official|financial results)\b|报告|分析|专访|确认|官方|公告|财报/, 4);
 
@@ -1024,11 +1029,21 @@ function scoreMediaSignal(item) {
   if (sourceFocus.has("bilibili") && /国产|独立游戏|试玩|demo|制作人|开发者|steam|实机|首曝|PV|视频/i.test(text)) score += 10;
   if (sourceFocus.has("mobile") && /手游|移动端|买量|发行|渠道|小游戏|版号|出海/i.test(text)) score += 6;
   if (topicPoints < 8) score -= 12;
+  if (isLowInformationMediaTitle(item.title)) score -= 60;
   if (!hasGameOrBdContext(text, item)) score -= 30;
 
   if (/\b(review|guide|walkthrough|tips|best settings|deal|sale|discount|cosplay|quiz)\b|攻略|评测|折扣|促销|史低|壁纸|图赏|盘点/.test(text)) score -= 10;
   if (/rumor|leak|传闻|曝/.test(text) && !/\b(confirmed|official)\b|确认|官方|公告/.test(text)) score -= 4;
   return score;
+}
+
+function isLowInformationMediaTitle(title) {
+  const text = normalizeDisplayText(title);
+  if (text.length < 6) return true;
+  if (/^[\d\s:：.,，]+$/.test(text)) return true;
+  if (/^\d+\s+\d+\s+\d{1,2}:\d{2}/.test(text)) return true;
+  if (/^(观看|播放|评论|弹幕|收藏|分享|赞|投币)\s*\d+/i.test(text)) return true;
+  return false;
 }
 
 function dedupeMediaSignals(items) {
@@ -1047,14 +1062,20 @@ function selectDiverseMediaSignals(items, limit) {
   const selected = [];
   const sourceCount = new Map();
   const familyCount = new Map();
+  const regionCount = new Map();
+
+  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "行业新闻" && mediaRegion(item) === "china", 2);
+  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "行业新闻" && mediaRegion(item) === "global", 3);
+  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "今日亮点" && mediaRegion(item) === "china", 4);
+  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "今日亮点" && mediaRegion(item) === "global", 2);
+  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "AI 游戏", 2);
+  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => ["B站趋势", "新梗热点"].includes(categoryForMediaSignal(item)), 1);
 
   for (const item of items) {
-    const family = mediaTopicFamily(item);
-    if ((sourceCount.get(item.source) ?? 0) >= 2) continue;
-    if ((familyCount.get(family) ?? 0) >= 2) continue;
+    if (selected.includes(item)) continue;
+    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount)) continue;
     selected.push(item);
-    sourceCount.set(item.source, (sourceCount.get(item.source) ?? 0) + 1);
-    familyCount.set(family, (familyCount.get(family) ?? 0) + 1);
+    bumpRadarCounts(item, sourceCount, familyCount, regionCount);
     if (selected.length >= limit) return selected;
   }
 
@@ -1065,6 +1086,43 @@ function selectDiverseMediaSignals(items, limit) {
   }
 
   return selected;
+}
+
+function takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, predicate, target) {
+  let taken = 0;
+  for (const item of items) {
+    if (selected.includes(item)) continue;
+    if (!predicate(item)) continue;
+    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount)) continue;
+    selected.push(item);
+    bumpRadarCounts(item, sourceCount, familyCount, regionCount);
+    taken += 1;
+    if (selected.length >= limit || taken >= target) break;
+  }
+}
+
+function canSelectRadarSignal(item, sourceCount, familyCount, regionCount) {
+  const family = mediaTopicFamily(item);
+  const region = mediaRegion(item);
+  if ((sourceCount.get(item.source) ?? 0) >= 2) return false;
+  if ((familyCount.get(family) ?? 0) >= 4) return false;
+  if ((regionCount.get(region) ?? 0) >= 8) return false;
+  return true;
+}
+
+function bumpRadarCounts(item, sourceCount, familyCount, regionCount) {
+  const family = mediaTopicFamily(item);
+  const region = mediaRegion(item);
+  sourceCount.set(item.source, (sourceCount.get(item.source) ?? 0) + 1);
+  familyCount.set(family, (familyCount.get(family) ?? 0) + 1);
+  regionCount.set(region, (regionCount.get(region) ?? 0) + 1);
+}
+
+function mediaRegion(item) {
+  const focus = new Set(item.source_focus ?? []);
+  const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
+  if (focus.has("china") || focus.has("domestic_sourcing") || /中国|国产|国内|出海|腾讯|网易|米哈游|莉莉丝|心动|鹰角|b站|哔哩哔哩|taptap|indienova/i.test(text)) return "china";
+  return "global";
 }
 
 function mediaSignalToRadarItem(item, index) {
@@ -1085,9 +1143,12 @@ function mediaSignalToRadarItem(item, index) {
 
 function categoryForMediaSignal(item) {
   const family = mediaTopicFamily(item);
-  if (family === "business_legal") return "发行八卦";
   if (family === "ai_production") return "AI 游戏";
-  if (family === "creator_community") return "B站趋势";
+  if (isBilibiliSignal(item)) return isMetaBilibiliTrend(item) ? "B站趋势" : "今日亮点";
+  if (family === "creator_community") return isBilibiliSignal(item) ? "B站趋势" : "新梗热点";
+  if (family === "business_legal" && isMacroBusinessSignal(item)) return "行业新闻";
+  if (family === "product_ip" || family === "business_legal") return "今日亮点";
+  if (family === "platform_market" || family === "industry_context") return "行业新闻";
   return "行业新闻";
 }
 
@@ -1095,9 +1156,11 @@ function conciseMediaSummary(item) {
   const text = [item.summary, item.title].filter(Boolean).join(" ");
   const cleaned = normalizeDisplayText(text);
   const family = mediaTopicFamily(item);
-  if (family === "product_ip") return `产品/IP生命周期信号：${cleaned.slice(0, 80)}。重点看UP主选题、社区回流、愿望单/复购转化或长线运营案例。`;
-  if (family === "business_legal") return `公司/IP/法律/资本信号：${cleaned.slice(0, 80)}。重点看合作方可信度、权属风险或BD切入窗口。`;
-  if (family === "platform_market") return `平台/渠道/市场节奏信号：${cleaned.slice(0, 80)}。重点看发现入口、曝光成本或中国区发行窗口。`;
+  if (isBilibiliSignal(item) && !isMetaBilibiliTrend(item)) return `今日亮点：${cleaned.slice(0, 90)}。先看画面、玩法、评论和UP主表达，判断能否变成选题、试玩或潜在线索。`;
+  if (isMetaBilibiliTrend(item)) return `B站趋势：${cleaned.slice(0, 90)}。重点看内容风向、UP主扩散和社区情绪变化。`;
+  if (family === "product_ip") return `今日亮点：${cleaned.slice(0, 90)}。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。`;
+  if (family === "business_legal") return `今日亮点：${cleaned.slice(0, 90)}。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。`;
+  if (family === "platform_market") return `行业新闻：${cleaned.slice(0, 90)}。重点看平台、渠道、政策或市场节奏是否改变发行打法。`;
   if (family === "creator_community") return `社区/创作者信号：${cleaned.slice(0, 80)}。重点看B站内容打法、达人合作和话题扩散。`;
   if (family === "ai_production") return `AI/工具链信号：${cleaned.slice(0, 80)}。重点看研发效率、素材风险、内容供给质量和平台合规。`;
   return cleaned.slice(0, 120);
@@ -1105,9 +1168,11 @@ function conciseMediaSummary(item) {
 
 function relevanceForMediaSignal(item) {
   const family = mediaTopicFamily(item);
-  if (family === "product_ip") return "对B站商务的价值在于识别可被内容节点重新点燃的产品/IP。";
-  if (family === "business_legal") return "对BD判断的价值在于把合作方治理、IP权属、发行占位和关键人风险纳入尽调。";
-  if (family === "platform_market") return "对BD判断的价值在于判断平台流量规则、窗口期和发行资源配置是否变化。";
+  if (isBilibiliSignal(item) && !isMetaBilibiliTrend(item)) return "今日亮点用于把具体视频、试玩、PV和产品讨论转成B站商务可判断的线索。";
+  if (isMetaBilibiliTrend(item)) return "B站趋势用于判断内容生态、UP主扩散和玩家话题是否正在改变。";
+  if (family === "product_ip") return "今日亮点用于发现具体游戏、IP节点、好玩内容或可转化成B站选题的线索。";
+  if (family === "business_legal") return "今日亮点中的八卦/公司事件用于辅助BD判断合作方可信度、权属风险和窗口变化。";
+  if (family === "platform_market") return "行业新闻用于判断平台流量规则、渠道窗口、监管和发行资源配置是否变化。";
   if (family === "creator_community") return "对B站商务的价值在于判断是否能形成UP主选题、直播节点和社区扩散。";
   if (family === "ai_production") return "对BD判断的价值在于理解供给侧变化、研发效率和内容合规风险。";
   return "用于判断游戏行业外部环境、发行节奏和内容平台可介入窗口。";
@@ -1115,9 +1180,11 @@ function relevanceForMediaSignal(item) {
 
 function actionForMediaSignal(item) {
   const family = mediaTopicFamily(item);
-  if (family === "product_ip") return "记录内容节点和社区反应；判断是否能做B站专题、UP主共创或发行前置沟通。";
-  if (family === "business_legal") return "补公司治理、股权/IP权属、发行协议、诉讼和关键人风险检查。";
-  if (family === "platform_market") return "复核平台窗口、榜单入口、Demo/愿望单数据和中国区资源位机会。";
+  if (isBilibiliSignal(item) && !isMetaBilibiliTrend(item)) return "打开视频看实机、弹幕、评论和UP主结论；像产品线索的进入人工review，泛娱乐内容只做趋势观察。";
+  if (isMetaBilibiliTrend(item)) return "记录正在扩散的内容形式、UP主类型和玩家争议点，供选品与内容合作复用。";
+  if (family === "product_ip") return "点开原文看画面、玩法、热度和社区反应；值得玩的线索转入人工review或专题观察。";
+  if (family === "business_legal") return "记录关键人、权属、诉讼、公司变化和发行占位，必要时进入合作方尽调。";
+  if (family === "platform_market") return "提炼宏观变化对选品、上线窗口、渠道资源和内容投放的影响。";
   if (family === "creator_community") return "观察B站/YouTube/Twitch等内容扩散，筛选可合作达人和可复制选题。";
   if (family === "ai_production") return "关注产品是否涉及AI披露、素材争议、产能变化或平台合规风险。";
   return "只保留有BD启发的媒体信号；无业务动作的普通新闻不进雷达。";
@@ -1138,12 +1205,24 @@ function topicScore(text, pattern, points) {
 
 function mediaTopicFamily(item) {
   const text = `${item.title} ${item.summary}`.toLowerCase();
-  if (/\b(ai|artificial intelligence|generative ai|procedural|toolchain|engine|ue5|unity)\b|人工智能|生成式|aigc|程序化|工具链|引擎|虚幻|Unity/i.test(text)) return "ai_production";
+  if (/\b(artificial intelligence|generative ai|genai|machine learning|deepmind|large language model|llm)\b|人工智能|生成式|aigc/i.test(text)) return "ai_production";
+  if (/\b(steam|steam deck|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform|hardware|pricing|price|showcase|direct|state of play|summer game fest)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|掌机|硬件|涨价|降价|定价|移动端|渠道|发布会|直面会/.test(text)) return "platform_market";
   if (/\b(publisher|publishing|acquisition|investment|funding|layoffs?|lawsuit|court|rights?|licen[cs]e|studio closure|executive|leadership)\b|出版|收购|投资|融资|裁员|诉讼|法院|判决|死刑|执行死刑|版权|授权|股权|高管|创始人|工作室|关停|监管|版号|财报/.test(text)) return "business_legal";
   if (/\b(expansion|dlc|major update|announced|showcase|release date|delay|remaster|remake|sequel|cross[- ]?media|adaptation|restarted from scratch)\b|资料片|大型更新|公布|发布会|延期|重制|续作|新作|改编|影视化|动画|联动|周年|上线|定档|发售|手游|端游/.test(text)) return "product_ip";
   if (/\b(streamer|creator|ugc|youtube|twitch|community|mod|viral|meme|esports)\b|主播|创作者|up主|视频|直播|社区|二创|模组|爆火|梗|赛事|传播/.test(text)) return "creator_community";
-  if (/\b(steam|epic games store|game pass|playstation|xbox|switch|nintendo|mobile|wishlist|demo|next fest|early access|store policy|platform)\b|平台|商店|愿望单|试玩|新品节|抢先体验|主机|移动端|渠道/.test(text)) return "platform_market";
   return "industry_context";
+}
+
+function isMacroBusinessSignal(item) {
+  const text = `${item.title} ${item.summary}`.toLowerCase();
+  return /\b(acquisition|investment|funding|layoffs?|union|financial results|earnings|regulation|regulator|antitrust|publisher|publishing)\b|收购|投资|融资|裁员|工会|监管|版号|财报|资本|头部厂商|平台方|发行商/.test(text);
+}
+
+function isMetaBilibiliTrend(item) {
+  if (!isBilibiliSignal(item)) return false;
+  const text = `${item.title} ${item.summary}`.toLowerCase();
+  if (/《[^》]+》|\bpv\b|\bdemo\b|实机|试玩|首曝|新作|上线|发售|公布|预告/.test(text)) return false;
+  return /\b(trend|ranking|weekly|monthly|creator|streamer|community)\b|趋势|榜单|周榜|月榜|盘点|生态|up主|创作者|直播|热搜|话题|弹幕|播放|内容风向/.test(text);
 }
 
 function buildV4SteamSignal(candidate) {

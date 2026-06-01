@@ -54,10 +54,12 @@ Leads 输出要求：
 7. 最终输出为符合 `schemas/daily_report.schema.json` 的 JSON。
 
 行业雷达输出要求：
-1. 同步扫描游戏行业新闻、发行八卦、AI 对游戏行业的影响、互联网新梗/热点、B站游戏内容趋势变化。
-2. 分类必须使用：行业新闻、发行八卦、AI 游戏、新梗热点、B站趋势。
-3. 每条必须包含：id、category、title、summary、heat、source、link、relevance、suggested_action、captured_at。
-4. 最终输出为符合 `schemas/industry_radar.schema.json` 的 JSON。
+1. 同步扫描游戏行业新闻、今日亮点、AI 对游戏行业的影响、互联网新梗/热点、B站游戏内容趋势变化。
+2. 分类必须使用：行业新闻、今日亮点、AI 游戏、新梗热点、B站趋势。
+3. `行业新闻` 只放相对宏观的大新闻，例如平台政策、市场变化、监管/资本/财报、头部厂商动作、中外市场趋势。具体游戏线索、推荐、好玩的产品/IP节点、公司/法律/发行八卦统一放入 `今日亮点`。
+4. 行业雷达应像一个中外行业新闻看板，而不是几条相似卡片；有来源时要覆盖中国和海外热门新闻，让 BD 能通过新闻摸到趋势。
+5. 每条必须包含：id、category、title、summary、heat、source、link、relevance、suggested_action、captured_at。
+6. 最终输出为符合 `schemas/industry_radar.schema.json` 的 JSON。
 
 自动保存要求：
 1. 将最终 leads 日报 JSON 写入 `data/reports/{{report_date}}.json`。

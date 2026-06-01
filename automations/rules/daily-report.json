@@ -14,7 +14,7 @@
   "report_contract": {
     "daily_report": "Separate discovery from BD recommendation. Push pool can be empty. Non-dropped auto leads must enter the unprocessed inbox, not observation or follow-up buckets.",
     "steam_trends": "Output BD decision cards, not generic tag-frequency trends.",
-    "industry_radar": "Use real external media, company, legal, platform, or community signals. Never use internal CRM notes as industry news."
+    "industry_radar": "Use real external media, company, legal, platform, or community signals. 行业新闻 is macro only; concrete games, recommendations, fun products, IP/company/legal gossip, and former 发行八卦 items belong in 今日亮点. Never use internal CRM notes as industry news."
   },
   "required_decision_fields": [
     "product",
@@ -46,7 +46,8 @@
     "Bilibili search results must point to a concrete game/project. Tutorial, wishlist-growth, Steam Next Fest signup, course, or generic developer-experience videos are research material, not CRM leads.",
     "A valid first-pass lead does not require a Steam AppID. Bilibili videos, media articles, official sites, TapTap, indienova, or developer posts can be the first verification link.",
     "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
-    "Industry radar should prioritize high-quality domestic sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, or Bilibili content angles.",
+    "Industry radar should work as a China + overseas news board, not a short category filler list.",
+    "Industry radar should prioritize high-quality domestic and global sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, market direction, platform policy, or Bilibili content angles.",
     "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID."
   ],
   "automation_guardrails": [

@@ -90,6 +90,10 @@ Every important Steam candidate should include:
 
 Industry Radar must use real external signals.
 
+`行业新闻` is for macro or large-scope industry events: platform policy, market shifts, regulation, capital/financial changes, major publisher moves, China/overseas market direction, or other signals that help the BD owner understand trend context.
+
+`今日亮点` is for concrete games, IP moments, recommended/fun products, publisher gossip, legal/company anecdotes, and other specific items worth opening. Former "发行八卦" content belongs here unless it is broad enough to change industry context.
+
 Allowed sources include:
 
 - Domestic game/business media and Bilibili signals with clear BD relevance.
@@ -99,6 +103,8 @@ Allowed sources include:
 - Verifiable community or creator signals when they are directly relevant to Bilibili.
 
 Internal CRM rules, automation notes, or "we scanned Steam today" must not be placed under "行业新闻".
+
+The radar should feel like a compact news board, not a short category filler list. Cover both China and overseas when sources are available, and keep enough cards for the reader to infer market direction from news, product highlights, creator/community signals, AI/tooling shifts, and Bilibili-relevant topics.
 
 Named news items from the user are calibration examples, not fixed targets.
 

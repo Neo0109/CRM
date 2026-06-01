@@ -7,8 +7,10 @@ const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
 const minCandidates = numberArg(args.minCandidates, 8);
 const minReviewCandidates = numberArg(args.minReviewCandidates, 3);
+const minRadarItems = numberArg(args.minRadarItems, 8);
+const minSteamTrendItems = numberArg(args.minSteamTrendItems, 8);
 
-const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates });
+const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates, minRadarItems, minSteamTrendItems });
 
 if (args.githubOutput) {
   appendGithubOutput(args.githubOutput, {
@@ -54,7 +56,8 @@ function inspectDailyReport(date, thresholds) {
   if (steamTrends && steamTrends.report_date !== date) reasons.push(`steam trends date mismatch: ${steamTrends.report_date}`);
   if (report && counts.total < thresholds.minCandidates) reasons.push(`candidate count ${counts.total} below threshold ${thresholds.minCandidates}`);
   if (report && counts.review < thresholds.minReviewCandidates) reasons.push(`review candidate count ${counts.review} below threshold ${thresholds.minReviewCandidates}`);
-  if (radar && counts.radar_items === 0) reasons.push("radar has no items");
+  if (radar && counts.radar_items < thresholds.minRadarItems) reasons.push(`radar item count ${counts.radar_items} below threshold ${thresholds.minRadarItems}`);
+  if (steamTrends && counts.steam_trend_items < thresholds.minSteamTrendItems) reasons.push(`steam trend item count ${counts.steam_trend_items} below threshold ${thresholds.minSteamTrendItems}`);
 
   const receipts = readReceipts(date);
   const successfulReceipt = receipts.find((receipt) => receipt.status === "success" || /"synced"\s*:\s*true/.test(String(receipt.sync_response ?? "")));

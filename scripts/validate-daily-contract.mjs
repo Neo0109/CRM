@@ -5,11 +5,15 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = parseArgs(process.argv.slice(2));
 const dates = args.all ? availableReportDates() : [args.date ?? latestReportDate()];
+const thresholds = {
+  minRadarItems: numberArg(args.minRadarItems, 8),
+  minSteamTrendItems: numberArg(args.minSteamTrendItems, 8)
+};
 const allErrors = [];
 const summaries = [];
 
 for (const date of dates) {
-  const result = validateDate(date);
+  const result = validateDate(date, thresholds);
   summaries.push(result.summary);
   allErrors.push(...result.errors.map((error) => `${date}: ${error}`));
 }
@@ -26,7 +30,7 @@ console.log(JSON.stringify({
   summaries
 }, null, 2));
 
-function validateDate(date) {
+function validateDate(date, thresholds) {
   const schemas = {
     report: loadJson("schemas/daily_report.schema.json"),
     radar: loadJson("schemas/industry_radar.schema.json"),
@@ -57,6 +61,8 @@ function validateDate(date) {
   if (report.report_date !== date) errors.push(`report_date mismatch in ${files.report}: ${report.report_date}`);
   if (radar.report_date !== date) errors.push(`report_date mismatch in ${files.radar}: ${radar.report_date}`);
   if (steamTrends.report_date !== date) errors.push(`report_date mismatch in ${files.steamTrends}: ${steamTrends.report_date}`);
+  if ((radar.items?.length ?? 0) < thresholds.minRadarItems) errors.push(`radar has fewer than ${thresholds.minRadarItems} items`);
+  if ((steamTrends.items?.length ?? 0) < thresholds.minSteamTrendItems) errors.push(`steam trends has fewer than ${thresholds.minSteamTrendItems} items`);
 
   const poolEntries = [
     ...poolLeads(report, "push_pool"),
@@ -218,6 +224,11 @@ function parseArgs(argv) {
     if (match) parsed[match[1]] = match[2];
   }
   return parsed;
+}
+
+function numberArg(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
 }
 
 function normalizeLeadName(value) {
