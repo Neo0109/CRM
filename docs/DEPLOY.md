@@ -45,6 +45,7 @@ Build output directory: app/frontend/dist
 ```text
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
+CRM_USERNAME=Neo
 CRM_ACCESS_TOKEN=choose-a-private-password
 ```
 
@@ -77,6 +78,7 @@ npm run start --workspace app/backend
 ```text
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
+CRM_USERNAME=Neo
 CRM_ACCESS_TOKEN=choose-a-private-password
 NODE_ENV=production
 ```
@@ -104,6 +106,7 @@ Environment variables:
 ```text
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
+CRM_USERNAME=Neo
 CRM_ACCESS_TOKEN=choose-a-private-password
 NODE_ENV=production
 ```
@@ -114,7 +117,7 @@ The app will serve the React CRM and API from the same online URL.
 
 Open the deployed URL in any browser.
 
-If `CRM_ACCESS_TOKEN` is configured, enter it once in the CRM. The browser saves it locally and sends it with API requests.
+If `CRM_USERNAME` and `CRM_ACCESS_TOKEN` are configured, enter them on the CRM login page. The browser saves the credentials locally and sends them with API requests.
 
 ## 6. Storage Mode
 

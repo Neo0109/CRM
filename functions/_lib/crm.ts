@@ -27,6 +27,7 @@ export type Env = {
   SUPABASE_URL: string;
   SUPABASE_SECRET_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
+  CRM_USERNAME?: string;
   CRM_ACCESS_TOKEN?: string;
   EXCEL_EXPORT_PASSWORD?: string;
   RESEND_API_KEY?: string;
@@ -100,8 +101,41 @@ type DailyReport = {
 export async function requireAccess(request: Request, env: Env) {
   const headerToken = request.headers.get("x-crm-token");
   const cookieToken = readCookie(request.headers.get("cookie"), "crm_access_token");
-  const candidateTokens = [env.CRM_ACCESS_TOKEN];
+  const headerUsername = request.headers.get("x-crm-username");
+  const cookieUsername = readCookie(request.headers.get("cookie"), "crm_username");
+  const result = await validateLoginCredentials(env, headerUsername ?? cookieUsername, headerToken ?? cookieToken, false);
 
+  if (result.ok) return null;
+  return json({ error: "CRM login required" }, 401);
+}
+
+export async function validateLoginCredentials(env: Env, username: string | null | undefined, password: string | null | undefined, requireUsername = true) {
+  const validPasswords = await readAccessPasswords(env);
+  const configuredUsername = cleanAuthValue(env.CRM_USERNAME);
+  const submittedUsername = cleanAuthValue(username);
+  const submittedPassword = password ?? "";
+
+  if (configuredUsername && submittedUsername !== configuredUsername) {
+    return { ok: false, reason: "invalid_username" as const };
+  }
+
+  if (requireUsername && !configuredUsername && !submittedUsername) {
+    return { ok: false, reason: "missing_username" as const };
+  }
+
+  if (!validPasswords.length) {
+    return { ok: !requireUsername || Boolean(submittedUsername), reason: "no_password_configured" as const, username: configuredUsername || submittedUsername };
+  }
+
+  if (!validPasswords.includes(submittedPassword)) {
+    return { ok: false, reason: "invalid_password" as const };
+  }
+
+  return { ok: true, reason: "ok" as const, username: configuredUsername || submittedUsername };
+}
+
+async function readAccessPasswords(env: Env) {
+  const candidateTokens = [env.CRM_ACCESS_TOKEN];
   try {
     const settings = await readCrmSettings(env);
     if (settings.login_password) candidateTokens.push(settings.login_password);
@@ -109,10 +143,11 @@ export async function requireAccess(request: Request, env: Env) {
     // Keep the env token usable even if settings storage is unavailable.
   }
 
-  const validTokens = candidateTokens.filter(Boolean);
-  if (!validTokens.length) return null;
-  if (validTokens.includes(headerToken ?? "") || validTokens.includes(cookieToken ?? "")) return null;
-  return json({ error: "CRM access token required" }, 401);
+  return candidateTokens.map(cleanAuthValue).filter(Boolean);
+}
+
+function cleanAuthValue(value: string | null | undefined) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 export async function readLeads(env: Env): Promise<Lead[]> {

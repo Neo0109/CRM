@@ -2,7 +2,7 @@ import { FileSpreadsheet } from "lucide-react";
 import { useState } from "react";
 import { excelExportUrl } from "./api";
 
-export function SettingsPage({ onStatus }: { onStatus: (message: string) => void; onTokenChanged: (token: string) => void }) {
+export function SettingsPage({ onStatus }: { onStatus: (message: string) => void }) {
   const [downloadPassword, setDownloadPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -28,8 +28,12 @@ export function SettingsPage({ onStatus }: { onStatus: (message: string) => void
         <h3>密码管理</h3>
         <p className="subline">登录密码和 Excel 导出密码都统一在 Cloudflare 管理，CRM 里不再单独保存账号信息。</p>
         <div className="insight-card">
+          <strong>登录账号</strong>
+          <p className="subline">在 Cloudflare 的 Variables and Secrets 里设置 <code>CRM_USERNAME</code>。</p>
+        </div>
+        <div className="insight-card">
           <strong>登录密码</strong>
-          <p className="subline">在 Cloudflare 的 Variables and Secrets 里修改 <code>CRM_ACCESS_TOKEN</code>。</p>
+          <p className="subline">在 Cloudflare 的 Variables and Secrets 里设置或修改 <code>CRM_ACCESS_TOKEN</code>。</p>
         </div>
         <div className="insight-card">
           <strong>Excel 导出密码</strong>

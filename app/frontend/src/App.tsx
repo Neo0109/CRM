@@ -1,7 +1,8 @@
 import { AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { clearAccessToken, excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessToken, saveAccessToken, syncLatestReport, updateLead } from "./api";
+import { clearAccessToken, excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
+import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
@@ -84,17 +85,24 @@ export default function App() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tokenDraft, setTokenDraft] = useState(getAccessToken());
+  const [isAuthenticated, setIsAuthenticated] = useState(hasSavedCredentials());
+  const [loginPending, setLoginPending] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const [radar, setRadar] = useState<RadarReport | null>(null);
   const [radarLoading, setRadarLoading] = useState(false);
   const [steamTrends, setSteamTrends] = useState<SteamTrendReport | null>(null);
   const [steamLoading, setSteamLoading] = useState(false);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     void reload(true);
     void loadRadar();
     void loadSteamTrends();
-  }, []);
+  }, [isAuthenticated]);
 
   const stats = useMemo(() => ({
     total: leads.length,
@@ -142,7 +150,7 @@ export default function App() {
       setSelectedId((current) => current ?? nextLeads[0]?.id ?? null);
       setError(null);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "加载失败");
+      handleDataError(nextError, "加载失败");
     } finally {
       setLoading(false);
     }
@@ -154,7 +162,7 @@ export default function App() {
       setRadar(await fetchRadar(date));
       setError(null);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "行业雷达加载失败");
+      handleDataError(nextError, "行业雷达加载失败");
     } finally {
       setRadarLoading(false);
     }
@@ -171,9 +179,34 @@ export default function App() {
       }
       setError(null);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Steam 趋势加载失败");
+      handleDataError(nextError, "Steam 趋势加载失败");
     } finally {
       setSteamLoading(false);
+    }
+  }
+
+  function handleDataError(nextError: unknown, fallback: string) {
+    const message = nextError instanceof Error ? nextError.message : fallback;
+    if (isAuthError(message)) {
+      clearAccessToken();
+      setIsAuthenticated(false);
+      setLoginError("登录已失效，请重新输入账号和密码。");
+    }
+    setError(message);
+  }
+
+  async function handleLogin(username: string, password: string) {
+    try {
+      setLoginPending(true);
+      setLoginError(null);
+      await loginToCrm({ username, password });
+      setError(null);
+      setStatus(null);
+      setIsAuthenticated(true);
+    } catch (nextError) {
+      setLoginError(nextError instanceof Error ? nextError.message : "登录失败");
+    } finally {
+      setLoginPending(false);
     }
   }
 
@@ -202,7 +235,8 @@ export default function App() {
 
   function logout() {
     clearAccessToken();
-    setTokenDraft("");
+    setIsAuthenticated(false);
+    setLoginError(null);
     setLeads([]);
     setSelectedId(null);
     setRadar(null);
@@ -212,7 +246,11 @@ export default function App() {
     setRadarLoading(false);
     setSteamLoading(false);
     setView("leads");
-    setError("CRM access token required");
+    setError(null);
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage error={loginError} loading={loginPending} onLogin={handleLogin} />;
   }
 
   return (
@@ -247,11 +285,6 @@ export default function App() {
 
       {status && <div className="notice">{status}</div>}
       {error && <div className="notice error">{error}</div>}
-      {error?.includes("CRM access token") && <section className="token-panel">
-        <strong>输入 CRM 访问口令</strong>
-        <input type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="CRM_ACCESS_TOKEN" />
-        <button className="primary-button" onClick={() => { saveAccessToken(tokenDraft); void reload(true); void loadRadar(); void loadSteamTrends(); }}>进入</button>
-      </section>}
 
       {view === "leads" ? <LeadsView
         leads={leads}
@@ -264,9 +297,13 @@ export default function App() {
         setSelectedId={setSelectedId}
         handleLeadPatch={handleLeadPatch}
         moveBucket={moveBucket}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : <SettingsPage onStatus={setStatus} onTokenChanged={setTokenDraft} />}
+      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : <SettingsPage onStatus={setStatus} />}
     </main>
   );
+}
+
+function isAuthError(message: string | null) {
+  return Boolean(message && (message.includes("CRM login required") || message.includes("CRM access token required")));
 }
 
 function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, handleLeadPatch, moveBucket }: {

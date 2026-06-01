@@ -66,6 +66,7 @@ const leadSchemaPath = path.join(rootDir, "schemas/sourcing_lead.schema.json");
 const dailyReportSchemaPath = path.join(rootDir, "schemas/daily_report.schema.json");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+const crmUsername = process.env.CRM_USERNAME?.trim();
 const crmAccessToken = process.env.CRM_ACCESS_TOKEN;
 const supabase = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey, {
@@ -90,21 +91,35 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "4mb" }));
 app.use((req, res, next) => {
-  if (!crmAccessToken || req.path === "/api/health" || !req.path.startsWith("/api")) {
+  if (!crmAccessToken || req.path === "/api/health" || req.path === "/api/auth/login" || !req.path.startsWith("/api")) {
     next();
     return;
   }
 
-  if (req.headers["x-crm-token"] === crmAccessToken || readCookie(req.headers.cookie, "crm_access_token") === crmAccessToken) {
+  if (isValidLocalLogin(req.headers["x-crm-username"], req.headers["x-crm-token"], req.headers.cookie)) {
     next();
     return;
   }
 
-  res.status(401).json({ error: "CRM access token required" });
+  res.status(401).json({ error: "CRM login required" });
 });
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, storage: supabase ? "supabase" : "json", version: "v2.0-bd-efficiency-workflow" });
+  res.json({ ok: true, storage: supabase ? "supabase" : "json", version: "v2.0-bd-efficiency-workflow", env: { hasCrmUsername: Boolean(crmUsername), hasCrmAccessToken: Boolean(crmAccessToken) } });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const username = cleanAuthValue(req.body?.username);
+  const password = typeof req.body?.password === "string" ? req.body.password : "";
+  const validUsername = crmUsername ? username === crmUsername : Boolean(username);
+  const validPassword = crmAccessToken ? password === crmAccessToken : Boolean(password);
+
+  if (!validUsername || !validPassword) {
+    res.status(401).json({ error: "账号或密码无效" });
+    return;
+  }
+
+  res.json({ ok: true, username: crmUsername || username });
 });
 
 app.get("/api/leads", async (_req, res, next) => {
@@ -414,4 +429,16 @@ function readCookie(header: string | undefined, name: string) {
   if (!header) return null;
   const match = header.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name}=`));
   return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+}
+
+function isValidLocalLogin(rawUsername: string | string[] | undefined, rawToken: string | string[] | undefined, cookieHeader: string | undefined) {
+  const submittedUsername = cleanAuthValue(Array.isArray(rawUsername) ? rawUsername[0] : rawUsername) || readCookie(cookieHeader, "crm_username") || "";
+  const submittedToken = (Array.isArray(rawToken) ? rawToken[0] : rawToken) || readCookie(cookieHeader, "crm_access_token") || "";
+  const validUsername = crmUsername ? cleanAuthValue(submittedUsername) === crmUsername : true;
+  const validToken = crmAccessToken ? submittedToken === crmAccessToken : true;
+  return validUsername && validToken;
+}
+
+function cleanAuthValue(value: string | null | undefined) {
+  return typeof value === "string" ? value.trim() : "";
 }

@@ -1,6 +1,7 @@
 import type { CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport, WeeklyReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
+const usernameKey = "sourcing-crm-username";
 
 type SyncResult = ImportResult & {
   synced: boolean;
@@ -15,15 +16,27 @@ export type ImportJsonResult = ImportResult & {
   imported: number;
 };
 
+export type LoginPayload = {
+  username: string;
+  password: string;
+};
+
+export type LoginResult = {
+  ok: boolean;
+  username: string;
+};
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getAccessToken();
+  const username = getAccessUsername();
   const response = await fetch(url, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(username ? { "x-crm-username": username } : {}),
       ...(token ? { "x-crm-token": token } : {}),
       ...options?.headers
-    },
-    ...options
+    }
   });
 
   if (!response.ok) {
@@ -32,6 +45,23 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+export async function loginToCrm(payload: LoginPayload) {
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }));
+    throw new Error(error.error ?? "登录失败");
+  }
+
+  const result = await response.json() as LoginResult;
+  saveAccessCredentials(result.username || payload.username, payload.password);
+  return result;
 }
 
 export function fetchLeads() {
@@ -102,13 +132,29 @@ export function getAccessToken() {
   return window.localStorage.getItem(tokenKey) ?? "";
 }
 
-export function saveAccessToken(token: string) {
-  window.localStorage.setItem(tokenKey, token);
+export function getAccessUsername() {
+  return window.localStorage.getItem(usernameKey) ?? "";
+}
+
+export function hasSavedCredentials() {
+  return Boolean(getAccessToken());
+}
+
+export function saveAccessCredentials(username: string, token: string) {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  window.localStorage.setItem(usernameKey, username.trim());
+  window.localStorage.setItem(tokenKey, token);
+  document.cookie = `crm_username=${encodeURIComponent(username.trim())}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
   document.cookie = `crm_access_token=${encodeURIComponent(token)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
 }
 
+export function saveAccessToken(token: string) {
+  saveAccessCredentials(getAccessUsername(), token);
+}
+
 export function clearAccessToken() {
+  window.localStorage.removeItem(usernameKey);
   window.localStorage.removeItem(tokenKey);
+  document.cookie = "crm_username=; Path=/; Max-Age=0; SameSite=Lax";
   document.cookie = "crm_access_token=; Path=/; Max-Age=0; SameSite=Lax";
 }

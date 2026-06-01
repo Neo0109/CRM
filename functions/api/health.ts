@@ -13,6 +13,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
     env: {
       hasSupabaseUrl,
       hasSupabaseSecret,
+      hasCrmUsername: Boolean(env.CRM_USERNAME),
       hasCrmAccessToken: Boolean(env.CRM_ACCESS_TOKEN),
       hasOpenAiApiKey,
       hasExcelExportPassword
