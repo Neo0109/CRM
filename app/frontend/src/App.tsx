@@ -292,7 +292,7 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
     <section className="dashboard-head">
       <div>
         <p className="eyebrow">工作台</p>
-        <h2>早上好，Neo0109</h2>
+        <h2>早上好，Neo</h2>
         <p>今天是 {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}。当前聚焦：{activeFilterLabel(filters)}。</p>
       </div>
       <div className="dashboard-head-meta">
