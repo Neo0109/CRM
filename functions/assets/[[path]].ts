@@ -1,7 +1,7 @@
 import type { PagesContext } from "../_lib/crm";
 
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@58ae19ab734dc236323d333aa6ee49d9a9093813/app/frontend/dist/assets";
-const assetVersion = "20260602-official-bilibili-logo";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@e75ab01b869face0dcc54ee4f881c5bcf3a0f84c/app/frontend/dist/assets";
+const assetVersion = "20260602-daily-philosophy-hero";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/${fileName}?v=${assetVersion}`;
