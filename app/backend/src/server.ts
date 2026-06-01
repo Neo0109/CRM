@@ -118,7 +118,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.1-version-governance",
+    version: "v2.2-sidebar-rhythm-philosophy-rotation",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,

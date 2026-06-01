@@ -9,7 +9,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
 
   return json({
     ok: true,
-    version: "v2.1-version-governance",
+    version: "v2.2-sidebar-rhythm-philosophy-rotation",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,

@@ -87,10 +87,14 @@ button:hover {
 }
 
 .hero-subtitle {
-  color: #626b78;
+  background: rgba(255, 247, 250, 0.72);
+  border-left: 2px solid var(--pink);
+  border-radius: 0 8px 8px 0;
+  color: #4f5968;
   font-size: 13px;
   line-height: 1.78;
-  margin-top: 14px;
+  margin-top: 16px;
+  padding: 8px 10px;
 }
 
 .actions {
@@ -995,7 +999,7 @@ button:hover {
     align-items: start;
     display: grid;
     gap: 0;
-    grid-template-columns: 168px minmax(0, 1fr);
+    grid-template-columns: 198px minmax(0, 1fr);
     padding: 0;
   }
 
@@ -1009,12 +1013,12 @@ button:hover {
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 22px;
     grid-column: 1;
     grid-row: 1 / span 40;
     margin: 0;
     min-height: 100vh;
-    padding: 18px 8px;
+    padding: 24px 14px;
     position: sticky;
     top: 0;
   }
@@ -1023,31 +1027,34 @@ button:hover {
     align-self: stretch;
     gap: 0;
     max-width: none;
-    padding: 0 0 2px;
+    padding: 0 2px 4px;
     width: 100%;
   }
 
   .brand-mark {
-    height: 26px;
-    margin-bottom: 16px;
-    width: 66px;
+    height: 30px;
+    margin-bottom: 20px;
+    width: 76px;
   }
 
   .hero-copy .eyebrow::after {
-    font-size: 10px;
+    font-size: 11px;
+    line-height: 1.35;
     white-space: nowrap;
   }
 
   h1 {
-    font-size: 18px;
-    line-height: 1.16;
+    font-size: 21px;
+    line-height: 1.18;
+    margin-top: 2px;
   }
 
   .hero-subtitle {
     font-size: 12px;
     line-height: 1.72;
-    margin-top: 12px;
-    max-width: 190px;
+    margin-top: 16px;
+    max-width: none;
+    padding: 9px 10px;
   }
 
   .actions {
@@ -1085,11 +1092,11 @@ button:hover {
   .actions .ghost-button,
   .actions .tab-button {
     border-radius: 9px;
-    font-size: 13px;
+    font-size: 14px;
     gap: 7px;
     justify-content: flex-start;
-    min-height: 32px;
-    padding: 6px 7px;
+    min-height: 34px;
+    padding: 7px 9px;
     width: 100%;
   }
 

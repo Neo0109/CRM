@@ -26,12 +26,22 @@ function shanghaiDateKey(date = new Date()) {
   }).format(date);
 }
 
+function shanghaiHour(date = new Date()) {
+  return Number(new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Shanghai"
+  }).format(date));
+}
+
 function dayIndex(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number);
   return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
 }
 
 export function getDailyPhilosophyQuote(date = new Date()) {
-  const quote = philosophyQuotes[dayIndex(shanghaiDateKey(date)) % philosophyQuotes.length];
+  const hour = shanghaiHour(date);
+  const dayPart = hour < 12 ? 0 : hour < 18 ? 1 : 2;
+  const quote = philosophyQuotes[(dayIndex(shanghaiDateKey(date)) * 3 + dayPart) % philosophyQuotes.length];
   return `${quote.text} -- ${quote.author}`;
 }

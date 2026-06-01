@@ -2,7 +2,7 @@ const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@e75ab01b869face0dcc54
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
 const assetVersion = "20260602-daily-philosophy-hero";
-const brandLabel = "Neo's BD Matrix · v2.1";
+const brandLabel = "Neo's BD Matrix · v2.2";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
