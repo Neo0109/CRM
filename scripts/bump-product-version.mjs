@@ -75,7 +75,7 @@ for (const file of ["functions/api/health.ts", "app/backend/src/server.ts"]) {
 let context = readText("docs/CRM_OPTIMIZATION_CONTEXT.md");
 context = replaceRequired(
   context,
-  /Current product version after the version governance update: `v[^`]+`/,
+  /Current product version after (?:the version governance update|the latest product iteration): `v[^`]+`/,
   `Current product version after the latest product iteration: \`${nextVersion}\``,
   "docs/CRM_OPTIMIZATION_CONTEXT.md"
 );

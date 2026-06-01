@@ -323,6 +323,9 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
   moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
 }) {
   const insights = useMemo(() => buildSourcingInsights(leads, stats), [leads, stats]);
+  const greeting = getDashboardGreeting();
+  const todayLabel = formatShanghaiLongDate();
+  const focusLabel = activeFilterLabel(filters);
 
   function applyMetricFilter(patch: Partial<Filters>) {
     setFilters({ ...emptyFilters, ...patch });
@@ -331,10 +334,14 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
 
   return <>
     <section className="dashboard-head">
-      <div>
+      <div className="dashboard-copy">
         <p className="eyebrow">工作台</p>
-        <h2>早上好，Neo</h2>
-        <p>今天是 {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}。当前聚焦：{activeFilterLabel(filters)}。</p>
+        <h2>{greeting.title}</h2>
+        <div className="dashboard-context">
+          <span>{todayLabel}</span>
+          <span>当前聚焦：{focusLabel}</span>
+          <span>{greeting.note}</span>
+        </div>
       </div>
       <div className="dashboard-head-meta">
         <span>{filteredLeads.length} / {stats.total} 条记录</span>
@@ -379,10 +386,7 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
 
     <section className="sourcing-brief">
       <div className="brief-head">
-        <div>
-          <p className="eyebrow">本周 Sourcing 概览</p>
-          <h3>把可商务推进、待验证、应淘汰的边界看清楚</h3>
-        </div>
+        <h3>本周 Sourcing 概况</h3>
         <span>{insights.weekLabel}</span>
       </div>
       <article className="brief-card">
@@ -473,6 +477,29 @@ function activeFilterLabel(filters: Filters) {
   if (filters.bucket !== "全部") return filters.bucket;
   if (filters.query) return "搜索结果";
   return "Leads Review";
+}
+
+function getDashboardGreeting(date = new Date()) {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Shanghai"
+  }).format(date));
+
+  if (hour < 6) return { title: "早点休息，Neo", note: "现在是北京时间深夜，先保留精力。" };
+  if (hour < 12) return { title: "早上好，Neo", note: "先处理最需要判断的新线索。" };
+  if (hour < 18) return { title: "下午好，Neo", note: "适合推进评测、补证据和确认下一步。" };
+  return { title: "晚上好，Neo", note: "收束今天的跟进，把明天要看的项目留清楚。" };
+}
+
+function formatShanghaiLongDate(date = new Date()) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    day: "numeric",
+    month: "long",
+    timeZone: "Asia/Shanghai",
+    weekday: "long",
+    year: "numeric"
+  }).format(date);
 }
 
 function buildSourcingInsights(leads: Lead[], stats: DashboardStats): SourcingInsights {

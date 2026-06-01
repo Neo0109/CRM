@@ -2,7 +2,7 @@ const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@7fb27d1da7213f38b96d3
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
 const assetVersion = "20260602-sidebar-rhythm-v22";
-const brandLabel = "Neo's BD Matrix · v2.2";
+const brandLabel = "Neo's BD Matrix · v2.3";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/assets/${fileName}?v=${assetVersion}`;

@@ -27,7 +27,7 @@ function shanghaiDateKey(date = new Date()) {
 }
 
 function shanghaiHour(date = new Date()) {
-  return Number(new Intl.DateTimeFormat("en-US", {
+  return Number(new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     hour12: false,
     timeZone: "Asia/Shanghai"
