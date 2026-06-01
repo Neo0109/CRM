@@ -9,8 +9,10 @@ const minCandidates = numberArg(args.minCandidates, 8);
 const minReviewCandidates = numberArg(args.minReviewCandidates, 3);
 const minRadarItems = numberArg(args.minRadarItems, 8);
 const minSteamTrendItems = numberArg(args.minSteamTrendItems, 8);
+const minSteamMarketInsights = numberArg(args.minSteamMarketInsights, 3);
+const minSteamGenreSignals = numberArg(args.minSteamGenreSignals, 3);
 
-const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates, minRadarItems, minSteamTrendItems });
+const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates, minRadarItems, minSteamTrendItems, minSteamMarketInsights, minSteamGenreSignals });
 
 if (args.githubOutput) {
   appendGithubOutput(args.githubOutput, {
@@ -46,7 +48,9 @@ function inspectDailyReport(date, thresholds) {
     watch: report?.watch_pool?.length ?? 0,
     drop: report?.drop_pool?.length ?? 0,
     radar_items: radar?.items?.length ?? 0,
-    steam_trend_items: steamTrends?.items?.length ?? 0
+    steam_trend_items: steamTrends?.items?.length ?? 0,
+    steam_market_insights: steamTrends?.market_insights?.length ?? 0,
+    steam_genre_signals: steamTrends?.genre_signals?.length ?? 0
   };
   counts.total = counts.push + counts.watch + counts.drop;
   counts.review = counts.push + counts.watch;
@@ -58,6 +62,8 @@ function inspectDailyReport(date, thresholds) {
   if (report && counts.review < thresholds.minReviewCandidates) reasons.push(`review candidate count ${counts.review} below threshold ${thresholds.minReviewCandidates}`);
   if (radar && counts.radar_items < thresholds.minRadarItems) reasons.push(`radar item count ${counts.radar_items} below threshold ${thresholds.minRadarItems}`);
   if (steamTrends && counts.steam_trend_items < thresholds.minSteamTrendItems) reasons.push(`steam trend item count ${counts.steam_trend_items} below threshold ${thresholds.minSteamTrendItems}`);
+  if (steamTrends && counts.steam_market_insights < thresholds.minSteamMarketInsights) reasons.push(`steam market insight count ${counts.steam_market_insights} below threshold ${thresholds.minSteamMarketInsights}`);
+  if (steamTrends && counts.steam_genre_signals < thresholds.minSteamGenreSignals) reasons.push(`steam genre signal count ${counts.steam_genre_signals} below threshold ${thresholds.minSteamGenreSignals}`);
 
   const receipts = readReceipts(date);
   const successfulReceipt = receipts.find((receipt) => receipt.status === "success" || /"synced"\s*:\s*true/.test(String(receipt.sync_response ?? "")));

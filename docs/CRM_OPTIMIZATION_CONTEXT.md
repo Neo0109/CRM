@@ -12,7 +12,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Current generator: `automations/jobs/online_daily_v4.mjs`
 - Rule guard runner: `automations/jobs/online_daily_runner.mjs`
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
-- Canonical V4 rules: `docs/SOURCING_RULES_V4.md`
+- Canonical V5 rules: `docs/SOURCING_RULES_V5.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
 - Current product version after the BD efficiency workflow update: `v2.0`
 
@@ -53,17 +53,22 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
-## Sourcing Rules V4 Iteration
+## Sourcing Rules V5 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v4`, focused on domestic-first BD probability.
+The latest sourcing-logic iteration is `sourcing-rules-v5`, focused on keeping Steam Trends as a real Steam market board while preserving domestic-first BD probability.
 
-V4 intent:
+V5 intent:
 
 - Domestic products are the sourcing default because cooperation, efficiency, visual/cultural fit, and signing probability are materially better.
 - Domestic developer Demo/test signals are promoted.
 - Overseas products only consume review slots when there is PC hit validation and a credible mobile-adaptation angle.
 - The old 60-day window is not the only useful window; domestic early-stage projects can be reviewed over a longer horizon.
 - Domestic source coverage expands through Chinese game media, Bilibili video/search signals, indienova, developer communities, and official studio posts.
+- Steam Trends must cover category risers, Demo/Next Fest or other Steam windows, publisher/developer slate signals, public data quality, and BD actions. It must not display internal sourcing-rule notes as market insights.
+
+## Sourcing Rules V4 Iteration
+
+The previous sourcing-logic iteration was `sourcing-rules-v4`, focused on domestic-first BD probability.
 
 ## Sourcing Rules V3 Iteration
 
@@ -92,7 +97,7 @@ The cleanup added:
 
 Known remaining cleanup:
 
-- `online_daily_v4.mjs` still contains hard-coded V4 logic.
+- `online_daily_v4.mjs` still contains hard-coded generator logic while executing the current rule version.
 - Future work should gradually move thresholds, source weights, radar categories, exclusion guardrails, and scoring knobs into `automations/rules/daily-report.json`.
 
 ## CRM Product Logic V1.8

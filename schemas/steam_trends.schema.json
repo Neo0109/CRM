@@ -6,6 +6,38 @@
   "properties": {
     "report_date": { "type": "string", "format": "date" },
     "summary": { "type": "string" },
+    "market_insights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "summary", "signal_level", "source", "link", "suggested_action", "captured_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "signal_level": { "enum": ["高", "中", "低"] },
+          "source": { "type": "string" },
+          "link": { "type": "string" },
+          "suggested_action": { "type": "string" },
+          "captured_at": { "type": "string" }
+        }
+      }
+    },
+    "genre_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "genre", "signal", "why_it_matters", "bd_action", "links"],
+        "properties": {
+          "id": { "type": "string" },
+          "genre": { "type": "string" },
+          "signal": { "type": "string" },
+          "why_it_matters": { "type": "string" },
+          "bd_action": { "type": "string" },
+          "links": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
     "items": {
       "type": "array",
       "items": {

@@ -1,13 +1,13 @@
 # Current Daily Report Rules
 
-Date: 2026-05-31
+Date: 2026-06-01
 
-The current daily report rule version is `sourcing-rules-v4`.
+The current daily report rule version is `sourcing-rules-v5`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V4.md
+docs/SOURCING_RULES_V5.md
 ```
 
 Machine-readable automation rule source:
@@ -78,9 +78,11 @@ The online generator must preserve the product intent of these rules:
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
 - Industry Radar is a compact China + overseas news board. `行业新闻` is reserved for macro market/platform/regulatory/company-level news. Concrete game recommendations, fun products, IP moments, legal/company gossip, and former `发行八卦` items belong in `今日亮点`.
 - Radar output should be broad enough to show trends, not just a few similar cards. When sources are available, include both domestic and global signals across macro news, product highlights, AI/tooling, memes/community, and Bilibili trends.
+- Steam Trends is a Steam market board, not a sourcing-rule mirror. It must cover category risers, Steam official/community windows such as Demo/Next Fest, publisher/developer slate signals, public data quality, and concrete BD implications.
+- Steam Trends market insights must cite Steam, SteamDB, AppDetails, official event pages, or observable public data. They must not cite CRM rule docs or internal automation changes.
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded V4 scoring and formatting logic. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v5`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.

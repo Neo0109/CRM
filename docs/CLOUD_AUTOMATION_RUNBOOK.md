@@ -40,6 +40,7 @@ The contract checks:
 - Steam store and SteamDB URLs stay in `links`, not `contact_methods`.
 - Industry Radar does not put internal automation/rule notes under `行业新闻`.
 - Industry Radar uses `今日亮点` for concrete games, recommendations, fun products, IP/company/legal gossip, and former `发行八卦` items. `行业新闻` is reserved for macro market/platform/regulatory/company-level news.
+- Steam Trends uses Steam market-board structure: `market_insights`, `genre_signals`, and candidate samples. It must not cite CRM rule docs or internal automation notes as market signals.
 - Industry Radar and Steam Trends must both have enough items; a network-failed run that writes empty Steam trends is invalid.
 
 `automations/jobs/online_daily_runner.mjs` runs this contract automatically after generation, so the cloud job fails before committing broken structure.
@@ -57,7 +58,7 @@ The watchdog checks:
 - Required files exist.
 - A successful sync receipt exists.
 - Candidate counts are above the minimum useful threshold.
-- Radar and Steam Trends are above the minimum useful thresholds.
+- Radar, Steam Trends, Steam market insights, and Steam genre signals are above the minimum useful thresholds.
 
 If unhealthy, it returns `needs_run = true` with reasons.
 

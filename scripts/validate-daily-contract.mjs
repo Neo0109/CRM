@@ -7,7 +7,9 @@ const args = parseArgs(process.argv.slice(2));
 const dates = args.all ? availableReportDates() : [args.date ?? latestReportDate()];
 const thresholds = {
   minRadarItems: numberArg(args.minRadarItems, 8),
-  minSteamTrendItems: numberArg(args.minSteamTrendItems, 8)
+  minSteamTrendItems: numberArg(args.minSteamTrendItems, 8),
+  minSteamMarketInsights: numberArg(args.minSteamMarketInsights, 3),
+  minSteamGenreSignals: numberArg(args.minSteamGenreSignals, 3)
 };
 const allErrors = [];
 const summaries = [];
@@ -63,6 +65,8 @@ function validateDate(date, thresholds) {
   if (steamTrends.report_date !== date) errors.push(`report_date mismatch in ${files.steamTrends}: ${steamTrends.report_date}`);
   if ((radar.items?.length ?? 0) < thresholds.minRadarItems) errors.push(`radar has fewer than ${thresholds.minRadarItems} items`);
   if ((steamTrends.items?.length ?? 0) < thresholds.minSteamTrendItems) errors.push(`steam trends has fewer than ${thresholds.minSteamTrendItems} items`);
+  if ((steamTrends.market_insights?.length ?? 0) < thresholds.minSteamMarketInsights) errors.push(`steam trends has fewer than ${thresholds.minSteamMarketInsights} market insights`);
+  if ((steamTrends.genre_signals?.length ?? 0) < thresholds.minSteamGenreSignals) errors.push(`steam trends has fewer than ${thresholds.minSteamGenreSignals} genre signals`);
 
   const poolEntries = [
     ...poolLeads(report, "push_pool"),
@@ -98,6 +102,12 @@ function validateDate(date, thresholds) {
       errors.push(`radar item is not external industry news: ${item.title}`);
     }
   }
+  for (const item of steamTrends.market_insights ?? []) {
+    const text = `${item.title} ${item.summary} ${item.source} ${item.link} ${item.suggested_action}`;
+    if (/CRM Sourcing|SOURCING_RULES|sourcing-rules|github\.com\/Neo0109\/CRM|内部自动化|日报规则|规则说明|非淘汰项目统一/i.test(text)) {
+      errors.push(`steam market insight uses internal rule/source instead of Steam market signal: ${item.title}`);
+    }
+  }
 
   return {
     errors,
@@ -107,7 +117,9 @@ function validateDate(date, thresholds) {
       watch: report.watch_pool?.length ?? 0,
       drop: report.drop_pool?.length ?? 0,
       radar_items: radar.items?.length ?? 0,
-      steam_trend_items: steamTrends.items?.length ?? 0
+      steam_trend_items: steamTrends.items?.length ?? 0,
+      steam_market_insights: steamTrends.market_insights?.length ?? 0,
+      steam_genre_signals: steamTrends.genre_signals?.length ?? 0
     }
   };
 }

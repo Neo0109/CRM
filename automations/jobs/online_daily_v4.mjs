@@ -1,4 +1,4 @@
-// Online CRM generator v4: Sourcing Rules V4.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V5.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -593,7 +593,7 @@ function buildRisks(candidate, dropReason) {
 }
 
 function buildVerdict(className, dropReason) {
-  if (className === "push") return "符合V4重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求";
+  if (className === "push") return "符合V5重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求";
   if (className === "drop") return `${dropReason}，暂不投入BD时间`;
   return "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰";
 }
@@ -605,9 +605,9 @@ function buildNextAction(className) {
 }
 
 function buildLeadNote(candidate, className, dropReason) {
-  if (className === "drop") return `V4判断：${dropReason}。`;
-  if (className === "push") return "V4判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。";
-  return "V4判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。";
+  if (className === "drop") return `V5判断：${dropReason}。`;
+  if (className === "push") return "V5判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。";
+  return "V5判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。";
 }
 
 function buildBilibiliFit(candidate) {
@@ -783,12 +783,13 @@ function hashText(value) {
 function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V4线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V5线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V4把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V5把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
+      "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
       "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断，国内项目先测再商务。",
       "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
@@ -808,7 +809,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
     "bilibili_bd_lens",
     "B站趋势",
     `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
-    `样本高频不等于推荐。V4只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
+    `样本高频不等于推荐。V5只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
     "中",
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
@@ -817,32 +818,30 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V4行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V5行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
 
 function buildSteamTrendReport(candidates, pools) {
-  const genres = summarizeGenres(candidates);
+  const marketInsights = buildSteamMarketInsights(candidates, pools);
+  const genreSignals = buildSteamGenreSignals(candidates);
+  const focusGenres = genreSignals.slice(0, 3).map((signal) => signal.genre.replace(/（.+$/, ""));
   return {
     report_date: reportDate,
-    summary: `今日Steam趋势V4：扫描 ${candidates.length} 个候选，推进 ${pools.push.length}、观察 ${pools.watch.length}、淘汰 ${pools.drop.length}。本页只服务BD判断：国内优先、海外看PC验证与手游化角度。`,
-    market_insights: [
-      steamInsight("bd_decision_cards", "趋势页改为BD判断卡", "V4不再把Indie、Adventure这类标签当趋势结论；每个候选必须写清玩法、公开数据、优势短板、B站赋能和BD动作。", "高", "CRM Sourcing V4", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V4.md", "只把能辅助商务判断的信息留在趋势页。"),
-      steamInsight("domestic_first", "国内项目优先，国内Demo提权", "国内团队在配合度、沟通效率、画风文化适配和B站内容协同上成功率更高；国内开发者Demo/试玩信号进入更高优先级。", "高", "CRM Sourcing V4", "https://github.com/Neo0109/CRM/blob/main/docs/SOURCING_RULES_V4.md", "优先看国内项目的Demo质量、联系方式、发行占位和B站可放大点。"),
-      steamInsight("push_watch_drop", `今日复核结构：强信号${pools.push.length} / 普通候选${pools.watch.length} / 淘汰${pools.drop.length}`, "自动化只给优先级和淘汰理由，非淘汰项目统一进入未处理 inbox，避免误把未读线索塞进观察池。", "中", "CRM Online Scan", "https://store.steampowered.com/search/?filter=popularcomingsoon", "先处理未处理 inbox，再由人工分配观察池、待评测或跟进。")
-    ],
-    genre_signals: [],
-    items: candidates.slice(0, 12).map((candidate) => ({
+    summary: `Steam大盘V5：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    market_insights: marketInsights,
+    genre_signals: genreSignals,
+    items: selectSteamTrendSamples(candidates).map((candidate) => ({
       id: `steam_trend_${reportDate.replaceAll("-", "_")}_${candidate.appId}`,
       title: candidate.title,
       steam_app_id: candidate.appId,
       rank_bucket: candidate.source,
-      signal: buildV4SteamSignal(candidate),
+      signal: buildV5SteamSignal(candidate),
       source: "Steam Store / AppDetails",
       links: [candidate.storeUrl, candidate.steamDbUrl],
       bilibili_fit: buildBilibiliFit(candidate),
-      reason: buildV4TrendReason(candidate),
+      reason: buildV5TrendReason(candidate),
       auto_import: candidate.score >= 24 && !hardDropReason(candidate),
       captured_at: capturedAt
     })),
@@ -1225,16 +1224,190 @@ function isMetaBilibiliTrend(item) {
   return /\b(trend|ranking|weekly|monthly|creator|streamer|community)\b|趋势|榜单|周榜|月榜|盘点|生态|up主|创作者|直播|热搜|话题|弹幕|播放|内容风向/.test(text);
 }
 
-function buildV4SteamSignal(candidate) {
+function buildSteamMarketInsights(candidates, pools) {
+  const clusters = buildSteamGenreSignals(candidates);
+  const domestic = candidates.filter((candidate) => candidate.region === "中国");
+  const demoCandidates = candidates.filter((candidate) => candidate.hasDemoSignal || /Demo|Next Fest|试玩|新品节/i.test(candidate.source));
+  const strongDataCandidates = candidates.filter((candidate) => candidate.strongData || candidate.validatedPcHit || candidate.recommendationCount >= 500);
+  const publisherRows = topPublishers(candidates);
+  const upcomingLink = "https://store.steampowered.com/search/?filter=popularcomingsoon";
+  const nextFestLink = "https://store.steampowered.com/sale/nextfest";
+  const chartsLink = "https://steamdb.info/charts/";
+  const topSellersLink = "https://store.steampowered.com/search/?filter=topsellers";
+
   return [
-    `数据：${candidate.source}；发售窗口 ${candidate.releaseDate}；score=${candidate.score}；推荐数 ${candidate.recommendationCount || "无公开"}；素材 ${candidate.screenshotCount}图/${candidate.movieCount}视频。`,
-    `玩法：${candidate.shortDescription || candidate.genres.join(" / ") || "待打开Steam页确认玩法循环"}。`,
-    `优势：${buildProductStrength(candidate)}。`,
-    `短板：${buildProductWeakness(candidate)}。`
+    steamInsight(
+      "category_risers",
+      `近期冒头品类：${clusters.slice(0, 3).map((item) => item.genre.replace(/（.+$/, "")).join("、") || "待观察"}`,
+      clusters.length
+        ? `样本中 ${clusters.slice(0, 4).map((item) => item.genre).join("、")} 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。`
+        : "今日 Steam 样本没有形成稳定品类聚类，先观察新品窗口和榜单波动。",
+      "高",
+      "Steam Store / AppDetails scan",
+      upcomingLink,
+      "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。"
+    ),
+    steamInsight(
+      "demo_window",
+      `Demo/活动窗口：${demoCandidates.length} 个候选带试玩或新品节信号`,
+      `其中国内相关 ${demoCandidates.filter((candidate) => candidate.region === "中国").length} 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。`,
+      demoCandidates.length >= 8 ? "高" : "中",
+      "Steam Demo / Next Fest / Upcoming",
+      nextFestLink,
+      "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。"
+    ),
+    steamInsight(
+      "publisher_slate",
+      `发行商新品：${publisherRows.length ? publisherRows.slice(0, 4).map(([name, count]) => `${name}(${count})`).join("、") : "待确认"}`,
+      publisherRows.length
+        ? `今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。`
+        : "今日样本的发行商信息较分散，需要依靠单品质量和联系方式继续判断。",
+      publisherRows.length ? "中" : "低",
+      "Steam publisher/developer fields",
+      topSellersLink,
+      "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。"
+    ),
+    steamInsight(
+      "data_quality",
+      `数据面：${strongDataCandidates.length} 个样本有公开热度或强素材信号`,
+      `扫描样本 ${candidates.length} 个，国内 ${domestic.length} 个，推荐数/口碑/强数据命中 ${strongDataCandidates.length} 个，素材充足样本 ${candidates.filter((candidate) => candidate.screenshotCount >= 6 || candidate.movieCount >= 1).length} 个。`,
+      strongDataCandidates.length >= 8 ? "高" : "中",
+      "Steam recommendations / media assets / SteamDB",
+      chartsLink,
+      "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。"
+    )
+  ];
+}
+
+function buildSteamGenreSignals(candidates) {
+  const clusters = [
+    {
+      genre: "Roguelike / Deckbuilder",
+      pattern: /rogue|roguelike|deck|card|卡牌|构筑|肉鸽/i,
+      why: "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      action: "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      links: ["https://store.steampowered.com/tags/en/Roguelike/", "https://store.steampowered.com/tags/en/Deckbuilding/"]
+    },
+    {
+      genre: "Strategy / Tactical",
+      pattern: /strategy|tactical|turn|battle|war|策略|战棋|回合|战争|塔防/i,
+      why: "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      action: "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      links: ["https://store.steampowered.com/tags/en/Strategy/", "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"]
+    },
+    {
+      genre: "Simulation / Management",
+      pattern: /simulation|management|tycoon|city builder|colony|simulator|模拟|经营|建造|管理/i,
+      why: "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      action: "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      links: ["https://store.steampowered.com/tags/en/Simulation/", "https://store.steampowered.com/tags/en/Management/"]
+    },
+    {
+      genre: "Co-op / Multiplayer",
+      pattern: /co-op|multiplayer|online co-op|party|pvp|多人|合作|联机|派对|对战/i,
+      why: "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      action: "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      links: ["https://store.steampowered.com/tags/en/Co-op/", "https://store.steampowered.com/tags/en/Multiplayer/"]
+    },
+    {
+      genre: "Survival / Sandbox",
+      pattern: /survival|sandbox|craft|open world|生存|沙盒|开放世界|建造/i,
+      why: "生存沙盒容易产生长视频和社区服务器玩法，但内容体量、更新节奏和差异化很关键。",
+      action: "看首测是否有明确生存压力、社交目标和长期内容；素材不足先观察。",
+      links: ["https://store.steampowered.com/tags/en/Survival/", "https://store.steampowered.com/tags/en/Sandbox/"]
+    },
+    {
+      genre: "Action / Visual Hook",
+      pattern: /action|shooter|boss|combat|platformer|动作|射击|战斗|Boss|平台跳跃/i,
+      why: "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      action: "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      links: ["https://store.steampowered.com/tags/en/Action/", "https://store.steampowered.com/tags/en/Shooter/"]
+    }
+  ];
+
+  return clusters
+    .map((cluster) => {
+      const matched = candidates.filter((candidate) => cluster.pattern.test(candidateGenreText(candidate)));
+      const examples = matched.slice(0, 3).map((candidate) => candidate.title).join("、");
+      return {
+        ...cluster,
+        count: matched.length,
+        examples
+      };
+    })
+    .filter((cluster) => cluster.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+    .map((cluster) => ({
+      id: `steam_genre_${reportDate.replaceAll("-", "_")}_${normalizeText(cluster.genre).replace(/[^a-z0-9]+/g, "_")}`,
+      genre: `${cluster.genre}（${cluster.count}/${candidates.length}）`,
+      signal: `${cluster.count} 个候选命中；代表样本：${cluster.examples || "待打开Steam页确认"}。`,
+      why_it_matters: cluster.why,
+      bd_action: cluster.action,
+      links: cluster.links
+    }));
+}
+
+function selectSteamTrendSamples(candidates) {
+  const selected = [];
+  const seen = new Set();
+  for (const predicate of [
+    (candidate) => candidate.region === "中国" && candidate.hasDemoSignal,
+    (candidate) => candidate.region === "中国" && candidate.score >= 80,
+    (candidate) => candidate.strongData || candidate.validatedPcHit,
+    (candidate) => candidate.hasDemoSignal,
+    () => true
+  ]) {
+    for (const candidate of candidates) {
+      if (selected.length >= 12) return selected;
+      if (seen.has(candidate.appId) || !predicate(candidate)) continue;
+      selected.push(candidate);
+      seen.add(candidate.appId);
+    }
+  }
+  return selected;
+}
+
+function topPublishers(candidates) {
+  const counts = new Map();
+  for (const candidate of candidates) {
+    const names = [...candidate.publishers, ...candidate.developers].filter(Boolean).slice(0, 2);
+    for (const name of names) {
+      if (/unknown|tbd|待确认/i.test(name)) continue;
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()].filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1]).slice(0, 6);
+}
+
+function candidateGenreText(candidate) {
+  return [
+    candidate.title,
+    candidate.shortDescription,
+    ...(candidate.genres ?? []),
+    ...(candidate.categories ?? []),
+    candidate.source
+  ].join(" ");
+}
+
+function describeSteamCluster(candidate) {
+  const signal = buildSteamGenreSignals([candidate])[0]?.genre.replace(/（.+$/, "");
+  if (signal) return signal;
+  if (candidate.region === "中国") return "国内前置样本";
+  if (candidate.validatedPcHit) return "海外PC数据样本";
+  return "普通Upcoming样本";
+}
+
+function buildV5SteamSignal(candidate) {
+  return [
+    `大盘位置：${describeSteamCluster(candidate)}；来源 ${candidate.source}；发售窗口 ${candidate.releaseDate}。`,
+    `公开数据：推荐数 ${candidate.recommendationCount || "无公开"}；素材 ${candidate.screenshotCount}图/${candidate.movieCount}视频；${candidate.hasDemoSignal ? "有Demo/试玩窗口" : "暂无明确Demo信号"}。`,
+    `产品观察：${candidate.shortDescription || candidate.genres.join(" / ") || "待打开Steam页确认玩法循环"}。`,
+    `BD判断：优势 ${buildProductStrength(candidate)}；风险 ${buildProductWeakness(candidate)}。`
   ].join("\n");
 }
 
-function buildV4TrendReason(candidate) {
+function buildV5TrendReason(candidate) {
   if (candidate.alreadyReleased) return "不建议推进：Steam 显示已发售，已错过前置BD窗口，只可作为市场复盘。";
   if (candidate.releaseTooSoon && candidate.region !== "中国") return "不建议推进：海外项目窗口过近，只作为市场背景。";
   if (candidate.earlyAccess) return "不建议推进：Early Access命中排除项。";
