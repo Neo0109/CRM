@@ -1,7 +1,7 @@
 import type { PagesContext } from "../_lib/crm";
 
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist/assets";
-const assetVersion = "20260602-bilibili-brand-mark";
+const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@58ae19ab734dc236323d333aa6ee49d9a9093813/app/frontend/dist/assets";
+const assetVersion = "20260602-official-bilibili-logo";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/${fileName}?v=${assetVersion}`;
