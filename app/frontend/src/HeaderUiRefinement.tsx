@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export const headerLabel = "Neo's BD Matrix · v2.0";
+export const headerLabel = "Neo's BD Matrix · v2.0.5";
 
 function moveBefore(container: Element, beforeLabel: string, afterLabel: string) {
   const items = Array.from(container.children);
