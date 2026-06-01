@@ -75,6 +75,7 @@ The online generator must preserve the product intent of these rules:
 - Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
 - Candidate pools should be large enough for practical BD review. Small push pools are acceptable, but the unprocessed inbox should not collapse to one or two items when the upstream candidate scan is healthy.
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
+- Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
 
 ## Current Known Gap
 

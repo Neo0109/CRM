@@ -8,7 +8,7 @@ const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
 const requestedMaxCandidates = Number(args.maxCandidates ?? 260);
-const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.max(requestedMaxCandidates, 260) : 260;
+const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 40), 260) : 260;
 const existingProjects = await readExistingProjectNames(reportDate);
 
 const rawCandidates = dedupeByAppId((await Promise.all([
@@ -42,25 +42,21 @@ const rawCandidates = dedupeByAppId((await Promise.all([
   .filter((candidate) => candidate.appId && candidate.title && !existingProjects.has(normalizeText(candidate.title)))
   .slice(0, maxCandidates);
 
-if (!rawCandidates.length) {
-  throw new Error("No Steam candidates were fetched; refusing to overwrite daily reports with an empty run.");
-}
-
-const enrichedCandidates = [];
-for (const candidate of rawCandidates) {
-  const details = await fetchAppDetails(candidate.appId);
-  enrichedCandidates.push(await enrichCandidate(candidate, details));
-  await sleep(120);
-}
-
-if (!enrichedCandidates.length) {
-  throw new Error("No Steam candidates were enriched; refusing to overwrite daily reports with an empty run.");
-}
-
-enrichedCandidates.sort((a, b) => b.score - a.score);
 const mediaSignals = await fetchMediaSignals();
 const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 6);
 const mediaLeadCandidates = buildMediaLeadCandidates(mediaSignals, existingProjects);
+
+const enrichedCandidates = await enrichCandidates(rawCandidates);
+
+if (!rawCandidates.length && !mediaLeadCandidates.length) {
+  throw new Error("No Steam candidates or domestic media/Bilibili product leads were fetched; refusing to overwrite daily reports with an empty run.");
+}
+
+if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
+  throw new Error("No Steam candidates were enriched and no media/Bilibili product leads survived filtering; refusing to overwrite daily reports with an empty run.");
+}
+
+enrichedCandidates.sort((a, b) => b.score - a.score);
 const pools = buildPools(enrichedCandidates, mediaLeadCandidates);
 
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport(pools, rawCandidates.length, enrichedCandidates.length, mediaLeadCandidates.length));
@@ -242,6 +238,21 @@ async function fetchAppDetails(appId) {
     }
   }
   return null;
+}
+
+async function enrichCandidates(candidates) {
+  const enriched = [];
+  const concurrency = 8;
+  for (let index = 0; index < candidates.length; index += concurrency) {
+    const chunk = candidates.slice(index, index + concurrency);
+    const results = await Promise.all(chunk.map(async (candidate) => {
+      const details = await fetchAppDetails(candidate.appId);
+      return enrichCandidate(candidate, details);
+    }));
+    enriched.push(...results);
+    if (index + concurrency < candidates.length) await sleep(200);
+  }
+  return enriched;
 }
 
 async function enrichCandidate(candidate, details) {
@@ -658,7 +669,9 @@ function mediaSignalToLead(item) {
   const isBilibili = isBilibiliSignal(item);
   const isPush = score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(`${item.title} ${item.summary} ${item.source} ${item.link}`);
   const sourceLink = item.link;
-  const contactMethods = isBilibili ? [{ type: "B站", value: sourceLink, note: `${item.source} 原始视频/搜索入口` }] : [];
+  const contactMethods = isBilibili
+    ? [{ type: "B站", value: sourceLink, note: `${item.source} 原始视频/搜索入口` }]
+    : [{ type: "其他", value: sourceLink, note: `${item.source} 原始线索入口；首轮只做产品判断，通过后再补商务触点` }];
   const concise = normalizeDisplayText(item.summary || item.title).slice(0, 160);
 
   return {
