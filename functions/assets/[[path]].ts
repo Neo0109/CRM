@@ -1,7 +1,7 @@
 import type { PagesContext } from "../_lib/crm";
 
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist/assets";
-const assetVersion = "20260531-sidebar-save-v5";
+const assetVersion = "20260601-greeting-neo";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/${fileName}?v=${assetVersion}`;
