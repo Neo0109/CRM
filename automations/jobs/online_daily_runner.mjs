@@ -1,10 +1,13 @@
 // Loads the online daily-report rules before running the generator.
 // This keeps rule iteration visible and fail-fast in GitHub Actions.
+import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const rootDir = process.cwd();
+const args = parseArgs(process.argv.slice(2));
+const reportDate = args.date ?? todayInShanghai();
 const jobDir = path.dirname(fileURLToPath(import.meta.url));
 const rulesPath = path.join(rootDir, "automations/rules/daily-report.json");
 const generatorPath = path.join(jobDir, "online_daily_v4.mjs");
@@ -24,6 +27,7 @@ console.log(JSON.stringify({
 }, null, 2));
 
 await import(pathToFileURL(generatorPath).href);
+runDailyContractValidation(reportDate);
 
 async function loadRules(filePath) {
   try {
@@ -43,4 +47,29 @@ function validateRules(value) {
   if (value.active_rules_doc !== "docs/SOURCING_RULES_CURRENT.md") {
     throw new Error(`Unexpected active rules doc: ${value.active_rules_doc}`);
   }
+}
+
+function runDailyContractValidation(date) {
+  const result = spawnSync(process.execPath, ["scripts/validate-daily-contract.mjs", `--date=${date}`], {
+    cwd: rootDir,
+    stdio: "inherit"
+  });
+  if (result.status !== 0) {
+    throw new Error(`Daily report contract validation failed for ${date}.`);
+  }
+}
+
+function parseArgs(argv) {
+  const parsed = {};
+  for (const item of argv) {
+    const match = item.match(/^--([^=]+)=(.*)$/);
+    if (match) parsed[match[1]] = match[2];
+  }
+  return parsed;
+}
+
+function todayInShanghai() {
+  const parts = new Intl.DateTimeFormat("en", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const value = (type) => parts.find((part) => part.type === type)?.value ?? "00";
+  return `${value("year")}-${value("month")}-${value("day")}`;
 }
