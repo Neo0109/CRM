@@ -1,7 +1,7 @@
 const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@main/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260601-login-page-v1";
+const assetVersion = "20260601-login-page-v2";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
