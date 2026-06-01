@@ -550,7 +550,9 @@ function isCrmUser(user: CrmUser | null): user is CrmUser {
 
 function dedupeCrmUsers(users: CrmUser[]) {
   const byUsername = new Map<string, CrmUser>();
-  for (const user of users) byUsername.set(user.username, user);
+  for (const user of users) {
+    if (!byUsername.has(user.username)) byUsername.set(user.username, user);
+  }
   return [...byUsername.values()];
 }
 
