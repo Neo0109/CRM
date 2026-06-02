@@ -60,6 +60,7 @@ type DailyReport = {
 
 type CrmUser = {
   username: string;
+  display_name: string;
   password: string;
   role: string;
   permissions: string[];
@@ -118,7 +119,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.3.3-pages-local-assets-entry",
+    version: "v2.3.4-daily-inbox-user-display",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,
@@ -138,7 +139,7 @@ app.post("/api/auth/login", (req, res) => {
     return;
   }
 
-  res.json({ ok: true, username: result.user.username, role: result.user.role, permissions: result.user.permissions });
+  res.json({ ok: true, username: result.user.username, display_name: result.user.display_name, role: result.user.role, permissions: result.user.permissions });
 });
 
 app.get("/api/leads", async (_req, res, next) => {
@@ -498,6 +499,7 @@ function validateLocalLogin(username: string, password: string): { ok: true; use
     ok: true,
     user: {
       username: crmUsername || submittedUsername,
+      display_name: displayNameForUsername(crmUsername || submittedUsername),
       password: submittedPassword,
       role: "admin",
       permissions: ["*"]
@@ -510,7 +512,7 @@ function parseCrmUsersConfig(rawUsers: string | undefined, legacyUsername: strin
   const cleanLegacyUsername = cleanAuthValue(legacyUsername);
   const cleanLegacyPassword = cleanAuthValue(legacyPassword);
   if (cleanLegacyUsername && cleanLegacyPassword) {
-    users.push({ username: cleanLegacyUsername, password: cleanLegacyPassword, role: "admin", permissions: ["*"] });
+    users.push({ username: cleanLegacyUsername, display_name: displayNameForUsername(cleanLegacyUsername), password: cleanLegacyPassword, role: "admin", permissions: ["*"] });
   }
   return dedupeCrmUsers(users);
 }
@@ -536,8 +538,10 @@ function userFromArrayItem(item: unknown): CrmUser | null {
   const username = cleanAuthValue(readString(record.username) ?? readString(record.name));
   const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
   if (!username || !password) return null;
+  const displayName = cleanAuthValue(readString(record.display_name) ?? readString(record.displayName) ?? readString(record.nickname) ?? readString(record.label));
   return {
     username,
+    display_name: displayName || displayNameForUsername(username),
     password,
     role: cleanAuthValue(readString(record.role)) || "member",
     permissions: readPermissions(record.permissions)
@@ -550,15 +554,17 @@ function userFromObjectEntry([username, value]: [string, unknown]): CrmUser | nu
 
   if (typeof value === "string") {
     const password = cleanAuthValue(value);
-    return password ? { username: cleanUsername, password, role: "member", permissions: [] } : null;
+    return password ? { username: cleanUsername, display_name: displayNameForUsername(cleanUsername), password, role: "member", permissions: [] } : null;
   }
 
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
   const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
   if (!password) return null;
+  const displayName = cleanAuthValue(readString(record.display_name) ?? readString(record.displayName) ?? readString(record.nickname) ?? readString(record.label));
   return {
     username: cleanUsername,
+    display_name: displayName || displayNameForUsername(cleanUsername),
     password,
     role: cleanAuthValue(readString(record.role)) || "member",
     permissions: readPermissions(record.permissions)
@@ -567,6 +573,17 @@ function userFromObjectEntry([username, value]: [string, unknown]): CrmUser | nu
 
 function isCrmUser(user: CrmUser | null): user is CrmUser {
   return Boolean(user?.username && user.password);
+}
+
+function displayNameForUsername(username: string | null | undefined) {
+  const cleanUsername = cleanAuthValue(username);
+  const configuredNames: Record<string, string> = {
+    neo: "Neo",
+    neo0109: "Neo",
+    nanyuan: "南鸢",
+    yuyang: "于老板"
+  };
+  return configuredNames[cleanUsername.toLowerCase()] ?? cleanUsername;
 }
 
 function dedupeCrmUsers(users: CrmUser[]) {
