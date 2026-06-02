@@ -3,6 +3,8 @@ import type { CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssista
 const tokenKey = "sourcing-crm-access-token";
 const usernameKey = "sourcing-crm-username";
 const displayNameKey = "sourcing-crm-display-name";
+const displayNameUsernameKey = "sourcing-crm-display-name-username";
+const requestTimeoutMs = 15000;
 
 type SyncResult = ImportResult & {
   synced: boolean;
@@ -33,14 +35,24 @@ export type LoginResult = {
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getAccessToken();
   const username = getAccessUsername();
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
   const response = await fetch(url, {
     ...options,
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       ...(username ? { "x-crm-username": username } : {}),
       ...(token ? { "x-crm-token": token } : {}),
       ...options?.headers
     }
+  }).catch((error) => {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("请求超时，请退出登录后重新进入，或清除浏览器网站数据后重试");
+    }
+    throw error;
+  }).finally(() => {
+    window.clearTimeout(timeout);
   });
 
   if (!response.ok) {
@@ -156,11 +168,18 @@ export function getAccessUsername() {
 }
 
 export function getAccessDisplayName() {
-  return window.localStorage.getItem(displayNameKey) ?? displayNameForUsername(getAccessUsername());
+  const username = getAccessUsername();
+  const savedDisplayName = window.localStorage.getItem(displayNameKey) ?? "";
+  const displayNameSavedFor = window.localStorage.getItem(displayNameUsernameKey) ?? "";
+  const mappedDisplayName = displayNameForUsername(username);
+
+  if (savedDisplayName && displayNameSavedFor === username) return savedDisplayName;
+  if (savedDisplayName && !displayNameSavedFor && !isStaleNeoDisplayName(username, savedDisplayName)) return savedDisplayName;
+  return mappedDisplayName;
 }
 
 export function hasSavedCredentials() {
-  return Boolean(getAccessToken());
+  return Boolean(getAccessUsername() && getAccessToken());
 }
 
 export function saveAccessCredentials(username: string, token: string, displayName?: string) {
@@ -168,6 +187,7 @@ export function saveAccessCredentials(username: string, token: string, displayNa
   const cleanUsername = username.trim();
   const cleanDisplayName = (displayName ?? "").trim() || displayNameForUsername(cleanUsername);
   window.localStorage.setItem(usernameKey, cleanUsername);
+  window.localStorage.setItem(displayNameUsernameKey, cleanUsername);
   window.localStorage.setItem(displayNameKey, cleanDisplayName);
   window.localStorage.setItem(tokenKey, token);
   document.cookie = `crm_username=${encodeURIComponent(cleanUsername)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
@@ -180,6 +200,7 @@ export function saveAccessToken(token: string) {
 
 export function clearAccessToken() {
   window.localStorage.removeItem(usernameKey);
+  window.localStorage.removeItem(displayNameUsernameKey);
   window.localStorage.removeItem(displayNameKey);
   window.localStorage.removeItem(tokenKey);
   document.cookie = "crm_username=; Path=/; Max-Age=0; SameSite=Lax";
@@ -195,4 +216,10 @@ function displayNameForUsername(username: string) {
     yuyang: "于老板"
   };
   return names[username.trim().toLowerCase()] ?? username.trim();
+}
+
+function isStaleNeoDisplayName(username: string, displayName: string) {
+  const cleanUsername = username.trim().toLowerCase();
+  if (!cleanUsername || cleanUsername === "neo" || cleanUsername === "neo0109") return false;
+  return displayName.trim().toLowerCase() === "neo";
 }

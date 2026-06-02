@@ -161,14 +161,14 @@ export async function validateLoginCredentials(env: Env, username: string | null
   const configuredUsers = await readConfiguredUsers(env);
   const configuredUsername = cleanAuthValue(env.CRM_USERNAME);
   const submittedUsername = cleanAuthValue(username);
-  const submittedPassword = password ?? "";
+  const submittedPassword = cleanAuthValue(password);
 
   if (hasUsersJson && !configuredUsers.length) {
     return { ok: false, reason: "invalid_user_config" as const };
   }
 
   if (configuredUsers.length) {
-    const matchedUser = configuredUsers.find((user) => user.username === submittedUsername);
+    const matchedUser = configuredUsers.find((user) => authKey(user.username) === authKey(submittedUsername));
 
     if (!submittedUsername || !matchedUser) {
       return { ok: false, reason: "invalid_username" as const };
@@ -351,6 +351,10 @@ function displayNameForUsername(username: string | null | undefined) {
   return configuredNames[cleanUsername.toLowerCase()] ?? cleanUsername;
 }
 
+function authKey(value: string | null | undefined) {
+  return cleanAuthValue(value).toLowerCase();
+}
+
 function dedupeCrmUsers(users: CrmUser[]) {
   const byUsername = new Map<string, CrmUser>();
   for (const user of users) {
@@ -370,7 +374,13 @@ function readPermissions(value: unknown) {
 }
 
 function cleanAuthValue(value: string | null | undefined) {
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value !== "string") return "";
+  return value
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .trim()
+    .replace(/^["'“”‘’]+|["'“”‘’]+$/g, "")
+    .trim();
 }
 
 export async function readLeads(env: Env): Promise<Lead[]> {

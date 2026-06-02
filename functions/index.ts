@@ -1,7 +1,6 @@
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260602-local-assets-v233";
-const brandLabel = "Neo's BD Matrix · v2.3.4";
+const assetVersion = "20260603-auth-session-recovery-v236";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;
@@ -35,19 +34,6 @@ function renderHtml() {
       }
     </style>
     <script type="module" crossorigin src="${versionedAsset(scriptFile)}"></script>
-    <script>
-      (() => {
-        const label = ${JSON.stringify(brandLabel)};
-        const apply = () => {
-          const node = document.querySelector(".hero-copy .eyebrow");
-          if (!node) return;
-          node.setAttribute("data-brand-label", label);
-          if (node.textContent !== label) node.textContent = label;
-        };
-        apply();
-        new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

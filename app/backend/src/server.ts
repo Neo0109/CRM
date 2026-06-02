@@ -119,7 +119,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.3.4-daily-inbox-user-display",
+    version: "v2.3.6-auth-session-recovery",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,
@@ -480,14 +480,14 @@ function isValidLocalLogin(rawUsername: string | string[] | undefined, rawToken:
 
 function validateLocalLogin(username: string, password: string): { ok: true; user: CrmUser } | { ok: false } {
   const submittedUsername = cleanAuthValue(username);
-  const submittedPassword = password ?? "";
+  const submittedPassword = cleanAuthValue(password);
 
   if (cleanAuthValue(crmUsersJson) && !configuredCrmUsers.length) {
     return { ok: false };
   }
 
   if (configuredCrmUsers.length) {
-    const user = configuredCrmUsers.find((item) => item.username === submittedUsername);
+    const user = configuredCrmUsers.find((item) => authKey(item.username) === authKey(submittedUsername));
     return user && submittedPassword === user.password ? { ok: true, user } : { ok: false };
   }
 
@@ -605,6 +605,10 @@ function displayNameForUsername(username: string | null | undefined) {
   return configuredNames[cleanUsername.toLowerCase()] ?? cleanUsername;
 }
 
+function authKey(value: string | null | undefined) {
+  return cleanAuthValue(value).toLowerCase();
+}
+
 function dedupeCrmUsers(users: CrmUser[]) {
   const byUsername = new Map<string, CrmUser>();
   for (const user of users) {
@@ -624,5 +628,11 @@ function readPermissions(value: unknown) {
 }
 
 function cleanAuthValue(value: string | null | undefined) {
-  return typeof value === "string" ? value.trim() : "";
+  if (typeof value !== "string") return "";
+  return value
+    .normalize("NFKC")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .trim()
+    .replace(/^["'“”‘’]+|["'“”‘’]+$/g, "")
+    .trim();
 }
