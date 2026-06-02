@@ -1,46 +1,46 @@
 // Online CRM generator v4 runtime, currently executing Sourcing Rules V6.
 // Core principle: every output must be useful to a Bilibili BD owner.
+import { execFile as execFileCallback } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 
 const rootDir = process.cwd();
+const execFile = promisify(execFileCallback);
 const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
 const requestedMaxCandidates = Number(args.maxCandidates ?? 320);
 const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 80), 360) : 320;
+const maxSteamDetails = boundedNumber(args.maxSteamDetails, 90, 40, 160);
 const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
 const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 
-const rawCandidates = dedupeByAppId((await Promise.all([
-  fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 游戏" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Demo Keyword", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 Demo" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Indie Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 独立游戏" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN China Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "中国" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Guofeng Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国风" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Xianxia Wuxia Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "修仙 武侠" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Shanhai Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "山海" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Three Kingdoms Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "三国" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Deckbuilder Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "卡牌 构筑" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Roguelike Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "肉鸽" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Management Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "模拟经营" }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Popular Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Demo/Next Fest Window", [21], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Strategy Upcoming", [9], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Simulation Upcoming", [599], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Co-op Upcoming", [1685], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Roguelike Upcoming", [1716], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam CN Deckbuilder Upcoming", [32322], { cc: "cn", l: "schinese", domesticLens: true }),
-  fetchSteamSearch("popularcomingsoon", "Steam Popular Upcoming"),
-  fetchSteamSearch("popularcomingsoon", "Steam Demo/Next Fest Window", [21]),
-  fetchSteamSearch("popularcomingsoon", "Strategy Upcoming", [9]),
-  fetchSteamSearch("popularcomingsoon", "Simulation Upcoming", [599]),
-  fetchSteamSearch("popularcomingsoon", "Co-op Upcoming", [1685]),
-  fetchSteamSearch("popularcomingsoon", "Roguelike Upcoming", [1716]),
-  fetchSteamSearch("popularcomingsoon", "Deckbuilder Upcoming", [32322]),
-  fetchFeaturedCategories()
-])).flat())
+const steamCandidateTasks = [
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Demo Keyword", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 Demo" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Indie Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 独立游戏" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN China Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "中国" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Guofeng Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国风" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Deckbuilder Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "卡牌 构筑" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Roguelike Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "肉鸽" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Management Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "模拟经营" }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Popular Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Demo/Next Fest Window", [21], { cc: "cn", l: "schinese", domesticLens: true }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Strategy Upcoming", [9], { cc: "cn", l: "schinese", domesticLens: true }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Simulation Upcoming", [599], { cc: "cn", l: "schinese", domesticLens: true }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Roguelike Upcoming", [1716], { cc: "cn", l: "schinese", domesticLens: true }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam CN Deckbuilder Upcoming", [32322], { cc: "cn", l: "schinese", domesticLens: true }),
+  () => fetchSteamSearch("popularcomingsoon", "Steam Popular Upcoming"),
+  () => fetchSteamSearch("popularcomingsoon", "Steam Demo/Next Fest Window", [21]),
+  () => fetchSteamSearch("popularcomingsoon", "Strategy Upcoming", [9]),
+  () => fetchSteamSearch("popularcomingsoon", "Simulation Upcoming", [599]),
+  () => fetchSteamSearch("popularcomingsoon", "Roguelike Upcoming", [1716]),
+  () => fetchSteamSearch("popularcomingsoon", "Deckbuilder Upcoming", [32322]),
+  () => fetchFeaturedCategories()
+];
+
+const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).flat())
   .filter((candidate) => candidate.appId && candidate.title && !isExistingSteamCandidate(candidate, existingIndex))
   .slice(0, maxCandidates);
 
@@ -48,7 +48,7 @@ const mediaSignals = await fetchMediaSignals();
 const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 14);
 const mediaLeadCandidates = buildMediaLeadCandidates(mediaSignals, existingIndex.projects);
 
-const enrichedCandidates = await enrichCandidates(rawCandidates);
+const enrichedCandidates = await enrichCandidates(rawCandidates.slice(0, maxSteamDetails));
 
 if (!rawCandidates.length && !mediaLeadCandidates.length) {
   throw new Error("No Steam candidates or domestic media/Bilibili product leads were fetched; refusing to overwrite daily reports with an empty run.");
@@ -81,6 +81,7 @@ console.log(JSON.stringify({
   industry_signals: industrySignals.length,
   media_signals_seen: mediaSignals.length,
   media_lead_candidates: mediaLeadCandidates.length,
+  max_steam_details: maxSteamDetails,
   min_review_leads: minReviewLeads,
   min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
   existing_project_names: existingIndex.projects.size,
@@ -104,6 +105,20 @@ function boundedNumber(value, fallback, min, max) {
   const number = Number(value ?? fallback);
   if (!Number.isFinite(number)) return fallback;
   return Math.min(Math.max(number, min), max);
+}
+
+async function runLimited(taskFactories, concurrency) {
+  const results = new Array(taskFactories.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(concurrency, taskFactories.length) }, async () => {
+    while (cursor < taskFactories.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await taskFactories[index]();
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 function todayInShanghai() {
@@ -268,7 +283,7 @@ async function fetchAppDetails(appId) {
       return entry?.success && entry.data?.type === "game" ? entry.data : null;
     } catch (error) {
       if (attempt < 3 && /429|too many requests/i.test(error.message)) {
-        await sleep(1200 * attempt);
+        await sleep(2500 * attempt);
         continue;
       }
       console.warn(`AppDetails failed for ${appId}: ${error.message}`);
@@ -280,7 +295,7 @@ async function fetchAppDetails(appId) {
 
 async function enrichCandidates(candidates) {
   const enriched = [];
-  const concurrency = 8;
+  const concurrency = 2;
   for (let index = 0; index < candidates.length; index += concurrency) {
     const chunk = candidates.slice(index, index + concurrency);
     const results = await Promise.all(chunk.map(async (candidate) => {
@@ -288,7 +303,7 @@ async function enrichCandidates(candidates) {
       return enrichCandidate(candidate, details);
     }));
     enriched.push(...results);
-    if (index + concurrency < candidates.length) await sleep(200);
+    if (index + concurrency < candidates.length) await sleep(1200);
   }
   return enriched;
 }
@@ -1729,6 +1744,12 @@ async function fetchText(url, timeoutMs, accept) {
     const response = await fetch(url, { signal: controller.signal, headers });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     return await response.text();
+  } catch (error) {
+    if (isSteamUrl(url) && shouldUseCurlFallback(error)) {
+      console.warn(`Steam Node fetch failed for ${new URL(url).host}: ${describeNetworkError(error)}; retrying with curl fallback`);
+      return await fetchTextWithCurl(url, timeoutMs, accept);
+    }
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -1736,6 +1757,55 @@ async function fetchText(url, timeoutMs, accept) {
 
 function defaultHeaders(accept) {
   return { "User-Agent": "Mozilla/5.0 SourcingCRM/1.0 (+https://github.com/Neo0109/CRM)", Accept: accept ?? "*/*" };
+}
+
+function isSteamUrl(url) {
+  try {
+    const host = new URL(url).host;
+    return /(^|\.)steampowered\.com$/i.test(host);
+  } catch {
+    return false;
+  }
+}
+
+function describeNetworkError(error) {
+  return [error.name, error.message, error.cause?.code, error.cause?.message].filter(Boolean).join(" / ");
+}
+
+function shouldUseCurlFallback(error) {
+  if (/^(403|429)\b/.test(error.message)) return false;
+  return /fetch failed|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN|aborted|timeout/i.test(describeNetworkError(error));
+}
+
+async function fetchTextWithCurl(url, timeoutMs, accept) {
+  const headers = defaultHeaders(accept);
+  const maxSeconds = String(Math.max(8, Math.ceil(timeoutMs / 1000)));
+  try {
+    const { stdout } = await execFile("curl", [
+      "--location",
+      "--silent",
+      "--show-error",
+      "--fail",
+      "--retry",
+      "2",
+      "--retry-delay",
+      "1",
+      "--connect-timeout",
+      "8",
+      "--max-time",
+      maxSeconds,
+      "--user-agent",
+      headers["User-Agent"],
+      "--header",
+      `Accept: ${headers.Accept}`,
+      url
+    ], { maxBuffer: 8 * 1024 * 1024 });
+    return stdout;
+  } catch (error) {
+    const stderr = String(error.stderr ?? "").trim();
+    const detail = stderr || error.message;
+    throw new Error(`curl fallback failed: ${detail}`);
+  }
 }
 
 async function writeJson(relativePath, payload) {

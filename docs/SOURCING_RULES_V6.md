@@ -28,6 +28,7 @@ Default cloud thresholds:
 - Minimum review candidates: `18`
 - Minimum media/Bilibili lead candidates when domestic signals are healthy: `10`
 - Steam scan budget: `260` candidates
+- Steam AppDetails enrichment budget: `90` candidates
 
 If these thresholds cannot be met, the workflow should fail rather than silently overwrite the day's report with low-signal output.
 
@@ -59,6 +60,13 @@ Steam Trends remains a Steam market board, not a sourcing-rule mirror.
 It should cover category risers, Demo/Next Fest or other Steam windows, publisher/developer slate signals, public data quality, representative samples, and concrete Bilibili BD implications.
 
 When Steam is partially or fully unavailable, the board should say so plainly and fill representative samples from the same day's domestic review candidates. The fallback is for continuity, not a claim that those products are Steam trend leaders.
+
+Steam fetch reliability requirements:
+
+- Steam search should run with capped concurrency instead of firing every query at once.
+- Steam AppDetails enrichment should be rate-limited and capped; the daily report needs enough high-signal details for review, not hundreds of detail calls.
+- If Node fetch fails on Steam with DNS/TLS/network errors, use the curl fallback before treating Steam as unavailable.
+- Do not retry curl fallback for Steam `403`/`429`; those are access/rate-limit signals and should be handled by lower request volume and backoff.
 
 ## Industry Radar
 
