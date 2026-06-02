@@ -1,26 +1,36 @@
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@ec6567dfffad355c071e820f83e00b09175dd6b4/app/frontend/dist";
+import type { PagesContext } from "./_lib/crm";
+
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260602-dashboard-rhythm-v23";
-const brandLabel = "Neo's BD Matrix · v2.3.2";
+const assetVersion = "20260602-local-assets-v233";
+const brandLabel = "Neo's BD Matrix · v2.3.3";
 
 function versionedAsset(fileName: string) {
-  return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
+  return `/assets/${fileName}?v=${assetVersion}`;
 }
 
-const assetRedirects = new Map([
-  ["/assets/crm-paper-texture-BjGXa_NP.png", `${assetBase}/assets/crm-paper-texture-BjGXa_NP.png`],
-  ["/assets/bili-crm-dashboard-DIye6pxa.png", `${assetBase}/assets/bili-crm-dashboard-DIye6pxa.png`],
-  ["/assets/bilibili-game-logo-IUcC7daF.png", `${assetBase}/assets/bilibili-game-logo-IUcC7daF.png`],
-  ["/assets/matrix-code-rain-CoRfJN-o.jpg", `${assetBase}/assets/matrix-code-rain-CoRfJN-o.jpg`],
-  [`/assets/${stylesheetFile}`, versionedAsset(stylesheetFile)],
-  [`/assets/${scriptFile}`, versionedAsset(scriptFile)]
-]);
+type EnvWithAssets = PagesContext["env"] & {
+  ASSETS?: {
+    fetch(input: Request | string | URL): Promise<Response>;
+  };
+};
 
-export const onRequestGet = async ({ request }: { request: Request }) => {
+export const onRequestGet = async ({ request, env }: PagesContext) => {
   const url = new URL(request.url);
-  const redirectTo = assetRedirects.get(url.pathname);
-  if (redirectTo) return Response.redirect(redirectTo, 302);
+  if (url.pathname.startsWith("/assets/")) {
+    const assets = (env as EnvWithAssets).ASSETS;
+    if (!assets) return new Response("Asset binding not available", { status: 503 });
+    const response = await assets.fetch(request);
+    if (!url.pathname.startsWith("/assets/index.")) return response;
+
+    const headers = new Headers(response.headers);
+    headers.set("Cache-Control", "no-store");
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers
+    });
+  }
 
   return new Response(renderHtml(), {
     headers: {
@@ -38,7 +48,6 @@ function renderHtml() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>BD 决策工作台</title>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" crossorigin href="${versionedAsset(stylesheetFile)}" />
     <style>
       .hero-copy .eyebrow { font-size: 0 !important; line-height: 1.4 !important; }

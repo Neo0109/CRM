@@ -1,26 +1,27 @@
 import type { PagesContext } from "../_lib/crm";
 
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@ec6567dfffad355c071e820f83e00b09175dd6b4/app/frontend/dist/assets";
-const assetVersion = "20260602-dashboard-rhythm-v23";
+type EnvWithAssets = PagesContext["env"] & {
+  ASSETS?: {
+    fetch(input: Request | string | URL): Promise<Response>;
+  };
+};
 
-function versionedAsset(fileName: string) {
-  return `${assetBase}/${fileName}?v=${assetVersion}`;
-}
+export const onRequestGet = async ({ request, env }: PagesContext) => {
+  const assets = (env as EnvWithAssets).ASSETS;
+  if (!assets) return new Response("Asset binding not available", { status: 503 });
 
-const assetRedirects = new Map([
-  ["index.css", versionedAsset("index.css")],
-  ["index.js", versionedAsset("index.js")],
-  ["crm-paper-texture-BjGXa_NP.png", `${assetBase}/crm-paper-texture-BjGXa_NP.png`],
-  ["bili-crm-dashboard-DIye6pxa.png", `${assetBase}/bili-crm-dashboard-DIye6pxa.png`],
-  ["bilibili-game-logo-IUcC7daF.png", `${assetBase}/bilibili-game-logo-IUcC7daF.png`],
-  ["matrix-code-rain-CoRfJN-o.jpg", `${assetBase}/matrix-code-rain-CoRfJN-o.jpg`]
-]);
+  const url = new URL(request.url);
+  const response = await assets.fetch(request);
+  if (!response.ok) return response;
 
-export const onRequestGet = async ({ params }: PagesContext) => {
-  const pathParam = params.path;
-  const fileName = Array.isArray(pathParam) ? pathParam.join("/") : pathParam;
-  const redirectTo = assetRedirects.get(fileName);
+  const headers = new Headers(response.headers);
+  if (url.pathname.startsWith("/assets/index.")) {
+    headers.set("Cache-Control", "no-store");
+  }
 
-  if (!redirectTo) return new Response("Asset not found", { status: 404 });
-  return Response.redirect(redirectTo, 302);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
 };

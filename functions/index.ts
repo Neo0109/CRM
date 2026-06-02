@@ -1,11 +1,10 @@
-const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@ec6567dfffad355c071e820f83e00b09175dd6b4/app/frontend/dist";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260602-dashboard-rhythm-v23";
-const brandLabel = "Neo's BD Matrix · v2.3.2";
+const assetVersion = "20260602-local-assets-v233";
+const brandLabel = "Neo's BD Matrix · v2.3.3";
 
 function versionedAsset(fileName: string) {
-  return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
+  return `/assets/${fileName}?v=${assetVersion}`;
 }
 
 export const onRequestGet = async () => new Response(renderHtml(), {
@@ -23,7 +22,6 @@ function renderHtml() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>BD 决策工作台</title>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" crossorigin href="${versionedAsset(stylesheetFile)}" />
     <style>
       .hero-copy .eyebrow { font-size: 0 !important; line-height: 1.4 !important; }
