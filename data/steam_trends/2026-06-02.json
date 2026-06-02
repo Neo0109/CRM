@@ -1,6 +1,6 @@
 {
   "report_date": "2026-06-02",
-  "summary": "Steam大盘V6：本次 Steam 抓取未返回有效候选，使用 24 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。",
+  "summary": "Steam大盘V6：本次 Steam 抓取未返回有效候选，使用 29 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。",
   "market_insights": [
     {
       "id": "steam_macro_2026_06_02_steam_fetch_unavailable",
@@ -10,17 +10,17 @@
       "source": "Steam Store fetch status",
       "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
       "suggested_action": "稍后补跑 Steam；当前先 review 国内媒体/B站候选，能测就测，不成立就淘汰。",
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
       "id": "steam_macro_2026_06_02_domestic_media_backup",
-      "title": "国内媒体/B站保底：24 个可 review 候选",
+      "title": "国内媒体/B站保底：29 个可 review 候选",
       "summary": "这些候选来自媒体/B站原始链接，不要求先有 Steam AppID。它们的价值是扩大国内产品发现，先判断玩法、题材、视频表达和可测性。",
       "signal_level": "中",
       "source": "Domestic media / Bilibili discovery",
       "link": "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo",
       "suggested_action": "先打开原始链接做产品判断；通过首测后再补 Steam、官网、联系人和商务窗口。",
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
       "id": "steam_macro_2026_06_02_source_resilience",
@@ -30,26 +30,26 @@
       "source": "Domestic discovery source mix",
       "link": "https://www.gamelook.com.cn/",
       "suggested_action": "后续持续扩展国内源，并用低数量闸门阻止一两条线索的坏日报上线。",
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     }
   ],
   "genre_signals": [
     {
       "id": "steam_genre_2026_06_02_fallback_roguelike_deckbuilder",
-      "genre": "Roguelike / Deckbuilder（8/24）",
-      "signal": "8 个国内媒体/B站候选命中；代表样本：动物朋克、卡牌修真：九宫幻境录、魔女：终末旅途。",
+      "genre": "Roguelike / Deckbuilder（10/29）",
+      "signal": "10 个国内媒体/B站候选命中；代表样本：卡牌修真：九宫幻境录、魔女：终末旅途、卡片魔王：只剩个头。",
       "why_it_matters": "构筑和单局反馈适合B站挑战、攻略和流派复盘。",
       "bd_action": "优先确认是否有可测Demo和差异化构筑。",
       "links": [
-        "https://www.bilibili.com/video/BV1JoU3B9Et5/",
         "https://www.bilibili.com/video/BV1iiGX6kEcb/",
-        "https://www.bilibili.com/video/BV1SAL26DEju/"
+        "https://www.bilibili.com/video/BV1SAL26DEju/",
+        "https://www.bilibili.com/video/BV1DaoBBPEK8/"
       ]
     },
     {
       "id": "steam_genre_2026_06_02_fallback_strategy_tactical",
-      "genre": "Strategy / Tactical（5/24）",
-      "signal": "5 个国内媒体/B站候选命中；代表样本：王权领主、卡片魔王：只剩个头、奇门象棋。",
+      "genre": "Strategy / Tactical（7/29）",
+      "signal": "7 个国内媒体/B站候选命中；代表样本：王权领主、卡片魔王：只剩个头、奇门象棋。",
       "why_it_matters": "策略题材适合长线讲解和核心用户沉淀。",
       "bd_action": "看前10分钟是否能讲清核心决策和视频看点。",
       "links": [
@@ -60,7 +60,7 @@
     },
     {
       "id": "steam_genre_2026_06_02_fallback_simulation_management",
-      "genre": "Simulation / Management（6/24）",
+      "genre": "Simulation / Management（6/29）",
       "signal": "6 个国内媒体/B站候选命中；代表样本：王权领主、奇门象棋、修仙实操手册。",
       "why_it_matters": "经营模拟适合系列化视频和长期连载。",
       "bd_action": "看成长曲线、失败反馈和题材新鲜度。",
@@ -72,47 +72,32 @@
     },
     {
       "id": "steam_genre_2026_06_02_fallback_action_visual_hook",
-      "genre": "Action / Visual Hook（6/24）",
-      "signal": "6 个国内媒体/B站候选命中；代表样本：动物朋克、科恩1939、迷途梦境。",
+      "genre": "Action / Visual Hook（7/29）",
+      "signal": "7 个国内媒体/B站候选命中；代表样本：科恩1939、迷途梦境、卡片魔王：只剩个头。",
       "why_it_matters": "强操作或强视觉更容易通过PV/实机建立第一印象。",
       "bd_action": "看打击反馈、角色辨识度和可剪素材。",
       "links": [
-        "https://www.bilibili.com/video/BV1JoU3B9Et5/",
         "https://www.bilibili.com/video/BV16nGt61EaK/",
-        "https://www.bilibili.com/video/BV1yVLU6QESZ/"
+        "https://www.bilibili.com/video/BV1yVLU6QESZ/",
+        "https://www.bilibili.com/video/BV1DaoBBPEK8/"
       ]
     },
     {
       "id": "steam_genre_2026_06_02_fallback_domestic_discovery",
-      "genre": "Domestic Discovery（24/24）",
-      "signal": "24 个国内媒体/B站候选命中；代表样本：动物朋克、卡牌修真：九宫幻境录、八仙：天命杀局。",
+      "genre": "Domestic Discovery（29/29）",
+      "signal": "29 个国内媒体/B站候选命中；代表样本：卡牌修真：九宫幻境录、魔女：终末旅途、魔法少女症候群。",
       "why_it_matters": "国内信号代表沟通效率、文化适配和签约概率更高。",
       "bd_action": "先测/先看内容，通过后再补商务触点。",
       "links": [
-        "https://www.bilibili.com/video/BV1JoU3B9Et5/",
         "https://www.bilibili.com/video/BV1iiGX6kEcb/",
-        "https://www.bilibili.com/video/BV1JAEszAEJT/"
+        "https://www.bilibili.com/video/BV1SAL26DEju/",
+        "https://www.bilibili.com/video/BV1YCVB6eExS/"
       ]
     }
   ],
   "items": [
     {
       "id": "steam_trend_2026_06_02_fallback_1",
-      "title": "动物朋克",
-      "steam_app_id": null,
-      "rank_bucket": "Domestic media/Bilibili fallback",
-      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产独立游戏PV / https://www.bilibili.com/video/BV1JoU3B9Et5/\n产品观察：《动物朋克》由开拓芯投资扶持的《暗影火炬城》原班团队钛核工作室@钛核心弹头 打造，是一款延续其世界观的全新第三人称动作游戏。 绒民崛起，万物朋克——一群被时代遗弃的动物住民，誓要再度点燃世界。 继《暗影火炬城》之后，我们重新启程，构筑一个更加广阔、充满生机的“动物朋克”新纪元！ 本视频所有画面均为引擎内实录，包含实机画",
-      "source": "B站视频-国产独立游戏PV",
-      "links": [
-        "https://www.bilibili.com/video/BV1JoU3B9Et5/"
-      ],
-      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
-      "reason": "B站视频-国产独立游戏PV 捕捉到具体产品信号：国产动作游戏《动物朋克》 实机PV。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
-      "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
-    },
-    {
-      "id": "steam_trend_2026_06_02_fallback_2",
       "title": "卡牌修真：九宫幻境录",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -124,25 +109,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产独立游戏 捕捉到具体产品信号：《卡牌修真：九宫幻境录》全新PV | 免费试玩 Demo 现已上线 Steam。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_3",
-      "title": "八仙：天命杀局",
-      "steam_app_id": null,
-      "rank_bucket": "Domestic media/Bilibili fallback",
-      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产独立游戏PV / https://www.bilibili.com/video/BV1JAEszAEJT/\n产品观察：大家好，我们是 White Babel Studio（白塔工作室），一群常驻东京的独立游戏开发者～ 这里是我们的第一款原创推理游戏 —— 《八仙：天命杀局》，它是成员们在放学、下班或者周末的缝隙时间里，默默用爱发电的独立项目！ 这也是我们首次发布游戏Demo相关的宣传片，希望大家喜欢！ （因为最近在申请日本地区的独立游",
-      "source": "B站视频-国产独立游戏PV",
-      "links": [
-        "https://www.bilibili.com/video/BV1JAEszAEJT/"
-      ],
-      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
-      "reason": "B站视频-国产独立游戏PV 捕捉到具体产品信号：国产独立游戏 《八仙：天命杀局》超先行预告 PV。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
-      "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
-    },
-    {
-      "id": "steam_trend_2026_06_02_fallback_4",
+      "id": "steam_trend_2026_06_02_fallback_2",
       "title": "魔女：终末旅途",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -154,10 +124,25 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产肉鸽卡牌 捕捉到具体产品信号：联机打牌 x 美少女！还有自定义 卡牌 ！|《魔女：终末旅途》正式定档！。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_5",
+      "id": "steam_trend_2026_06_02_fallback_3",
+      "title": "魔法少女症候群",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产独立游戏 / https://www.bilibili.com/video/BV1YCVB6eExS/\n产品观察：主题曲《Paradise Lost side》 作词/作曲/编曲：黎茗 演唱：黎茗 pv制作：黎茗 （没错全是我） UP主：黎茗的游戏工坊",
+      "source": "B站视频-国产独立游戏",
+      "links": [
+        "https://www.bilibili.com/video/BV1YCVB6eExS/"
+      ],
+      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
+      "reason": "B站视频-国产独立游戏 捕捉到具体产品信号：国产独立 AVG《魔法少女症候群》 demo 现已上线 steam ！。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-06-02T20:45:45+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_02_fallback_4",
       "title": "扑克魔王",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -169,25 +154,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产独立游戏 捕捉到具体产品信号：独立游戏 《扑克魔王》 Demo 今日糖糖上线。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_6",
-      "title": "TIME",
-      "steam_app_id": null,
-      "rank_bucket": "Domestic media/Bilibili fallback",
-      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产独立游戏PV / https://www.bilibili.com/video/BV1fWEGzFEz6/\n产品观察：历时匠心，《须臾·时光之道》最终PV发布，Steam现已发售！ （Steam商店：须臾·时光之道 https://store.steampowered.com/app/2871740） 独立游戏《须臾·时光之道》，穿越盛唐灯火、民国暗流、90古早年代山雾、赛博霓虹，六大时代交织，三十余子关卡，如流沙幻梦。 跑酷凌空、剑",
-      "source": "B站视频-国产独立游戏PV",
-      "links": [
-        "https://www.bilibili.com/video/BV1fWEGzFEz6/"
-      ],
-      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
-      "reason": "B站视频-国产独立游戏PV 捕捉到具体产品信号：《TIME》：《须臾·时光之道》终篇 PV 及 实机 演示 | Steam现已发售。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
-      "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
-    },
-    {
-      "id": "steam_trend_2026_06_02_fallback_7",
+      "id": "steam_trend_2026_06_02_fallback_5",
       "title": "科恩1939",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -199,10 +169,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产独立游戏 捕捉到具体产品信号：血染伯明翰！俯视角动作射击 游戏 《科恩1939》 Demo 现已公开！。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_8",
+      "id": "steam_trend_2026_06_02_fallback_6",
       "title": "王权领主",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -214,10 +184,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产策略模拟 捕捉到具体产品信号：【 国产 独游】 Steam模拟经营 类单机《王权领主》试玩版上线啦。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_9",
+      "id": "steam_trend_2026_06_02_fallback_7",
       "title": "迷途梦境",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -229,10 +199,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产独立游戏 捕捉到具体产品信号：心理动作RPG《迷途梦境》正式版 demo 即将上线 Steam ！。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_10",
+      "id": "steam_trend_2026_06_02_fallback_8",
       "title": "卡片魔王：只剩个头",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -244,10 +214,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产肉鸽卡牌 捕捉到具体产品信号：动作 肉鸽 游戏居然也能回合制？《卡片魔王：只剩个头》 国产 新游戏试玩实况。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_11",
+      "id": "steam_trend_2026_06_02_fallback_9",
       "title": "奇门象棋",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -259,10 +229,10 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产策略模拟 捕捉到具体产品信号：【猪猪试验站】 国产 肉鸽 策略 游戏《奇门象棋》试玩实况。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
     },
     {
-      "id": "steam_trend_2026_06_02_fallback_12",
+      "id": "steam_trend_2026_06_02_fallback_10",
       "title": "修仙实操手册",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
@@ -274,59 +244,40 @@
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "reason": "B站视频-国产策略模拟 捕捉到具体产品信号：【2025年2月 Steam 新品试玩节】【猪猪试验站】 国产模拟 养成游戏《修仙实操手册》试玩实况（2）第二次修炼成功。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
       "auto_import": true,
-      "captured_at": "2026-06-02T15:50:52+08:00"
+      "captured_at": "2026-06-02T20:45:45+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_02_fallback_11",
+      "title": "仙山小农",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国风修仙游戏 / https://www.bilibili.com/video/BV12k9hBYEtj/\n产品观察：游戏名：仙山小农 （手游） UP主：醋味棉花糖",
+      "source": "B站视频-国风修仙游戏",
+      "links": [
+        "https://www.bilibili.com/video/BV12k9hBYEtj/"
+      ],
+      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
+      "reason": "B站视频-国风修仙游戏 捕捉到具体产品信号：谁家修仙先种田啊！！《仙山小农》 国风 种田修仙模拟 试玩。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-06-02T20:45:45+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_02_fallback_12",
+      "title": "阿萨历险记",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏实机 / https://www.bilibili.com/video/BV1E3NGzwEoY/\n产品观察：时隔小半年，向各位股东们汇报下《阿萨历险记》的开发进度。由于我的程序水平有限，这个视频是“实机+剪辑”制作而成。简而言之，就是一个个场景录下来，然后剪辑添加音效等等.....虽然我真的很想把demo先制作出来，但是学习成本实在太高，我不想再耽误美术和剧情关卡等创作。所以用这种方式，先把阿萨历险记的核心玩法，用这个视频向",
+      "source": "B站视频-国产游戏实机",
+      "links": [
+        "https://www.bilibili.com/video/BV1E3NGzwEoY/"
+      ],
+      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
+      "reason": "B站视频-国产游戏实机 捕捉到具体产品信号：独立解谜游戏《阿萨历险记》半 实机 演示。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-06-02T20:45:45+08:00"
     }
   ],
   "crm_candidates": [
-    {
-      "id": "lead_media_20260602_9us6yr",
-      "project": "动物朋克",
-      "steam_app_id": null,
-      "team": null,
-      "team_size": null,
-      "country": "中国（媒体/B站信号待确认）",
-      "region": "中国",
-      "city": null,
-      "region_priority": "国内优先",
-      "bucket": "未处理",
-      "stage": "new",
-      "priority": "P1",
-      "priority_reason": "B站视频-国产独立游戏PV 捕捉到具体产品信号：国产动作游戏《动物朋克》 实机PV。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
-      "rule_fit": "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
-      "genre": "Card/Deckbuilder",
-      "gameplay": "《动物朋克》由开拓芯投资扶持的《暗影火炬城》原班团队钛核工作室@钛核心弹头 打造，是一款延续其世界观的全新第三人称动作游戏。 绒民崛起，万物朋克——一群被时代遗弃的动物住民，誓要再度点燃世界。 继《暗影火炬城》之后，我们重新启程，构筑一个更加广阔、充满生机的“动物朋克”新纪元！ 本视频所有画面均为引擎内实录，包含实机画",
-      "progress": "B站视频-国产独立游戏PV 原始信号：国产动作游戏《动物朋克》 实机PV",
-      "release_window": null,
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "媒体/B站信号，发行结构待确认",
-      "publisher_name": null,
-      "china_capability_occupied": false,
-      "traction_summary": "B站视频-国产独立游戏PV 分数 139；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
-      "public_signals": "B站视频-国产独立游戏PV / https://www.bilibili.com/video/BV1JoU3B9Et5/",
-      "contact": "B站: https://www.bilibili.com/video/BV1JoU3B9Et5/",
-      "contact_methods": [
-        {
-          "type": "B站",
-          "value": "https://www.bilibili.com/video/BV1JoU3B9Et5/",
-          "note": "B站视频-国产独立游戏PV 原始视频/搜索入口"
-        }
-      ],
-      "links": [
-        "https://www.bilibili.com/video/BV1JoU3B9Et5/"
-      ],
-      "exposure_trail": "自动从B站视频-国产独立游戏PV捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
-      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
-      "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
-      "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
-      "verdict": "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。",
-      "next_action": "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-02",
-      "notes": "媒体/B站扩展来源；confidence=strict；media_score=139"
-    },
     {
       "id": "lead_media_20260602_xxeebr",
       "project": "卡牌修真：九宫幻境录",
@@ -375,55 +326,6 @@
       "due_date": null,
       "first_seen": "2026-06-02",
       "notes": "媒体/B站扩展来源；confidence=strict；media_score=133"
-    },
-    {
-      "id": "lead_media_20260602_8jtjdj",
-      "project": "八仙：天命杀局",
-      "steam_app_id": null,
-      "team": null,
-      "team_size": null,
-      "country": "中国（媒体/B站信号待确认）",
-      "region": "中国",
-      "city": null,
-      "region_priority": "国内优先",
-      "bucket": "未处理",
-      "stage": "new",
-      "priority": "P1",
-      "priority_reason": "B站视频-国产独立游戏PV 捕捉到具体产品信号：国产独立游戏 《八仙：天命杀局》超先行预告 PV。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
-      "rule_fit": "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
-      "genre": "媒体/B站待确认",
-      "gameplay": "大家好，我们是 White Babel Studio（白塔工作室），一群常驻东京的独立游戏开发者～ 这里是我们的第一款原创推理游戏 —— 《八仙：天命杀局》，它是成员们在放学、下班或者周末的缝隙时间里，默默用爱发电的独立项目！ 这也是我们首次发布游戏Demo相关的宣传片，希望大家喜欢！ （因为最近在申请日本地区的独立游",
-      "progress": "B站视频-国产独立游戏PV 原始信号：国产独立游戏 《八仙：天命杀局》超先行预告 PV",
-      "release_window": null,
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "媒体/B站信号，发行结构待确认",
-      "publisher_name": null,
-      "china_capability_occupied": false,
-      "traction_summary": "B站视频-国产独立游戏PV 分数 131；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
-      "public_signals": "B站视频-国产独立游戏PV / https://www.bilibili.com/video/BV1JAEszAEJT/",
-      "contact": "B站: https://www.bilibili.com/video/BV1JAEszAEJT/",
-      "contact_methods": [
-        {
-          "type": "B站",
-          "value": "https://www.bilibili.com/video/BV1JAEszAEJT/",
-          "note": "B站视频-国产独立游戏PV 原始视频/搜索入口"
-        }
-      ],
-      "links": [
-        "https://www.bilibili.com/video/BV1JAEszAEJT/"
-      ],
-      "exposure_trail": "自动从B站视频-国产独立游戏PV捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
-      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
-      "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
-      "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
-      "verdict": "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。",
-      "next_action": "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-02",
-      "notes": "媒体/B站扩展来源；confidence=strict；media_score=131"
     },
     {
       "id": "lead_media_20260602_tphiac",
@@ -475,6 +377,55 @@
       "notes": "媒体/B站扩展来源；confidence=strict；media_score=129"
     },
     {
+      "id": "lead_media_20260602_1929db0",
+      "project": "魔法少女症候群",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "B站视频-国产独立游戏 捕捉到具体产品信号：国产独立 AVG《魔法少女症候群》 demo 现已上线 steam ！。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
+      "rule_fit": "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
+      "genre": "媒体/B站待确认",
+      "gameplay": "主题曲《Paradise Lost side》 作词/作曲/编曲：黎茗 演唱：黎茗 pv制作：黎茗 （没错全是我） UP主：黎茗的游戏工坊",
+      "progress": "B站视频-国产独立游戏 原始信号：国产独立 AVG《魔法少女症候群》 demo 现已上线 steam ！",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产独立游戏 分数 127；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产独立游戏 / https://www.bilibili.com/video/BV1YCVB6eExS/",
+      "contact": "B站: https://www.bilibili.com/video/BV1YCVB6eExS/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1YCVB6eExS/",
+          "note": "B站视频-国产独立游戏 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1YCVB6eExS/"
+      ],
+      "exposure_trail": "自动从B站视频-国产独立游戏捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
+      "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
+      "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
+      "verdict": "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。",
+      "next_action": "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-02",
+      "notes": "媒体/B站扩展来源；confidence=strict；media_score=127"
+    },
+    {
       "id": "lead_media_20260602_giacif",
       "project": "扑克魔王",
       "steam_app_id": null,
@@ -513,55 +464,6 @@
         "https://www.bilibili.com/video/BV15c5Y6QEg3/"
       ],
       "exposure_trail": "自动从B站视频-国产独立游戏捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
-      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
-      "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
-      "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
-      "verdict": "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。",
-      "next_action": "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-02",
-      "notes": "媒体/B站扩展来源；confidence=strict；media_score=127"
-    },
-    {
-      "id": "lead_media_20260602_1i9uerv",
-      "project": "TIME",
-      "steam_app_id": null,
-      "team": null,
-      "team_size": null,
-      "country": "中国（媒体/B站信号待确认）",
-      "region": "中国",
-      "city": null,
-      "region_priority": "国内优先",
-      "bucket": "未处理",
-      "stage": "new",
-      "priority": "P1",
-      "priority_reason": "B站视频-国产独立游戏PV 捕捉到具体产品信号：《TIME》：《须臾·时光之道》终篇 PV 及 实机 演示 | Steam现已发售。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
-      "rule_fit": "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
-      "genre": "媒体/B站待确认",
-      "gameplay": "历时匠心，《须臾·时光之道》最终PV发布，Steam现已发售！ （Steam商店：须臾·时光之道 https://store.steampowered.com/app/2871740） 独立游戏《须臾·时光之道》，穿越盛唐灯火、民国暗流、90古早年代山雾、赛博霓虹，六大时代交织，三十余子关卡，如流沙幻梦。 跑酷凌空、剑",
-      "progress": "B站视频-国产独立游戏PV 原始信号：《TIME》：《须臾·时光之道》终篇 PV 及 实机 演示 | Steam现已发售",
-      "release_window": null,
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "媒体/B站信号，发行结构待确认",
-      "publisher_name": null,
-      "china_capability_occupied": false,
-      "traction_summary": "B站视频-国产独立游戏PV 分数 127；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
-      "public_signals": "B站视频-国产独立游戏PV / https://www.bilibili.com/video/BV1fWEGzFEz6/",
-      "contact": "B站: https://www.bilibili.com/video/BV1fWEGzFEz6/",
-      "contact_methods": [
-        {
-          "type": "B站",
-          "value": "https://www.bilibili.com/video/BV1fWEGzFEz6/",
-          "note": "B站视频-国产独立游戏PV 原始视频/搜索入口"
-        }
-      ],
-      "links": [
-        "https://www.bilibili.com/video/BV1fWEGzFEz6/"
-      ],
-      "exposure_trail": "自动从B站视频-国产独立游戏PV捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
       "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
       "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
       "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
@@ -865,6 +767,104 @@
       "due_date": null,
       "first_seen": "2026-06-02",
       "notes": "媒体/B站扩展来源；confidence=strict；media_score=119"
+    },
+    {
+      "id": "lead_media_20260602_1cixc68",
+      "project": "仙山小农",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "B站视频-国风修仙游戏 捕捉到具体产品信号：谁家修仙先种田啊！！《仙山小农》 国风 种田修仙模拟 试玩。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
+      "rule_fit": "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
+      "genre": "Simulation/Management / 国风题材",
+      "gameplay": "游戏名：仙山小农 （手游） UP主：醋味棉花糖",
+      "progress": "B站视频-国风修仙游戏 原始信号：谁家修仙先种田啊！！《仙山小农》 国风 种田修仙模拟 试玩",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国风修仙游戏 分数 115；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国风修仙游戏 / https://www.bilibili.com/video/BV12k9hBYEtj/",
+      "contact": "B站: https://www.bilibili.com/video/BV12k9hBYEtj/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV12k9hBYEtj/",
+          "note": "B站视频-国风修仙游戏 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV12k9hBYEtj/"
+      ],
+      "exposure_trail": "自动从B站视频-国风修仙游戏捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
+      "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
+      "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
+      "verdict": "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。",
+      "next_action": "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-02",
+      "notes": "媒体/B站扩展来源；confidence=strict；media_score=115"
+    },
+    {
+      "id": "lead_media_20260602_l3aa5q",
+      "project": "阿萨历险记",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "B站视频-国产游戏实机 捕捉到具体产品信号：独立解谜游戏《阿萨历险记》半 实机 演示。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。",
+      "rule_fit": "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
+      "genre": "媒体/B站待确认",
+      "gameplay": "时隔小半年，向各位股东们汇报下《阿萨历险记》的开发进度。由于我的程序水平有限，这个视频是“实机+剪辑”制作而成。简而言之，就是一个个场景录下来，然后剪辑添加音效等等.....虽然我真的很想把demo先制作出来，但是学习成本实在太高，我不想再耽误美术和剧情关卡等创作。所以用这种方式，先把阿萨历险记的核心玩法，用这个视频向",
+      "progress": "B站视频-国产游戏实机 原始信号：独立解谜游戏《阿萨历险记》半 实机 演示",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏实机 分数 113；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产游戏实机 / https://www.bilibili.com/video/BV1E3NGzwEoY/",
+      "contact": "B站: https://www.bilibili.com/video/BV1E3NGzwEoY/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1E3NGzwEoY/",
+          "note": "B站视频-国产游戏实机 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1E3NGzwEoY/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏实机捕捉到媒体/B站线索（2026-06-02）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。",
+      "amplification": "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
+      "risks": "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
+      "verdict": "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。",
+      "next_action": "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-02",
+      "notes": "媒体/B站扩展来源；confidence=strict；media_score=113"
     }
   ]
 }
