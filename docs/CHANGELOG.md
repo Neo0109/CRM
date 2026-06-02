@@ -5,6 +5,7 @@
 ### 产品变化
 
 - 产品可见版本升级为 `v2.3.4`（`v2.3.4-daily-inbox-user-display`）：当天日报同步支持刷新强制补同步；未处理/观察池里仍未人工处理的日报命中项会重新进入未处理复核；多人登录问候语改为按账号显示名展示。
+- 日报自动化修复：确认 Steam 云端抓取已恢复但候选闸门过紧导致发布失败；新增国内候选低置信度保底复核、主流程/watchdog 参数对齐、`CRM_ACCESS_TOKEN` secret 兼容和失败收据 git 身份配置。
 - 日报规则升级到 `sourcing-rules-v6`：修复 daily sourcing 数量过低问题，扩大国内媒体/B站扩展候选，云端生成改为扫描 260 个 Steam 候选，并新增 review 候选数与媒体/B站候选数质量闸门。
 - Steam 抓取稳定性修复：定位到 Node fetch 对 Steam 域名 DNS/TLS 失败以及高并发触发 Steam 403/429 限流；新增 curl 兜底、搜索并发限制和 AppDetails 富化上限。
 - 产品可见版本升级为 `v2.3.3`（`v2.3.3-pages-local-assets-entry`）：Cloudflare Pages 入口改为加载当前部署的本地 `/assets` 前端资源，停止引用旧 commit 的 jsDelivr bundle。
