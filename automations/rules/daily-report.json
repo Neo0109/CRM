@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v5",
-  "updated_at": "2026-06-01",
+  "rule_version": "sourcing-rules-v6",
+  "updated_at": "2026-06-02",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
-  "canonical_rules_doc": "docs/SOURCING_RULES_V5.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
     "automations/jobs/online_daily_v4.mjs"
   ],
@@ -46,6 +46,10 @@
     "Bilibili search results must point to a concrete game/project. Tutorial, wishlist-growth, Steam Next Fest signup, course, or generic developer-experience videos are research material, not CRM leads.",
     "A valid first-pass lead does not require a Steam AppID. Bilibili videos, media articles, official sites, TapTap, indienova, or developer posts can be the first verification link.",
     "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
+    "Daily sourcing volume must not depend on Steam alone. When domestic media/Bilibili signals are healthy, the automation should produce a practical unprocessed review queue rather than one or two leads.",
+    "Expanded domestic media/Bilibili candidates may enter the unprocessed inbox when they clearly point to a game/product moment, even if the project name needs manual cleanup.",
+    "If Steam search or AppDetails is unavailable, the report must transparently fall back to domestic media/Bilibili review candidates rather than collapse to a token queue.",
+    "Bilibili expansion must filter stale videos, generic recommendation collections, mature blockbuster chatter, rant/review filler, and other non-actionable content.",
     "Steam Trends must be a market board: category risers, Steam official/community windows, demo/Next Fest signals, publisher/developer slates, public data quality, and what those signals mean for Bilibili BD.",
     "Industry radar should work as a China + overseas news board, not a short category filler list.",
     "Industry radar should prioritize high-quality domestic and global sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, market direction, platform policy, or Bilibili content angles.",
@@ -59,7 +63,10 @@
     "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
     "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources.",
     "The generator must report both Steam candidate counts and media/Bilibili product-lead counts so low daily volume is diagnosable.",
+    "The generator must fail fast instead of publishing when push/watch review candidates fall below the configured minimum.",
+    "The generator must fail fast when domestic media/Bilibili signals are available but too few are converted into lead candidates.",
     "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries.",
+    "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
     "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source."
   ]
 }

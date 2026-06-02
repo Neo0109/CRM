@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V5.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -7,8 +7,10 @@ const rootDir = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
-const requestedMaxCandidates = Number(args.maxCandidates ?? 260);
-const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 40), 260) : 260;
+const requestedMaxCandidates = Number(args.maxCandidates ?? 320);
+const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 80), 360) : 320;
+const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
+const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 
 const rawCandidates = dedupeByAppId((await Promise.all([
@@ -58,6 +60,13 @@ if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
 const pools = buildPools(enrichedCandidates, mediaLeadCandidates);
+validateDailyVolume({
+  pools,
+  mediaSignals,
+  mediaLeadCandidates,
+  rawCandidateCount: rawCandidates.length,
+  enrichedCandidateCount: enrichedCandidates.length
+});
 
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport(pools, rawCandidates.length, enrichedCandidates.length, mediaLeadCandidates.length));
 await writeJson(`data/radar/${reportDate}.json`, buildRadarReport(enrichedCandidates, pools, industrySignals));
@@ -65,13 +74,15 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport(en
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v4",
+  generator: "online_daily_v4_sourcing_rules_v6",
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
   industry_signals: industrySignals.length,
   media_signals_seen: mediaSignals.length,
   media_lead_candidates: mediaLeadCandidates.length,
+  min_review_leads: minReviewLeads,
+  min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
   existing_project_names: existingIndex.projects.size,
   existing_steam_app_ids: existingIndex.steamAppIds.size,
   push_pool: pools.push.length,
@@ -87,6 +98,12 @@ function parseArgs(argv) {
     if (match) parsed[match[1]] = match[2];
   }
   return parsed;
+}
+
+function boundedNumber(value, fallback, min, max) {
+  const number = Number(value ?? fallback);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(Math.max(number, min), max);
 }
 
 function todayInShanghai() {
@@ -454,14 +471,39 @@ function scoreCandidate(input) {
 function buildPools(candidates, mediaLeads = []) {
   const leads = candidates.map(toLead);
   const used = new Set();
-  const steamPush = selectUniqueLeads(leads.filter((lead) => lead._class === "push"), 5, used);
-  const mediaPush = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "push"), 5, used);
-  const push = [...steamPush, ...mediaPush].slice(0, 10);
-  const steamWatch = selectUniqueLeads(leads.filter((lead) => lead._class === "watch"), 30, used);
-  const mediaWatch = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "watch"), 12, used);
-  const watch = [...steamWatch, ...mediaWatch].slice(0, 36);
+  const mediaPush = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "push"), 8, used);
+  const steamPush = selectUniqueLeads(leads.filter((lead) => lead._class === "push"), 8, used);
+  const push = interleaveLeads(mediaPush, steamPush).slice(0, 14);
+  const mediaWatch = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "watch" || lead._class === "push"), 24, used);
+  const steamWatch = selectUniqueLeads(leads.filter((lead) => lead._class === "watch" || lead._class === "push"), 28, used);
+  const watch = interleaveLeads(mediaWatch, steamWatch).slice(0, 40);
   const drop = selectUniqueLeads(leads.filter((lead) => lead._class === "drop"), 12, used);
   return { push: push.map(stripPrivate), watch: watch.map(stripPrivate), drop: drop.map(stripPrivate) };
+}
+
+function interleaveLeads(primary, secondary) {
+  const out = [];
+  const maxLength = Math.max(primary.length, secondary.length);
+  for (let index = 0; index < maxLength; index += 1) {
+    if (primary[index]) out.push(primary[index]);
+    if (secondary[index]) out.push(secondary[index]);
+  }
+  return out;
+}
+
+function validateDailyVolume({ pools, mediaSignals, mediaLeadCandidates, rawCandidateCount, enrichedCandidateCount }) {
+  const reviewCount = pools.push.length + pools.watch.length;
+  if (reviewCount < minReviewLeads) {
+    throw new Error(`Daily review candidate count too low: push+watch=${reviewCount}, expected >= ${minReviewLeads}. Steam raw=${rawCandidateCount}, enriched=${enrichedCandidateCount}, media_leads=${mediaLeadCandidates.length}. Refusing to publish a low-volume report.`);
+  }
+
+  const domesticSignalCount = mediaSignals.filter((item) => {
+    const focus = new Set(item.source_focus ?? []);
+    return focus.has("domestic_sourcing") || focus.has("bilibili");
+  }).length;
+  if (domesticSignalCount >= 18 && mediaLeadCandidates.length < minMediaLeadsWhenHealthy) {
+    throw new Error(`Domestic media/Bilibili lead extraction too low: media_leads=${mediaLeadCandidates.length}, expected >= ${minMediaLeadsWhenHealthy} when domestic signals=${domesticSignalCount}. Refusing to publish a Steam-only report.`);
+  }
 }
 
 function selectUniqueLeads(leads, limit, used) {
@@ -477,7 +519,15 @@ function selectUniqueLeads(leads, limit, used) {
 }
 
 function poolLeadKey(lead) {
-  return lead.steam_app_id ? `steam:${lead.steam_app_id}` : `project:${normalizeText(lead.project)}`;
+  if (lead.steam_app_id) return `steam:${lead.steam_app_id}`;
+  const looseKey = looseChineseProjectKey(lead.project);
+  return `project:${looseKey || normalizeText(lead.project)}`;
+}
+
+function looseChineseProjectKey(value) {
+  const hanChars = [...normalizeDisplayText(value)].filter((char) => /\p{Script=Han}/u.test(char));
+  if (hanChars.length < 6 || hanChars.length > 24) return null;
+  return `han:${hanChars.sort().join("")}`;
 }
 
 function toLead(candidate) {
@@ -614,7 +664,7 @@ function buildRisks(candidate, dropReason) {
 }
 
 function buildVerdict(className, dropReason) {
-  if (className === "push") return "符合V5重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求";
+  if (className === "push") return "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求";
   if (className === "drop") return `${dropReason}，暂不投入BD时间`;
   return "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰";
 }
@@ -626,9 +676,9 @@ function buildNextAction(className) {
 }
 
 function buildLeadNote(candidate, className, dropReason) {
-  if (className === "drop") return `V5判断：${dropReason}。`;
-  if (className === "push") return "V5判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。";
-  return "V5判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。";
+  if (className === "drop") return `V6判断：${dropReason}。`;
+  if (className === "push") return "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。";
+  return "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。";
 }
 
 function buildBilibiliFit(candidate) {
@@ -649,22 +699,41 @@ function buildAmplification(candidate) {
 }
 
 function buildMediaLeadCandidates(items, existingProjects) {
+  const normalizedExisting = new Set([...existingProjects].map(normalizeText));
   const sourceCount = new Map();
-  const leads = dedupeMediaSignals(items)
+  const strictLeads = dedupeMediaSignals(items)
     .filter(isProductSourcingSignal)
-    .map(mediaSignalToLead)
-    .filter((lead) => lead.project && !existingProjects.has(normalizeText(lead.project)))
+    .map((item) => mediaSignalToLead(item, "strict"))
+    .filter((lead) => isNewMediaLead(lead, normalizedExisting))
+    .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
+  const expandedLeads = dedupeMediaSignals(items)
+    .filter((item) => !isProductSourcingSignal(item) && isExpandedDomesticProductSignal(item))
+    .map((item) => mediaSignalToLead(item, "expanded"))
+    .filter((lead) => isNewMediaLead(lead, normalizedExisting))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
 
+  const selected = selectBalancedMediaLeadCandidates([...strictLeads, ...expandedLeads], sourceCount, 30);
+  return selected;
+}
+
+function selectBalancedMediaLeadCandidates(leads, sourceCount, limit) {
   const selected = [];
   for (const lead of leads) {
     const source = lead.public_signals?.split(" / ")[0] ?? "unknown";
-    if ((sourceCount.get(source) ?? 0) >= 3) continue;
+    if ((sourceCount.get(source) ?? 0) >= 5) continue;
     selected.push(lead);
     sourceCount.set(source, (sourceCount.get(source) ?? 0) + 1);
-    if (selected.length >= 18) break;
+    if (selected.length >= limit) break;
   }
   return selected;
+}
+
+function isNewMediaLead(lead, existingProjects) {
+  if (!lead.project) return false;
+  const projectKey = normalizeText(lead.project);
+  if (!projectKey || existingProjects.has(projectKey)) return false;
+  if (/^(媒体|b站|今日亮点|行业新闻|国产游戏|独立游戏|游戏|steam|demo|pv|实机|试玩|新作|上线|公布|预告)$/i.test(projectKey)) return false;
+  return true;
 }
 
 function isProductSourcingSignal(item) {
@@ -694,11 +763,42 @@ function isProductSourcingSignal(item) {
   return hasProductName && hasDomesticLeadContext && hasDiscoverySignal && hasActionableFormat;
 }
 
-function mediaSignalToLead(item) {
+function isExpandedDomesticProductSignal(item) {
+  const focus = new Set(item.source_focus ?? []);
+  const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
+  const title = normalizeDisplayText(item.title);
+  const domesticSource = focus.has("domestic_sourcing") || focus.has("bilibili") || focus.has("china");
+  if (!domesticSource) return false;
+  if (isLowInformationMediaTitle(item.title)) return false;
+  if (isBannedMediaLeadText(text)) return false;
+  if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
+
+  const quoted = /《[^》]{2,48}》/.test(item.title);
+  const hasDomesticContext = /国产|国人|华人|中国团队|国内团队|国内开发|版号|过审|获批|独立游戏|开发日志|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游|b站|bilibili|哔哩哔哩/.test(text) || isBilibiliSignal(item);
+  const hasActionableProductMoment = /新作|首曝|公布|发布|上线|定档|测试|试玩|demo|实机|pv|预告|steam|taptap|好游快爆|开发者|制作人|愿望单|商店页|b站|bilibili|版号|过审|获批|预约|肉鸽|卡牌|策略|模拟|经营|二次元|国风|武侠|修仙/i.test(text);
+  const titleLooksLikeConcreteProject = title.length >= 4
+    && title.length <= 80
+    && !/^(更多|首页|新闻|资讯|专题|视频|搜索|登录|注册|投稿|广告|榜单|盘点|合集|周报|月报)$/i.test(title)
+    && !/教程|经验|报名|指南|课程|盘点|榜单|数据分享|开发经验|愿望单增长|steam新品节报名/i.test(title);
+
+  return hasDomesticContext && hasActionableProductMoment && (quoted || titleLooksLikeConcreteProject);
+}
+
+function isBannedMediaLeadText(text) {
+  const bannedPatterns = [
+    /招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|如何报名|报名steam新品节|愿望单经验|曝光量|经验分享|开发经验|开发教程/i,
+    /cosplay|壁纸|周边|赛事战报|补丁说明|停服|维护|android|pixel|iphone|手机也能升|主机情报|次世代|硬件|显卡|处理器|大会|峰会|获奖名单|流水|营收/i,
+    /手游推荐|游戏推荐|必玩|好玩到爆|盘点|合集|几款|十款|\d+\s*款|锐评|吐槽/i,
+    /黑神话：悟空|蔚蓝档案|galgame|国gal|恋爱模拟|致郁系|情书|我在b站做|占比百分之/i
+  ];
+  return bannedPatterns.some((pattern) => pattern.test(text));
+}
+
+function mediaSignalToLead(item, confidence = "strict") {
   const project = extractMediaProjectName(item.title);
   const score = mediaLeadScore(item);
   const isBilibili = isBilibiliSignal(item);
-  const isPush = score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(`${item.title} ${item.summary} ${item.source} ${item.link}`);
+  const isPush = confidence === "strict" && score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(`${item.title} ${item.summary} ${item.source} ${item.link}`);
   const sourceLink = item.link;
   const contactMethods = isBilibili
     ? [{ type: "B站", value: sourceLink, note: `${item.source} 原始视频/搜索入口` }]
@@ -707,7 +807,7 @@ function mediaSignalToLead(item) {
 
   return {
     _class: isPush ? "push" : "watch",
-    media_score: score,
+    media_score: confidence === "expanded" ? score - 6 : score,
     id: `lead_media_${reportDate.replaceAll("-", "")}_${hashText(`${item.source}:${sourceLink}:${project}`)}`,
     project,
     steam_app_id: null,
@@ -720,8 +820,8 @@ function mediaSignalToLead(item) {
     bucket: "未处理",
     stage: "new",
     priority: isPush ? "P1" : "P2",
-    priority_reason: `${item.source} 捕捉到具体产品信号：${normalizeDisplayText(item.title).slice(0, 90)}。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。`,
-    rule_fit: "国内媒体/B站产品发现源；非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。",
+    priority_reason: `${item.source} 捕捉到${confidence === "expanded" ? "待核验" : "具体"}产品信号：${normalizeDisplayText(item.title).slice(0, 90)}。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。`,
+    rule_fit: `国内媒体/B站产品发现源；${confidence === "expanded" ? "扩展候选，先确认是否为具体游戏；" : ""}非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。`,
     genre: inferMediaGenre(item),
     gameplay: concise || "来自媒体/B站的产品线索，需打开原文/视频确认玩法循环、实机内容和开发阶段。",
     progress: `${item.source} 原始信号：${normalizeDisplayText(item.title).slice(0, 110)}`,
@@ -740,13 +840,13 @@ function mediaSignalToLead(item) {
     exposure_trail: `自动从${item.source}捕捉到媒体/B站线索（${reportDate}）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。`,
     bilibili_fit: isBilibili ? "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。" : "需反查B站是否有PV、实机、试玩或UP主讨论，判断能否做内容种草。",
     amplification: "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
-    risks: "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
+    risks: confidence === "expanded" ? "扩展媒体/B站候选，可能存在项目名不准或只是资讯标题；首轮先判定是不是具体可看的游戏，不成立直接淘汰。" : "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
     verdict: isPush ? "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。" : "作为国内发现线索保留，人工确认产品真实度和可测性后再分池。",
     next_action: "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
     owner: null,
     due_date: null,
     first_seen: reportDate,
-    notes: `媒体/B站扩展来源；media_score=${score}`
+    notes: `媒体/B站扩展来源；confidence=${confidence}；media_score=${score}`
   };
 }
 
@@ -804,9 +904,9 @@ function hashText(value) {
 function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V5线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V6线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V5把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V6把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
@@ -826,11 +926,19 @@ function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
 function buildRadarReport(candidates, pools, industrySignals) {
   const genres = summarizeGenres(candidates);
   const mediaItems = industrySignals.slice(0, 14).map(mediaSignalToRadarItem);
+  if (!candidates.length) {
+    return {
+      report_date: reportDate,
+      summary: `Sourcing V6行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      items: mediaItems
+    };
+  }
+
   const bilibiliSignal = radarItem(
     "bilibili_bd_lens",
     "B站趋势",
     `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
-    `样本高频不等于推荐。V5只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
+    `样本高频不等于推荐。V6只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
     "中",
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
@@ -839,41 +947,150 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V5行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V6行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
 
 function buildSteamTrendReport(candidates, pools) {
+  if (!candidates.length && (pools.push.length || pools.watch.length)) {
+    return buildSteamUnavailableFallbackTrendReport(pools);
+  }
+
   const marketInsights = buildSteamMarketInsights(candidates, pools);
   const genreSignals = buildSteamGenreSignals(candidates);
   const focusGenres = genreSignals.slice(0, 3).map((signal) => signal.genre.replace(/（.+$/, ""));
+  const steamSamples = selectSteamTrendSamples(candidates);
+  const steamItems = steamSamples.map((candidate) => ({
+    id: `steam_trend_${reportDate.replaceAll("-", "_")}_${candidate.appId}`,
+    title: candidate.title,
+    steam_app_id: candidate.appId,
+    rank_bucket: candidate.source,
+    signal: buildV5SteamSignal(candidate),
+    source: "Steam Store / AppDetails",
+    links: [candidate.storeUrl, candidate.steamDbUrl],
+    bilibili_fit: buildBilibiliFit(candidate),
+    reason: buildV5TrendReason(candidate),
+    auto_import: candidate.score >= 24 && !hardDropReason(candidate),
+    captured_at: capturedAt
+  }));
+  const mediaFallbackItems = steamItems.length >= 8
+    ? []
+    : buildFallbackSteamTrendItems([...pools.push, ...pools.watch], steamItems.length, 12 - steamItems.length);
   return {
     report_date: reportDate,
-    summary: `Steam大盘V5：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    summary: `Steam大盘V6：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
-    items: selectSteamTrendSamples(candidates).map((candidate) => ({
-      id: `steam_trend_${reportDate.replaceAll("-", "_")}_${candidate.appId}`,
-      title: candidate.title,
-      steam_app_id: candidate.appId,
-      rank_bucket: candidate.source,
-      signal: buildV5SteamSignal(candidate),
-      source: "Steam Store / AppDetails",
-      links: [candidate.storeUrl, candidate.steamDbUrl],
-      bilibili_fit: buildBilibiliFit(candidate),
-      reason: buildV5TrendReason(candidate),
-      auto_import: candidate.score >= 24 && !hardDropReason(candidate),
-      captured_at: capturedAt
-    })),
+    items: [...steamItems, ...mediaFallbackItems].slice(0, 12),
     crm_candidates: [...pools.push, ...pools.watch.slice(0, 8)]
   };
+}
+
+function buildSteamUnavailableFallbackTrendReport(pools) {
+  const reviewLeads = [...pools.push, ...pools.watch];
+  const genreSignals = buildFallbackGenreSignals(reviewLeads);
+  const items = buildFallbackSteamTrendItems(reviewLeads, 0, 12);
+
+  return {
+    report_date: reportDate,
+    summary: `Steam大盘V6：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
+    market_insights: [
+      steamInsight(
+        "steam_fetch_unavailable",
+        "Steam 抓取不可用：不能让日报断档",
+        "本次 Steam Search/AppDetails 没有返回有效候选。日报应透明标记源异常，并用国内媒体/B站候选保持 BD review 队列。",
+        "高",
+        "Steam Store fetch status",
+        "https://store.steampowered.com/search/?filter=popularcomingsoon",
+        "稍后补跑 Steam；当前先 review 国内媒体/B站候选，能测就测，不成立就淘汰。"
+      ),
+      steamInsight(
+        "domestic_media_backup",
+        `国内媒体/B站保底：${reviewLeads.length} 个可 review 候选`,
+        "这些候选来自媒体/B站原始链接，不要求先有 Steam AppID。它们的价值是扩大国内产品发现，先判断玩法、题材、视频表达和可测性。",
+        "中",
+        "Domestic media / Bilibili discovery",
+        "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo",
+        "先打开原始链接做产品判断；通过首测后再补 Steam、官网、联系人和商务窗口。"
+      ),
+      steamInsight(
+        "source_resilience",
+        "源韧性：Steam 不是单点故障",
+        "当 Steam 暂时不可用时，日报仍应从国内游戏媒体、B站视频、TapTap/indienova、官方开发者动态里产出可操作线索。",
+        "中",
+        "Domestic discovery source mix",
+        "https://www.gamelook.com.cn/",
+        "后续持续扩展国内源，并用低数量闸门阻止一两条线索的坏日报上线。"
+      )
+    ],
+    genre_signals: genreSignals,
+    items,
+    crm_candidates: reviewLeads.slice(0, 12)
+  };
+}
+
+function buildFallbackSteamTrendItems(reviewLeads, offset, limit) {
+  return reviewLeads.slice(0, limit).map((lead, index) => ({
+    id: `steam_trend_${reportDate.replaceAll("-", "_")}_fallback_${offset + index + 1}`,
+    title: lead.project,
+    steam_app_id: lead.steam_app_id ?? null,
+    rank_bucket: "Domestic media/Bilibili fallback",
+    signal: [
+      "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。",
+      `原始信号：${lead.public_signals ?? lead.progress ?? "媒体/B站线索"}`,
+      `产品观察：${lead.gameplay ?? lead.priority_reason ?? "待打开原始链接确认玩法和内容钩子"}`
+    ].join("\n"),
+    source: lead.public_signals?.split(" / ")[0] ?? "Domestic media/Bilibili",
+    links: lead.links ?? [],
+    bilibili_fit: lead.bilibili_fit ?? "先看视频/原文能否提炼成B站选题、试玩或发行前内容资产。",
+    reason: lead.priority_reason ?? "Steam 不可用时的国内发现保底候选；先做人工首轮 review。",
+    auto_import: true,
+    captured_at: capturedAt
+  }));
+}
+
+function buildFallbackGenreSignals(leads) {
+  const clusters = [
+    ["Roguelike / Deckbuilder", /rogue|肉鸽|卡牌|构筑|deck|card/i, "构筑和单局反馈适合B站挑战、攻略和流派复盘。", "优先确认是否有可测Demo和差异化构筑。"],
+    ["Strategy / Tactical", /策略|战棋|回合|strategy|tactical|三国|战争/i, "策略题材适合长线讲解和核心用户沉淀。", "看前10分钟是否能讲清核心决策和视频看点。"],
+    ["Simulation / Management", /模拟|经营|管理|建造|simulation|management|tycoon/i, "经营模拟适合系列化视频和长期连载。", "看成长曲线、失败反馈和题材新鲜度。"],
+    ["Action / Visual Hook", /动作|射击|战斗|boss|平台|action|shooter|combat/i, "强操作或强视觉更容易通过PV/实机建立第一印象。", "看打击反馈、角色辨识度和可剪素材。"],
+    ["Domestic Discovery", /国产|国风|武侠|修仙|山海|中国|国内|b站|bilibili|taptap|indienova/i, "国内信号代表沟通效率、文化适配和签约概率更高。", "先测/先看内容，通过后再补商务触点。"]
+  ];
+  const signals = clusters.map(([genre, pattern, why, action]) => {
+    const matched = leads.filter((lead) => pattern.test(`${lead.project} ${lead.genre} ${lead.gameplay} ${lead.priority_reason} ${lead.public_signals}`));
+    return {
+      id: `steam_genre_${reportDate.replaceAll("-", "_")}_fallback_${normalizeText(genre).replace(/[^a-z0-9]+/g, "_")}`,
+      genre: `${genre}（${matched.length}/${leads.length}）`,
+      signal: `${matched.length} 个国内媒体/B站候选命中；代表样本：${matched.slice(0, 3).map((lead) => lead.project).join("、") || "待打开原始链接确认"}。`,
+      why_it_matters: why,
+      bd_action: action,
+      links: matched.flatMap((lead) => lead.links ?? []).slice(0, 3)
+    };
+  }).filter((signal) => !/^.+（0\//.test(signal.genre));
+
+  while (signals.length < 3 && leads[signals.length]) {
+    const lead = leads[signals.length];
+    signals.push({
+      id: `steam_genre_${reportDate.replaceAll("-", "_")}_fallback_product_${signals.length + 1}`,
+      genre: `国内产品线索（${signals.length + 1}/${leads.length}）`,
+      signal: `代表样本：${lead.project}。`,
+      why_it_matters: "Steam 不可用时，用国内媒体/B站具体产品保持 BD review 节奏。",
+      bd_action: "先打开原始链接判断玩法和视频表达；不成立直接淘汰。",
+      links: lead.links ?? []
+    });
+  }
+
+  return signals.slice(0, 5);
 }
 
 async function fetchMediaSignals() {
   const results = (await Promise.all(mediaSources().map(fetchMediaSource))).flat();
   const scored = results
     .map((item) => ({ ...item, score: scoreMediaSignal(item) }))
+    .filter((item) => !isStaleMediaSignal(item))
+    .filter((item) => !isBilibiliSignal(item) || !isBannedMediaLeadText(`${item.title} ${item.summary} ${item.source}`.toLowerCase()))
     .filter((item) => item.score >= 12)
     .sort((a, b) => b.score - a.score);
 
@@ -897,6 +1114,11 @@ function mediaSources() {
     { name: "B站视频-国产游戏实机", url: bilibiliSearchApi("国产游戏 实机 PV"), fallbackUrl: bilibiliSearchPage("国产游戏 实机 PV"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站视频-国产肉鸽卡牌", url: bilibiliSearchApi("国产 肉鸽 卡牌 Steam"), fallbackUrl: bilibiliSearchPage("国产 肉鸽 卡牌 Steam"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站视频-独立游戏开发日志", url: bilibiliSearchApi("独立游戏 开发日志 试玩"), fallbackUrl: bilibiliSearchPage("独立游戏 开发日志 试玩"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产游戏公开测试", url: bilibiliSearchApi("国产游戏 公开测试 试玩"), fallbackUrl: bilibiliSearchPage("国产游戏 公开测试 试玩"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产独立游戏PV", url: bilibiliSearchApi("国产独立游戏 PV 实机"), fallbackUrl: bilibiliSearchPage("国产独立游戏 PV 实机"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产策略模拟", url: bilibiliSearchApi("国产 策略 模拟经营 Steam"), fallbackUrl: bilibiliSearchPage("国产 策略 模拟经营 Steam"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国风修仙游戏", url: bilibiliSearchApi("国风 修仙 游戏 试玩"), fallbackUrl: bilibiliSearchPage("国风 修仙 游戏 试玩"), type: "bilibili_video_search", quality: 13, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { name: "B站视频-国产二游新作", url: bilibiliSearchApi("国产 二游 新作 PV"), fallbackUrl: bilibiliSearchPage("国产 二游 新作 PV"), type: "bilibili_video_search", quality: 12, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站搜索-国产独立游戏", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E7%8B%AC%E7%AB%8B%E6%B8%B8%E6%88%8F%20Demo%20Steam", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站搜索-国产游戏试玩", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
     { name: "B站搜索-国产游戏实机", url: "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E5%AE%9E%E6%9C%BA%20PV", type: "page", quality: 11, focus: ["china", "bilibili", "creator", "domestic_sourcing"] },
@@ -951,6 +1173,7 @@ function bilibiliSearchApi(keyword) {
   url.searchParams.set("search_type", "video");
   url.searchParams.set("keyword", keyword);
   url.searchParams.set("page", "1");
+  url.searchParams.set("page_size", "20");
   url.searchParams.set("order", "pubdate");
   return url.toString();
 }
@@ -965,7 +1188,7 @@ function parseBilibiliVideoSearch(text, source) {
   try {
     const payload = JSON.parse(text);
     const result = Array.isArray(payload?.data?.result) ? payload.data.result : [];
-    return result.slice(0, 15).map((item) => {
+    return result.slice(0, 20).map((item) => {
       const bvid = item.bvid ?? "";
       const title = cleanExtractedText(item.title ?? "");
       const description = cleanExtractedText(item.description ?? "");
@@ -1053,6 +1276,7 @@ function scoreMediaSignal(item) {
   if (!hasGameOrBdContext(text, item)) score -= 30;
 
   if (/\b(review|guide|walkthrough|tips|best settings|deal|sale|discount|cosplay|quiz)\b|攻略|评测|折扣|促销|史低|壁纸|图赏|盘点/.test(text)) score -= 10;
+  if (/手游推荐|游戏推荐|必玩|好玩到爆|合集|几款|十款|\d+\s*款/.test(text)) score -= 22;
   if (/rumor|leak|传闻|曝/.test(text) && !/\b(confirmed|official)\b|确认|官方|公告/.test(text)) score -= 4;
   return score;
 }
@@ -1063,7 +1287,19 @@ function isLowInformationMediaTitle(title) {
   if (/^[\d\s:：.,，]+$/.test(text)) return true;
   if (/^\d+\s+\d+\s+\d{1,2}:\d{2}/.test(text)) return true;
   if (/^(观看|播放|评论|弹幕|收藏|分享|赞|投币)\s*\d+/i.test(text)) return true;
+  if (/^[\u4e00-\u9fffA-Za-z0-9 _-]{2,30}\s*·\s*20\d{2}-\d{2}-\d{2}$/.test(text)) return true;
+  if (/^.{2,40}\s*·\s*(昨天|前天|\d+\s*(小时前|分钟前|天前|周前|月前))$/.test(text)) return true;
   return false;
+}
+
+function isStaleMediaSignal(item) {
+  if (!isBilibiliSignal(item)) return false;
+  const timestamp = Date.parse(item.published_at ?? "");
+  if (!Number.isFinite(timestamp)) return false;
+  const reportTimestamp = Date.parse(`${reportDate}T00:00:00+08:00`);
+  if (!Number.isFinite(reportTimestamp)) return false;
+  const ageDays = (reportTimestamp - timestamp) / 86400000;
+  return ageDays > 540;
 }
 
 function dedupeMediaSignals(items) {
@@ -1372,6 +1608,7 @@ function buildSteamGenreSignals(candidates) {
 function selectSteamTrendSamples(candidates) {
   const selected = [];
   const seen = new Set();
+  const validCandidates = candidates.filter((candidate) => !hardDropReason(candidate));
   for (const predicate of [
     (candidate) => candidate.region === "中国" && candidate.hasDemoSignal,
     (candidate) => candidate.region === "中国" && candidate.score >= 80,
@@ -1379,7 +1616,7 @@ function selectSteamTrendSamples(candidates) {
     (candidate) => candidate.hasDemoSignal,
     () => true
   ]) {
-    for (const candidate of candidates) {
+    for (const candidate of validCandidates) {
       if (selected.length >= 12) return selected;
       if (seen.has(candidate.appId) || !predicate(candidate)) continue;
       selected.push(candidate);

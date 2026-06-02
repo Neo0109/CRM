@@ -12,7 +12,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Current generator: `automations/jobs/online_daily_v4.mjs`
 - Rule guard runner: `automations/jobs/online_daily_runner.mjs`
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
-- Canonical V5 rules: `docs/SOURCING_RULES_V5.md`
+- Canonical V6 rules: `docs/SOURCING_RULES_V6.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
 - Current product version after the latest product iteration: `v2.3.4`
 
@@ -53,11 +53,11 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
-## Sourcing Rules V5 Iteration
+## Sourcing Rules V6 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v5`, focused on keeping Steam Trends as a real Steam market board while preserving domestic-first BD probability.
+The latest sourcing-logic iteration is `sourcing-rules-v6`, focused on fixing low daily sourcing volume while keeping Steam Trends as a real Steam market board and preserving domestic-first BD probability.
 
-V5 intent:
+V6 intent:
 
 - Domestic products are the sourcing default because cooperation, efficiency, visual/cultural fit, and signing probability are materially better.
 - Domestic developer Demo/test signals are promoted.
@@ -65,6 +65,14 @@ V5 intent:
 - The old 60-day window is not the only useful window; domestic early-stage projects can be reviewed over a longer horizon.
 - Domestic source coverage expands through Chinese game media, Bilibili video/search signals, indienova, developer communities, and official studio posts.
 - Steam Trends must cover category risers, Demo/Next Fest or other Steam windows, publisher/developer slate signals, public data quality, and BD actions. It must not display internal sourcing-rule notes as market insights.
+- A daily report with one or two usable non-dropped leads is considered a failed automation run when Steam/media/Bilibili sources are healthy.
+- Domestic media and Bilibili extraction now has a strict pass plus an expanded pass, so concrete non-Steam product moments can enter `未处理` for first-pass review.
+- Steam outages or partial AppDetails failures should be visible in the report and should fall back to domestic media/Bilibili review candidates instead of producing a token queue.
+- Expanded Bilibili sourcing must filter stale videos, generic recommendation collections, mature blockbuster chatter, rant/review filler, and other non-actionable content.
+
+## Sourcing Rules V5 Iteration
+
+The previous sourcing-logic iteration was `sourcing-rules-v5`, focused on keeping Steam Trends as a real Steam market board while preserving domestic-first BD probability.
 
 ## Sourcing Rules V4 Iteration
 
