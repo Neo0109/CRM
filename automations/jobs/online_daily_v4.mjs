@@ -9,7 +9,7 @@ const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
 const requestedMaxCandidates = Number(args.maxCandidates ?? 260);
 const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 40), 260) : 260;
-const existingProjects = await readExistingProjectNames(reportDate);
+const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 
 const rawCandidates = dedupeByAppId((await Promise.all([
   fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Keyword Upcoming", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 游戏" }),
@@ -39,12 +39,12 @@ const rawCandidates = dedupeByAppId((await Promise.all([
   fetchSteamSearch("popularcomingsoon", "Deckbuilder Upcoming", [32322]),
   fetchFeaturedCategories()
 ])).flat())
-  .filter((candidate) => candidate.appId && candidate.title && !existingProjects.has(normalizeText(candidate.title)))
+  .filter((candidate) => candidate.appId && candidate.title && !isExistingSteamCandidate(candidate, existingIndex))
   .slice(0, maxCandidates);
 
 const mediaSignals = await fetchMediaSignals();
 const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 14);
-const mediaLeadCandidates = buildMediaLeadCandidates(mediaSignals, existingProjects);
+const mediaLeadCandidates = buildMediaLeadCandidates(mediaSignals, existingIndex.projects);
 
 const enrichedCandidates = await enrichCandidates(rawCandidates);
 
@@ -72,6 +72,8 @@ console.log(JSON.stringify({
   industry_signals: industrySignals.length,
   media_signals_seen: mediaSignals.length,
   media_lead_candidates: mediaLeadCandidates.length,
+  existing_project_names: existingIndex.projects.size,
+  existing_steam_app_ids: existingIndex.steamAppIds.size,
   push_pool: pools.push.length,
   watch_pool: pools.watch.length,
   drop_pool: pools.drop.length,
@@ -108,17 +110,36 @@ function nowInShanghaiIso() {
   return `${value("year")}-${value("month")}-${value("day")}T${value("hour")}:${value("minute")}:${value("second")}+08:00`;
 }
 
-async function readExistingProjectNames(date) {
-  const names = new Set();
+async function readExistingProjectIndex(date, externalIndexPath) {
+  const projects = new Set();
+  const steamAppIds = new Set();
   for (const reportPath of previousDatePaths(date, 45)) {
     try {
       const report = JSON.parse(await readFile(path.join(rootDir, reportPath), "utf8"));
       for (const bucket of ["push_pool", "watch_pool", "drop_pool"]) {
-        for (const lead of report[bucket] ?? []) if (lead.project) names.add(normalizeText(lead.project));
+        for (const lead of report[bucket] ?? []) {
+          if (lead.project) projects.add(normalizeText(lead.project));
+          if (lead.steam_app_id) steamAppIds.add(normalizeText(lead.steam_app_id));
+        }
       }
     } catch {}
   }
-  return names;
+
+  if (externalIndexPath) {
+    try {
+      const external = JSON.parse(await readFile(path.resolve(rootDir, externalIndexPath), "utf8"));
+      for (const project of external.projects ?? []) projects.add(normalizeText(project));
+      for (const appId of external.steam_app_ids ?? []) steamAppIds.add(normalizeText(appId));
+    } catch (error) {
+      throw new Error(`Failed to load CRM dedupe index from ${externalIndexPath}: ${error.message}`);
+    }
+  }
+
+  return { projects, steamAppIds };
+}
+
+function isExistingSteamCandidate(candidate, existingIndex) {
+  return existingIndex.steamAppIds.has(normalizeText(candidate.appId)) || existingIndex.projects.has(normalizeText(candidate.title));
 }
 
 function previousDatePaths(date, days) {

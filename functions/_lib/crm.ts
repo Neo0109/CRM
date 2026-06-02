@@ -30,6 +30,7 @@ export type Env = {
   CRM_USERS_JSON?: string;
   CRM_USERNAME?: string;
   CRM_ACCESS_TOKEN?: string;
+  CRM_AUTOMATION_TOKEN?: string;
   EXCEL_EXPORT_PASSWORD?: string;
   RESEND_API_KEY?: string;
   CRM_FROM_EMAIL?: string;
@@ -106,6 +107,18 @@ type DailyReport = {
   drop_pool: Partial<Lead>[];
 };
 
+type ImportStats = {
+  created_unprocessed: number;
+  created_dropped: number;
+  created_other: number;
+  updated_unprocessed_visible: number;
+  updated_existing_workflow: number;
+  updated_dropped: number;
+  updated_other: number;
+  visible_unprocessed: number;
+  stale_updates: number;
+};
+
 export async function requireAccess(request: Request, env: Env) {
   const headerToken = request.headers.get("x-crm-token");
   const cookieToken = readCookie(request.headers.get("cookie"), "crm_access_token");
@@ -115,6 +128,23 @@ export async function requireAccess(request: Request, env: Env) {
 
   if (result.ok) return null;
   return json({ error: "CRM login required" }, 401);
+}
+
+export function requireAutomationAccess(request: Request, env: Env) {
+  const configuredToken = cleanAuthValue(env.CRM_AUTOMATION_TOKEN);
+  if (!configuredToken) return json({ error: "CRM automation token is not configured" }, 503);
+
+  const url = new URL(request.url);
+  const authHeader = request.headers.get("authorization") ?? "";
+  const bearerToken = authHeader.match(/^Bearer\s+(.+)$/i)?.[1];
+  const submittedToken = cleanAuthValue(
+    bearerToken
+      ?? request.headers.get("x-crm-automation-token")
+      ?? url.searchParams.get("token")
+  );
+
+  if (submittedToken === configuredToken) return null;
+  return json({ error: "CRM automation token required" }, 401);
 }
 
 export async function validateLoginCredentials(env: Env, username: string | null | undefined, password: string | null | undefined, requireUsername = true) {
@@ -312,6 +342,17 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   let created = 0;
   let updated = 0;
   let dropped = 0;
+  const import_stats: ImportStats = {
+    created_unprocessed: 0,
+    created_dropped: 0,
+    created_other: 0,
+    updated_unprocessed_visible: 0,
+    updated_existing_workflow: 0,
+    updated_dropped: 0,
+    updated_other: 0,
+    visible_unprocessed: 0,
+    stale_updates: 0
+  };
 
   for (const raw of rawLeads) {
     const incoming = normalizeLead(raw);
@@ -322,13 +363,18 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
       byId.set(current.id, merged);
       for (const key of leadKeys(merged)) byKey.set(key, merged.id);
       updated += 1;
+      trackUpdatedImport(import_stats, current, incoming);
     } else {
       byId.set(incoming.id, incoming);
       for (const key of leadKeys(incoming)) byKey.set(key, incoming.id);
       created += 1;
+      trackCreatedImport(import_stats, incoming);
     }
     if (incoming.bucket === "淘汰池") dropped += 1;
   }
+
+  import_stats.visible_unprocessed = import_stats.created_unprocessed + import_stats.updated_unprocessed_visible;
+  import_stats.stale_updates = import_stats.updated_existing_workflow;
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
     const bucketOrder: Record<Bucket, number> = { "未处理": 0, "待评测": 1, "测试中": 2, "观察池": 3, "跟进中": 4, "推进池": 5, "淘汰池": 6 };
@@ -339,7 +385,52 @@ export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   });
 
   await writeLeads(env, nextLeads);
-  return { created, updated, dropped, total: nextLeads.length };
+  return { created, updated, dropped, total: nextLeads.length, import_stats };
+}
+
+export function buildLeadDedupeIndex(leads: Lead[]) {
+  const projects = new Set<string>();
+  const steam_app_ids = new Set<string>();
+  const links = new Set<string>();
+  const keys = new Set<string>();
+
+  for (const lead of leads) {
+    if (lead.project) projects.add(normalizeText(lead.project));
+    if (lead.steam_app_id) steam_app_ids.add(normalizeText(lead.steam_app_id));
+    for (const link of lead.links ?? []) links.add(normalizeUrl(link));
+    for (const key of leadKeys(lead)) keys.add(key);
+  }
+
+  return {
+    generated_at: new Date().toISOString(),
+    total: leads.length,
+    projects: [...projects].sort(),
+    steam_app_ids: [...steam_app_ids].sort(),
+    links: [...links].sort(),
+    keys: [...keys].sort()
+  };
+}
+
+function trackCreatedImport(stats: ImportStats, incoming: Lead) {
+  if (incoming.bucket === "未处理" && incoming.review_status === "未处理") {
+    stats.created_unprocessed += 1;
+  } else if (incoming.bucket === "淘汰池") {
+    stats.created_dropped += 1;
+  } else {
+    stats.created_other += 1;
+  }
+}
+
+function trackUpdatedImport(stats: ImportStats, current: Lead, incoming: Lead) {
+  if (incoming.bucket === "淘汰池") {
+    stats.updated_dropped += 1;
+  } else if (current.bucket === "未处理" && current.review_status === "未处理") {
+    stats.updated_unprocessed_visible += 1;
+  } else if (incoming.bucket === "未处理" && incoming.review_status === "未处理") {
+    stats.updated_existing_workflow += 1;
+  } else {
+    stats.updated_other += 1;
+  }
 }
 
 export function leadsFromReport(report: DailyReport): Partial<Lead>[] {

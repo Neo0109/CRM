@@ -19,6 +19,24 @@ Cloud-owned files:
 
 The source of truth is GitHub `main`. Cloudflare Pages and Supabase sync from that source.
 
+## Production Deduplication
+
+Daily generation must avoid filling today's candidate slots with projects that already exist in the production CRM. Recent report-history dedupe is not enough because leads can enter production through manual import, Steam Trends, lead assistant, or other non-report channels.
+
+Cloudflare Pages exposes a protected automation endpoint:
+
+```bash
+GET /api/leads/dedupe-index
+Authorization: Bearer $CRM_AUTOMATION_TOKEN
+```
+
+Configure the same secret value in:
+
+- Cloudflare Pages variable: `CRM_AUTOMATION_TOKEN`
+- GitHub Actions secret: `CRM_AUTOMATION_TOKEN`
+
+When the GitHub secret is present, daily workflows fetch the production dedupe index before generation and pass it to `online_daily_runner.mjs`. If the secret is missing, the generator falls back to report-history dedupe only and logs that degraded state.
+
 ## Structure Contract
 
 Daily report structure is a product contract. Rule versions may change sourcing strategy, scoring, wording, and source coverage, but must not casually change the report shape.
@@ -57,6 +75,7 @@ The watchdog checks:
 
 - Required files exist.
 - A successful sync receipt exists.
+- Sync import quality: newly created unprocessed leads should meet the useful daily threshold.
 - Candidate counts are above the minimum useful threshold.
 - Radar, Steam Trends, Steam market insights, and Steam genre signals are above the minimum useful thresholds.
 

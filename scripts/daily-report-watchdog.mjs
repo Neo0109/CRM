@@ -11,8 +11,9 @@ const minRadarItems = numberArg(args.minRadarItems, 8);
 const minSteamTrendItems = numberArg(args.minSteamTrendItems, 8);
 const minSteamMarketInsights = numberArg(args.minSteamMarketInsights, 3);
 const minSteamGenreSignals = numberArg(args.minSteamGenreSignals, 3);
+const minCreatedUnprocessed = numberArg(args.minCreatedUnprocessed, 6);
 
-const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates, minRadarItems, minSteamTrendItems, minSteamMarketInsights, minSteamGenreSignals });
+const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates, minRadarItems, minSteamTrendItems, minSteamMarketInsights, minSteamGenreSignals, minCreatedUnprocessed });
 
 if (args.githubOutput) {
   appendGithubOutput(args.githubOutput, {
@@ -68,6 +69,16 @@ function inspectDailyReport(date, thresholds) {
   const receipts = readReceipts(date);
   const successfulReceipt = receipts.find((receipt) => receipt.status === "success" || /"synced"\s*:\s*true/.test(String(receipt.sync_response ?? "")));
   if (!successfulReceipt) reasons.push("no successful sync receipt");
+  const syncPayload = successfulReceipt ? parseSyncResponse(successfulReceipt.sync_response) : null;
+  const importStats = syncPayload?.import_stats ?? null;
+  if (importStats) {
+    counts.created_unprocessed = Number(importStats.created_unprocessed ?? 0);
+    counts.visible_unprocessed = Number(importStats.visible_unprocessed ?? 0);
+    counts.stale_updates = Number(importStats.stale_updates ?? 0);
+    if (counts.created_unprocessed < thresholds.minCreatedUnprocessed) {
+      reasons.push(`created unprocessed count ${counts.created_unprocessed} below threshold ${thresholds.minCreatedUnprocessed}`);
+    }
+  }
 
   return {
     ok: reasons.length === 0,
@@ -86,6 +97,15 @@ function inspectDailyReport(date, thresholds) {
     })),
     reasons
   };
+}
+
+function parseSyncResponse(value) {
+  if (!value || typeof value !== "string") return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
 
 function readReceipts(date) {

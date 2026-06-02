@@ -118,7 +118,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.3-dashboard-rhythm-time-greeting",
+    version: "v2.3.1-daily-automation-quality-guard",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,
@@ -268,6 +268,17 @@ async function mergeIncomingLeads(rawLeads: Partial<Lead>[]) {
   let created = 0;
   let updated = 0;
   let dropped = 0;
+  const import_stats = {
+    created_unprocessed: 0,
+    created_dropped: 0,
+    created_other: 0,
+    updated_unprocessed_visible: 0,
+    updated_existing_workflow: 0,
+    updated_dropped: 0,
+    updated_other: 0,
+    visible_unprocessed: 0,
+    stale_updates: 0
+  };
 
   for (const raw of rawLeads) {
     const incoming = normalizeLead(raw);
@@ -279,13 +290,23 @@ async function mergeIncomingLeads(rawLeads: Partial<Lead>[]) {
       byId.set(current.id, merged);
       for (const key of leadKeys(merged)) byKey.set(key, merged.id);
       updated += 1;
+      if (incoming.bucket === "淘汰池") import_stats.updated_dropped += 1;
+      else if (current.bucket === "未处理") import_stats.updated_unprocessed_visible += 1;
+      else if (incoming.bucket === "未处理") import_stats.updated_existing_workflow += 1;
+      else import_stats.updated_other += 1;
     } else {
       byId.set(incoming.id, incoming);
       for (const key of leadKeys(incoming)) byKey.set(key, incoming.id);
       created += 1;
+      if (incoming.bucket === "未处理") import_stats.created_unprocessed += 1;
+      else if (incoming.bucket === "淘汰池") import_stats.created_dropped += 1;
+      else import_stats.created_other += 1;
     }
     if (incoming.bucket === "淘汰池") dropped += 1;
   }
+
+  import_stats.visible_unprocessed = import_stats.created_unprocessed + import_stats.updated_unprocessed_visible;
+  import_stats.stale_updates = import_stats.updated_existing_workflow;
 
   const nextLeads = Array.from(byId.values()).sort((a, b) => {
     const bucketOrder: Record<Bucket, number> = { "未处理": 0, "待评测": 1, "测试中": 2, "观察池": 3, "跟进中": 4, "推进池": 5, "淘汰池": 6 };
@@ -293,7 +314,7 @@ async function mergeIncomingLeads(rawLeads: Partial<Lead>[]) {
   });
 
   await writeLeads(nextLeads);
-  return { created, updated, dropped, total: nextLeads.length };
+  return { created, updated, dropped, total: nextLeads.length, import_stats };
 }
 
 function isDailyReport(value: unknown): value is DailyReport {
