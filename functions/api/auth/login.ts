@@ -16,6 +16,7 @@ export const onRequestPost = async ({ request, env }: PagesContext) => {
   return json({
     ok: true,
     username: result.username ?? payload.username?.trim() ?? "",
+    display_name: result.display_name ?? result.username ?? payload.username?.trim() ?? "",
     role: result.role ?? "member",
     permissions: result.permissions ?? []
   });

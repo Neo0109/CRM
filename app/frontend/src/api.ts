@@ -2,6 +2,7 @@ import type { CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssista
 
 const tokenKey = "sourcing-crm-access-token";
 const usernameKey = "sourcing-crm-username";
+const displayNameKey = "sourcing-crm-display-name";
 
 type SyncResult = ImportResult & {
   synced: boolean;
@@ -24,6 +25,7 @@ export type LoginPayload = {
 export type LoginResult = {
   ok: boolean;
   username: string;
+  display_name?: string;
   role?: string;
   permissions?: string[];
 };
@@ -74,7 +76,7 @@ export async function loginToCrm(payload: LoginPayload) {
   }
 
   const result = await response.json() as LoginResult;
-  saveAccessCredentials(result.username || payload.username, payload.password);
+  saveAccessCredentials(result.username || payload.username, payload.password, result.display_name);
   return result;
 }
 
@@ -126,8 +128,11 @@ export function importJsonLeads(payload: unknown) {
   });
 }
 
-export function syncLatestReport(date?: string) {
-  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+export function syncLatestReport(date?: string, force = false) {
+  const params = new URLSearchParams();
+  if (date) params.set("date", date);
+  if (force) params.set("force", "1");
+  const query = params.toString() ? `?${params.toString()}` : "";
   return request<SyncResult>(`/api/reports/sync${query}`, { method: "POST" });
 }
 
@@ -150,25 +155,43 @@ export function getAccessUsername() {
   return window.localStorage.getItem(usernameKey) ?? "";
 }
 
+export function getAccessDisplayName() {
+  return window.localStorage.getItem(displayNameKey) ?? displayNameForUsername(getAccessUsername());
+}
+
 export function hasSavedCredentials() {
   return Boolean(getAccessToken());
 }
 
-export function saveAccessCredentials(username: string, token: string) {
+export function saveAccessCredentials(username: string, token: string, displayName?: string) {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  window.localStorage.setItem(usernameKey, username.trim());
+  const cleanUsername = username.trim();
+  const cleanDisplayName = (displayName ?? "").trim() || displayNameForUsername(cleanUsername);
+  window.localStorage.setItem(usernameKey, cleanUsername);
+  window.localStorage.setItem(displayNameKey, cleanDisplayName);
   window.localStorage.setItem(tokenKey, token);
-  document.cookie = `crm_username=${encodeURIComponent(username.trim())}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+  document.cookie = `crm_username=${encodeURIComponent(cleanUsername)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
   document.cookie = `crm_access_token=${encodeURIComponent(token)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
 }
 
 export function saveAccessToken(token: string) {
-  saveAccessCredentials(getAccessUsername(), token);
+  saveAccessCredentials(getAccessUsername(), token, getAccessDisplayName());
 }
 
 export function clearAccessToken() {
   window.localStorage.removeItem(usernameKey);
+  window.localStorage.removeItem(displayNameKey);
   window.localStorage.removeItem(tokenKey);
   document.cookie = "crm_username=; Path=/; Max-Age=0; SameSite=Lax";
   document.cookie = "crm_access_token=; Path=/; Max-Age=0; SameSite=Lax";
+}
+
+function displayNameForUsername(username: string) {
+  const names: Record<string, string> = {
+    neo: "Neo",
+    neo0109: "Neo",
+    nanyuan: "南鸢",
+    yuyang: "于老板"
+  };
+  return names[username.trim().toLowerCase()] ?? username.trim();
 }

@@ -3,7 +3,7 @@ import type { PagesContext } from "./_lib/crm";
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
 const assetVersion = "20260602-local-assets-v233";
-const brandLabel = "Neo's BD Matrix · v2.3.3";
+const brandLabel = "Neo's BD Matrix · v2.3.4";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;

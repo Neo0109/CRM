@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.3.4`（`v2.3.4-daily-inbox-user-display`）：当天日报同步支持刷新强制补同步；未处理/观察池里仍未人工处理的日报命中项会重新进入未处理复核；多人登录问候语改为按账号显示名展示。
 - 产品可见版本升级为 `v2.3.3`（`v2.3.3-pages-local-assets-entry`）：Cloudflare Pages 入口改为加载当前部署的本地 `/assets` 前端资源，停止引用旧 commit 的 jsDelivr bundle。
 - 产品可见版本升级为 `v2.3.2`（`v2.3.2-login-timeout-feedback`）：登录请求增加超时保护，避免接口或旧前端资源异常时一直停留在“验证中”。
 - 产品可见版本升级为 `v2.3.1`（`v2.3.1-daily-automation-quality-guard`）：日报自动化补充生产去重索引、未处理新增质量闸门和独立补跑防线

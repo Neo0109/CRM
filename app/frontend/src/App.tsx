@@ -1,6 +1,6 @@
 import { AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { clearAccessToken, excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
+import { clearAccessToken, excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
 import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
@@ -88,6 +88,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(hasSavedCredentials());
+  const [displayName, setDisplayName] = useState(getAccessDisplayName());
   const [loginPending, setLoginPending] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [radar, setRadar] = useState<RadarReport | null>(null);
@@ -138,11 +139,11 @@ export default function App() {
 
   const selectedLead = useMemo(() => filteredLeads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, selectedId]);
 
-  async function reload(syncDailyReport = false) {
+  async function reload(syncDailyReport: boolean | "force" = false) {
     try {
       setLoading(true);
       if (syncDailyReport) {
-        const syncResult = await syncLatestReport();
+        const syncResult = await syncLatestReport(undefined, syncDailyReport === "force");
         if (syncResult.synced && (syncResult.created > 0 || syncResult.updated > 0 || syncResult.dropped > 0)) {
           setStatus(`已自动同步 ${syncResult.report_date} 日报：新增 ${syncResult.created}，更新 ${syncResult.updated}，淘汰 ${syncResult.dropped}`);
         }
@@ -201,7 +202,8 @@ export default function App() {
     try {
       setLoginPending(true);
       setLoginError(null);
-      await loginToCrm({ username, password });
+      const result = await loginToCrm({ username, password });
+      setDisplayName(result.display_name || result.username || username.trim());
       setError(null);
       setStatus(null);
       setIsAuthenticated(true);
@@ -223,7 +225,7 @@ export default function App() {
   }
 
   function refreshCurrentView() {
-    if (view === "leads") void reload(true);
+    if (view === "leads") void reload("force");
     if (view === "assistant") void reload(false);
     if (view === "radar") void loadRadar();
     if (view === "steam") void loadSteamTrends();
@@ -237,6 +239,7 @@ export default function App() {
 
   function logout() {
     clearAccessToken();
+    setDisplayName("");
     setIsAuthenticated(false);
     setLoginError(null);
     setLeads([]);
@@ -299,6 +302,7 @@ export default function App() {
         filteredLeads={filteredLeads}
         selectedLead={selectedLead}
         setSelectedId={setSelectedId}
+        displayName={displayName}
         handleLeadPatch={handleLeadPatch}
         moveBucket={moveBucket}
       /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : <SettingsPage onStatus={setStatus} />}
@@ -310,7 +314,7 @@ function isAuthError(message: string | null) {
   return Boolean(message && (message.includes("CRM login required") || message.includes("CRM access token required")));
 }
 
-function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, handleLeadPatch, moveBucket }: {
+function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, selectedLead, setSelectedId, displayName, handleLeadPatch, moveBucket }: {
   leads: Lead[];
   filters: Filters;
   setFilters: (filters: Filters) => void;
@@ -319,11 +323,12 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
   filteredLeads: Lead[];
   selectedLead: Lead | null;
   setSelectedId: (id: string | null) => void;
+  displayName: string;
   handleLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
   moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
 }) {
   const insights = useMemo(() => buildSourcingInsights(leads, stats), [leads, stats]);
-  const greeting = getDashboardGreeting();
+  const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
   const focusLabel = activeFilterLabel(filters);
 
@@ -479,17 +484,18 @@ function activeFilterLabel(filters: Filters) {
   return "Leads Review";
 }
 
-function getDashboardGreeting(date = new Date()) {
+function getDashboardGreeting(displayName: string, date = new Date()) {
+  const name = displayName.trim() || "Neo";
   const hour = Number(new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     hour12: false,
     timeZone: "Asia/Shanghai"
   }).format(date));
 
-  if (hour < 6) return { title: "早点休息，Neo", note: "现在是北京时间深夜，先保留精力。" };
-  if (hour < 12) return { title: "早上好，Neo", note: "先处理最需要判断的新线索。" };
-  if (hour < 18) return { title: "下午好，Neo", note: "适合推进评测、补证据和确认下一步。" };
-  return { title: "晚上好，Neo", note: "收束今天的跟进，把明天要看的项目留清楚。" };
+  if (hour < 6) return { title: `早点休息，${name}`, note: "现在是北京时间深夜，先保留精力。" };
+  if (hour < 12) return { title: `早上好，${name}`, note: "先处理最需要判断的新线索。" };
+  if (hour < 18) return { title: `下午好，${name}`, note: "适合推进评测、补证据和确认下一步。" };
+  return { title: `晚上好，${name}`, note: "收束今天的跟进，把明天要看的项目留清楚。" };
 }
 
 function formatShanghaiLongDate(date = new Date()) {

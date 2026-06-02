@@ -38,6 +38,7 @@ export type Env = {
 
 export type CrmUser = {
   username: string;
+  display_name: string;
   password: string;
   role: string;
   permissions: string[];
@@ -173,6 +174,7 @@ export async function validateLoginCredentials(env: Env, username: string | null
       ok: true,
       reason: "ok" as const,
       username: matchedUser.username,
+      display_name: matchedUser.display_name,
       role: matchedUser.role,
       permissions: matchedUser.permissions
     };
@@ -193,6 +195,7 @@ export async function validateLoginCredentials(env: Env, username: string | null
       ok: !requireUsername || Boolean(submittedUsername),
       reason: "no_password_configured" as const,
       username: configuredUsername || submittedUsername,
+      display_name: displayNameForUsername(configuredUsername || submittedUsername),
       role: "admin",
       permissions: ["*"]
     };
@@ -202,7 +205,14 @@ export async function validateLoginCredentials(env: Env, username: string | null
     return { ok: false, reason: "invalid_password" as const };
   }
 
-  return { ok: true, reason: "ok" as const, username: configuredUsername || submittedUsername, role: "admin", permissions: ["*"] };
+  return {
+    ok: true,
+    reason: "ok" as const,
+    username: configuredUsername || submittedUsername,
+    display_name: displayNameForUsername(configuredUsername || submittedUsername),
+    role: "admin",
+    permissions: ["*"]
+  };
 }
 
 async function readAccessPasswords(env: Env) {
@@ -223,7 +233,7 @@ async function readConfiguredUsers(env: Env) {
   const legacyPassword = cleanAuthValue(env.CRM_ACCESS_TOKEN);
 
   if (legacyUsername && legacyPassword) {
-    users.push({ username: legacyUsername, password: legacyPassword, role: "admin", permissions: ["*"] });
+    users.push({ username: legacyUsername, display_name: displayNameForUsername(legacyUsername), password: legacyPassword, role: "admin", permissions: ["*"] });
   }
 
   if (legacyUsername && !legacyPassword) {
@@ -231,7 +241,7 @@ async function readConfiguredUsers(env: Env) {
       const settings = await readCrmSettings(env);
       const settingsPassword = cleanAuthValue(settings.login_password);
       if (settingsPassword) {
-        users.push({ username: legacyUsername, password: settingsPassword, role: "admin", permissions: ["*"] });
+        users.push({ username: legacyUsername, display_name: displayNameForUsername(legacyUsername), password: settingsPassword, role: "admin", permissions: ["*"] });
       }
     } catch {
       // Login should still work from env-only credentials if settings storage is unavailable.
@@ -262,8 +272,10 @@ function userFromArrayItem(item: unknown): CrmUser | null {
   const username = cleanAuthValue(readString(record.username) ?? readString(record.name));
   const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
   if (!username || !password) return null;
+  const displayName = cleanAuthValue(readString(record.display_name) ?? readString(record.displayName) ?? readString(record.nickname) ?? readString(record.label));
   return {
     username,
+    display_name: displayName || displayNameForUsername(username),
     password,
     role: cleanAuthValue(readString(record.role)) || "member",
     permissions: readPermissions(record.permissions)
@@ -276,15 +288,17 @@ function userFromObjectEntry([username, value]: [string, unknown]): CrmUser | nu
 
   if (typeof value === "string") {
     const password = cleanAuthValue(value);
-    return password ? { username: cleanUsername, password, role: "member", permissions: [] } : null;
+    return password ? { username: cleanUsername, display_name: displayNameForUsername(cleanUsername), password, role: "member", permissions: [] } : null;
   }
 
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
   const password = cleanAuthValue(readString(record.password) ?? readString(record.token) ?? readString(record.accessToken));
   if (!password) return null;
+  const displayName = cleanAuthValue(readString(record.display_name) ?? readString(record.displayName) ?? readString(record.nickname) ?? readString(record.label));
   return {
     username: cleanUsername,
+    display_name: displayName || displayNameForUsername(cleanUsername),
     password,
     role: cleanAuthValue(readString(record.role)) || "member",
     permissions: readPermissions(record.permissions)
@@ -293,6 +307,17 @@ function userFromObjectEntry([username, value]: [string, unknown]): CrmUser | nu
 
 function isCrmUser(user: CrmUser | null): user is CrmUser {
   return Boolean(user?.username && user.password);
+}
+
+function displayNameForUsername(username: string | null | undefined) {
+  const cleanUsername = cleanAuthValue(username);
+  const configuredNames: Record<string, string> = {
+    neo: "Neo",
+    neo0109: "Neo",
+    nanyuan: "南鸢",
+    yuyang: "于老板"
+  };
+  return configuredNames[cleanUsername.toLowerCase()] ?? cleanUsername;
 }
 
 function dedupeCrmUsers(users: CrmUser[]) {
@@ -583,8 +608,8 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     due_date: current.due_date ?? incoming.due_date,
     calendar_enabled: current.calendar_enabled || incoming.calendar_enabled,
     follow_up_interval: current.follow_up_interval ?? incoming.follow_up_interval,
-    review_status: current.review_status,
-    reviewed_at: current.reviewed_at,
+    review_status: keepCurrentWorkflow ? current.review_status : incoming.review_status,
+    reviewed_at: keepCurrentWorkflow ? current.reviewed_at : incoming.reviewed_at,
     evaluation_grade: current.evaluation_grade ?? incoming.evaluation_grade,
     evaluation_result: current.evaluation_result ?? incoming.evaluation_result,
     evaluated_at: current.evaluated_at ?? incoming.evaluated_at,
@@ -596,9 +621,14 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
 }
 
 function shouldKeepCurrentWorkflow(current: Lead, incoming: Lead) {
-  if (incoming.bucket === "未处理" && incoming.review_status === "未处理" && current.review_status === "未处理" && current.bucket === "观察池") {
+  if (incoming.bucket === "未处理" && incoming.review_status === "未处理" && current.bucket === "未处理") {
     return false;
   }
+
+  if (incoming.bucket === "未处理" && incoming.review_status === "未处理" && current.bucket === "观察池" && current.review_status === "未处理" && !current.reviewed_at) {
+    return false;
+  }
+
   return true;
 }
 
