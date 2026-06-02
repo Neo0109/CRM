@@ -93,10 +93,29 @@ jobs:
           echo "RUN_SLOT=$run_slot" >> "$GITHUB_ENV"
           echo "Generating online CRM automation for $report_date ($run_slot)"
 
+      - name: Fetch CRM dedupe index
+        id: dedupe
+        shell: bash
+        env:
+          CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN }}
+        run: |
+          if [ -z "$CRM_AUTOMATION_TOKEN" ]; then
+            echo "No CRM_AUTOMATION_TOKEN secret configured; using report-history dedupe only."
+            echo "index_args=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          mkdir -p data/runtime
+          curl -fsS \
+            -H "Authorization: Bearer $CRM_AUTOMATION_TOKEN" \
+            "https://crm-pages.pages.dev/api/leads/dedupe-index" \
+            -o data/runtime/crm-dedupe-index.json
+          echo "index_args=--existingIndex=data/runtime/crm-dedupe-index.json" >> "$GITHUB_OUTPUT"
+
       - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=160
+          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=160 ${{ steps.dedupe.outputs.index_args }}
 
       - name: Commit generated data
         id: commit
@@ -200,6 +219,37 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main
           fi
+
+      - name: Fail if CRM import quality is too low
+        if: steps.sync.outputs.sync_status == 'success'
+        shell: bash
+        env:
+          SYNC_RESPONSE_B64: ${{ steps.sync.outputs.sync_response_b64 }}
+          MIN_CREATED_UNPROCESSED: 6
+        run: |
+          node <<'NODE'
+          const responseText = Buffer.from(process.env.SYNC_RESPONSE_B64 || '', 'base64').toString('utf8');
+          let payload = null;
+          try {
+            payload = JSON.parse(responseText);
+          } catch {
+            console.log('Sync response is not JSON; skipping import quality gate.');
+            process.exit(0);
+          }
+          const stats = payload.import_stats;
+          if (!stats) {
+            console.log('Sync response does not include import_stats yet; skipping import quality gate.');
+            process.exit(0);
+          }
+          const minCreated = Number(process.env.MIN_CREATED_UNPROCESSED || 6);
+          const created = Number(stats.created_unprocessed || 0);
+          if (created < minCreated) {
+            console.error(`CRM import quality too low: created_unprocessed=${created}, expected >= ${minCreated}.`);
+            console.error(`stale_updates=${Number(stats.stale_updates || 0)}, visible_unprocessed=${Number(stats.visible_unprocessed || 0)}.`);
+            process.exit(1);
+          }
+          console.log(`CRM import quality ok: created_unprocessed=${created}.`);
+          NODE
 
       - name: Fail if CRM sync did not succeed
         if: steps.sync.outputs.sync_status != 'success'
