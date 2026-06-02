@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.3.2`（`v2.3.2-login-timeout-feedback`）：登录请求增加超时保护，避免
 - 产品可见版本升级为 `v2.3.1`（`v2.3.1-daily-automation-quality-guard`）：日报自动化补充生产去重索引、未处理新增质量闸门和独立补跑防线
 - 产品可见版本升级为 `v2.3`（`v2.3-dashboard-rhythm-time-greeting`）：顶部问候区重排、北京时间问候逻辑修正、本周 sourcing 标题简化
 - 产品可见版本升级为 `v2.2`（`v2.2-sidebar-rhythm-philosophy-rotation`）：侧栏品牌区重排、哲学金句早中晚轮换、新增 Leads 按钮品牌色

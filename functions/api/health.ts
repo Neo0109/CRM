@@ -9,7 +9,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
 
   return json({
     ok: true,
-    version: "v2.3.1-daily-automation-quality-guard",
+    version: "v2.3.2-login-timeout-feedback",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,

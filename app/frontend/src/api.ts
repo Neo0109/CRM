@@ -50,10 +50,22 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export async function loginToCrm(payload: LoginPayload) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 12000);
+
   const response = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
+    cache: "no-store",
+    signal: controller.signal
+  }).catch((error) => {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("登录请求超时，请刷新页面或清除 Safari 网站数据后重试");
+    }
+    throw error;
+  }).finally(() => {
+    window.clearTimeout(timeout);
   });
 
   if (!response.ok) {

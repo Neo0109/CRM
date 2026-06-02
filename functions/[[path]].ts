@@ -2,7 +2,7 @@ const assetBase = "https://cdn.jsdelivr.net/gh/Neo0109/CRM@ec6567dfffad355c071e8
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
 const assetVersion = "20260602-dashboard-rhythm-v23";
-const brandLabel = "Neo's BD Matrix · v2.3.1";
+const brandLabel = "Neo's BD Matrix · v2.3.2";
 
 function versionedAsset(fileName: string) {
   return `${assetBase}/assets/${fileName}?v=${assetVersion}`;
