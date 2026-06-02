@@ -44,6 +44,14 @@ export type CrmUser = {
   permissions: string[];
 };
 
+export type CrmUsersParseStatus = "empty" | "valid" | "repaired" | "invalid";
+
+export type CrmUsersParseResult = {
+  users: CrmUser[];
+  status: CrmUsersParseStatus;
+  error?: string;
+};
+
 export type PagesContext = {
   request: Request;
   env: Env;
@@ -252,18 +260,40 @@ async function readConfiguredUsers(env: Env) {
 }
 
 export function parseCrmUsersJson(rawValue: string | null | undefined): CrmUser[] {
-  const raw = cleanAuthValue(rawValue);
-  if (!raw) return [];
+  return parseCrmUsersJsonWithDiagnostics(rawValue).users;
+}
 
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (Array.isArray(parsed)) return parsed.map(userFromArrayItem).filter(isCrmUser);
-    if (parsed && typeof parsed === "object") return Object.entries(parsed).map(userFromObjectEntry).filter(isCrmUser);
-  } catch {
-    return [];
+export function parseCrmUsersJsonWithDiagnostics(rawValue: string | null | undefined): CrmUsersParseResult {
+  const raw = cleanAuthValue(rawValue);
+  if (!raw) return { users: [], status: "empty" };
+
+  const direct = parseCrmUsersPayload(raw);
+  if (direct.ok) return { users: direct.users, status: "valid" };
+
+  const repairedRaw = repairCrmUsersJson(raw);
+  if (repairedRaw !== raw) {
+    const repaired = parseCrmUsersPayload(repairedRaw);
+    if (repaired.ok) return { users: repaired.users, status: "repaired", error: direct.error };
   }
 
-  return [];
+  return { users: [], status: "invalid", error: direct.error };
+}
+
+function parseCrmUsersPayload(raw: string): { ok: true; users: CrmUser[] } | { ok: false; error: string } {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) return { ok: true, users: parsed.map(userFromArrayItem).filter(isCrmUser) };
+    if (parsed && typeof parsed === "object") return { ok: true, users: Object.entries(parsed).map(userFromObjectEntry).filter(isCrmUser) };
+    return { ok: true, users: [] };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "invalid JSON" };
+  }
+}
+
+function repairCrmUsersJson(raw: string) {
+  return raw
+    .replace(/}\s*(?=\{)/g, "},")
+    .replace(/]\s*(?=\{)/g, "]},");
 }
 
 function userFromArrayItem(item: unknown): CrmUser | null {
@@ -314,6 +344,7 @@ function displayNameForUsername(username: string | null | undefined) {
   const configuredNames: Record<string, string> = {
     neo: "Neo",
     neo0109: "Neo",
+    jojo: "Jojo",
     nanyuan: "南鸢",
     yuyang: "于老板"
   };

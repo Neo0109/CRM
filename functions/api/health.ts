@@ -1,20 +1,22 @@
-import { json, parseCrmUsersJson, type PagesContext } from "../_lib/crm";
+import { json, parseCrmUsersJsonWithDiagnostics, type PagesContext } from "../_lib/crm";
 
 export const onRequestGet = async ({ env }: PagesContext) => {
   const hasSupabaseUrl = Boolean(env.SUPABASE_URL);
   const hasSupabaseSecret = Boolean(env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY);
   const hasOpenAiApiKey = Boolean((env as PagesContext["env"] & { OPENAI_API_KEY?: string }).OPENAI_API_KEY);
   const hasExcelExportPassword = Boolean((env as PagesContext["env"] & { EXCEL_EXPORT_PASSWORD?: string }).EXCEL_EXPORT_PASSWORD);
-  const crmUserCount = parseCrmUsersJson(env.CRM_USERS_JSON).length + (env.CRM_USERNAME && env.CRM_ACCESS_TOKEN ? 1 : 0);
+  const crmUsersConfig = parseCrmUsersJsonWithDiagnostics(env.CRM_USERS_JSON);
+  const crmUserCount = crmUsersConfig.users.length + (env.CRM_USERNAME && env.CRM_ACCESS_TOKEN ? 1 : 0);
 
   return json({
     ok: true,
-    version: "v2.3.4-daily-inbox-user-display",
+    version: "v2.3.5-multi-user-json-recovery",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,
       hasSupabaseSecret,
       hasCrmUsersJson: Boolean(env.CRM_USERS_JSON),
+      crmUsersJsonStatus: crmUsersConfig.status,
       crmUserCount,
       hasCrmUsername: Boolean(env.CRM_USERNAME),
       hasCrmAccessToken: Boolean(env.CRM_ACCESS_TOKEN),

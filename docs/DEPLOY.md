@@ -142,6 +142,19 @@ For multiple users, set one Cloudflare secret named `CRM_USERS_JSON`. Do not cre
 ]
 ```
 
+Each user object must be separated by a comma. For example, when adding a third person:
+
+```json
+[
+  {"username":"neo","display_name":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]},
+  {"username":"nanyuan","display_name":"南鸢","password":"choose-another-private-password","role":"member","permissions":[]},
+  {"username":"jojo","display_name":"Jojo","password":"choose-a-third-private-password","role":"member","permissions":[]},
+  {"username":"yuyang","display_name":"于老板","password":"choose-a-fourth-private-password","role":"member","permissions":[]}
+]
+```
+
+After deployment, open `/api/health` and confirm `crmUsersJsonStatus` is `valid` and `crmUserCount` matches the number of CRM users. `repaired` means the app tolerated a common paste error, but you should still fix the Cloudflare value.
+
 Object-map format is also accepted if it is easier to edit in Cloudflare:
 
 ```json

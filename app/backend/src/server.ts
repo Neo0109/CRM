@@ -521,15 +521,33 @@ function parseCrmUsersJson(rawValue: string | null | undefined): CrmUser[] {
   const raw = cleanAuthValue(rawValue);
   if (!raw) return [];
 
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (Array.isArray(parsed)) return parsed.map(userFromArrayItem).filter(isCrmUser);
-    if (parsed && typeof parsed === "object") return Object.entries(parsed).map(userFromObjectEntry).filter(isCrmUser);
-  } catch {
-    return [];
+  const direct = parseCrmUsersPayload(raw);
+  if (direct.ok) return direct.users;
+
+  const repairedRaw = repairCrmUsersJson(raw);
+  if (repairedRaw !== raw) {
+    const repaired = parseCrmUsersPayload(repairedRaw);
+    if (repaired.ok) return repaired.users;
   }
 
   return [];
+}
+
+function parseCrmUsersPayload(raw: string): { ok: true; users: CrmUser[] } | { ok: false } {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed)) return { ok: true, users: parsed.map(userFromArrayItem).filter(isCrmUser) };
+    if (parsed && typeof parsed === "object") return { ok: true, users: Object.entries(parsed).map(userFromObjectEntry).filter(isCrmUser) };
+    return { ok: true, users: [] };
+  } catch {
+    return { ok: false };
+  }
+}
+
+function repairCrmUsersJson(raw: string) {
+  return raw
+    .replace(/}\s*(?=\{)/g, "},")
+    .replace(/]\s*(?=\{)/g, "]},");
 }
 
 function userFromArrayItem(item: unknown): CrmUser | null {
@@ -580,6 +598,7 @@ function displayNameForUsername(username: string | null | undefined) {
   const configuredNames: Record<string, string> = {
     neo: "Neo",
     neo0109: "Neo",
+    jojo: "Jojo",
     nanyuan: "南鸢",
     yuyang: "于老板"
   };

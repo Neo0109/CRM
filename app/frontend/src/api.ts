@@ -190,6 +190,7 @@ function displayNameForUsername(username: string) {
   const names: Record<string, string> = {
     neo: "Neo",
     neo0109: "Neo",
+    jojo: "Jojo",
     nanyuan: "南鸢",
     yuyang: "于老板"
   };
