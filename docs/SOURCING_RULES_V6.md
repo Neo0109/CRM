@@ -14,6 +14,7 @@ V6 keeps the domestic-first, testing-first workflow from V5, and fixes the low-v
 - Domestic media and Bilibili product signals get a strict pass plus an expanded pass.
 - Expanded candidates may enter `未处理` when they clearly point to a concrete game/product moment, even if the project name still needs manual cleanup.
 - If Steam search or AppDetails is unavailable, the report must transparently fall back to domestic media/Bilibili review candidates instead of collapsing to one or two leads.
+- If Steam and media sources are healthy but the strong/normal review pool is just below the floor, domestic candidates with concrete playable/product signals may be backfilled into `未处理` as low-confidence first-pass review items.
 - The generator must fail fast when push/watch review candidates are below the configured minimum.
 - The generator must fail fast when domestic media/Bilibili signals are healthy but too few become lead candidates.
 
@@ -29,8 +30,11 @@ Default cloud thresholds:
 - Minimum media/Bilibili lead candidates when domestic signals are healthy: `10`
 - Steam scan budget: `260` candidates
 - Steam AppDetails enrichment budget: `90` candidates
+- Low-confidence domestic review backfill score: `18`
 
 If these thresholds cannot be met, the workflow should fail rather than silently overwrite the day's report with low-signal output.
+
+Backfill is not permission to pad the report. It can only use domestic or Chinese-context candidates that still have a concrete source, playable/product signal, or domestic discovery query. Backfilled leads still enter `未处理`, never `观察池`/`待评测`/`跟进中`, and the first action is quick product judgment: inspect/test, then either promote manually or淘汰.
 
 ## Domestic Media And Bilibili
 

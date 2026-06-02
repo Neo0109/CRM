@@ -97,10 +97,10 @@ jobs:
         id: dedupe
         shell: bash
         env:
-          CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN }}
+          CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN || secrets.CRM_ACCESS_TOKEN }}
         run: |
           if [ -z "$CRM_AUTOMATION_TOKEN" ]; then
-            echo "No CRM_AUTOMATION_TOKEN secret configured; using report-history dedupe only."
+            echo "No CRM_AUTOMATION_TOKEN or CRM_ACCESS_TOKEN secret configured; using report-history dedupe only."
             echo "index_args=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -115,7 +115,7 @@ jobs:
       - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --minReviewLeads=18 --minMediaLeads=10 ${{ steps.dedupe.outputs.index_args }}
+          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 ${{ steps.dedupe.outputs.index_args }}
 
       - name: Commit generated data
         id: commit
@@ -188,6 +188,8 @@ jobs:
           GITHUB_RUN_NUMBER_VALUE: ${{ github.run_number }}
           GITHUB_REPOSITORY_VALUE: ${{ github.repository }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           mkdir -p data/automation_runs
           node <<'NODE'
           const fs = require('node:fs');

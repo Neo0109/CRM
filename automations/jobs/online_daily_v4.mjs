@@ -14,6 +14,7 @@ const requestedMaxCandidates = Number(args.maxCandidates ?? 320);
 const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 80), 360) : 320;
 const maxSteamDetails = boundedNumber(args.maxSteamDetails, 90, 40, 160);
 const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
+const minReviewBackfillScore = boundedNumber(args.minReviewBackfillScore, 18, 8, 48);
 const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 
@@ -83,6 +84,7 @@ console.log(JSON.stringify({
   media_lead_candidates: mediaLeadCandidates.length,
   max_steam_details: maxSteamDetails,
   min_review_leads: minReviewLeads,
+  min_review_backfill_score: minReviewBackfillScore,
   min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
   existing_project_names: existingIndex.projects.size,
   existing_steam_app_ids: existingIndex.steamAppIds.size,
@@ -475,9 +477,9 @@ function scoreCandidate(input) {
   if (input.hasDetails) score += 5;
   if (input.contactCount) score += 4;
   if (input.alreadyReleased) score -= 80;
-  if (input.releaseTooSoon) score -= 30;
+  if (input.releaseTooSoon) score -= input.domestic ? 4 : 30;
   if (input.publisherOccupied) score -= 24;
-  if (input.earlyAccess) score -= 50;
+  if (input.earlyAccess) score -= input.domestic ? 12 : 50;
   if (input.narrativeHeavy) score -= 35;
   if (input.indiaTeam) score -= 50;
   return score;
@@ -492,8 +494,34 @@ function buildPools(candidates, mediaLeads = []) {
   const mediaWatch = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "watch" || lead._class === "push"), 24, used);
   const steamWatch = selectUniqueLeads(leads.filter((lead) => lead._class === "watch" || lead._class === "push"), 28, used);
   const watch = interleaveLeads(mediaWatch, steamWatch).slice(0, 40);
+  const reviewShortfall = Math.max(0, minReviewLeads - push.length - watch.length);
+  if (reviewShortfall > 0) {
+    const backfill = selectUniqueLeads(
+      leads
+        .filter((lead) => lead._reviewBackfill && lead._class === "drop")
+        .sort((a, b) => (b._reviewBackfillScore ?? 0) - (a._reviewBackfillScore ?? 0)),
+      reviewShortfall,
+      used
+    ).map(toBackfillReviewLead);
+    watch.push(...backfill);
+  }
   const drop = selectUniqueLeads(leads.filter((lead) => lead._class === "drop"), 12, used);
   return { push: push.map(stripPrivate), watch: watch.map(stripPrivate), drop: drop.map(stripPrivate) };
+}
+
+function toBackfillReviewLead(lead) {
+  return {
+    ...lead,
+    _class: "watch",
+    bucket: "未处理",
+    stage: "new",
+    priority: lead.priority === "P3" ? "P2" : lead.priority,
+    priority_reason: "国内候选未达到强推荐标准，但源信号具体且仍可先测/先看；为避免漏掉可签概率更高的国内项目，补入未处理首轮 review。",
+    rule_fit: `${lead.rule_fit}；V6低置信度保底复核，不代表已进入观察、待评测或商务推进。`,
+    verdict: "低置信度国内保底候选：先做产品判断，能测就提测，不成立直接淘汰；不要先花时间补全商务资料。",
+    next_action: "打开 Steam/原始链接快速判断玩法、实机和B站内容钩子；通过首测后再补官网、联系人和商务窗口。",
+    notes: `${lead.notes ?? ""} V6保底补入未处理：原因是当天 review 候选低于质量闸门，且该国内候选仍有人工首轮判断价值。`.trim()
+  };
 }
 
 function interleaveLeads(primary, secondary) {
@@ -555,6 +583,8 @@ function toLead(candidate) {
   const priorityReason = buildPriorityReason(candidate, className, dropReason);
   return {
     _class: className,
+    _reviewBackfill: isReviewBackfillEligible(candidate, dropReason),
+    _reviewBackfillScore: candidate.score,
     id: `lead_steam_${candidate.appId}_${reportDate}`,
     project: candidate.title,
     steam_app_id: candidate.appId,
@@ -598,7 +628,7 @@ function toLead(candidate) {
 }
 
 function hardDropReason(candidate) {
-  if (candidate.earlyAccess) return "命中排除项：PC Early Access";
+  if (candidate.earlyAccess && candidate.region !== "中国") return "命中排除项：海外 PC Early Access";
   if (candidate.narrativeHeavy) return "命中排除项：叙事主导/视觉小说倾向";
   if (candidate.indiaTeam) return "命中排除项：印度团队/印度开发主体";
   if (candidate.publisherOccupied) return "成熟发行商占位，BD切入价值低";
@@ -607,6 +637,15 @@ function hardDropReason(candidate) {
   if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) return "海外项目缺少明确手游化/移动端改编角度";
   if (candidate.releaseTooSoon && candidate.region !== "中国") return "海外项目发售窗口不足60天，默认不进正式推进";
   return null;
+}
+
+function isReviewBackfillEligible(candidate, dropReason) {
+  if (!dropReason) return false;
+  if (candidate.region !== "中国") return false;
+  if (candidate.alreadyReleased || candidate.publisherOccupied || candidate.narrativeHeavy || candidate.indiaTeam) return false;
+  if (!candidate.hasDetails && !candidate.hasDemoSignal && !candidate.domesticQuery) return false;
+  if (candidate.score >= minReviewBackfillScore) return true;
+  return Boolean(candidate.hasDemoSignal || candidate.domesticQuery || (candidate.strongGameplay && candidate.highVisual));
 }
 
 function isPushEligible(candidate, dropReason) {
@@ -1837,7 +1876,7 @@ function sourcePriority(item) {
 }
 
 function stripPrivate(lead) {
-  const { _class, media_score, ...rest } = lead;
+  const { _class, _reviewBackfill, _reviewBackfillScore, media_score, ...rest } = lead;
   return rest;
 }
 
