@@ -1,13 +1,13 @@
 # Current Daily Report Rules
 
-Date: 2026-06-01
+Date: 2026-06-02
 
-The current daily report rule version is `sourcing-rules-v5`.
+The current daily report rule version is `sourcing-rules-v6`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V5.md
+docs/SOURCING_RULES_V6.md
 ```
 
 Machine-readable automation rule source:
@@ -83,6 +83,18 @@ The online generator must preserve the product intent of these rules:
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v5`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
+
+## V6 Low-Volume Fix
+
+V6 treats a tiny daily queue as an automation failure. When sources are healthy, the report should not collapse to one or two non-dropped leads.
+
+The cloud workflow now passes stricter generation thresholds:
+
+- Steam scan budget: `260`
+- Minimum `push_pool + watch_pool`: `18`
+- Minimum media/Bilibili leads when domestic signals are healthy: `10`
+
+The generator now uses both strict and expanded domestic media/Bilibili extraction. Expanded candidates may enter `未处理` when they point to a concrete product moment, even if the project name later needs manual cleanup. Obvious non-products such as tutorials, wishlist-growth lessons, recruitment, financial reports, discounts, hardware posts, and generic ranking filler remain excluded.

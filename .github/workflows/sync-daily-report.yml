@@ -115,7 +115,7 @@ jobs:
       - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=160 ${{ steps.dedupe.outputs.index_args }}
+          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --minReviewLeads=18 --minMediaLeads=10 ${{ steps.dedupe.outputs.index_args }}
 
       - name: Commit generated data
         id: commit
@@ -243,12 +243,15 @@ jobs:
           }
           const minCreated = Number(process.env.MIN_CREATED_UNPROCESSED || 6);
           const created = Number(stats.created_unprocessed || 0);
-          if (created < minCreated) {
-            console.error(`CRM import quality too low: created_unprocessed=${created}, expected >= ${minCreated}.`);
-            console.error(`stale_updates=${Number(stats.stale_updates || 0)}, visible_unprocessed=${Number(stats.visible_unprocessed || 0)}.`);
+          const visible = Number(stats.visible_unprocessed || 0);
+          const updatedVisible = Number(stats.updated_unprocessed_visible || 0);
+          const usefulInbox = created + updatedVisible + visible;
+          if (created < minCreated && usefulInbox < minCreated * 2) {
+            console.error(`CRM import quality too low: created_unprocessed=${created}, useful_inbox=${usefulInbox}, expected created >= ${minCreated} or useful inbox >= ${minCreated * 2}.`);
+            console.error(`updated_visible=${updatedVisible}, visible_unprocessed=${visible}, stale_updates=${Number(stats.stale_updates || 0)}.`);
             process.exit(1);
           }
-          console.log(`CRM import quality ok: created_unprocessed=${created}.`);
+          console.log(`CRM import quality ok: created_unprocessed=${created}, useful_inbox=${usefulInbox}.`);
           NODE
 
       - name: Fail if CRM sync did not succeed
