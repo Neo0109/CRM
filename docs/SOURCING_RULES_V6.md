@@ -2,6 +2,8 @@
 
 Date: 2026-06-02
 
+Active supplement: `sourcing-rules-v6.1`, updated 2026-06-03.
+
 ## One-Line Standard
 
 The daily report must create a practical BD review queue, not a token list. Steam, domestic media, Bilibili, TapTap-style pages, indienova, official posts, and credible game-media links are all valid first-pass discovery sources.
@@ -48,6 +50,25 @@ The first-pass lead does not require a Steam AppID. Original articles, Bilibili 
 
 Expanded candidates are allowed, but obvious non-products are still excluded: tutorials, Steam Next Fest signup guides, wishlist-growth lessons, courses, generic developer-experience videos, recruitment posts, financial reports, discount/deal posts, hardware news, cosplay/wallpaper, maintenance notices, old Bilibili search results, mature/irrelevant blockbuster chatter, generic recommendation collections, rant/review videos, and generic ranking filler.
 
+### V6.1 Bilibili Verification Gate
+
+Bilibili video leads are discovery signals, not proof that a project is new, unreleased, or still actionable.
+
+Before creating a CRM candidate from a Bilibili/media signal, the automation must:
+
+- Enrich the Bilibili video metadata and description when possible.
+- Extract Steam store links, Steam AppIDs, official sites, TapTap/indienova pages, Discord, email, Bilibili, or other real contact clues from the description.
+- Cross-check Steam release state when a Steam URL/AppID is present. Fully released products must not enter `push_pool` or `watch_pool`; route them to `drop_pool` or keep them as market background.
+- Treat `Demo 已上线`, `试玩上线`, `测试开启`, or `商店页已上线` as review/test signals, not full release signals.
+- Deduplicate against existing CRM project names, loose Chinese project keys, Steam AppIDs, source URLs, and backend dedupe keys.
+- Apply timeliness. Old videos or old news should not create fresh leads unless they contain a current playable build, new demo, update, publishing window, or business-relevant event.
+
+Examples:
+
+- A Bilibili discovery such as "浣熊推币机" is useful, but if the enriched Steam cross-check shows the game is already fully released, it should be dropped or used as market background.
+- If a Bilibili video points to a project that was previously sourced from Steam, such as "极简塔防", the new video should enrich existing context or be ignored instead of creating a duplicate.
+- Old-news examples such as "纪元117:多玛和平" should be filtered unless there is a current, actionable product event.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -85,3 +106,4 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - The automation should fail loudly before syncing if sources are healthy but candidate volume is too low.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
+- Bilibili/media candidates must pass the V6.1 verification gate before becoming fresh `未处理` leads.

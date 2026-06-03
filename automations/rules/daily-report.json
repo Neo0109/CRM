@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6",
-  "updated_at": "2026-06-02",
+  "rule_version": "sourcing-rules-v6.1",
+  "updated_at": "2026-06-03",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
@@ -53,8 +53,20 @@
     "Steam Trends must be a market board: category risers, Steam official/community windows, demo/Next Fest signals, publisher/developer slates, public data quality, and what those signals mean for Bilibili BD.",
     "Industry radar should work as a China + overseas news board, not a short category filler list.",
     "Industry radar should prioritize high-quality domestic and global sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, market direction, platform policy, or Bilibili content angles.",
-    "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID."
+    "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID.",
+    "Bilibili video leads must be enriched from video descriptions before CRM candidate creation, because descriptions often contain Steam store links, official sites, Discord, email, or other business-contact clues.",
+    "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Already released products must not enter push/watch review candidates.",
+    "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
+    "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window."
   ],
+  "bilibili_media_quality_gates": {
+    "max_bilibili_lead_age_days": 120,
+    "description_enrichment_required": true,
+    "steam_cross_check_required_when_link_present": true,
+    "dedupe_against_existing_projects_appids_links_and_keys": true,
+    "already_released_text_routes_to_drop_pool": true,
+    "demo_or_store_page_live_text_does_not_count_as_full_release": true
+  },
   "automation_guardrails": [
     "Fail fast when this rule file is missing or incompatible.",
     "Log the active rule version at the start of each automation run.",
@@ -66,6 +78,8 @@
     "The generator must fail fast instead of publishing when push/watch review candidates fall below the configured minimum.",
     "The generator must fail fast when domestic media/Bilibili signals are available but too few are converted into lead candidates.",
     "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries.",
+    "The generator must inspect Bilibili video descriptions for Steam/contact links before deciding whether a Bilibili item is a new lead.",
+    "The generator must route Bilibili/media items with confirmed already-released Steam status to drop_pool or market background, not push/watch.",
     "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
     "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source."
   ]

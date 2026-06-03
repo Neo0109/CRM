@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.1.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { execFile as execFileCallback } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -16,6 +16,7 @@ const maxSteamDetails = boundedNumber(args.maxSteamDetails, 90, 40, 160);
 const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
 const minReviewBackfillScore = boundedNumber(args.minReviewBackfillScore, 18, 8, 48);
 const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
+const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, 120, 14, 365);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 
 const steamCandidateTasks = [
@@ -47,7 +48,7 @@ const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).f
 
 const mediaSignals = await fetchMediaSignals();
 const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 14);
-const mediaLeadCandidates = buildMediaLeadCandidates(mediaSignals, existingIndex.projects);
+const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex);
 
 const enrichedCandidates = await enrichCandidates(rawCandidates.slice(0, maxSteamDetails));
 
@@ -75,7 +76,7 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport(en
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v6",
+  generator: "online_daily_v4_sourcing_rules_v6_1",
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
@@ -86,8 +87,10 @@ console.log(JSON.stringify({
   min_review_leads: minReviewLeads,
   min_review_backfill_score: minReviewBackfillScore,
   min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
+  max_bilibili_lead_age_days: maxBilibiliLeadAgeDays,
   existing_project_names: existingIndex.projects.size,
   existing_steam_app_ids: existingIndex.steamAppIds.size,
+  existing_links: existingIndex.links.size,
   push_pool: pools.push.length,
   watch_pool: pools.watch.length,
   drop_pool: pools.drop.length,
@@ -147,13 +150,18 @@ function nowInShanghaiIso() {
 async function readExistingProjectIndex(date, externalIndexPath) {
   const projects = new Set();
   const steamAppIds = new Set();
+  const links = new Set();
+  const keys = new Set();
+  const projectLooseKeys = new Set();
   for (const reportPath of previousDatePaths(date, 45)) {
     try {
       const report = JSON.parse(await readFile(path.join(rootDir, reportPath), "utf8"));
       for (const bucket of ["push_pool", "watch_pool", "drop_pool"]) {
         for (const lead of report[bucket] ?? []) {
-          if (lead.project) projects.add(normalizeText(lead.project));
+          addExistingProjectKeys(projects, projectLooseKeys, lead.project);
           if (lead.steam_app_id) steamAppIds.add(normalizeText(lead.steam_app_id));
+          for (const link of lead.links ?? []) links.add(normalizeUrl(link));
+          for (const key of automationLeadKeys(lead)) keys.add(key);
         }
       }
     } catch {}
@@ -162,14 +170,31 @@ async function readExistingProjectIndex(date, externalIndexPath) {
   if (externalIndexPath) {
     try {
       const external = JSON.parse(await readFile(path.resolve(rootDir, externalIndexPath), "utf8"));
-      for (const project of external.projects ?? []) projects.add(normalizeText(project));
+      for (const project of external.projects ?? []) addExistingProjectKeys(projects, projectLooseKeys, project);
       for (const appId of external.steam_app_ids ?? []) steamAppIds.add(normalizeText(appId));
+      for (const link of external.links ?? []) links.add(normalizeUrl(link));
+      for (const key of external.keys ?? []) keys.add(String(key));
     } catch (error) {
       throw new Error(`Failed to load CRM dedupe index from ${externalIndexPath}: ${error.message}`);
     }
   }
 
-  return { projects, steamAppIds };
+  return { projects, steamAppIds, links, keys, projectLooseKeys };
+}
+
+function addExistingProjectKeys(projects, projectLooseKeys, value) {
+  const normalized = normalizeText(value);
+  if (normalized) projects.add(normalized);
+  const looseKey = looseChineseProjectKey(value);
+  if (looseKey) projectLooseKeys.add(looseKey);
+}
+
+function automationLeadKeys(lead) {
+  const keys = [];
+  if (lead.project) keys.push(`project:${normalizeText(lead.project)}`);
+  if (lead.steam_app_id) keys.push(`steam:${normalizeText(lead.steam_app_id)}`);
+  for (const link of lead.links ?? []) keys.push(`link:${normalizeUrl(link)}`);
+  return keys;
 }
 
 function isExistingSteamCandidate(candidate, existingIndex) {
@@ -505,7 +530,9 @@ function buildPools(candidates, mediaLeads = []) {
     ).map(toBackfillReviewLead);
     watch.push(...backfill);
   }
-  const drop = selectUniqueLeads(leads.filter((lead) => lead._class === "drop"), 12, used);
+  const mediaDrop = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "drop"), 8, used);
+  const steamDrop = selectUniqueLeads(leads.filter((lead) => lead._class === "drop"), 12, used);
+  const drop = interleaveLeads(mediaDrop, steamDrop).slice(0, 12);
   return { push: push.map(stripPrivate), watch: watch.map(stripPrivate), drop: drop.map(stripPrivate) };
 }
 
@@ -752,21 +779,21 @@ function buildAmplification(candidate) {
   return "先用实机素材验证点击和完播，再决定是否推进商务触达。";
 }
 
-function buildMediaLeadCandidates(items, existingProjects) {
-  const normalizedExisting = new Set([...existingProjects].map(normalizeText));
+async function buildMediaLeadCandidates(items, existingIndex) {
   const sourceCount = new Map();
   const strictLeads = dedupeMediaSignals(items)
     .filter(isProductSourcingSignal)
     .map((item) => mediaSignalToLead(item, "strict"))
-    .filter((lead) => isNewMediaLead(lead, normalizedExisting))
+    .filter((lead) => isNewMediaLead(lead, existingIndex))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
   const expandedLeads = dedupeMediaSignals(items)
     .filter((item) => !isProductSourcingSignal(item) && isExpandedDomesticProductSignal(item))
     .map((item) => mediaSignalToLead(item, "expanded"))
-    .filter((lead) => isNewMediaLead(lead, normalizedExisting))
+    .filter((lead) => isNewMediaLead(lead, existingIndex))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
 
-  const selected = selectBalancedMediaLeadCandidates([...strictLeads, ...expandedLeads], sourceCount, 30);
+  const verifiedLeads = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads]);
+  const selected = selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
   return selected;
 }
 
@@ -782,10 +809,21 @@ function selectBalancedMediaLeadCandidates(leads, sourceCount, limit) {
   return selected;
 }
 
-function isNewMediaLead(lead, existingProjects) {
+function isNewMediaLead(lead, existingIndex) {
   if (!lead.project) return false;
   const projectKey = normalizeText(lead.project);
-  if (!projectKey || existingProjects.has(projectKey)) return false;
+  if (!projectKey || existingIndex.projects.has(projectKey)) return false;
+  const looseKey = looseChineseProjectKey(lead.project);
+  if (looseKey && existingIndex.projectLooseKeys.has(looseKey)) return false;
+  if (lead.steam_app_id && existingIndex.steamAppIds.has(normalizeText(lead.steam_app_id))) return false;
+  for (const link of lead.links ?? []) {
+    const normalizedLink = normalizeUrl(link);
+    if (existingIndex.links.has(normalizedLink)) return false;
+    if (existingIndex.keys.has(`link:${normalizedLink}`)) return false;
+  }
+  for (const key of automationLeadKeys(lead)) {
+    if (existingIndex.keys.has(key)) return false;
+  }
   if (/^(媒体|b站|今日亮点|行业新闻|国产游戏|独立游戏|游戏|steam|demo|pv|实机|试玩|新作|上线|公布|预告)$/i.test(projectKey)) return false;
   return true;
 }
@@ -848,34 +886,102 @@ function isBannedMediaLeadText(text) {
   return bannedPatterns.some((pattern) => pattern.test(text));
 }
 
+async function enrichMediaLeadsWithSteamContext(leads) {
+  const enriched = [];
+  const chunkSize = 2;
+  for (let index = 0; index < leads.length; index += chunkSize) {
+    const chunk = leads.slice(index, index + chunkSize);
+    const results = await Promise.all(chunk.map(enrichMediaLeadWithSteamContext));
+    enriched.push(...results);
+    if (index + chunkSize < leads.length) await sleep(600);
+  }
+  return enriched;
+}
+
+async function enrichMediaLeadWithSteamContext(lead) {
+  if (!lead.steam_app_id) return lead;
+
+  const details = await fetchAppDetails(lead.steam_app_id);
+  const releaseDate = normalizeReleaseDate(details?.release_date?.date ?? lead.release_window);
+  const daysToRelease = daysUntil(releaseDate);
+  const alreadyReleased = typeof daysToRelease === "number" && daysToRelease < 0 && !details?.release_date?.coming_soon;
+  const steamLinks = [
+    `https://store.steampowered.com/app/${lead.steam_app_id}/`,
+    `https://steamdb.info/app/${lead.steam_app_id}/`,
+    details?.website
+  ].filter(Boolean);
+  const steamContacts = details ? await collectContactMethods(details, lead.steam_app_id) : [];
+  const nextLead = {
+    ...lead,
+    team: lead.team ?? details?.developers?.[0] ?? null,
+    publisher_name: lead.publisher_name ?? details?.publishers?.[0] ?? null,
+    publisher_status: details?.publishers?.length
+      ? `${details.publishers.join(" / ")}；B站线索已补 Steam 交叉验证`
+      : lead.publisher_status,
+    release_window: releaseDate ?? lead.release_window,
+    links: mergeLinks([...(lead.links ?? []), ...steamLinks]),
+    contact_methods: mergeContactMethods([...(lead.contact_methods ?? []), ...steamContacts])
+  };
+  nextLead.contact = nextLead.contact_methods.map((method) => `${method.type}: ${method.value}`).join("；") || null;
+
+  if (alreadyReleased) {
+    return mediaLeadToDrop(nextLead, `B站/媒体线索补到 Steam AppID ${lead.steam_app_id} 后交叉验证：Steam 页面显示已发售约${Math.abs(daysToRelease)}天，不符合前置BD窗口`);
+  }
+
+  return nextLead;
+}
+
+function mediaLeadToDrop(lead, reason) {
+  return {
+    ...lead,
+    _class: "drop",
+    bucket: "淘汰池",
+    stage: "rejected",
+    priority: "P3",
+    priority_reason: reason,
+    rule_fit: `${lead.rule_fit ?? ""}；${reason}`.replace(/^；/, ""),
+    risks: reason,
+    verdict: `${reason}。不进入未处理 review，除非后续明确要求做上线后复盘。`,
+    next_action: "归档为淘汰/市场背景，避免重复占用首轮 review 时间。",
+    notes: `${lead.notes ?? ""}；B站/媒体交叉验证淘汰：${reason}`.replace(/^；/, "")
+  };
+}
+
 function mediaSignalToLead(item, confidence = "strict") {
   const project = extractMediaProjectName(item.title);
   const score = mediaLeadScore(item);
   const isBilibili = isBilibiliSignal(item);
-  const isPush = confidence === "strict" && score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(`${item.title} ${item.summary} ${item.source} ${item.link}`);
+  const mediaText = `${item.title} ${item.summary} ${item.source} ${item.link}`;
+  const extractedLinks = extractUrls(mediaText);
+  const steamAppId = steamAppIdFromLinks(extractedLinks);
+  const releasedByText = hasAlreadyReleasedMediaText(mediaText);
+  const isPush = !releasedByText && confidence === "strict" && score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(mediaText);
+  const className = releasedByText ? "drop" : isPush ? "push" : "watch";
   const sourceLink = item.link;
-  const contactMethods = isBilibili
-    ? [{ type: "B站", value: sourceLink, note: `${item.source} 原始视频/搜索入口` }]
-    : [{ type: "其他", value: sourceLink, note: `${item.source} 原始线索入口；首轮只做产品判断，通过后再补商务触点` }];
+  const contactMethods = collectMediaContactMethods(item, sourceLink, extractedLinks);
+  const verificationLinks = collectMediaVerificationLinks(sourceLink, extractedLinks, steamAppId);
   const concise = normalizeDisplayText(item.summary || item.title).slice(0, 160);
+  const dropReason = releasedByText ? `B站/媒体原文显示已上线或已发售，不符合前置BD窗口` : null;
 
   return {
-    _class: isPush ? "push" : "watch",
+    _class: className,
     media_score: confidence === "expanded" ? score - 6 : score,
     id: `lead_media_${reportDate.replaceAll("-", "")}_${hashText(`${item.source}:${sourceLink}:${project}`)}`,
     project,
-    steam_app_id: null,
+    steam_app_id: steamAppId,
     team: null,
     team_size: null,
     country: "中国（媒体/B站信号待确认）",
     region: "中国",
     city: null,
     region_priority: "国内优先",
-    bucket: "未处理",
-    stage: "new",
-    priority: isPush ? "P1" : "P2",
-    priority_reason: `${item.source} 捕捉到${confidence === "expanded" ? "待核验" : "具体"}产品信号：${normalizeDisplayText(item.title).slice(0, 90)}。先点开原始链接判断玩法和内容潜力，不因缺 Steam 链接阻塞首轮 review。`,
-    rule_fit: `国内媒体/B站产品发现源；${confidence === "expanded" ? "扩展候选，先确认是否为具体游戏；" : ""}非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。`,
+    bucket: className === "drop" ? "淘汰池" : "未处理",
+    stage: className === "drop" ? "rejected" : "new",
+    priority: className === "push" ? "P1" : className === "drop" ? "P3" : "P2",
+    priority_reason: dropReason ?? `${item.source} 捕捉到${confidence === "expanded" ? "待核验" : "具体"}产品信号：${normalizeDisplayText(item.title).slice(0, 90)}。先点开原始链接判断玩法和内容潜力；B站简介里的 Steam/官网/联系方式已尽量补入。`,
+    rule_fit: dropReason
+      ? `国内媒体/B站产品发现源；${dropReason}；只做淘汰/市场背景，不进入未处理首轮 review。`
+      : `国内媒体/B站产品发现源；${confidence === "expanded" ? "扩展候选，先确认是否为具体游戏；" : ""}非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。`,
     genre: inferMediaGenre(item),
     gameplay: concise || "来自媒体/B站的产品线索，需打开原文/视频确认玩法循环、实机内容和开发阶段。",
     progress: `${item.source} 原始信号：${normalizeDisplayText(item.title).slice(0, 110)}`,
@@ -886,21 +992,21 @@ function mediaSignalToLead(item, confidence = "strict") {
     publisher_status: "媒体/B站信号，发行结构待确认",
     publisher_name: null,
     china_capability_occupied: false,
-    traction_summary: `${item.source} 分数 ${score}；${isBilibili ? "B站视频/搜索语境" : "国内媒体/社区语境"}；需要人工确认是否有可测版本、商店页或官方账号。`,
+    traction_summary: `${item.source} 分数 ${score}；${isBilibili ? "B站视频/搜索语境" : "国内媒体/社区语境"}；${steamAppId ? `已从文本补 Steam AppID ${steamAppId}` : "需要人工确认是否有可测版本、商店页或官方账号"}。`,
     public_signals: `${item.source} / ${sourceLink}`,
     contact: contactMethods.map((method) => `${method.type}: ${method.value}`).join("；") || null,
     contact_methods: contactMethods,
-    links: [sourceLink],
+    links: verificationLinks,
     exposure_trail: `自动从${item.source}捕捉到媒体/B站线索（${reportDate}）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。`,
     bilibili_fit: isBilibili ? "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。" : "需反查B站是否有PV、实机、试玩或UP主讨论，判断能否做内容种草。",
     amplification: "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
-    risks: confidence === "expanded" ? "扩展媒体/B站候选，可能存在项目名不准或只是资讯标题；首轮先判定是不是具体可看的游戏，不成立直接淘汰。" : "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。",
-    verdict: isPush ? "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。" : "作为国内发现线索保留，人工确认产品真实度和可测性后再分池。",
-    next_action: "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
+    risks: dropReason ?? (confidence === "expanded" ? "扩展媒体/B站候选，可能存在项目名不准或只是资讯标题；首轮先判定是不是具体可看的游戏，不成立直接淘汰。" : "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。"),
+    verdict: dropReason ? `${dropReason}，不占用未处理 review 名额。` : isPush ? "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。" : "作为国内发现线索保留，人工确认产品真实度和可测性后再分池。",
+    next_action: dropReason ? "归档，除非需要做上线后市场复盘。" : "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
     owner: null,
     due_date: null,
     first_seen: reportDate,
-    notes: `媒体/B站扩展来源；confidence=${confidence}；media_score=${score}`
+    notes: `媒体/B站扩展来源；confidence=${confidence}；media_score=${score}${steamAppId ? `；extracted_steam_app_id=${steamAppId}` : ""}${dropReason ? `；drop_reason=${dropReason}` : ""}`
   };
 }
 
@@ -919,6 +1025,101 @@ function mediaLeadScore(item) {
 
 function isBilibiliSignal(item) {
   return /bilibili|b站|哔哩哔哩/i.test(`${item.source} ${item.link}`);
+}
+
+function collectMediaVerificationLinks(sourceLink, extractedLinks, steamAppId) {
+  const links = [sourceLink, ...extractedLinks];
+  if (steamAppId) {
+    links.push(`https://store.steampowered.com/app/${steamAppId}/`);
+    links.push(`https://steamdb.info/app/${steamAppId}/`);
+  }
+  return mergeLinks(links);
+}
+
+function collectMediaContactMethods(item, sourceLink, extractedLinks) {
+  const methods = [];
+  if (isBilibiliSignal(item)) addContact(methods, "B站", sourceLink, `${item.source} 原始视频/搜索入口`);
+  for (const email of extractEmails(`${item.title} ${item.summary}`)) {
+    addContact(methods, "Email", email, "B站/媒体简介中提取");
+  }
+  for (const link of extractedLinks) {
+    const type = inferContactTypeFromLink(link);
+    if (!type || isSteamStoreLike(link)) continue;
+    addContact(methods, type, link, "B站/媒体简介中提取");
+  }
+  if (!methods.length) {
+    addContact(methods, "其他", sourceLink, `${item.source} 原始线索入口；首轮只做产品判断，通过后再补商务触点`);
+  }
+  return methods.slice(0, 6);
+}
+
+function inferContactTypeFromLink(value) {
+  const text = String(value);
+  if (/bilibili\.com/i.test(text)) return "B站";
+  if (/(?:discord\.gg|discord\.com\/invite)/i.test(text)) return "Discord";
+  if (/(?:x\.com|twitter\.com)/i.test(text)) return "X/Twitter";
+  if (/store\.steampowered\.com|steamdb\.info|steamcommunity\.com\/app\//i.test(text)) return null;
+  if (/^https?:\/\//i.test(text)) return "官网";
+  return null;
+}
+
+function mergeLinks(values) {
+  const out = new Map();
+  for (const value of values) {
+    if (!value || typeof value !== "string") continue;
+    const cleanValue = trimUrlPunctuation(value);
+    if (!/^https?:\/\//i.test(cleanValue)) continue;
+    out.set(normalizeUrl(cleanValue), cleanValue);
+  }
+  return [...out.values()];
+}
+
+function mergeContactMethods(values) {
+  const out = new Map();
+  for (const method of values) {
+    if (!method?.value || !method.type) continue;
+    const value = trimUrlPunctuation(method.value);
+    if (!value || isSteamStoreLike(value)) continue;
+    const key = `${method.type}:${normalizeUrl(value)}`;
+    if (!out.has(key)) out.set(key, { ...method, value });
+  }
+  return [...out.values()].slice(0, 6);
+}
+
+function extractUrls(value) {
+  const text = String(value ?? "");
+  const urls = [...text.matchAll(/https?:\/\/[^\s"'<>，。；、）)】\]]+/gi)]
+    .map((match) => trimUrlPunctuation(decodeHtml(match[0])));
+  const bareSteamUrls = [...text.matchAll(/(?:^|[\s（(【])((?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/\d+[^\s"'<>，。；、）)】\]]*)/gi)]
+    .map((match) => `https://${trimUrlPunctuation(decodeHtml(match[1]))}`);
+  return mergeLinks([...urls, ...bareSteamUrls]);
+}
+
+function trimUrlPunctuation(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/[),，。；;、】\]]+$/g, "")
+    .replace(/&amp;/g, "&");
+}
+
+function extractEmails(value) {
+  return [...String(value ?? "").matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)]
+    .map((match) => match[0])
+    .filter(Boolean);
+}
+
+function steamAppIdFromLinks(links) {
+  for (const link of links) {
+    const appId = String(link).match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i)?.[1];
+    if (appId) return appId;
+  }
+  return null;
+}
+
+function hasAlreadyReleasedMediaText(value) {
+  const text = String(value ?? "");
+  if (/商店页已上线|商店页面已上线|页面已上线|store page is live|(?:demo|试玩|测试)[^。；.!?]{0,12}(?:已上线|上线)|(?:已上线|上线)[^。；.!?]{0,12}(?:demo|试玩|测试)/i.test(text)) return false;
+  return /现已上线|已经上线|现已发售|已经发售|已发售|正式发售|首发优惠|国区首发|发售\s*PV|available now|out now|released now/i.test(text);
 }
 
 function extractMediaProjectName(title) {
@@ -958,14 +1159,15 @@ function hashText(value) {
 function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V6线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V6.1线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V6把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V6.1把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
       "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断，国内项目先测再商务。",
+      "B站视频线索必须补读简介、提取Steam/官网/联系方式、交叉验证是否已发售，并和历史CRM记录去重。",
       "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
@@ -983,7 +1185,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   if (!candidates.length) {
     return {
       report_date: reportDate,
-      summary: `Sourcing V6行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      summary: `Sourcing V6.1行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
       items: mediaItems
     };
   }
@@ -1001,7 +1203,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V6行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V6.1行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -1033,7 +1235,7 @@ function buildSteamTrendReport(candidates, pools) {
     : buildFallbackSteamTrendItems([...pools.push, ...pools.watch], steamItems.length, 12 - steamItems.length);
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    summary: `Steam大盘V6.1：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...steamItems, ...mediaFallbackItems].slice(0, 12),
@@ -1048,7 +1250,7 @@ function buildSteamUnavailableFallbackTrendReport(pools) {
 
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
+    summary: `Steam大盘V6.1：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
     market_insights: [
       steamInsight(
         "steam_fetch_unavailable",
@@ -1141,7 +1343,8 @@ function buildFallbackGenreSignals(leads) {
 
 async function fetchMediaSignals() {
   const results = (await Promise.all(mediaSources().map(fetchMediaSource))).flat();
-  const scored = results
+  const enrichedResults = await enrichBilibiliVideoSignals(results);
+  const scored = enrichedResults
     .map((item) => ({ ...item, score: scoreMediaSignal(item) }))
     .filter((item) => !isStaleMediaSignal(item))
     .filter((item) => !isBilibiliSignal(item) || !isBannedMediaLeadText(`${item.title} ${item.summary} ${item.source}`.toLowerCase()))
@@ -1149,6 +1352,40 @@ async function fetchMediaSignals() {
     .sort((a, b) => b.score - a.score);
 
   return dedupeMediaSignals(scored);
+}
+
+async function enrichBilibiliVideoSignals(items) {
+  const out = [];
+  const chunkSize = 4;
+  for (let index = 0; index < items.length; index += chunkSize) {
+    const chunk = items.slice(index, index + chunkSize);
+    out.push(...await Promise.all(chunk.map(enrichBilibiliVideoSignal)));
+    if (index + chunkSize < items.length) await sleep(350);
+  }
+  return out;
+}
+
+async function enrichBilibiliVideoSignal(item) {
+  const bvid = item.bvid ?? bvidFromUrl(item.link);
+  if (!bvid) return item;
+  try {
+    const payload = await fetchJson(`https://api.bilibili.com/x/web-interface/view?bvid=${encodeURIComponent(bvid)}`);
+    const data = payload?.data;
+    if (!data) return item;
+    const desc = cleanExtractedText(data.desc ?? "");
+    const owner = cleanExtractedText(data.owner?.name ?? "");
+    const title = cleanExtractedText(data.title ?? item.title);
+    const publishedAt = data.pubdate ? new Date(Number(data.pubdate) * 1000).toISOString() : item.published_at;
+    return {
+      ...item,
+      bvid,
+      title: title || item.title,
+      summary: [item.summary, desc, owner ? `UP主：${owner}` : ""].filter(Boolean).join(" "),
+      published_at: publishedAt || item.published_at
+    };
+  } catch {
+    return item;
+  }
 }
 
 function mediaSources() {
@@ -1251,12 +1488,17 @@ function parseBilibiliVideoSearch(text, source) {
         title,
         link: bvid ? `https://www.bilibili.com/video/${bvid}/` : absolutizeUrl(item.arcurl ?? "", "https://www.bilibili.com/"),
         summary: [description, author ? `UP主：${author}` : ""].filter(Boolean).join(" "),
-        published_at: item.pubdate ? new Date(Number(item.pubdate) * 1000).toISOString() : ""
+        published_at: item.pubdate ? new Date(Number(item.pubdate) * 1000).toISOString() : "",
+        bvid
       }, source);
     }).filter((item) => item.title && item.link);
   } catch {
     return [];
   }
+}
+
+function bvidFromUrl(value) {
+  return String(value ?? "").match(/\/video\/(BV[0-9A-Za-z]+)/i)?.[1] ?? "";
 }
 
 function parseFeedItems(xml, source) {
@@ -1348,12 +1590,17 @@ function isLowInformationMediaTitle(title) {
 
 function isStaleMediaSignal(item) {
   if (!isBilibiliSignal(item)) return false;
+  const ageDays = mediaSignalAgeDays(item);
+  if (typeof ageDays !== "number") return false;
+  return ageDays > maxBilibiliLeadAgeDays;
+}
+
+function mediaSignalAgeDays(item) {
   const timestamp = Date.parse(item.published_at ?? "");
-  if (!Number.isFinite(timestamp)) return false;
+  if (!Number.isFinite(timestamp)) return null;
   const reportTimestamp = Date.parse(`${reportDate}T00:00:00+08:00`);
-  if (!Number.isFinite(reportTimestamp)) return false;
-  const ageDays = (reportTimestamp - timestamp) / 86400000;
-  return ageDays > 540;
+  if (!Number.isFinite(reportTimestamp)) return null;
+  return (reportTimestamp - timestamp) / 86400000;
 }
 
 function dedupeMediaSignals(items) {
