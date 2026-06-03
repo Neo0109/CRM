@@ -12,7 +12,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Current generator: `automations/jobs/online_daily_v4.mjs`
 - Rule guard runner: `automations/jobs/online_daily_runner.mjs`
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
-- Canonical V6 rules: `docs/SOURCING_RULES_V6.md`
+- Canonical V6/V6.1 rules: `docs/SOURCING_RULES_V6.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
 - Current product version after the latest product iteration: `v2.3.6`
 
@@ -53,9 +53,22 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
+## Sourcing Rules V6.1 Iteration
+
+The latest sourcing-logic iteration is `sourcing-rules-v6.1`, focused on tightening Bilibili/media verification while preserving the V6 low-volume fix.
+
+V6.1 intent:
+
+- Bilibili video leads must be enriched from video descriptions before candidate creation.
+- Steam links/AppIDs found in Bilibili or media descriptions must be used for release-state cross-checks.
+- Already fully released products must not enter push/watch review candidates; use drop/background unless a post-launch review is explicitly requested.
+- Existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys must be used for dedupe, so a Bilibili video does not recreate a product already sourced from Steam.
+- Bilibili video leads must be timely. Old videos/news only become leads when they contain a current playable build, demo, update, publishing window, or business event.
+- Rules, automation, and product features remain separate modules; a sourcing-rule iteration must not change login, UI, schema, or other product behavior.
+
 ## Sourcing Rules V6 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v6`, focused on fixing low daily sourcing volume while keeping Steam Trends as a real Steam market board and preserving domestic-first BD probability.
+The previous sourcing-logic iteration was `sourcing-rules-v6`, focused on fixing low daily sourcing volume while keeping Steam Trends as a real Steam market board and preserving domestic-first BD probability.
 
 V6 intent:
 

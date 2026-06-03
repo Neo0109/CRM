@@ -94,6 +94,15 @@ function validateDate(date, thresholds) {
     for (const method of lead.contact_methods ?? []) {
       if (isSteamStoreOrDb(method.value)) errors.push(`${lead.project}: Steam store/SteamDB URL must be in links, not contact_methods`);
     }
+    if (isBilibiliLead(lead)) {
+      const text = leadText(lead);
+      if (pool !== "drop_pool" && hasAlreadyReleasedMediaText(text)) {
+        errors.push(`${lead.project}: Bilibili/media lead appears already released and must not enter push_pool/watch_pool`);
+      }
+      if (/store\.steampowered\.com\/app\/|steam商店页|Steam商店页/i.test(text) && !(lead.links ?? []).some(isSteamStoreOrDb)) {
+        errors.push(`${lead.project}: Bilibili/media text mentions a Steam store page but links do not contain a normalized Steam URL`);
+      }
+    }
   }
 
   for (const item of radar.items ?? []) {
@@ -249,4 +258,35 @@ function normalizeLeadName(value) {
 
 function isSteamStoreOrDb(value) {
   return /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(String(value ?? ""));
+}
+
+function isBilibiliLead(lead) {
+  return /bilibili|b站|哔哩哔哩/i.test(leadText(lead));
+}
+
+function leadText(lead) {
+  return [
+    lead.project,
+    lead.priority_reason,
+    lead.rule_fit,
+    lead.gameplay,
+    lead.progress,
+    lead.traction_summary,
+    lead.public_signals,
+    lead.exposure_trail,
+    lead.bilibili_fit,
+    lead.amplification,
+    lead.risks,
+    lead.verdict,
+    lead.next_action,
+    lead.notes,
+    ...(lead.links ?? []),
+    ...(lead.contact_methods ?? []).map((method) => `${method.type} ${method.value} ${method.note ?? ""}`)
+  ].filter(Boolean).join(" ");
+}
+
+function hasAlreadyReleasedMediaText(value) {
+  const text = String(value ?? "");
+  if (/商店页已上线|商店页面已上线|页面已上线|store page is live|(?:demo|试玩|测试)[^。；.!?]{0,12}(?:已上线|上线)|(?:已上线|上线)[^。；.!?]{0,12}(?:demo|试玩|测试)/i.test(text)) return false;
+  return /现已上线|已经上线|现已发售|已经发售|已发售|正式发售|首发优惠|国区首发|发售\s*PV|available now|out now|released now/i.test(text);
 }
