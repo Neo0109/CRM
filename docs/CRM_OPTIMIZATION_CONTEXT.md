@@ -114,7 +114,7 @@ The CRM funnel was changed from mixed automatic buckets to an explicit human rev
 
 - Qualified sourced leads enter `未处理` first.
 - `未处理` quick actions: `待评测`, `观察池`, `淘汰`.
-- `待评测` quick action: `测试中`.
+- `待评测` quick actions: `测试中`, `淘汰`.
 - `测试中` quick actions: `跟进`, `观望`, `淘汰`.
 - `观察池` quick actions: `待评测`, `跟进中`, `淘汰`.
 - `淘汰池` quick actions: `观望`, `待评测`.
