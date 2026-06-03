@@ -19,6 +19,13 @@ Cloud-owned files:
 
 The source of truth is GitHub `main`. Cloudflare Pages and Supabase sync from that source.
 
+The primary daily report workflow must be independent from product/UI iteration:
+
+- `.github/workflows/sync-daily-report.yml` may only use `schedule` and `workflow_dispatch`.
+- Product feature, auth, UI, or documentation pushes must not trigger production daily report generation.
+- `.github/workflows/daily-report-watchdog.yml` is the cloud self-healing layer and may run repeatedly during the workday; it should do nothing when the day is already healthy.
+- A successful CRM sync is proven by a `data/automation_runs/YYYY-MM-DD-*.json` receipt whose response contains `synced=true`.
+
 ## Production Deduplication
 
 Daily generation must avoid filling today's candidate slots with projects that already exist in the production CRM. Recent report-history dedupe is not enough because leads can enter production through manual import, Steam Trends, lead assistant, or other non-report channels.
@@ -75,13 +82,14 @@ The watchdog checks:
 
 - Required files exist.
 - A successful sync receipt exists.
-- Sync import quality: newly created unprocessed leads should meet the useful daily threshold.
 - Candidate counts are above the minimum useful threshold.
 - Radar, Steam Trends, Steam market insights, and Steam genre signals are above the minimum useful thresholds.
 
+Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis, but it must not fail a synced report only because newly created count is low.
+
 If unhealthy, it returns `needs_run = true` with reasons.
 
-The intended cloud workflow is `.github/workflows/daily-report-watchdog.yml`, which checks after the morning and afternoon report windows and regenerates/syncs if the day is missing or too weak.
+The intended cloud workflow is `.github/workflows/daily-report-watchdog.yml`, which checks repeatedly after the morning report window and regenerates/syncs if the day is missing or too weak.
 
 ## Codex Task Policy
 

@@ -22,18 +22,6 @@ on:
     - cron: "30 1 * * *"
     # 14:00 Asia/Shanghai daily retry/new-batch run.
     - cron: "0 6 * * *"
-  push:
-    branches:
-      - main
-    paths:
-      - automations/jobs/online_daily.mjs
-      - automations/jobs/online_daily_v2.mjs
-      - automations/jobs/online_daily_v3.mjs
-      - automations/jobs/online_daily_v4.mjs
-      - automations/jobs/online_daily_runner.mjs
-      - automations/rules/**
-      - docs/SOURCING_RULES_*.md
-      - .github/workflows/sync-daily-report.yml
 
 permissions:
   contents: write
@@ -116,6 +104,11 @@ jobs:
         shell: bash
         run: |
           node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 ${{ steps.dedupe.outputs.index_args }}
+
+      - name: Validate daily report contract
+        shell: bash
+        run: |
+          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE"
 
       - name: Commit generated data
         id: commit
@@ -222,7 +215,7 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Fail if CRM import quality is too low
+      - name: Record CRM import quality
         if: steps.sync.outputs.sync_status == 'success'
         shell: bash
         env:
@@ -249,9 +242,10 @@ jobs:
           const updatedVisible = Number(stats.updated_unprocessed_visible || 0);
           const usefulInbox = created + updatedVisible + visible;
           if (created < minCreated && usefulInbox < minCreated * 2) {
-            console.error(`CRM import quality too low: created_unprocessed=${created}, useful_inbox=${usefulInbox}, expected created >= ${minCreated} or useful inbox >= ${minCreated * 2}.`);
-            console.error(`updated_visible=${updatedVisible}, visible_unprocessed=${visible}, stale_updates=${Number(stats.stale_updates || 0)}.`);
-            process.exit(1);
+            console.warn(`CRM import volume is low but sync already succeeded: created_unprocessed=${created}, useful_inbox=${usefulInbox}.`);
+            console.warn(`updated_visible=${updatedVisible}, visible_unprocessed=${visible}, stale_updates=${Number(stats.stale_updates || 0)}.`);
+            console.warn('Low newly-created count usually means production dedupe matched existing leads; do not fail an otherwise successful daily sync on this alone.');
+            process.exit(0);
           }
           console.log(`CRM import quality ok: created_unprocessed=${created}, useful_inbox=${usefulInbox}.`);
           NODE
