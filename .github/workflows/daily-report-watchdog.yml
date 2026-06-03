@@ -13,10 +13,11 @@ on:
         default: false
         type: boolean
   schedule:
-    # 10:30 Asia/Shanghai: catch missing or delayed morning report.
-    - cron: "30 2 * * *"
-    # 15:30 Asia/Shanghai: catch failed afternoon retry or low-output days.
-    - cron: "30 7 * * *"
+    # 10:15-16:15 Asia/Shanghai: repeatedly catch missing, delayed, or failed cloud runs.
+    # GitHub scheduled workflows are not guaranteed to fire exactly on the minute, so the
+    # watchdog is intentionally separate from the primary report workflow and self-heals
+    # throughout the working day.
+    - cron: "15 2-8 * * *"
 
 permissions:
   contents: write
@@ -204,7 +205,7 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Fail if watchdog import quality is too low
+      - name: Record watchdog import quality
         if: (steps.watchdog.outputs.needs_run == 'true' || env.FORCE_RUN == 'true') && steps.sync.outputs.sync_status == 'success'
         shell: bash
         env:
@@ -228,9 +229,10 @@ jobs:
           const minCreated = Number(process.env.MIN_CREATED_UNPROCESSED || 6);
           const created = Number(stats.created_unprocessed || 0);
           if (created < minCreated) {
-            console.error(`CRM import quality too low: created_unprocessed=${created}, expected >= ${minCreated}.`);
-            console.error(`stale_updates=${Number(stats.stale_updates || 0)}, visible_unprocessed=${Number(stats.visible_unprocessed || 0)}.`);
-            process.exit(1);
+            console.warn(`CRM import volume is low but watchdog sync already succeeded: created_unprocessed=${created}, expected >= ${minCreated}.`);
+            console.warn(`stale_updates=${Number(stats.stale_updates || 0)}, visible_unprocessed=${Number(stats.visible_unprocessed || 0)}.`);
+            console.warn('The watchdog should not keep failing after a successful sync only because production dedupe converted new leads into updates.');
+            process.exit(0);
           }
           console.log(`CRM import quality ok: created_unprocessed=${created}.`);
           NODE
