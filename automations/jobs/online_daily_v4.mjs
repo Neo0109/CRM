@@ -1087,9 +1087,12 @@ function mergeContactMethods(values) {
 }
 
 function extractUrls(value) {
-  return [...String(value ?? "").matchAll(/https?:\/\/[^\s"'<>，。；、）)】\]]+/gi)]
-    .map((match) => trimUrlPunctuation(decodeHtml(match[0])))
-    .filter(Boolean);
+  const text = String(value ?? "");
+  const urls = [...text.matchAll(/https?:\/\/[^\s"'<>，。；、）)】\]]+/gi)]
+    .map((match) => trimUrlPunctuation(decodeHtml(match[0])));
+  const bareSteamUrls = [...text.matchAll(/(?:^|[\s（(【])((?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/\d+[^\s"'<>，。；、）)】\]]*)/gi)]
+    .map((match) => `https://${trimUrlPunctuation(decodeHtml(match[1]))}`);
+  return mergeLinks([...urls, ...bareSteamUrls]);
 }
 
 function trimUrlPunctuation(value) {
