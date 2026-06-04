@@ -131,6 +131,8 @@ jobs:
       - name: Sync daily report into CRM
         id: sync
         shell: bash
+        env:
+          CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN || secrets.CRM_ACCESS_TOKEN }}
         run: |
           set +e
           sync_url="https://crm-pages.pages.dev/api/reports/sync?date=$REPORT_DATE"
@@ -146,7 +148,11 @@ jobs:
           for attempt in 1 2 3 4 5; do
             sync_attempts="$attempt"
             echo "CRM sync attempt $attempt"
-            response="$(curl -fsS "$sync_url" 2>&1)"
+            curl_args=(-fsS)
+            if [ -n "$CRM_AUTOMATION_TOKEN" ]; then
+              curl_args+=(-H "Authorization: Bearer $CRM_AUTOMATION_TOKEN")
+            fi
+            response="$(curl "${curl_args[@]}" "$sync_url" 2>&1)"
             curl_status=$?
             echo "$response"
 
