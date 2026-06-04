@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6.1",
-  "updated_at": "2026-06-03",
+  "rule_version": "sourcing-rules-v6.2",
+  "updated_at": "2026-06-04",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
@@ -55,9 +55,12 @@
     "Industry radar should prioritize high-quality domestic and global sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, market direction, platform policy, or Bilibili content angles.",
     "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID.",
     "Bilibili video leads must be enriched from video descriptions before CRM candidate creation, because descriptions often contain Steam store links, official sites, Discord, email, or other business-contact clues.",
+    "Bilibili recommendation videos are discovery signals only. Before creating a lead, search for and prefer official, developer, studio, or publisher Bilibili sources when they match the concrete project.",
+    "Steam, TapTap, official-site, and community links found in Bilibili descriptions, media bodies, gameplay text, or summaries must be extracted into structured links before validation and CRM sync.",
     "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Already released products must not enter push/watch review candidates.",
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
-    "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window."
+    "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
+    "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence."
   ],
   "bilibili_media_quality_gates": {
     "max_bilibili_lead_age_days": 120,
@@ -75,11 +78,13 @@
     "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
     "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources.",
     "The generator must report both Steam candidate counts and media/Bilibili product-lead counts so low daily volume is diagnosable.",
-    "The generator must fail fast instead of publishing when push/watch review candidates fall below the configured minimum.",
-    "The generator must fail fast when domestic media/Bilibili signals are available but too few are converted into lead candidates.",
+    "Low review volume must trigger fallback and diagnostics, not a full scheduled automation failure. Publish a low-volume but valid report when there are still effective candidates.",
+    "Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to a Steam-only report.",
     "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries.",
     "The generator must inspect Bilibili video descriptions for Steam/contact links before deciding whether a Bilibili item is a new lead.",
     "The generator must route Bilibili/media items with confirmed already-released Steam status to drop_pool or market background, not push/watch.",
+    "The generator log must include candidate total, duplicate filtered count, released filtered count, Bilibili official-source hits, and final non-dropped import candidates.",
+    "Only schema damage, file write failure, or CRM sync authentication/write failure should fail the scheduled automation.",
     "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
     "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source."
   ]

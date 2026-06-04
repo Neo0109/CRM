@@ -1,9 +1,17 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.1.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.2.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { execFile as execFileCallback } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
+import {
+  choosePreferredBilibiliSignal,
+  deriveMediaDecisionFields,
+  formatMediaGameplay,
+  formatMediaProgress,
+  normalizeMediaLinks as normalizeMediaLinksV62,
+  steamAppIdFromLinks as steamAppIdFromLinksV62
+} from "./sourcing_v6_2_quality.mjs";
 
 const rootDir = process.cwd();
 const execFile = promisify(execFileCallback);
@@ -17,7 +25,18 @@ const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
 const minReviewBackfillScore = boundedNumber(args.minReviewBackfillScore, 18, 8, 48);
 const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
 const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, 120, 14, 365);
+const maxOfficialLookups = boundedNumber(args.maxOfficialLookups, 12, 0, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
+const sourcingDiagnostics = {
+  rule_version: "sourcing-rules-v6.2",
+  source_failures: 0,
+  media_duplicate_filtered: 0,
+  media_steam_appids_extracted: 0,
+  media_released_routed_to_drop: 0,
+  bilibili_official_source_lookups: 0,
+  bilibili_official_source_hits: 0,
+  low_volume_warnings: []
+};
 
 const steamCandidateTasks = [
   () => fetchSteamSearch("popularcomingsoon", "Steam CN Domestic Demo Keyword", [], { cc: "cn", l: "schinese", domesticLens: true, query: "国产 Demo" }),
@@ -62,13 +81,14 @@ if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
 const pools = buildPools(enrichedCandidates, mediaLeadCandidates);
-validateDailyVolume({
+const volumeDiagnostics = validateDailyVolume({
   pools,
   mediaSignals,
   mediaLeadCandidates,
   rawCandidateCount: rawCandidates.length,
   enrichedCandidateCount: enrichedCandidates.length
 });
+sourcingDiagnostics.low_volume_warnings.push(...volumeDiagnostics.warnings);
 
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport(pools, rawCandidates.length, enrichedCandidates.length, mediaLeadCandidates.length));
 await writeJson(`data/radar/${reportDate}.json`, buildRadarReport(enrichedCandidates, pools, industrySignals));
@@ -76,7 +96,8 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport(en
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v6_1",
+  generator: "online_daily_v4_sourcing_rules_v6_2",
+  rule_version: "sourcing-rules-v6.2",
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
@@ -91,6 +112,11 @@ console.log(JSON.stringify({
   existing_project_names: existingIndex.projects.size,
   existing_steam_app_ids: existingIndex.steamAppIds.size,
   existing_links: existingIndex.links.size,
+  diagnostics: sourcingDiagnostics,
+  duplicate_filtered: sourcingDiagnostics.media_duplicate_filtered,
+  released_filtered: sourcingDiagnostics.media_released_routed_to_drop,
+  bilibili_official_source_hits: sourcingDiagnostics.bilibili_official_source_hits,
+  final_import_candidates: pools.push.length + pools.watch.length,
   push_pool: pools.push.length,
   watch_pool: pools.watch.length,
   drop_pool: pools.drop.length,
@@ -562,9 +588,10 @@ function interleaveLeads(primary, secondary) {
 }
 
 function validateDailyVolume({ pools, mediaSignals, mediaLeadCandidates, rawCandidateCount, enrichedCandidateCount }) {
+  const warnings = [];
   const reviewCount = pools.push.length + pools.watch.length;
   if (reviewCount < minReviewLeads) {
-    throw new Error(`Daily review candidate count too low: push+watch=${reviewCount}, expected >= ${minReviewLeads}. Steam raw=${rawCandidateCount}, enriched=${enrichedCandidateCount}, media_leads=${mediaLeadCandidates.length}. Refusing to publish a low-volume report.`);
+    warnings.push(`Daily review candidate count low: push+watch=${reviewCount}, expected >= ${minReviewLeads}. Steam raw=${rawCandidateCount}, enriched=${enrichedCandidateCount}, media_leads=${mediaLeadCandidates.length}. Publishing low-volume valid report with diagnostics.`);
   }
 
   const domesticSignalCount = mediaSignals.filter((item) => {
@@ -572,8 +599,10 @@ function validateDailyVolume({ pools, mediaSignals, mediaLeadCandidates, rawCand
     return focus.has("domestic_sourcing") || focus.has("bilibili");
   }).length;
   if (domesticSignalCount >= 18 && mediaLeadCandidates.length < minMediaLeadsWhenHealthy) {
-    throw new Error(`Domestic media/Bilibili lead extraction too low: media_leads=${mediaLeadCandidates.length}, expected >= ${minMediaLeadsWhenHealthy} when domestic signals=${domesticSignalCount}. Refusing to publish a Steam-only report.`);
+    warnings.push(`Domestic media/Bilibili lead extraction low: media_leads=${mediaLeadCandidates.length}, expected >= ${minMediaLeadsWhenHealthy} when domestic signals=${domesticSignalCount}. Publishing with fallback diagnostics instead of failing scheduled automation.`);
   }
+  for (const warning of warnings) console.warn(warning);
+  return { warnings, reviewCount, domesticSignalCount };
 }
 
 function selectUniqueLeads(leads, limit, used) {
@@ -781,18 +810,26 @@ function buildAmplification(candidate) {
 
 async function buildMediaLeadCandidates(items, existingIndex) {
   const sourceCount = new Map();
-  const strictLeads = dedupeMediaSignals(items)
+  const strictSourceItems = dedupeMediaSignals(items).filter(isProductSourcingSignal);
+  const strictLeadCandidates = strictSourceItems
     .filter(isProductSourcingSignal)
     .map((item) => mediaSignalToLead(item, "strict"))
-    .filter((lead) => isNewMediaLead(lead, existingIndex))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
-  const expandedLeads = dedupeMediaSignals(items)
-    .filter((item) => !isProductSourcingSignal(item) && isExpandedDomesticProductSignal(item))
-    .map((item) => mediaSignalToLead(item, "expanded"))
-    .filter((lead) => isNewMediaLead(lead, existingIndex))
-    .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
+  const strictLeads = strictLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
+  sourcingDiagnostics.media_duplicate_filtered += strictLeadCandidates.length - strictLeads.length;
 
-  const verifiedLeads = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads]);
+  const expandedSourceItems = dedupeMediaSignals(items)
+    .filter((item) => !isProductSourcingSignal(item) && isExpandedDomesticProductSignal(item))
+    .slice(0, 48);
+  const expandedLeadCandidates = expandedSourceItems
+    .map((item) => mediaSignalToLead(item, "expanded"))
+    .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
+  const expandedLeads = expandedLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
+  sourcingDiagnostics.media_duplicate_filtered += expandedLeadCandidates.length - expandedLeads.length;
+
+  const verifiedCandidates = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads]);
+  const verifiedLeads = verifiedCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
+  sourcingDiagnostics.media_duplicate_filtered += verifiedCandidates.length - verifiedLeads.length;
   const selected = selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
   return selected;
 }
@@ -899,36 +936,141 @@ async function enrichMediaLeadsWithSteamContext(leads) {
 }
 
 async function enrichMediaLeadWithSteamContext(lead) {
-  if (!lead.steam_app_id) return lead;
+  const officialLead = await enrichMediaLeadWithOfficialBilibiliContext(lead);
+  if (!officialLead.steam_app_id) return finalizeMediaLeadDecisionFields(officialLead, null);
 
-  const details = await fetchAppDetails(lead.steam_app_id);
-  const releaseDate = normalizeReleaseDate(details?.release_date?.date ?? lead.release_window);
+  const details = await fetchAppDetails(officialLead.steam_app_id);
+  const releaseDate = normalizeReleaseDate(details?.release_date?.date ?? officialLead.release_window);
   const daysToRelease = daysUntil(releaseDate);
   const alreadyReleased = typeof daysToRelease === "number" && daysToRelease < 0 && !details?.release_date?.coming_soon;
   const steamLinks = [
-    `https://store.steampowered.com/app/${lead.steam_app_id}/`,
-    `https://steamdb.info/app/${lead.steam_app_id}/`,
+    `https://store.steampowered.com/app/${officialLead.steam_app_id}/`,
+    `https://steamdb.info/app/${officialLead.steam_app_id}/`,
     details?.website
   ].filter(Boolean);
-  const steamContacts = details ? await collectContactMethods(details, lead.steam_app_id) : [];
+  const steamContacts = details ? await collectContactMethods(details, officialLead.steam_app_id) : [];
   const nextLead = {
-    ...lead,
-    team: lead.team ?? details?.developers?.[0] ?? null,
-    publisher_name: lead.publisher_name ?? details?.publishers?.[0] ?? null,
+    ...officialLead,
+    team: officialLead.team ?? details?.developers?.[0] ?? null,
+    publisher_name: officialLead.publisher_name ?? details?.publishers?.[0] ?? null,
     publisher_status: details?.publishers?.length
       ? `${details.publishers.join(" / ")}；B站线索已补 Steam 交叉验证`
-      : lead.publisher_status,
-    release_window: releaseDate ?? lead.release_window,
-    links: mergeLinks([...(lead.links ?? []), ...steamLinks]),
-    contact_methods: mergeContactMethods([...(lead.contact_methods ?? []), ...steamContacts])
+      : officialLead.publisher_status,
+    release_window: releaseDate ?? officialLead.release_window,
+    links: mergeLinks([...(officialLead.links ?? []), ...steamLinks]),
+    contact_methods: mergeContactMethods([...(officialLead.contact_methods ?? []), ...steamContacts])
   };
   nextLead.contact = nextLead.contact_methods.map((method) => `${method.type}: ${method.value}`).join("；") || null;
 
   if (alreadyReleased) {
-    return mediaLeadToDrop(nextLead, `B站/媒体线索补到 Steam AppID ${lead.steam_app_id} 后交叉验证：Steam 页面显示已发售约${Math.abs(daysToRelease)}天，不符合前置BD窗口`);
+    sourcingDiagnostics.media_released_routed_to_drop += 1;
+    return mediaLeadToDrop(finalizeMediaLeadDecisionFields(nextLead, details), `B站/媒体线索补到 Steam AppID ${officialLead.steam_app_id} 后交叉验证：Steam 页面显示已发售约${Math.abs(daysToRelease)}天，不符合前置BD窗口`);
   }
 
-  return nextLead;
+  return finalizeMediaLeadDecisionFields(nextLead, details);
+}
+
+async function enrichMediaLeadWithOfficialBilibiliContext(lead) {
+  if (!lead._mediaItem || !isBilibiliSignal(lead._mediaItem)) return lead;
+  if (sourcingDiagnostics.bilibili_official_source_lookups >= maxOfficialLookups) return lead;
+  sourcingDiagnostics.bilibili_official_source_lookups += 1;
+
+  const officialCandidates = await fetchOfficialBilibiliCandidates(lead.project);
+  const preferred = choosePreferredBilibiliSignal(lead._mediaItem, officialCandidates, lead.project);
+  if (!preferred || preferred.link === lead._mediaItem.link) return lead;
+
+  sourcingDiagnostics.bilibili_official_source_hits += 1;
+  const officialText = `${preferred.title} ${preferred.summary} ${preferred.source} ${preferred.link}`;
+  const officialLinks = normalizeMediaLinksV62([preferred.link, officialText]);
+  const officialSteamAppId = steamAppIdFromLinksV62(officialLinks);
+  if (officialSteamAppId && officialSteamAppId !== lead.steam_app_id) sourcingDiagnostics.media_steam_appids_extracted += 1;
+
+  return {
+    ...lead,
+    _mediaItem: preferred,
+    _originalMediaItem: lead._mediaItem,
+    _officialSourceMatched: true,
+    steam_app_id: officialSteamAppId ?? lead.steam_app_id,
+    links: mergeLinks([...(lead.links ?? []), ...officialLinks]),
+    public_signals: `${preferred.source} / ${preferred.link}`,
+    contact_methods: mergeContactMethods([
+      ...(lead.contact_methods ?? []),
+      ...collectMediaContactMethods(preferred, preferred.link, officialLinks)
+    ])
+  };
+}
+
+async function fetchOfficialBilibiliCandidates(project) {
+  const queries = [
+    `${project} 官方`,
+    `${project} Steam`,
+    `${project} PV 实机`,
+    `${project} 开发日志`
+  ];
+  const results = [];
+  for (const query of queries) {
+    const source = {
+      name: "B站官方复核",
+      url: bilibiliSearchApi(query),
+      fallbackUrl: bilibiliSearchPage(query),
+      type: "bilibili_video_search",
+      quality: 14,
+      focus: ["china", "bilibili", "creator", "domestic_sourcing"]
+    };
+    try {
+      const text = await fetchText(source.url, 10000, "application/json,text/html;q=0.9,*/*;q=0.8");
+      results.push(...parseBilibiliVideoSearch(text, source));
+    } catch (error) {
+      try {
+        results.push(...parsePageItems(await fetchText(source.fallbackUrl, 10000, "text/html,*/*;q=0.8"), source));
+      } catch (fallbackError) {
+        console.warn(`Bilibili official lookup failed for ${project}: ${error.message}; fallback failed: ${fallbackError.message}`);
+      }
+    }
+    if (results.length >= 12) break;
+    await sleep(250);
+  }
+  return enrichBilibiliVideoSignals(dedupeMediaSignals(results).slice(0, 12));
+}
+
+function finalizeMediaLeadDecisionFields(lead, details) {
+  const sourceText = `${lead._mediaItem?.title ?? ""} ${lead._mediaItem?.summary ?? ""} ${lead.progress ?? ""}`;
+  const progress = formatMediaProgress({ details, sourceText, reportDate });
+  const gameplay = formatMediaGameplay({
+    title: lead.project,
+    summary: sourceText,
+    genre: lead.genre,
+    details
+  });
+  const releaseDate = normalizeReleaseDate(details?.release_date?.date ?? lead.release_window);
+  const daysToRelease = daysUntil(releaseDate);
+  const alreadyReleased = progress === "正式上线" || (typeof daysToRelease === "number" && daysToRelease < 0 && !details?.release_date?.coming_soon);
+  const fields = deriveMediaDecisionFields({
+    title: lead.project,
+    source: lead._mediaItem?.source ?? lead.public_signals?.split(" / ")[0] ?? "媒体/B站",
+    confidence: lead._confidence ?? "strict",
+    score: lead.media_score ?? 0,
+    steamAppId: lead.steam_app_id,
+    progress,
+    gameplay,
+    alreadyReleased,
+    officialSourceMatched: Boolean(lead._officialSourceMatched)
+  });
+  return {
+    ...lead,
+    genre: gameplay,
+    gameplay,
+    progress,
+    release_window: releaseDate ?? lead.release_window,
+    priority_reason: fields.priority_reason,
+    rule_fit: fields.rule_fit,
+    bilibili_fit: fields.bilibili_fit,
+    amplification: fields.amplification,
+    risks: fields.risks,
+    verdict: fields.verdict,
+    next_action: fields.next_action,
+    notes: fields.notes
+  };
 }
 
 function mediaLeadToDrop(lead, reason) {
@@ -942,8 +1084,8 @@ function mediaLeadToDrop(lead, reason) {
     rule_fit: `${lead.rule_fit ?? ""}；${reason}`.replace(/^；/, ""),
     risks: reason,
     verdict: `${reason}。不进入未处理 review，除非后续明确要求做上线后复盘。`,
-    next_action: "归档为淘汰/市场背景，避免重复占用首轮 review 时间。",
-    notes: `${lead.notes ?? ""}；B站/媒体交叉验证淘汰：${reason}`.replace(/^；/, "")
+    next_action: null,
+    notes: null
   };
 }
 
@@ -952,19 +1094,36 @@ function mediaSignalToLead(item, confidence = "strict") {
   const score = mediaLeadScore(item);
   const isBilibili = isBilibiliSignal(item);
   const mediaText = `${item.title} ${item.summary} ${item.source} ${item.link}`;
-  const extractedLinks = extractUrls(mediaText);
-  const steamAppId = steamAppIdFromLinks(extractedLinks);
+  const extractedLinks = normalizeMediaLinksV62([item.link, mediaText]);
+  const steamAppId = steamAppIdFromLinksV62(extractedLinks);
+  if (steamAppId) sourcingDiagnostics.media_steam_appids_extracted += 1;
   const releasedByText = hasAlreadyReleasedMediaText(mediaText);
   const isPush = !releasedByText && confidence === "strict" && score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(mediaText);
   const className = releasedByText ? "drop" : isPush ? "push" : "watch";
   const sourceLink = item.link;
   const contactMethods = collectMediaContactMethods(item, sourceLink, extractedLinks);
   const verificationLinks = collectMediaVerificationLinks(sourceLink, extractedLinks, steamAppId);
-  const concise = normalizeDisplayText(item.summary || item.title).slice(0, 160);
+  const gameplay = formatMediaGameplay({ title: project, summary: mediaText, genre: inferMediaGenre(item) });
+  const progress = formatMediaProgress({ sourceText: mediaText, reportDate });
+  const decisionFields = deriveMediaDecisionFields({
+    title: project,
+    source: item.source,
+    confidence,
+    score,
+    steamAppId,
+    progress,
+    gameplay,
+    alreadyReleased: releasedByText,
+    officialSourceMatched: false
+  });
   const dropReason = releasedByText ? `B站/媒体原文显示已上线或已发售，不符合前置BD窗口` : null;
+  if (releasedByText) sourcingDiagnostics.media_released_routed_to_drop += 1;
 
   return {
     _class: className,
+    _mediaItem: item,
+    _confidence: confidence,
+    _officialSourceMatched: false,
     media_score: confidence === "expanded" ? score - 6 : score,
     id: `lead_media_${reportDate.replaceAll("-", "")}_${hashText(`${item.source}:${sourceLink}:${project}`)}`,
     project,
@@ -978,13 +1137,13 @@ function mediaSignalToLead(item, confidence = "strict") {
     bucket: className === "drop" ? "淘汰池" : "未处理",
     stage: className === "drop" ? "rejected" : "new",
     priority: className === "push" ? "P1" : className === "drop" ? "P3" : "P2",
-    priority_reason: dropReason ?? `${item.source} 捕捉到${confidence === "expanded" ? "待核验" : "具体"}产品信号：${normalizeDisplayText(item.title).slice(0, 90)}。先点开原始链接判断玩法和内容潜力；B站简介里的 Steam/官网/联系方式已尽量补入。`,
+    priority_reason: dropReason ?? decisionFields.priority_reason,
     rule_fit: dropReason
       ? `国内媒体/B站产品发现源；${dropReason}；只做淘汰/市场背景，不进入未处理首轮 review。`
-      : `国内媒体/B站产品发现源；${confidence === "expanded" ? "扩展候选，先确认是否为具体游戏；" : ""}非 Steam 线索允许进入未处理 inbox；先测/先看内容，再决定补 Steam、官网、TapTap 或商务联系人。`,
+      : decisionFields.rule_fit,
     genre: inferMediaGenre(item),
-    gameplay: concise || "来自媒体/B站的产品线索，需打开原文/视频确认玩法循环、实机内容和开发阶段。",
-    progress: `${item.source} 原始信号：${normalizeDisplayText(item.title).slice(0, 110)}`,
+    gameplay,
+    progress,
     release_window: null,
     early_access: false,
     narrative_heavy: false,
@@ -998,15 +1157,15 @@ function mediaSignalToLead(item, confidence = "strict") {
     contact_methods: contactMethods,
     links: verificationLinks,
     exposure_trail: `自动从${item.source}捕捉到媒体/B站线索（${reportDate}）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。`,
-    bilibili_fit: isBilibili ? "已出现在B站语境，优先看播放、评论、弹幕和UP主表达是否能转化为发行前内容资产。" : "需反查B站是否有PV、实机、试玩或UP主讨论，判断能否做内容种草。",
-    amplification: "先从原始链接提炼一句传播钩子；若玩法能被视频讲清楚，再进入提测或补资料。",
-    risks: dropReason ?? (confidence === "expanded" ? "扩展媒体/B站候选，可能存在项目名不准或只是资讯标题；首轮先判定是不是具体可看的游戏，不成立直接淘汰。" : "非Steam来源，项目名/开发者/发售窗口和联系方式可能不完整；首轮只做产品判断，不要求立即补全商务资料。"),
-    verdict: dropReason ? `${dropReason}，不占用未处理 review 名额。` : isPush ? "媒体/B站信号足够具体，建议进入当天未处理队列优先看原文/视频。" : "作为国内发现线索保留，人工确认产品真实度和可测性后再分池。",
-    next_action: dropReason ? "归档，除非需要做上线后市场复盘。" : "打开原始链接确认玩法、团队、是否可测；能测就提测，不成立就直接淘汰；通过首测后再补 Steam/官网/联系方式。",
+    bilibili_fit: decisionFields.bilibili_fit,
+    amplification: decisionFields.amplification,
+    risks: dropReason ?? decisionFields.risks,
+    verdict: dropReason ? `${dropReason}，不占用未处理 review 名额。` : decisionFields.verdict,
+    next_action: decisionFields.next_action,
     owner: null,
     due_date: null,
     first_seen: reportDate,
-    notes: `媒体/B站扩展来源；confidence=${confidence}；media_score=${score}${steamAppId ? `；extracted_steam_app_id=${steamAppId}` : ""}${dropReason ? `；drop_reason=${dropReason}` : ""}`
+    notes: decisionFields.notes
   };
 }
 
@@ -1159,19 +1318,21 @@ function hashText(value) {
 function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.1线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V6.2线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V6.1把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V6.2把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
       "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断，国内项目先测再商务。",
-      "B站视频线索必须补读简介、提取Steam/官网/联系方式、交叉验证是否已发售，并和历史CRM记录去重。",
+      "B站视频线索必须优先复核官方号/开发者号/发行商号，补读简介，提取Steam/官网/联系方式，交叉验证是否已发售，并和历史CRM记录去重。",
+      "B站/媒体字段必须保持决策台可读：Steam链接写入links，玩法写标签，进度写短状态，下一步动作和备注默认留给人工。",
       "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
-      "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。"
+      "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。",
+      "低量、Steam 429、B站单源异常不会让定时日报整体断档；系统会发布低量但有效的日报并输出诊断。"
     ],
     push_pool: pools.push,
     watch_pool: pools.watch,
@@ -1185,7 +1346,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   if (!candidates.length) {
     return {
       report_date: reportDate,
-      summary: `Sourcing V6.1行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      summary: `Sourcing V6.2行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
       items: mediaItems
     };
   }
@@ -1203,7 +1364,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.1行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V6.2行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -1235,7 +1396,7 @@ function buildSteamTrendReport(candidates, pools) {
     : buildFallbackSteamTrendItems([...pools.push, ...pools.watch], steamItems.length, 12 - steamItems.length);
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6.1：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    summary: `Steam大盘V6.2：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...steamItems, ...mediaFallbackItems].slice(0, 12),
@@ -1250,7 +1411,7 @@ function buildSteamUnavailableFallbackTrendReport(pools) {
 
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6.1：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
+    summary: `Steam大盘V6.2：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
     market_insights: [
       steamInsight(
         "steam_fetch_unavailable",
@@ -1450,10 +1611,12 @@ async function fetchMediaSource(source) {
       try {
         return parsePageItems(await fetchText(source.fallbackUrl, 12000, "text/html,*/*;q=0.8"), source);
       } catch (fallbackError) {
+        sourcingDiagnostics.source_failures += 1;
         console.warn(`Media source failed for ${source.name}: ${error.message}; fallback failed: ${fallbackError.message}`);
         return [];
       }
     }
+    sourcingDiagnostics.source_failures += 1;
     console.warn(`Media source failed for ${source.name}: ${error.message}`);
     return [];
   }
@@ -2123,7 +2286,7 @@ function sourcePriority(item) {
 }
 
 function stripPrivate(lead) {
-  const { _class, _reviewBackfill, _reviewBackfillScore, media_score, ...rest } = lead;
+  const { _class, _reviewBackfill, _reviewBackfillScore, _mediaItem, _originalMediaItem, _confidence, _officialSourceMatched, media_score, ...rest } = lead;
   return rest;
 }
 
@@ -2143,6 +2306,8 @@ function isDomesticDiscoveryQuery(query) {
 function normalizeReleaseDate(value) {
   if (!value) return null;
   const cleaned = String(value).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const chinese = cleaned.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/);
+  if (chinese) return `${chinese[1]}-${chinese[2].padStart(2, "0")}-${chinese[3].padStart(2, "0")}`;
   const parsed = Date.parse(cleaned);
   if (!Number.isNaN(parsed)) return new Date(parsed).toISOString().slice(0, 10);
   return cleaned || null;
