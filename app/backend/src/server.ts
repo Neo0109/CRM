@@ -119,7 +119,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.3.6-auth-session-recovery",
+    version: "v2.4-automation-diagnostics-center",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,

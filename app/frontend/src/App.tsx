@@ -1,7 +1,8 @@
-import { AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { clearAccessToken, excelExportUrl, fetchLeads, fetchRadar, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
+import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
+import { AutomationDiagnosticsPage } from "./AutomationDiagnosticsPage";
 import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
@@ -9,9 +10,9 @@ import { SteamTrendsPage } from "./SteamTrendsPage";
 import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
 import { productVersion, productVersionLabel } from "./productVersion";
-import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
+import type { AutomationDiagnostics, Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
-type View = "leads" | "assistant" | "radar" | "steam" | "settings";
+type View = "leads" | "assistant" | "radar" | "steam" | "diagnostics" | "settings";
 type Filters = {
   query: string;
   bucket: "全部" | Bucket;
@@ -95,6 +96,8 @@ export default function App() {
   const [radarLoading, setRadarLoading] = useState(false);
   const [steamTrends, setSteamTrends] = useState<SteamTrendReport | null>(null);
   const [steamLoading, setSteamLoading] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<AutomationDiagnostics | null>(null);
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -105,6 +108,7 @@ export default function App() {
     void reload(true);
     void loadRadar();
     void loadSteamTrends();
+    void loadDiagnostics();
   }, [isAuthenticated]);
 
   const stats = useMemo(() => ({
@@ -188,6 +192,18 @@ export default function App() {
     }
   }
 
+  async function loadDiagnostics(date?: string) {
+    try {
+      setDiagnosticsLoading(true);
+      setDiagnostics(await fetchAutomationDiagnostics(date));
+      setError(null);
+    } catch (nextError) {
+      handleDataError(nextError, "自动化诊断加载失败");
+    } finally {
+      setDiagnosticsLoading(false);
+    }
+  }
+
   function handleDataError(nextError: unknown, fallback: string) {
     const message = nextError instanceof Error ? nextError.message : fallback;
     if (isAuthError(message)) {
@@ -229,6 +245,7 @@ export default function App() {
     if (view === "assistant") void reload(false);
     if (view === "radar") void loadRadar();
     if (view === "steam") void loadSteamTrends();
+    if (view === "diagnostics") void loadDiagnostics();
   }
 
   function downloadExcel() {
@@ -246,10 +263,12 @@ export default function App() {
     setSelectedId(null);
     setRadar(null);
     setSteamTrends(null);
+    setDiagnostics(null);
     setStatus(null);
     setLoading(false);
     setRadarLoading(false);
     setSteamLoading(false);
+    setDiagnosticsLoading(false);
     setView("leads");
     setError(null);
   }
@@ -275,6 +294,7 @@ export default function App() {
             <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}><Bot size={16} />线索助手</button>
             <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
             <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
+            <button className={`tab-button ${view === "diagnostics" ? "active" : ""}`} onClick={() => setView("diagnostics")}><Activity size={16} />自动化诊断</button>
             <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
           </div>
           <div className="nav-section-label">数据操作</div>
@@ -305,7 +325,7 @@ export default function App() {
         displayName={displayName}
         handleLeadPatch={handleLeadPatch}
         moveBucket={moveBucket}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : <SettingsPage onStatus={setStatus} />}
+      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} /> : <SettingsPage onStatus={setStatus} />}
     </main>
   );
 }

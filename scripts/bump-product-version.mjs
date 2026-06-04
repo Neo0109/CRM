@@ -46,6 +46,7 @@ const summary = readArg("--summary") ?? "Product iteration";
 const healthVersion = `${nextVersion}-${slug}`;
 const labelPrefix = manifest.labelPrefix ?? "Neo's BD Matrix";
 const brandLabel = `${labelPrefix} · ${nextVersion}`;
+const assetStamp = `${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${slug}-${nextVersion.replace(/\./g, "")}`;
 
 manifest.version = nextVersion;
 manifest.slug = slug;
@@ -62,7 +63,8 @@ writeText("app/frontend/src/productVersion.ts", [
 
 for (const file of ["functions/index.ts", "functions/[[path]].ts"]) {
   let source = readText(file);
-  source = replaceRequired(source, /const brandLabel = "Neo's BD Matrix · v[^"]+";/, `const brandLabel = ${JSON.stringify(brandLabel)};`, file);
+  source = source.replace(/const brandLabel = "Neo's BD Matrix · v[^"]+";/, `const brandLabel = ${JSON.stringify(brandLabel)};`);
+  source = replaceRequired(source, /const assetVersion = "[^"]+";/, `const assetVersion = ${JSON.stringify(assetStamp)};`, file);
   writeText(file, source);
 }
 
