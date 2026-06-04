@@ -17,6 +17,7 @@ import "./pipeline-actions.css";
 import "./funnel-workflow.css";
 import "./brand-overrides.css";
 import "./aesthetic-refresh.css";
+import "./automation-diagnostics.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

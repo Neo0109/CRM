@@ -1,0 +1,266 @@
+.diagnostics-shell {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  margin: 0 auto;
+  max-width: 1680px;
+  padding: 20px;
+}
+
+.diagnostics-head {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+.diagnostics-head p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 10px 0 0;
+  max-width: 960px;
+}
+
+.diagnostics-status {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 14px;
+}
+
+.diagnostics-status div {
+  display: grid;
+  gap: 2px;
+}
+
+.diagnostics-status span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.diagnostics-status strong {
+  font-size: 20px;
+}
+
+.diagnostics-status small {
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.status-healthy {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.status-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.status-failed,
+.status-missing {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.diagnostics-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.diagnostics-grid-top {
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  margin-bottom: 12px;
+}
+
+.diagnostics-grid-panels {
+  grid-template-columns: minmax(240px, 0.9fr) minmax(280px, 1fr) minmax(280px, 1fr);
+  margin-bottom: 12px;
+}
+
+.diagnostics-grid-bottom {
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+}
+
+.diagnostics-metric,
+.diagnostics-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(20, 32, 51, 0.05);
+}
+
+.diagnostics-metric {
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+  padding: 14px;
+}
+
+.diagnostics-metric span,
+.diagnostics-metric small,
+.diagnostics-muted {
+  color: var(--muted);
+}
+
+.diagnostics-metric span {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.diagnostics-metric strong {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.metric-ok {
+  border-color: #bbf7d0;
+}
+
+.metric-warn {
+  border-color: #fde68a;
+}
+
+.diagnostics-panel {
+  padding: 16px;
+}
+
+.diagnostics-panel-head {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.diagnostics-file-row {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 58px minmax(0, 1fr) 28px;
+  padding: 12px 0;
+}
+
+.diagnostics-file-row:first-of-type {
+  border-top: 0;
+}
+
+.diagnostics-file-row small {
+  color: var(--muted);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-ok,
+.file-missing {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  justify-self: start;
+  padding: 4px 9px;
+}
+
+.file-ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.file-missing {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.diagnostics-kv {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.diagnostics-kv div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.diagnostics-kv dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.diagnostics-kv dd {
+  font-weight: 900;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.diagnostics-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.diagnostics-tags span {
+  background: #eef6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 5px 9px;
+}
+
+.diagnostics-list {
+  color: var(--ink);
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.diagnostics-list li {
+  line-height: 1.65;
+}
+
+.diagnostics-run-link {
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  display: inline-flex;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 8px 10px;
+}
+
+.diagnostics-empty {
+  color: var(--muted);
+  padding: 40px;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .diagnostics-head {
+    display: grid;
+  }
+
+  .diagnostics-grid-top,
+  .diagnostics-grid-panels,
+  .diagnostics-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+}

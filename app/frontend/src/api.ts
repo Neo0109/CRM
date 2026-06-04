@@ -1,4 +1,4 @@
-import type { CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport, WeeklyReport } from "./types";
+import type { AutomationDiagnostics, CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SettingsPatch, SettingsVerification, SteamTrendReport, WeeklyReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 const usernameKey = "sourcing-crm-username";
@@ -109,6 +109,11 @@ export function fetchSteamTrends(date?: string) {
 export function fetchWeeklyReport(date?: string) {
   const query = date ? `?date=${encodeURIComponent(date)}` : "";
   return request<WeeklyReport>(`/api/reports/weekly${query}`);
+}
+
+export function fetchAutomationDiagnostics(date?: string) {
+  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+  return request<AutomationDiagnostics>(`/api/automation-diagnostics${query}`);
 }
 
 export function fetchSettings() {

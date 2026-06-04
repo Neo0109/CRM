@@ -242,3 +242,87 @@ export type WeeklyReport = {
   dropped_leads: WeeklyLeadSummary[];
   sourced_leads: WeeklyLeadSummary[];
 };
+
+export type AutomationDiagnosticsStatus = "healthy" | "warning" | "failed" | "missing";
+
+export type AutomationFileHealth = {
+  exists: boolean;
+  path: string;
+  source: string;
+  status?: number;
+};
+
+export type AutomationReceiptSummary = {
+  attempts: number | null;
+  captured_at: string | null;
+  event_name: string | null;
+  event_schedule: string | null;
+  generated_changed: boolean | null;
+  name: string;
+  report_date: string | null;
+  run_number: string | null;
+  run_url: string | null;
+  slot: string | null;
+  status: string;
+  sync: {
+    synced?: boolean;
+    created?: number;
+    updated?: number;
+    dropped?: number;
+    total?: number;
+    import_stats?: Record<string, unknown>;
+    report_date?: string;
+    summary?: string;
+    source?: string;
+    reason?: string;
+  } | null;
+};
+
+export type AutomationDiagnostics = {
+  available_dates: string[];
+  counts: {
+    drop_candidates: number;
+    final_candidates: number;
+    push_candidates: number;
+    radar_categories: Record<string, number>;
+    radar_items: number;
+    review_candidates: number;
+    steam_crm_candidates: number;
+    steam_genre_signals: number;
+    steam_items: number;
+    steam_market_insights: number;
+    watch_candidates: number;
+  };
+  files: {
+    report: AutomationFileHealth;
+    radar: AutomationFileHealth;
+    steam_trends: AutomationFileHealth;
+  };
+  generated_at: string;
+  import_stats: Record<string, unknown> | null;
+  latest_receipt: AutomationReceiptSummary | null;
+  latest_synced_receipt: AutomationReceiptSummary | null;
+  next_actions: string[];
+  receipts: AutomationReceiptSummary[];
+  report_date: string;
+  requested_date: string;
+  rule_version: string | null;
+  source_breakdown: {
+    final_candidates: number | null;
+    media_bilibili_leads: number | null;
+    official_source_hits: number | null;
+    raw_summary: string | null;
+    steam_enriched: number | null;
+    steam_scanned: number | null;
+  };
+  status: AutomationDiagnosticsStatus;
+  summary: string;
+  thresholds: {
+    min_review_candidates: number;
+    min_media_bilibili_candidates: number;
+    min_radar_items: number;
+    min_steam_market_insights: number;
+    min_steam_genre_signals: number;
+  };
+  warnings: string[];
+};
