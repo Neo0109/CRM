@@ -1,8 +1,8 @@
 # Current Daily Report Rules
 
-Date: 2026-06-03
+Date: 2026-06-04
 
-The current daily report rule version is `sourcing-rules-v6.1`.
+The current daily report rule version is `sourcing-rules-v6.2`.
 
 Canonical human-readable rule document:
 
@@ -49,7 +49,9 @@ Already released projects must not enter push/watch candidates. They can only be
 For Bilibili video leads, the automation must do one more verification pass before creating a CRM candidate:
 
 - Open/enrich the Bilibili video metadata and description when possible, because the description often contains Steam store links, official sites, Discord, email, TapTap/indienova, or other contact clues.
+- Treat recommendation-UP videos as discovery signals only. Search for matching official, developer, studio, or publisher Bilibili videos/posts and prefer those when they match the concrete project.
 - Extract Steam AppID, Steam store URL, official links, and real contact methods from the video description before writing the lead.
+- Extract Steam/TapTap/official/community links from any Bilibili description, media body, gameplay text, or source summary into structured `links`. Do not leave Steam store links buried inside long text fields.
 - Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released, it must not enter `push_pool` or `watch_pool`; route it to `drop_pool` or keep it as market background.
 - Do not treat `Demo 已上线`, `试玩上线`, `测试开启`, or `商店页已上线` as full release. Those are still valid review/test signals.
 - Deduplicate against existing CRM projects, Steam AppIDs, source URLs, and backend dedupe keys before creating a new lead. A slightly different Bilibili title for a previously sourced Steam product should enrich or be ignored, not create a duplicate.
@@ -86,6 +88,7 @@ The online generator must preserve the product intent of these rules:
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
 - Bilibili candidates must be enriched from video descriptions before candidate creation, then checked for Steam release status, duplicate CRM history, and stale source age.
+- Candidate fields must stay useful for decision work: `priority_reason` only explains priority, `rule_fit` gives the rule judgment and insight, `gameplay` is compact genre/tag text, `progress` is a short status such as `试玩 Demo` / `EA` / `正式上线` / `即将发售`, and `next_action` / `notes` default empty for human BD input.
 - Industry Radar is a compact China + overseas news board. `行业新闻` is reserved for macro market/platform/regulatory/company-level news. Concrete game recommendations, fun products, IP moments, legal/company gossip, and former `发行八卦` items belong in `今日亮点`.
 - Radar output should be broad enough to show trends, not just a few similar cards. When sources are available, include both domestic and global signals across macro news, product highlights, AI/tooling, memes/community, and Bilibili trends.
 - Steam Trends is a Steam market board, not a sourcing-rule mirror. It must cover category risers, Steam official/community windows such as Demo/Next Fest, publisher/developer slate signals, public data quality, and concrete BD implications.
@@ -93,7 +96,7 @@ The online generator must preserve the product intent of these rules:
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.1`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.2`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
 
@@ -114,3 +117,13 @@ The generator now uses both strict and expanded domestic media/Bilibili extracti
 V6.1 closes the Bilibili false-positive loop: a Bilibili video is a discovery signal, not proof that the project is new or still in a BD window.
 
 Before creating a Bilibili/media lead, the automation must enrich the video description, extract links/contact methods, dedupe against CRM history, and cross-check Steam when a Steam AppID or store URL is present. Already fully released products, old videos without a current event, and previously sourced projects must not reappear as fresh `未处理` leads.
+
+## V6.2 Official Source, Field Hygiene, And Stability
+
+V6.2 keeps the first-version sourcing ambition but adds guardrails so sourcing quality work does not destabilize automation.
+
+- Official source first: Bilibili recommendation videos can reveal a product, but official/developer/studio/publisher Bilibili sources are preferred for final evidence when available.
+- Link hygiene: Steam, SteamDB, TapTap, official-site, Discord, email, and other useful links must be structured into `links` or `contact_methods` instead of staying buried in `gameplay`, `progress`, or notes.
+- Field hygiene: generated media leads should keep `priority_reason`, `rule_fit`, `gameplay`, `progress`, `bilibili_fit`, `amplification`, `risks`, and `verdict` concise. `next_action` and `notes` are for human BD work and should stay empty by default.
+- Stability: low volume, Steam 429, a single Bilibili source failure, or media parsing failure should not fail the scheduled job by itself. The generator must publish a low-volume but valid report when it has effective candidates and must log candidate totals, duplicate filters, released filters, official-source hits, and final import candidates.
+- Hard failures remain hard: schema breakage, generated file write failure, or CRM sync authentication/write failure must still fail the workflow.

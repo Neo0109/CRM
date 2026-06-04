@@ -2,7 +2,7 @@
 
 Date: 2026-06-02
 
-Active supplement: `sourcing-rules-v6.1`, updated 2026-06-03.
+Active supplement: `sourcing-rules-v6.2`, updated 2026-06-04.
 
 ## One-Line Standard
 
@@ -17,8 +17,8 @@ V6 keeps the domestic-first, testing-first workflow from V5, and fixes the low-v
 - Expanded candidates may enter `未处理` when they clearly point to a concrete game/product moment, even if the project name still needs manual cleanup.
 - If Steam search or AppDetails is unavailable, the report must transparently fall back to domestic media/Bilibili review candidates instead of collapsing to one or two leads.
 - If Steam and media sources are healthy but the strong/normal review pool is just below the floor, domestic candidates with concrete playable/product signals may be backfilled into `未处理` as low-confidence first-pass review items.
-- The generator must fail fast when push/watch review candidates are below the configured minimum.
-- The generator must fail fast when domestic media/Bilibili signals are healthy but too few become lead candidates.
+- Low review volume must trigger fallback and diagnostics rather than killing the scheduled job by itself.
+- Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to Steam-only output.
 
 ## Lead Volume Standard
 
@@ -34,7 +34,7 @@ Default cloud thresholds:
 - Steam AppDetails enrichment budget: `90` candidates
 - Low-confidence domestic review backfill score: `18`
 
-If these thresholds cannot be met, the workflow should fail rather than silently overwrite the day's report with low-signal output.
+If these thresholds cannot be met, the workflow should publish a low-volume but valid report with explicit diagnostics when effective candidates still exist. It should fail only on hard errors such as schema damage, file write failure, or CRM sync authentication/write failure.
 
 Backfill is not permission to pad the report. It can only use domestic or Chinese-context candidates that still have a concrete source, playable/product signal, or domestic discovery query. Backfilled leads still enter `未处理`, never `观察池`/`待评测`/`跟进中`, and the first action is quick product judgment: inspect/test, then either promote manually or淘汰.
 
@@ -68,6 +68,20 @@ Examples:
 - A Bilibili discovery such as "浣熊推币机" is useful, but if the enriched Steam cross-check shows the game is already fully released, it should be dropped or used as market background.
 - If a Bilibili video points to a project that was previously sourced from Steam, such as "极简塔防", the new video should enrich existing context or be ignored instead of creating a duplicate.
 - Old-news examples such as "纪元117:多玛和平" should be filtered unless there is a current, actionable product event.
+
+### V6.2 Official Source And Field Hygiene
+
+Recommendation-UP videos are useful discovery signals, but official/developer/studio/publisher sources are preferred before the lead is created. If official enrichment adds a Steam AppID, the candidate must be deduped again and cross-checked for release state before entering the final review pools.
+
+Structured link extraction is mandatory. Steam, SteamDB, TapTap, official-site, Discord, email, and other useful links must be written into `links` or `contact_methods`; they must not remain buried in `gameplay`, `progress`, `priority_reason`, `rule_fit`, or notes.
+
+Generated fields must be decision-grade:
+
+- `priority_reason`: why this deserves this priority.
+- `rule_fit`: why it fits or fails the current sourcing rule.
+- `gameplay`: compact tags such as `Card/Deckbuilder`, `RPG`, `Strategy`, `Simulation`.
+- `progress`: short state such as `试玩 Demo`, `EA`, `即将发售`, `正式上线`.
+- `next_action` and `notes`: empty by default unless there is genuinely important evidence.
 
 ## Workflow
 
@@ -104,6 +118,7 @@ Industry Radar remains a compact China + overseas news board.
 - Daily generation must log Steam scan volume, enriched Steam volume, media signal count, media/Bilibili lead count, and configured volume thresholds.
 - Rules-only changes must live in GitHub and trigger the cloud workflow.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
-- The automation should fail loudly before syncing if sources are healthy but candidate volume is too low.
+- Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2 verification gate before becoming fresh `未处理` leads.
+- Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.

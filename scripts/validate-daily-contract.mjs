@@ -55,6 +55,7 @@ function validateDate(date, thresholds) {
   const report = loadJson(files.report);
   const radar = loadJson(files.radar);
   const steamTrends = loadJson(files.steamTrends);
+  const enforceV62 = date >= "2026-06-04";
 
   validateSchemaSubset("daily report", schemas.report, report, errors, { root: schemas.report, sourcingLead: schemas.sourcingLead });
   validateSchemaSubset("industry radar", schemas.radar, radar, errors, { root: schemas.radar, sourcingLead: schemas.sourcingLead });
@@ -101,6 +102,12 @@ function validateDate(date, thresholds) {
       }
       if (/store\.steampowered\.com\/app\/|steam商店页|Steam商店页/i.test(text) && !(lead.links ?? []).some(isSteamStoreOrDb)) {
         errors.push(`${lead.project}: Bilibili/media text mentions a Steam store page but links do not contain a normalized Steam URL`);
+      }
+      if (enforceV62 && /https?:\/\//i.test(String(lead.gameplay ?? ""))) {
+        errors.push(`${lead.project}: V6.2 gameplay must be compact tags and must not contain raw URLs`);
+      }
+      if (enforceV62 && /https?:\/\//i.test(String(lead.progress ?? ""))) {
+        errors.push(`${lead.project}: V6.2 progress must be a short status and must not contain raw URLs`);
       }
     }
   }
