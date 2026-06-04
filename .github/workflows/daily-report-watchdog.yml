@@ -201,6 +201,10 @@ jobs:
             echo "No watchdog receipt changes to commit."
           else
             git commit -m "Record $REPORT_DATE watchdog automation sync"
+            if ! git diff --quiet -- data/reports data/radar data/steam_trends data/runtime || [ -n "$(git ls-files --others --exclude-standard data/reports data/radar data/steam_trends data/runtime)" ]; then
+              echo "Stashing generated artifact residue before watchdog receipt rebase."
+              git stash push --include-untracked -m "preserve failed generated artifacts before watchdog receipt push" -- data/reports data/radar data/steam_trends data/runtime
+            fi
             git pull --rebase origin main
             git push origin HEAD:main
           fi
