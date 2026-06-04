@@ -1427,55 +1427,68 @@ function buildSteamTrendReport(candidates, pools) {
   const mediaFallbackItems = steamItems.length >= 8
     ? []
     : buildFallbackSteamTrendItems([...pools.push, ...pools.watch], steamItems.length, 12 - steamItems.length);
+  const diagnosticFallbackItems = buildSteamDiagnosticTrendItems({
+    existingCount: steamItems.length + mediaFallbackItems.length,
+    marketInsights,
+    genreSignals,
+    candidates
+  });
   return {
     report_date: reportDate,
     summary: `Steam大盘V6.2：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
-    items: [...steamItems, ...mediaFallbackItems].slice(0, 12),
+    items: [...steamItems, ...mediaFallbackItems, ...diagnosticFallbackItems].slice(0, 12),
     crm_candidates: [...pools.push, ...pools.watch.slice(0, 8)]
   };
 }
 
 function buildSteamUnavailableFallbackTrendReport(pools) {
   const reviewLeads = [...pools.push, ...pools.watch];
-  const genreSignals = buildFallbackGenreSignals(reviewLeads);
-  const items = buildFallbackSteamTrendItems(reviewLeads, 0, 12);
+  const genreSignals = ensureMinimumSteamGenreSignals(buildFallbackGenreSignals(reviewLeads));
+  const marketInsights = [
+    steamInsight(
+      "steam_fetch_unavailable",
+      "Steam 抓取不可用：不能让日报断档",
+      "本次 Steam Search/AppDetails 没有返回有效候选。日报应透明标记源异常，并用国内媒体/B站候选保持 BD review 队列。",
+      "高",
+      "Steam Store fetch status",
+      "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "稍后补跑 Steam；当前先 review 国内媒体/B站候选，能测就测，不成立就淘汰。"
+    ),
+    steamInsight(
+      "domestic_media_backup",
+      `国内媒体/B站保底：${reviewLeads.length} 个可 review 候选`,
+      "这些候选来自媒体/B站原始链接，不要求先有 Steam AppID。它们的价值是扩大国内产品发现，先判断玩法、题材、视频表达和可测性。",
+      "中",
+      "Domestic media / Bilibili discovery",
+      "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo",
+      "先打开原始链接做产品判断；通过首测后再补 Steam、官网、联系人和商务窗口。"
+    ),
+    steamInsight(
+      "source_resilience",
+      "源韧性：Steam 不是单点故障",
+      "当 Steam 暂时不可用时，日报仍应从国内游戏媒体、B站视频、TapTap/indienova、官方开发者动态里产出可操作线索。",
+      "中",
+      "Domestic discovery source mix",
+      "https://www.gamelook.com.cn/",
+      "后续持续扩展国内源，并用低数量闸门阻止一两条线索的坏日报上线。"
+    )
+  ];
+  const fallbackItems = buildFallbackSteamTrendItems(reviewLeads, 0, 12);
+  const diagnosticItems = buildSteamDiagnosticTrendItems({
+    existingCount: fallbackItems.length,
+    marketInsights,
+    genreSignals,
+    candidates: []
+  });
 
   return {
     report_date: reportDate,
     summary: `Steam大盘V6.2：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
-    market_insights: [
-      steamInsight(
-        "steam_fetch_unavailable",
-        "Steam 抓取不可用：不能让日报断档",
-        "本次 Steam Search/AppDetails 没有返回有效候选。日报应透明标记源异常，并用国内媒体/B站候选保持 BD review 队列。",
-        "高",
-        "Steam Store fetch status",
-        "https://store.steampowered.com/search/?filter=popularcomingsoon",
-        "稍后补跑 Steam；当前先 review 国内媒体/B站候选，能测就测，不成立就淘汰。"
-      ),
-      steamInsight(
-        "domestic_media_backup",
-        `国内媒体/B站保底：${reviewLeads.length} 个可 review 候选`,
-        "这些候选来自媒体/B站原始链接，不要求先有 Steam AppID。它们的价值是扩大国内产品发现，先判断玩法、题材、视频表达和可测性。",
-        "中",
-        "Domestic media / Bilibili discovery",
-        "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo",
-        "先打开原始链接做产品判断；通过首测后再补 Steam、官网、联系人和商务窗口。"
-      ),
-      steamInsight(
-        "source_resilience",
-        "源韧性：Steam 不是单点故障",
-        "当 Steam 暂时不可用时，日报仍应从国内游戏媒体、B站视频、TapTap/indienova、官方开发者动态里产出可操作线索。",
-        "中",
-        "Domestic discovery source mix",
-        "https://www.gamelook.com.cn/",
-        "后续持续扩展国内源，并用低数量闸门阻止一两条线索的坏日报上线。"
-      )
-    ],
+    market_insights: marketInsights,
     genre_signals: genreSignals,
-    items,
+    items: [...fallbackItems, ...diagnosticItems].slice(0, 12),
     crm_candidates: reviewLeads.slice(0, 12)
   };
 }
@@ -1496,6 +1509,75 @@ function buildFallbackSteamTrendItems(reviewLeads, offset, limit) {
     bilibili_fit: lead.bilibili_fit ?? "先看视频/原文能否提炼成B站选题、试玩或发行前内容资产。",
     reason: lead.priority_reason ?? "Steam 不可用时的国内发现保底候选；先做人工首轮 review。",
     auto_import: true,
+    captured_at: capturedAt
+  }));
+}
+
+function buildSteamDiagnosticTrendItems({ existingCount, marketInsights, genreSignals, candidates }) {
+  const needed = Math.max(0, 8 - existingCount);
+  if (!needed) return [];
+  const sourceCards = [
+    ...marketInsights.map((insight) => ({
+      title: insight.title,
+      signal: insight.summary,
+      source: insight.source,
+      links: [insight.link].filter(Boolean),
+      bilibili_fit: insight.suggested_action,
+      reason: "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。"
+    })),
+    ...genreSignals.map((signal) => ({
+      title: signal.genre,
+      signal: `${signal.signal}\n${signal.why_it_matters}`,
+      source: "Steam tag / genre signal",
+      links: signal.links ?? [],
+      bilibili_fit: signal.bd_action,
+      reason: "Steam 品类信号补位卡片；用于提醒 BD 看品类变化，不作为 CRM lead 自动入库。"
+    })),
+    {
+      title: "Steam 样本质量诊断",
+      signal: `本次 Steam 候选 ${candidates.length} 个，去重、已上线和低质量过滤后可入 review 的数量偏低。低量应被展示为诊断，而不是让日报自动化断档。`,
+      source: "CRM automation diagnostics",
+      links: ["https://steamdb.info/charts/"],
+      bilibili_fit: "用诊断判断是否需要扩展国内媒体/B站官方源，不直接占用人工 lead 队列。",
+      reason: "自动化稳定护栏：趋势低量时补充诊断，不制造伪 lead。"
+    },
+    {
+      title: "国内来源池补强",
+      signal: "当 Steam 或单个媒体源异常时，日报应继续使用 B站官方号、开发者动态、TapTap、indienova 和国内媒体补齐高质量候选。",
+      source: "CRM automation diagnostics",
+      links: ["https://www.taptap.cn/", "https://indienova.com/"],
+      bilibili_fit: "优先找官方号和开发者号，避免推荐 UP 的旧视频或泛娱乐内容污染 lead。",
+      reason: "自动化稳定护栏：来源池低量时给出下一步诊断，不制造伪 lead。"
+    },
+    {
+      title: "去重与发售状态交叉验证",
+      signal: "B站/媒体线索应抽取 Steam AppID、来源链接和项目名去重；正式上线或历史已录入的项目不再进入新的未处理队列。",
+      source: "CRM automation diagnostics",
+      links: ["https://store.steampowered.com/search/"],
+      bilibili_fit: "把低量原因拆成已上线、重复、过期和来源失败，方便判断是规则过严还是来源池不足。",
+      reason: "自动化稳定护栏：保留判断过程，避免为了数量降低 sourcing 质量。"
+    },
+    {
+      title: "BD 可执行样本优先",
+      signal: "日报可以低量，但必须解释为什么低量，并把非淘汰有效项目统一进入未处理 inbox，人工 review 后再决定待评测、测试中或淘汰。",
+      source: "CRM automation diagnostics",
+      links: ["https://github.com/Neo0109/CRM/actions"],
+      bilibili_fit: "不要让诊断卡片进入 CRM lead；它只解释自动化状态，帮助决定是否补跑或扩源。",
+      reason: "自动化稳定护栏：质量不足时透明提示，而不是让 workflow 整体失败。"
+    }
+  ];
+
+  return sourceCards.slice(0, needed).map((item, index) => ({
+    id: `steam_trend_${reportDate.replaceAll("-", "_")}_diagnostic_${index + 1}`,
+    title: item.title,
+    steam_app_id: null,
+    rank_bucket: "Steam diagnostics fallback",
+    signal: item.signal,
+    source: item.source,
+    links: item.links,
+    bilibili_fit: item.bilibili_fit,
+    reason: item.reason,
+    auto_import: false,
     captured_at: capturedAt
   }));
 }
@@ -1532,7 +1614,42 @@ function buildFallbackGenreSignals(leads) {
     });
   }
 
-  return signals.slice(0, 5);
+  return ensureMinimumSteamGenreSignals(signals).slice(0, 5);
+}
+
+function ensureMinimumSteamGenreSignals(signals) {
+  const fallbackSignals = [
+    {
+      id: `steam_genre_${reportDate.replaceAll("-", "_")}_diagnostic_source_mix`,
+      genre: "Source Mix / 国内来源池",
+      signal: "Steam 趋势样本偏低时，必须同时检查 B站官方号、国内媒体、TapTap、indienova 和开发者动态。",
+      why_it_matters: "Sourcing 的目标不是凑数量，而是保证 BD 能看到可判断的产品信号和来源缺口。",
+      bd_action: "优先补官方源和可验证链接；推荐 UP 视频只作为辅助，不直接替代官方来源。",
+      links: ["https://www.taptap.cn/", "https://indienova.com/"]
+    },
+    {
+      id: `steam_genre_${reportDate.replaceAll("-", "_")}_diagnostic_cross_check`,
+      genre: "Verification / 交叉验证",
+      signal: "B站/媒体线索需要抽取 Steam AppID 或官方链接，并检查是否已上线、过期或历史已录入。",
+      why_it_matters: "这能减少旧视频、已上线项目和重复项目进入未处理队列，保持人工 review 效率。",
+      bd_action: "先验证发售状态和历史去重，再决定是否进入未处理 inbox。",
+      links: ["https://store.steampowered.com/search/"]
+    },
+    {
+      id: `steam_genre_${reportDate.replaceAll("-", "_")}_diagnostic_steam_window`,
+      genre: "Steam Window / Demo与活动窗口",
+      signal: "即将发售、Demo、EA 和官方活动窗口仍是 Steam 大盘里最可执行的 BD 信号。",
+      why_it_matters: "这些状态更接近测试、内容预判和商务触达，而不是泛泛的品类热度。",
+      bd_action: "国内开发者 Demo 优先；海外项目必须同时看 PC 数据验证和手游化可能。",
+      links: ["https://store.steampowered.com/sale/nextfest", "https://steamdb.info/charts/"]
+    }
+  ];
+  const existingIds = new Set(signals.map((signal) => signal.id));
+  for (const signal of fallbackSignals) {
+    if (signals.length >= 3) break;
+    if (!existingIds.has(signal.id)) signals.push(signal);
+  }
+  return signals;
 }
 
 async function fetchMediaSignals() {
