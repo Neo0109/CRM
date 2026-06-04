@@ -36,6 +36,7 @@ const sourcingDiagnostics = {
   media_low_score_filtered: 0,
   media_non_product_filtered: 0,
   media_expanded_product_candidates: 0,
+  media_rescue_product_candidates: 0,
   media_duplicate_filtered: 0,
   media_steam_appids_extracted: 0,
   media_released_routed_to_drop: 0,
@@ -605,7 +606,7 @@ function validateDailyVolume({ pools, mediaSignals, mediaLeadCandidates, rawCand
     return focus.has("domestic_sourcing") || focus.has("bilibili");
   }).length;
   if (domesticSignalCount >= 18 && mediaLeadCandidates.length < minMediaLeadsWhenHealthy) {
-    warnings.push(`Domestic media/Bilibili lead extraction low: media_leads=${mediaLeadCandidates.length}, expected >= ${minMediaLeadsWhenHealthy} when domestic signals=${domesticSignalCount}. Official hits=${sourcingDiagnostics.bilibili_official_source_hits}, expanded_candidates=${sourcingDiagnostics.media_expanded_product_candidates}, released_routed_to_drop=${sourcingDiagnostics.media_released_routed_to_drop}. Publishing with fallback diagnostics instead of failing scheduled automation.`);
+    warnings.push(`Domestic media/Bilibili lead extraction low: media_leads=${mediaLeadCandidates.length}, expected >= ${minMediaLeadsWhenHealthy} when domestic signals=${domesticSignalCount}. Official hits=${sourcingDiagnostics.bilibili_official_source_hits}, expanded_candidates=${sourcingDiagnostics.media_expanded_product_candidates}, rescue_candidates=${sourcingDiagnostics.media_rescue_product_candidates}, released_routed_to_drop=${sourcingDiagnostics.media_released_routed_to_drop}. Publishing with fallback diagnostics instead of failing scheduled automation.`);
   }
   for (const warning of warnings) console.warn(warning);
   return { warnings, reviewCount, domesticSignalCount };
@@ -818,12 +819,11 @@ async function buildMediaLeadCandidates(items, existingIndex) {
   const sourceCount = new Map();
   const dedupedItems = dedupeMediaSignals(items);
   const strictSourceItems = dedupedItems.filter(isProductSourcingSignal);
-  sourcingDiagnostics.media_non_product_filtered += dedupedItems.length - strictSourceItems.length;
   const strictLeadCandidates = strictSourceItems
     .filter(isProductSourcingSignal)
     .map((item) => mediaSignalToLead(item, "strict"))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
-  const strictLeads = strictLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
+  const strictLeads = strictLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex, { beforeSteamEnrichment: true }));
   sourcingDiagnostics.media_duplicate_filtered += strictLeadCandidates.length - strictLeads.length;
 
   const expandedSourceItems = dedupedItems
@@ -833,10 +833,23 @@ async function buildMediaLeadCandidates(items, existingIndex) {
   const expandedLeadCandidates = expandedSourceItems
     .map((item) => mediaSignalToLead(item, "expanded"))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
-  const expandedLeads = expandedLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
+  const expandedLeads = expandedLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex, { beforeSteamEnrichment: true }));
   sourcingDiagnostics.media_duplicate_filtered += expandedLeadCandidates.length - expandedLeads.length;
 
-  const verifiedCandidates = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads]);
+  const rescueSourceItems = dedupedItems
+    .filter((item) => !strictSourceItems.includes(item) && !expandedSourceItems.includes(item) && isDomesticMediaRescueSignal(item))
+    .slice(0, 64);
+  sourcingDiagnostics.media_rescue_product_candidates += rescueSourceItems.length;
+  const rescueLeadCandidates = rescueSourceItems
+    .map((item) => mediaSignalToLead(item, "rescue"))
+    .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
+  const rescueLeads = rescueLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex, { beforeSteamEnrichment: true }));
+  sourcingDiagnostics.media_duplicate_filtered += rescueLeadCandidates.length - rescueLeads.length;
+
+  const sourceCandidateItems = new Set([...strictSourceItems, ...expandedSourceItems, ...rescueSourceItems]);
+  sourcingDiagnostics.media_non_product_filtered += dedupedItems.length - sourceCandidateItems.size;
+
+  const verifiedCandidates = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads, ...rescueLeads]);
   const verifiedLeads = verifiedCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
   sourcingDiagnostics.media_duplicate_filtered += verifiedCandidates.length - verifiedLeads.length;
   const selected = selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
@@ -855,12 +868,14 @@ function selectBalancedMediaLeadCandidates(leads, sourceCount, limit) {
   return selected;
 }
 
-function isNewMediaLead(lead, existingIndex) {
+function isNewMediaLead(lead, existingIndex, options = {}) {
   if (!lead.project) return false;
   const projectKey = normalizeText(lead.project);
   if (!projectKey || existingIndex.projects.has(projectKey)) return false;
   const looseKey = looseChineseProjectKey(lead.project);
   if (looseKey && existingIndex.projectLooseKeys.has(looseKey)) return false;
+  if (isUnusableMediaProjectName(lead.project) && !(options.beforeSteamEnrichment && lead.steam_app_id)) return false;
+  if (isGenericMediaProjectName(lead.project) && !hasStrongMediaLeadEvidence(lead) && !(options.beforeSteamEnrichment && lead.steam_app_id)) return false;
   if (lead.steam_app_id && existingIndex.steamAppIds.has(normalizeText(lead.steam_app_id))) return false;
   for (const link of lead.links ?? []) {
     const normalizedLink = normalizeUrl(link);
@@ -874,6 +889,32 @@ function isNewMediaLead(lead, existingIndex) {
   return true;
 }
 
+function isGenericMediaProjectName(value) {
+  const text = normalizeDisplayText(value);
+  const key = normalizeText(text);
+  if (!key) return true;
+  if (/^[0-9A-Za-z]{1,4}$/.test(text)) return true;
+  if (/^(媒体|b站|今日亮点|行业新闻|国产游戏|独立游戏|游戏|steam|demo|pv|实机|试玩|新作|上线|公布|预告|推荐|盘点)$/i.test(key)) return true;
+  return false;
+}
+
+function isUnusableMediaProjectName(value) {
+  const text = normalizeDisplayText(value);
+  const key = normalizeText(text);
+  if (/^(undefined|null|untitled|unknown)$/i.test(text)) return true;
+  if (/开发日志|playtest|试玩彩蛋|加入了试玩|更新了试玩|更新了测试|主线|版本更新|资料片|黑神话|诡秘之主|人间地狱/i.test(text)) return true;
+  if (/^(国产|国人|独立游戏|游戏)\s*(demo|试玩|实机|pv|公开测试|开发日志)/i.test(text)) return true;
+  if (/^(demo|试玩|实机|pv|公开测试|测试)\s*(上线|更新|发布|开放)/i.test(text)) return true;
+  if (key.length <= 1) return true;
+  return false;
+}
+
+function hasStrongMediaLeadEvidence(lead) {
+  const text = `${lead.public_signals ?? ""} ${(lead.links ?? []).join(" ")} ${(lead.contact_methods ?? []).map((item) => item?.value).join(" ")}`;
+  if (/store\.steampowered\.com\/app\/\d+|taptap|indienova|好游快爆|游戏官网|官网/i.test(text)) return true;
+  return Boolean(lead._officialSourceMatched);
+}
+
 function isProductSourcingSignal(item) {
   const focus = new Set(item.source_focus ?? []);
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
@@ -882,6 +923,7 @@ function isProductSourcingSignal(item) {
   const hasUsefulSource = focus.has("domestic_sourcing") || focus.has("bilibili") || (focus.has("china") && (focus.has("product") || focus.has("indie") || focus.has("mobile")));
   if (!hasUsefulSource) return false;
   if (/招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|如何报名|报名steam新品节|愿望单经验|曝光量|经验分享|开发经验|开发教程|cosplay|壁纸|周边|赛事战报|补丁说明|停服|维护|安卓|android|pixel|iphone|手机也能升|主机情报|次世代|硬件|显卡|处理器|大会|峰会|获奖名单|招聘|财报|流水|营收/i.test(text)) return false;
+  if (isNonLeadMediaTopicText(text)) return false;
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
 
   const hasQuotedName = /《[^》]{2,48}》/.test(item.title);
@@ -911,6 +953,7 @@ function isExpandedDomesticProductSignal(item) {
   if (!domesticSource) return false;
   if (isLowInformationMediaTitle(item.title)) return false;
   if (isBannedMediaLeadText(text)) return false;
+  if (isNonLeadMediaTopicText(text)) return false;
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
 
   const quoted = /《[^》]{2,48}》/.test(item.title);
@@ -924,6 +967,39 @@ function isExpandedDomesticProductSignal(item) {
     && !looksLikeCommentaryVideoTitle(title);
 
   return hasDomesticContext && hasActionableProductMoment && (quoted || (concreteMarker && titleLooksLikeConcreteProject));
+}
+
+function isDomesticMediaRescueSignal(item) {
+  const focus = new Set(item.source_focus ?? []);
+  const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
+  const title = normalizeDisplayText(item.title);
+  const domesticSource = focus.has("domestic_sourcing") || focus.has("bilibili") || focus.has("china");
+  if (!domesticSource) return false;
+  if (isLowInformationMediaTitle(item.title)) return false;
+  if (isBannedMediaLeadText(text) && !isOfficialOrDeveloperBilibiliSignal(item)) return false;
+  if (isNonLeadMediaTopicText(text)) return false;
+  if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
+  if (hasAlreadyReleasedMediaText(text)) return false;
+
+  const hasProjectShape = /《[^》]{2,48}》/.test(text) || hasConcreteMediaProductMarker(item);
+  const hasActionableSignal = /demo|试玩|测试|实机|pv|预告|商店页|愿望单|steam|taptap|好游快爆|indienova|官网|开发日志|开发者|制作人|预约|版号|过审|获批/i.test(text);
+  const hasDomesticProductContext = /国产|国人|华人|中国团队|国内团队|国内开发|独立游戏|国风|武侠|修仙|山海|二次元|小游戏|手游|肉鸽|卡牌|策略|模拟|经营|塔防|战棋/i.test(text);
+  const titleIsUsable = title.length >= 4 && title.length <= 96 && !looksLikeCommentaryVideoTitle(title);
+  return hasProjectShape && hasActionableSignal && titleIsUsable && (hasDomesticProductContext || isOfficialOrDeveloperBilibiliSignal(item));
+}
+
+function isOfficialOrDeveloperBilibiliSignal(item) {
+  if (!isBilibiliSignal(item)) return false;
+  const text = `${item.title ?? ""} ${item.summary ?? ""} ${item.source ?? ""}`;
+  const author = bilibiliAuthor(item);
+  if (/官方|开发者|制作组|工作室|studio|games|发行商|开发日志/i.test(author)) return true;
+  if (/官方号|官方PV|官方\s*PV|开发者|制作组|工作室|studio|games|发行商|开发日志/i.test(text)) return true;
+  if (/store\.steampowered\.com\/app\/\d+|steam商店页|官网|taptap|好游快爆|indienova/i.test(text)) return true;
+  return false;
+}
+
+function isNonLeadMediaTopicText(text) {
+  return /gdc|趋势报告|行业报告|市场报告|白皮书|财报|主线|版本更新|大版本|赛季|联动|周年|资料片|dlc|第二章|第三章|黑神话|游科|诡秘之主|人间地狱|锐评|逐帧|reaction|反应/i.test(text);
 }
 
 function isBannedMediaLeadText(text) {
@@ -978,8 +1054,11 @@ async function enrichMediaLeadWithSteamContext(lead) {
     details?.website
   ].filter(Boolean);
   const steamContacts = details ? await collectContactMethods(details, officialLead.steam_app_id) : [];
+  const steamName = normalizeDisplayText(details?.name);
+  const project = steamName && shouldPreferSteamName(officialLead.project) ? steamName : officialLead.project;
   const nextLead = {
     ...officialLead,
+    project,
     team: officialLead.team ?? details?.developers?.[0] ?? null,
     publisher_name: officialLead.publisher_name ?? details?.publishers?.[0] ?? null,
     publisher_status: details?.publishers?.length
@@ -997,6 +1076,13 @@ async function enrichMediaLeadWithSteamContext(lead) {
   }
 
   return finalizeMediaLeadDecisionFields(nextLead, details);
+}
+
+function shouldPreferSteamName(project) {
+  const text = normalizeDisplayText(project);
+  if (isUnusableMediaProjectName(text)) return true;
+  if (isGenericMediaProjectName(text)) return true;
+  return /国产|独立游戏|试玩|实机|pv|demo|公开测试|商店页|愿望单|即将发售/i.test(text);
 }
 
 async function enrichMediaLeadWithOfficialBilibiliContext(lead) {
@@ -1121,6 +1207,7 @@ function mediaLeadToDrop(lead, reason) {
 function mediaSignalToLead(item, confidence = "strict") {
   const project = extractMediaProjectName(item.title);
   const score = mediaLeadScore(item);
+  const confidencePenalty = confidence === "expanded" ? 6 : confidence === "rescue" ? 10 : 0;
   const isBilibili = isBilibiliSignal(item);
   const mediaText = `${item.title} ${item.summary} ${item.source} ${item.link}`;
   const extractedLinks = normalizeMediaLinksV62([item.link, mediaText]);
@@ -1153,7 +1240,7 @@ function mediaSignalToLead(item, confidence = "strict") {
     _mediaItem: item,
     _confidence: confidence,
     _officialSourceMatched: false,
-    media_score: confidence === "expanded" ? score - 6 : score,
+    media_score: score - confidencePenalty,
     id: `lead_media_${reportDate.replaceAll("-", "")}_${hashText(`${item.source}:${sourceLink}:${project}`)}`,
     project,
     steam_app_id: steamAppId,
@@ -1261,9 +1348,21 @@ function mergeLinks(values) {
     if (!value || typeof value !== "string") continue;
     const cleanValue = trimUrlPunctuation(value);
     if (!/^https?:\/\//i.test(cleanValue)) continue;
+    if (!isUsableVerificationUrl(cleanValue)) continue;
     out.set(normalizeUrl(cleanValue), cleanValue);
   }
   return [...out.values()];
+}
+
+function isUsableVerificationUrl(value) {
+  try {
+    const url = new URL(value);
+    if (!url.hostname.includes(".")) return false;
+    if (/^https?:\/\/(?:https?|www)$/i.test(value)) return false;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function mergeContactMethods(values) {
@@ -1662,7 +1761,7 @@ async function fetchMediaSignals() {
       sourcingDiagnostics.media_stale_filtered += 1;
       continue;
     }
-    if (isBilibiliSignal(item) && isBannedMediaLeadText(`${item.title} ${item.summary} ${item.source}`.toLowerCase())) {
+    if (isBilibiliSignal(item) && isBannedMediaLeadText(`${item.title} ${item.summary} ${item.source}`.toLowerCase()) && !isOfficialOrDeveloperBilibiliSignal(item)) {
       sourcingDiagnostics.media_banned_filtered += 1;
       continue;
     }
@@ -1918,13 +2017,14 @@ function scoreMediaSignal(item) {
   const sourceFocus = new Set(item.source_focus ?? []);
   if (sourceFocus.has("domestic_sourcing")) score += 10;
   if (sourceFocus.has("bilibili") && /国产|独立游戏|试玩|demo|制作人|开发者|steam|实机|首曝|PV|视频/i.test(text)) score += 10;
+  if (isOfficialOrDeveloperBilibiliSignal(item)) score += 16;
   if (sourceFocus.has("mobile") && /手游|移动端|买量|发行|渠道|小游戏|版号|出海/i.test(text)) score += 6;
   if (topicPoints < 8) score -= 12;
   if (isLowInformationMediaTitle(item.title)) score -= 60;
   if (!hasGameOrBdContext(text, item)) score -= 30;
 
   if (/\b(review|guide|walkthrough|tips|best settings|deal|sale|discount|cosplay|quiz)\b|攻略|评测|折扣|促销|史低|壁纸|图赏|盘点/.test(text)) score -= 10;
-  if (/手游推荐|游戏推荐|必玩|好玩到爆|合集|几款|十款|\d+\s*款/.test(text)) score -= 22;
+  if (/手游推荐|游戏推荐|必玩|好玩到爆|合集|几款|十款|\d+\s*款/.test(text) && !isOfficialOrDeveloperBilibiliSignal(item)) score -= 22;
   if (/rumor|leak|传闻|曝/.test(text) && !/\b(confirmed|official)\b|确认|官方|公告/.test(text)) score -= 4;
   return score;
 }
