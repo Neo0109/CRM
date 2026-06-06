@@ -95,4 +95,49 @@ describe("buildLeadEvidence", () => {
     assert.equal(evidence.flags.some((flag) => flag.label === "已正式上线"), true);
     assert.equal(evidence.flags.some((flag) => flag.label === "疑似重复"), true);
   });
+
+  it("does not treat demo availability as a full launch", () => {
+    const evidence = buildLeadEvidence(lead({
+      steam_app_id: "2921670",
+      progress: "Demo 已上线 Steam",
+      links: ["https://store.steampowered.com/app/2921670/Demo_Game/"],
+      contact_methods: [
+        { type: "官网", value: "https://demo.example.com" },
+        { type: "Email", value: "bd@demo.example.com" }
+      ]
+    }), new Date("2026-06-06T00:00:00+08:00"));
+
+    assert.notEqual(evidence.status, "高风险");
+    assert.equal(evidence.flags.some((flag) => flag.label === "已正式上线"), false);
+    assert.equal(evidence.rows.find((row) => row.label === "Steam 交叉验证")?.value.includes("试玩 Demo"), true);
+  });
+
+  it("does not infer official source from the team name alone", () => {
+    const evidence = buildLeadEvidence(lead({
+      team: "山山工作室",
+      steam_app_id: "4420260",
+      links: ["https://store.steampowered.com/app/4420260/"],
+      contact_methods: [{ type: "Steam", value: "https://store.steampowered.com/app/4420260/" }],
+      exposure_trail: "Steam CN Indie Keyword Upcoming 候选。"
+    }), new Date("2026-06-06T00:00:00+08:00"));
+
+    assert.notEqual(evidence.status, "证据完整");
+    assert.equal(evidence.flags.some((flag) => flag.label === "缺官方触达"), true);
+  });
+
+  it("does not label third-party source URLs as official websites", () => {
+    const evidence = buildLeadEvidence(lead({
+      steam_app_id: "4420260",
+      links: [
+        "https://store.steampowered.com/app/4420260/",
+        "https://www.gameres.com/123.html"
+      ],
+      contact_methods: [{ type: "Steam", value: "https://store.steampowered.com/app/4420260/" }],
+      exposure_trail: "GameRes 媒体报道，官方联系方式待确认。"
+    }), new Date("2026-06-06T00:00:00+08:00"));
+
+    assert.notEqual(evidence.status, "证据完整");
+    assert.equal(evidence.rows.find((row) => row.label === "触达完整度")?.value, "仅 Steam/B站来源链接，商务触达较弱");
+    assert.equal(evidence.links.some((link) => link.label === "官网"), false);
+  });
 });
