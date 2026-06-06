@@ -12,6 +12,7 @@ import "./styles.css";
 import "./calendar.css";
 import "./calendar-refinement.css";
 import "./detail-ux-refinement.css";
+import "./lead-evidence.css";
 import "./weekly-report.css";
 import "./pipeline-actions.css";
 import "./funnel-workflow.css";
