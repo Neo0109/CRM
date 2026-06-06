@@ -35,29 +35,32 @@ const recommenderPattern = /(推荐\s*UP|UP主|实况主|主播|测评|试玩推
 const duplicatePattern = /(重复|已录入|历史|sourcing过|曾经\s*sourcing|命中.*历史|疑似.*重复)/i;
 const launchedPattern = /(正式上线|已经上线|已上线|已发售|正式发售|released)/i;
 const demoPattern = /(试玩\s*Demo|Demo|Playtest|免费试玩|试玩版)/i;
+const demoAvailabilityPattern = /(试玩\s*Demo|Demo|Playtest|免费试玩|试玩版)[^。；，,\n]{0,18}(已上线|上线|可下载|开放|发布)/i;
 const earlyAccessPattern = /(\bEarly Access\b|\bEA\b|抢先体验)/i;
 const upcomingPattern = /(即将发售|Coming soon|未上线|计划.*发售|预计.*发售|将于.*发售)/i;
 const oldDatePattern = /\b(20\d{2})[-/.年](0?[1-9]|1[0-2])[-/.月](0?[1-9]|[12]\d|3[01])日?\b/g;
 
 export function buildLeadEvidence(lead: Lead, now = new Date()): LeadEvidence {
   const text = collectEvidenceText(lead);
+  const sourceText = collectSourceText(lead);
   const links = collectLinks(lead, text);
   const steamLinks = links.filter((link) => isSteamLink(link));
   const bilibiliLinks = links.filter((link) => isBilibiliLink(link));
-  const websiteLinks = links.filter((link) => isWebsiteLink(link));
+  const officialWebsiteLinks = collectOfficialWebsiteLinks(lead.contact_methods);
+  const externalLinks = links.filter((link) => isExternalSourceLink(link, officialWebsiteLinks));
   const tapTapLinks = links.filter((link) => /taptap\.(cn|io|com)/i.test(link));
   const directContacts = visibleContacts(lead.contact_methods);
   const hasSteam = Boolean(lead.steam_app_id) || steamLinks.length > 0;
   const hasBilibili = bilibiliLinks.length > 0 || /B站|bilibili/i.test(text);
-  const hasOfficialSource = officialSourcePattern.test(text) && !negativeOfficialPattern.test(text);
+  const hasOfficialSource = (officialSourcePattern.test(sourceText) && !negativeOfficialPattern.test(sourceText)) || officialWebsiteLinks.length > 0;
   const hasMediaSource = mediaSourcePattern.test(text);
   const hasRecommenderSource = recommenderPattern.test(text);
-  const hasWebsite = websiteLinks.length > 0 || hasContactType(directContacts, "官网");
+  const hasWebsite = officialWebsiteLinks.length > 0 || hasContactType(directContacts, "官网");
   const hasEmail = hasContactType(directContacts, "Email");
   const hasDirectContact = directContacts.some((method) => ["微信/QQ", "Email", "电话", "官网"].includes(method.type));
   const hasOnlySourceContact = directContacts.length > 0 && directContacts.every((method) => ["Steam", "B站"].includes(method.type));
   const steamState = inferSteamState(lead, text);
-  const isLaunched = steamState === "正式上线" || launchedPattern.test(text);
+  const isLaunched = steamState === "正式上线";
   const isDuplicate = duplicatePattern.test(text);
   const staleDate = findStaleDate(text, now);
   const lacksSteam = !hasSteam;
@@ -97,7 +100,7 @@ export function buildLeadEvidence(lead: Lead, now = new Date()): LeadEvidence {
     summary: evidenceSummary(status, { isLaunched, isDuplicate, staleDate, lacksCoreEvidence, hasSteam, hasOfficialSource, hasDirectContact }),
     flags: flags.length > 0 ? flags : [{ label: "无明显证据风险", tone: "complete" }],
     rows,
-    links: buildEvidenceLinks({ steamLinks, bilibiliLinks, websiteLinks, tapTapLinks })
+    links: buildEvidenceLinks({ steamLinks, bilibiliLinks, websiteLinks: officialWebsiteLinks, tapTapLinks, externalLinks })
   };
 }
 
@@ -133,6 +136,26 @@ function collectEvidenceText(lead: Lead) {
   ].filter(Boolean).join(" ");
 }
 
+function collectSourceText(lead: Lead) {
+  return [
+    lead.priority_reason,
+    lead.rule_fit,
+    lead.progress,
+    lead.publisher_status,
+    lead.traction_summary,
+    lead.public_signals,
+    lead.exposure_trail,
+    lead.bilibili_fit,
+    lead.amplification,
+    lead.risks,
+    lead.verdict,
+    lead.notes,
+    lead.contact,
+    ...lead.links,
+    ...lead.contact_methods.flatMap((method) => [method.type, method.value, method.note])
+  ].filter(Boolean).join(" ");
+}
+
 function collectLinks(lead: Lead, text: string) {
   const detectedLinks = text.match(/https?:\/\/[^\s"'，。；、)）]+/g) ?? [];
   return Array.from(new Set([...lead.links, ...lead.contact_methods.map((method) => method.value), ...detectedLinks].map((link) => link.trim()).filter((link) => /^https?:\/\//i.test(link))));
@@ -140,6 +163,13 @@ function collectLinks(lead: Lead, text: string) {
 
 function visibleContacts(methods: ContactMethod[]) {
   return methods.filter((method) => method.value.trim());
+}
+
+function collectOfficialWebsiteLinks(methods: ContactMethod[]) {
+  return Array.from(new Set(methods
+    .filter((method) => method.type === "官网")
+    .map((method) => method.value.trim())
+    .filter((value) => /^https?:\/\//i.test(value))));
 }
 
 function hasContactType(methods: ContactMethod[], type: ContactType) {
@@ -154,8 +184,8 @@ function isBilibiliLink(link: string) {
   return /(bilibili\.com|b23\.tv)/i.test(link);
 }
 
-function isWebsiteLink(link: string) {
-  return /^https?:\/\//i.test(link) && !isSteamLink(link) && !isBilibiliLink(link) && !/discord\.gg|discord\.com|taptap\.(cn|io|com)/i.test(link);
+function isExternalSourceLink(link: string, officialWebsiteLinks: string[]) {
+  return /^https?:\/\//i.test(link) && !officialWebsiteLinks.includes(link) && !isSteamLink(link) && !isBilibiliLink(link) && !/discord\.gg|discord\.com|taptap\.(cn|io|com)/i.test(link);
 }
 
 function extractSteamAppId(link: string | undefined) {
@@ -164,10 +194,11 @@ function extractSteamAppId(link: string | undefined) {
 
 function inferSteamState(lead: Lead, text: string) {
   const merged = `${lead.progress} ${text}`;
-  if (launchedPattern.test(merged)) return "正式上线";
+  if (demoAvailabilityPattern.test(merged)) return "试玩 Demo";
   if (earlyAccessPattern.test(merged)) return "EA";
-  if (demoPattern.test(merged)) return "试玩 Demo";
   if (upcomingPattern.test(merged)) return "即将发售";
+  if (launchedPattern.test(merged)) return "正式上线";
+  if (demoPattern.test(merged)) return "试玩 Demo";
   return "未知";
 }
 
@@ -217,12 +248,13 @@ function evidenceSummary(status: LeadEvidenceStatus, input: { isLaunched: boolea
   return "证据基本可读，但仍有关键项需要人工复核。";
 }
 
-function buildEvidenceLinks(input: { steamLinks: string[]; bilibiliLinks: string[]; websiteLinks: string[]; tapTapLinks: string[] }) {
+function buildEvidenceLinks(input: { steamLinks: string[]; bilibiliLinks: string[]; websiteLinks: string[]; tapTapLinks: string[]; externalLinks: string[] }) {
   const candidates: LeadEvidenceLink[] = [
     ...input.steamLinks.map((url) => ({ label: /steamdb/i.test(url) ? "SteamDB" : "Steam", url })),
     ...input.bilibiliLinks.map((url) => ({ label: "B站", url })),
     ...input.websiteLinks.map((url) => ({ label: "官网", url })),
-    ...input.tapTapLinks.map((url) => ({ label: "TapTap", url }))
+    ...input.tapTapLinks.map((url) => ({ label: "TapTap", url })),
+    ...input.externalLinks.map((url) => ({ label: "外部来源", url }))
   ];
   return candidates.slice(0, 5);
 }
