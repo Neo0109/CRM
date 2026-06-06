@@ -1,0 +1,950 @@
+{
+  "report_date": "2026-06-06",
+  "summary": "Steam大盘V6.2：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Roguelike / Deckbuilder、Strategy / Tactical、Action / Visual Hook；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_06_06_category_risers",
+      "title": "近期冒头品类：Roguelike / Deckbuilder、Strategy / Tactical、Action / Visual Hook",
+      "summary": "样本中 Roguelike / Deckbuilder（57/90）、Strategy / Tactical（53/90）、Action / Visual Hook（44/90）、Simulation / Management（23/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_06_demo_window",
+      "title": "Demo/活动窗口：55 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 8 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_06_publisher_slate",
+      "title": "发行商新品：YogurtGames(4)、小贼猫(2)、ZW Game(2)、乱世江山工作室(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_06_data_quality",
+      "title": "数据面：0 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 19 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_06_06_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（57/90）",
+      "signal": "57 个候选命中；代表样本：这张不算 This One Doesn't Count、难蚌尖塔、末日下班特快。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_06_strategy_tactical",
+      "genre": "Strategy / Tactical（53/90）",
+      "signal": "53 个候选命中；代表样本：Late Ming: County Magistrate Simulation & Management、这张不算 This One Doesn't Count、乱世江山。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_06_action_visual_hook",
+      "genre": "Action / Visual Hook（44/90）",
+      "signal": "44 个候选命中；代表样本：TIAN NUO、Fox Wanderer、Psycasso。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_06_simulation_management",
+      "genre": "Simulation / Management（23/90）",
+      "signal": "23 个候选命中；代表样本：Late Ming: County Magistrate Simulation & Management、这张不算 This One Doesn't Count、乱世江山。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_06_co_op_multiplayer",
+      "genre": "Co-op / Multiplayer（13/90）",
+      "signal": "13 个候选命中；代表样本：乱世江山、TIAN NUO、Chronicle of Wuxia & Xianxia Survivors。",
+      "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Co-op/",
+        "https://store.steampowered.com/tags/en/Multiplayer/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_06_06_4683520",
+      "title": "Late Ming: County Magistrate Simulation & Management",
+      "steam_app_id": "4683520",
+      "rank_bucket": "Steam CN Management Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Management Keyword Upcoming；发售窗口 Coming soon。\n公开数据：推荐数 无公开；素材 15图/0视频；有Demo/试玩窗口。\n产品观察：Late Ming: Magistrate Simulation and Management is a county-building sim set in the chaotic late Ming Dynasty. Rule as a magistrate, rebuild your border town, raise troops, gather intelligence, explore underground treasures, and expand your power across overseas islands amid endless chaos.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4683520/",
+        "https://steamdb.info/app/4683520/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_4602730",
+      "title": "这张不算 This One Doesn't Count",
+      "steam_app_id": "4602730",
+      "rank_bucket": "Steam CN Roguelike Keyword Upcoming",
+      "signal": "大盘位置：Roguelike / Deckbuilder；来源 Steam CN Roguelike Keyword Upcoming；发售窗口 2026-07-01。\n公开数据：推荐数 无公开；素材 5图/1视频；有Demo/试玩窗口。\n产品观察：&quot;This One Doesn't Count&quot;—You lived to 40, buying lottery tickets every single day, never winning once. On your deathbed, God reveals: &quot;Everyone who won was cheating.&quot; Reborn for one more try, do whatever it takes to pay your daughter's tuition before exam day. Scratch-card × Roguelite.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4602730/",
+        "https://steamdb.info/app/4602730/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_4729340",
+      "title": "乱世江山",
+      "steam_app_id": "4729340",
+      "rank_bucket": "Steam CN Management Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Management Keyword Upcoming；发售窗口 Q2 2026。\n公开数据：推荐数 无公开；素材 5图/0视频；暂无明确Demo信号。\n产品观察：《乱世江山》集即时战略与沙盘征战于一体，立足三国乱世疆场，主打临场指挥战术交锋与宏大团战，在古战场纵横对决，尽享策略博弈与争霸豪情。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4729340/",
+        "https://steamdb.info/app/4729340/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "reason": "B站赋能：多人协作适合直播切片、挑战局和UP主联动。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_4",
+      "title": "鬼武者 DEMO 试玩版",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站搜索-国产游戏试玩 / https://www.bilibili.com/video/BV1fSV26aEbH/\n产品观察：媒体 / B站待确认",
+      "source": "B站搜索-国产游戏试玩",
+      "links": [
+        "https://www.bilibili.com/video/BV1fSV26aEbH/"
+      ],
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_5",
+      "title": "Late Ming: County Magistrate Simulation & Management",
+      "steam_app_id": "4683520",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Management Keyword Upcoming / Steam App 4683520\n产品观察：Late Ming: Magistrate Simulation and Management is a county-building sim set in the chaotic late Ming Dynasty. Rule as a magistrate, rebuild your border town, raise troops, gather intelligence, explore underground treasures, and expand your power across overseas islands amid endless chaos.",
+      "source": "Steam CN Management Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4683520/",
+        "https://steamdb.info/app/4683520/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_6",
+      "title": "空想森林",
+      "steam_app_id": "4056250",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产独立游戏 / https://www.bilibili.com/video/BV1CS7167ENB/\n产品观察：媒体 / B站待确认 / Casual / Indie / RPG",
+      "source": "B站视频-国产独立游戏",
+      "links": [
+        "https://www.bilibili.com/video/BV1CS7167ENB/",
+        "https://store.steampowered.com/app/4056250/FANTASY_FOREST/",
+        "https://zhongchou.modian.com/item/156178.html",
+        "https://store.steampowered.com/app/4056250/",
+        "https://steamdb.info/app/4056250/"
+      ],
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认 / Casual / Indie / RPG；优先看玩法、画面和B站内容钩子。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_7",
+      "title": "这张不算 This One Doesn't Count",
+      "steam_app_id": "4602730",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Roguelike Keyword Upcoming / Steam App 4602730\n产品观察：&quot;This One Doesn't Count&quot;—You lived to 40, buying lottery tickets every single day, never winning once. On your deathbed, God reveals: &quot;Everyone who won was cheating.&quot; Reborn for one more try, do whatever it takes to pay your daughter's tuition before exam day. Scratch-card × Roguelite.",
+      "source": "Steam CN Roguelike Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4602730/",
+        "https://steamdb.info/app/4602730/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Roguelike Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约25天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_8",
+      "title": "尖叫怪物城",
+      "steam_app_id": "3965350",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站官方复核 / https://www.bilibili.com/video/BV1WLQwBrEd7/\n产品观察：媒体 / B站待确认 / Casual / Indie / Simulation",
+      "source": "B站官方复核",
+      "links": [
+        "https://www.bilibili.com/video/BV1JKLP6SEBs/",
+        "https://www.bilibili.com/video/BV1WLQwBrEd7/",
+        "https://store.steampowered.com/app/3965350/_/",
+        "https://store.steampowered.com/app/3965350/",
+        "https://steamdb.info/app/3965350/"
+      ],
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "reason": "官方/开发者源复核命中：试玩 Demo，媒体 / B站待确认 / Casual / Indie / Simulation；优先看玩法、画面和B站内容钩子。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_9",
+      "title": "乱世江山",
+      "steam_app_id": "4729340",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Management Keyword Upcoming / Steam App 4729340\n产品观察：《乱世江山》集即时战略与沙盘征战于一体，立足三国乱世疆场，主打临场指挥战术交锋与宏大团战，在古战场纵横对决，尽享策略博弈与争霸豪情",
+      "source": "Steam CN Management Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4729340/",
+        "https://steamdb.info/app/4729340/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_10",
+      "title": "进击的巨人3",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：游民星空 / https://www.gamersky.com/news/202606/2152391.shtml\n产品观察：媒体 / B站待确认",
+      "source": "游民星空",
+      "links": [
+        "https://www.gamersky.com/news/202606/2152391.shtml"
+      ],
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "reason": "媒体/B站产品信号：即将发售，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_11",
+      "title": "| 迹 Relic",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1pmV86fECo/\n产品观察：媒体 / B站待确认 / RPG",
+      "source": "B站视频-独立游戏开发日志",
+      "links": [
+        "https://www.bilibili.com/video/BV1pmV86fECo/"
+      ],
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认 / RPG；优先看玩法、画面和B站内容钩子。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_06_fallback_12",
+      "title": "手把手教你在steam上传试玩demo——流程与易错点",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站搜索-国产独立游戏 / https://www.bilibili.com/video/BV1Fp7S6pEwA/\n产品观察：媒体 / B站待确认",
+      "source": "B站搜索-国产独立游戏",
+      "links": [
+        "https://www.bilibili.com/video/BV1Fp7S6pEwA/"
+      ],
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "auto_import": true,
+      "captured_at": "2026-06-06T16:46:37+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_media_20260606_1ejj0gt",
+      "project": "鬼武者 DEMO 试玩版",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "试玩 Demo；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站搜索-国产游戏试玩 分数 129；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站搜索-国产游戏试玩 / https://www.bilibili.com/video/BV1fSV26aEbH/",
+      "contact": "B站: https://www.bilibili.com/video/BV1fSV26aEbH/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1fSV26aEbH/",
+          "note": "B站搜索-国产游戏试玩 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1fSV26aEbH/"
+      ],
+      "exposure_trail": "自动从B站搜索-国产游戏试玩捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4683520_2026-06-06",
+      "project": "Late Ming: County Magistrate Simulation & Management",
+      "steam_app_id": "4683520",
+      "team": "小贼猫",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；窗口仍在，允许优先触达",
+      "genre": "Casual / Indie / RPG / Simulation / Strategy",
+      "gameplay": "Late Ming: Magistrate Simulation and Management is a county-building sim set in the chaotic late Ming Dynasty. Rule as a magistrate, rebuild your border town, raise troops, gather intelligence, explore underground treasures, and expand your power across overseas islands amid endless chaos.",
+      "progress": "Steam Steam CN Management Keyword Upcoming；发售窗口：Coming soon；Demo/试玩信号需优先复核",
+      "release_window": "Coming soon",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "小贼猫；未见成熟中国发行能力占位",
+      "publisher_name": "小贼猫",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Management Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Management Keyword Upcoming / Steam App 4683520",
+      "contact": "Email: 3401687348@qq.com；官网: https://www.bilibili.com/video/BV1HLokBaE3g/?spm_id_from=333.1387.homepage.video_card.click&amp;vd_source=314c73249e1e683a66189acd03fc6e91；Steam: https://steamcommunity.com/app/4683520/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "3401687348@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.bilibili.com/video/BV1HLokBaE3g/?spm_id_from=333.1387.homepage.video_card.click&amp;vd_source=314c73249e1e683a66189acd03fc6e91",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4683520/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4683520/",
+        "https://steamdb.info/app/4683520/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Management Keyword Upcoming（2026-06-06）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260606_17nr4mq",
+      "project": "空想森林",
+      "steam_app_id": "4056250",
+      "team": "黑眼圈水母",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认 / Casual / Indie / RPG；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "试玩 Demo；已补 Steam AppID 4056250；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认 / Casual / Indie / RPG",
+      "gameplay": "媒体 / B站待确认 / Casual / Indie / RPG",
+      "progress": "试玩 Demo",
+      "release_window": "To be announced",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "leiyun；B站线索已补 Steam 交叉验证",
+      "publisher_name": "leiyun",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产独立游戏 分数 121；B站视频/搜索语境；已从文本补 Steam AppID 4056250。",
+      "public_signals": "B站视频-国产独立游戏 / https://www.bilibili.com/video/BV1CS7167ENB/",
+      "contact": "B站: https://www.bilibili.com/video/BV1CS7167ENB/；官网: https://zhongchou.modian.com/item/156178.html；Email: 1275853890@qq.com；Steam: https://steamcommunity.com/app/4056250/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1CS7167ENB/",
+          "note": "B站视频-国产独立游戏 原始视频/搜索入口"
+        },
+        {
+          "type": "官网",
+          "value": "https://zhongchou.modian.com/item/156178.html",
+          "note": "B站/媒体简介中提取"
+        },
+        {
+          "type": "Email",
+          "value": "1275853890@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4056250/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1CS7167ENB/",
+        "https://store.steampowered.com/app/4056250/FANTASY_FOREST/",
+        "https://zhongchou.modian.com/item/156178.html",
+        "https://store.steampowered.com/app/4056250/",
+        "https://steamdb.info/app/4056250/"
+      ],
+      "exposure_trail": "自动从B站视频-国产独立游戏捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4602730_2026-06-06",
+      "project": "这张不算 This One Doesn't Count",
+      "steam_app_id": "4602730",
+      "team": "ZW Game",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Roguelike Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约25天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；距发售约25天；窗口仍在，允许优先触达",
+      "genre": "Adventure / Casual / Indie / Simulation / Strategy",
+      "gameplay": "&quot;This One Doesn't Count&quot;—You lived to 40, buying lottery tickets every single day, never winning once. On your deathbed, God reveals: &quot;Everyone who won was cheating.&quot; Reborn for one more try, do whatever it takes to pay your daughter's tuition before exam day. Scratch-card × Roguelite.",
+      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-07-01；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "ZW Game；未见成熟中国发行能力占位",
+      "publisher_name": "ZW Game",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 4602730",
+      "contact": "Email: andyw99605@gmail.com；Steam: https://steamcommunity.com/app/4602730/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "andyw99605@gmail.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4602730/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4602730/",
+        "https://steamdb.info/app/4602730/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-06）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260606_17phwx1",
+      "project": "尖叫怪物城",
+      "steam_app_id": "3965350",
+      "team": "TinyBigger",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "官方/开发者源复核命中：试玩 Demo，媒体 / B站待确认 / Casual / Indie / Simulation；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "试玩 Demo；已补 Steam AppID 3965350；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认 / Casual / Indie / Simulation",
+      "gameplay": "媒体 / B站待确认 / Casual / Indie / Simulation",
+      "progress": "试玩 Demo",
+      "release_window": "Q3 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "TinyBigger；B站线索已补 Steam 交叉验证",
+      "publisher_name": "TinyBigger",
+      "china_capability_occupied": false,
+      "traction_summary": "B站搜索-国产独立游戏 分数 97；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站官方复核 / https://www.bilibili.com/video/BV1WLQwBrEd7/",
+      "contact": "B站: https://www.bilibili.com/video/BV1JKLP6SEBs/；B站: https://www.bilibili.com/video/BV1WLQwBrEd7/；Email: 278763504@qq.com；Steam: https://steamcommunity.com/app/3965350/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1JKLP6SEBs/",
+          "note": "B站搜索-国产独立游戏 原始视频/搜索入口"
+        },
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1WLQwBrEd7/",
+          "note": "B站官方复核 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "278763504@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3965350/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1JKLP6SEBs/",
+        "https://www.bilibili.com/video/BV1WLQwBrEd7/",
+        "https://store.steampowered.com/app/3965350/_/",
+        "https://store.steampowered.com/app/3965350/",
+        "https://steamdb.info/app/3965350/"
+      ],
+      "exposure_trail": "自动从B站搜索-国产独立游戏捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4729340_2026-06-06",
+      "project": "乱世江山",
+      "steam_app_id": "4729340",
+      "team": "乱世江山工作室",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；窗口仍在，允许优先触达",
+      "genre": "Adventure / Casual / Massively Multiplayer / RPG / Simulation / Strategy",
+      "gameplay": "《乱世江山》集即时战略与沙盘征战于一体，立足三国乱世疆场，主打临场指挥战术交锋与宏大团战，在古战场纵横对决，尽享策略博弈与争霸豪情",
+      "progress": "Steam Steam CN Management Keyword Upcoming；发售窗口：Q2 2026",
+      "release_window": "Q2 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "乱世江山工作室；未见成熟中国发行能力占位",
+      "publisher_name": "乱世江山工作室",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Management Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Management Keyword Upcoming / Steam App 4729340",
+      "contact": "Email: qijianping0426@outlook.com；Steam: https://steamcommunity.com/app/4729340/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "qijianping0426@outlook.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4729340/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4729340/",
+        "https://steamdb.info/app/4729340/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Management Keyword Upcoming（2026-06-06）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260606_wqfjkt",
+      "project": "进击的巨人3",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体/B站产品信号：即将发售，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "即将发售；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "即将发售",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "游民星空 分数 60；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "游民星空 / https://www.gamersky.com/news/202606/2152391.shtml",
+      "contact": "官网: https://www.gamersky.com/news/202606/2152391.shtml",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.gamersky.com/news/202606/2152391.shtml",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.gamersky.com/news/202606/2152391.shtml"
+      ],
+      "exposure_trail": "自动从游民星空捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260606_dcg435",
+      "project": "| 迹 Relic",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认 / RPG；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "试玩 Demo；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认 / RPG",
+      "gameplay": "媒体 / B站待确认 / RPG",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 143；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1pmV86fECo/",
+      "contact": "B站: https://www.bilibili.com/video/BV1pmV86fECo/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1pmV86fECo/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1pmV86fECo/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260606_gho96z",
+      "project": "手把手教你在steam上传试玩demo——流程与易错点",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体/B站产品信号：试玩 Demo，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "试玩 Demo；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站搜索-国产独立游戏 分数 111；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站搜索-国产独立游戏 / https://www.bilibili.com/video/BV1Fp7S6pEwA/",
+      "contact": "B站: https://www.bilibili.com/video/BV1Fp7S6pEwA/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1Fp7S6pEwA/",
+          "note": "B站搜索-国产独立游戏 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1Fp7S6pEwA/"
+      ],
+      "exposure_trail": "自动从B站搜索-国产独立游戏捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260606_23x982",
+      "project": "平台格斗类游戏功能实现 #4",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体/B站产品信号：待确认，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "待确认；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 101；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1n47k6iEdh/",
+      "contact": "B站: https://www.bilibili.com/video/BV1n47k6iEdh/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1n47k6iEdh/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1n47k6iEdh/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260606_1mqo68v",
+      "project": "凯拉独立游戏 · 05-24",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体/B站产品信号：待确认，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "待确认；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 89；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://space.bilibili.com/3546609667279352",
+      "contact": "B站: https://space.bilibili.com/3546609667279352",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://space.bilibili.com/3546609667279352",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://space.bilibili.com/3546609667279352"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260606_ezsqo0",
+      "project": "艾男君huanan · 06-04",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体/B站产品信号：待确认，媒体 / B站待确认；优先看玩法、画面和B站内容钩子。",
+      "rule_fit": "待确认；非Steam来源可先进未处理；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 81；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://space.bilibili.com/71221989",
+      "contact": "B站: https://space.bilibili.com/71221989",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://space.bilibili.com/71221989",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://space.bilibili.com/71221989"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-06）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
+      "amplification": "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "进入未处理，由人工决定提测、观察或淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-06",
+      "notes": null
+    }
+  ]
+}
