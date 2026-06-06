@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
 import { AutomationDiagnosticsPage } from "./AutomationDiagnosticsPage";
+import { LeadEvidencePanel } from "./LeadEvidencePanel";
 import { LoginPage } from "./LoginPage";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import { SettingsPage } from "./SettingsPage";
@@ -752,6 +753,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
 
     <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />
     <BucketButtons lead={draft} onMove={moveDraft} />
+    <LeadEvidencePanel lead={draft} />
 
     <section className="review-command-card">
       <div className="review-command-summary">
