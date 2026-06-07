@@ -43,6 +43,8 @@ export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange }
         <MetricCard label="Steam 富化" value={diagnostics.source_breakdown.steam_enriched ?? 0} helper={`扫描 ${diagnostics.source_breakdown.steam_scanned ?? 0}`} tone="neutral" />
       </div>
 
+      {diagnostics.business_acceptance && <BusinessAcceptanceBlock acceptance={diagnostics.business_acceptance} />}
+
       <div className="diagnostics-grid diagnostics-grid-panels">
         <article className="diagnostics-panel">
           <div className="diagnostics-panel-head"><FileCheck2 size={18} /><h3>文件健康</h3></div>
@@ -112,6 +114,43 @@ function MetricCard({ helper, label, tone, value }: { helper: string; label: str
   </article>;
 }
 
+function BusinessAcceptanceBlock({ acceptance }: { acceptance: NonNullable<AutomationDiagnostics["business_acceptance"]> }) {
+  return <article className={`diagnostics-business acceptance-${acceptance.status}`}>
+    <div className="diagnostics-business-head">
+      <div>
+        <span>{businessStatusLabel(acceptance.status)}</span>
+        <h3>业务验收</h3>
+      </div>
+      <strong>{acceptance.primary_issue ?? "今天可交付"}</strong>
+    </div>
+    <p>{acceptance.verdict}</p>
+    <div className="business-metric-grid">
+      {acceptance.metrics.map((metric) => <div className={`business-metric metric-status-${metric.status}`} key={metric.key}>
+        <span>{metric.label}</span>
+        <strong>{metric.actual ?? "无法判断"}</strong>
+        <small>{metric.expected}</small>
+      </div>)}
+    </div>
+    <div className="business-cause-grid">
+      <div>
+        <h4>原因拆解</h4>
+        {acceptance.root_causes.length ? <ul className="diagnostics-list">
+          {acceptance.root_causes.map((cause) => <li key={`${cause.category}-${cause.title}-${cause.evidence}`}>
+            <strong>{cause.title}</strong>
+            <span>{cause.evidence}</span>
+          </li>)}
+        </ul> : <p className="diagnostics-muted">核心文件、同步和候选质量均达到验收阈值。</p>}
+      </div>
+      <div>
+        <h4>建议动作</h4>
+        <ul className="diagnostics-list">
+          {acceptance.recommended_actions.map((action) => <li key={action}>{action}</li>)}
+        </ul>
+      </div>
+    </div>
+  </article>;
+}
+
 function FileHealthRow({ file, label }: { file: AutomationFileHealth; label: string }) {
   return <div className="diagnostics-file-row">
     <span className={file.exists ? "file-ok" : "file-missing"}>{file.exists ? "存在" : "缺失"}</span>
@@ -138,6 +177,12 @@ function ReceiptBlock({ receipt }: { receipt: AutomationReceiptSummary | null })
     </dl>
     {receipt.run_url && <a className="diagnostics-run-link" href={receipt.run_url} target="_blank" rel="noreferrer"><ExternalLink size={15} />打开 Actions run</a>}
   </div>;
+}
+
+function businessStatusLabel(status: NonNullable<AutomationDiagnostics["business_acceptance"]>["status"]) {
+  if (status === "pass") return "业务可用";
+  if (status === "fail") return "不可交付";
+  return "需要关注";
 }
 
 function formatDateTime(value: string | null | undefined) {

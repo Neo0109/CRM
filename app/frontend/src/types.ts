@@ -244,6 +244,10 @@ export type WeeklyReport = {
 };
 
 export type AutomationDiagnosticsStatus = "healthy" | "warning" | "failed" | "missing";
+export type AutomationBusinessAcceptanceStatus = "pass" | "needs_attention" | "fail";
+export type AutomationBusinessMetricStatus = "pass" | "warn" | "fail" | "unknown";
+export type AutomationBusinessRootCauseCategory = "files" | "sync" | "source_pool" | "filter_pressure" | "import_quality" | "content_board";
+export type AutomationBusinessRootCauseSeverity = "critical" | "warning" | "info";
 
 export type AutomationFileHealth = {
   exists: boolean;
@@ -278,8 +282,31 @@ export type AutomationReceiptSummary = {
   } | null;
 };
 
+export type AutomationBusinessAcceptance = {
+  status: AutomationBusinessAcceptanceStatus;
+  verdict: string;
+  primary_issue: string | null;
+  metrics: {
+    key: string;
+    label: string;
+    status: AutomationBusinessMetricStatus;
+    actual: number | string | null;
+    expected: string;
+    detail: string;
+  }[];
+  root_causes: {
+    category: AutomationBusinessRootCauseCategory;
+    severity: AutomationBusinessRootCauseSeverity;
+    title: string;
+    evidence: string;
+    action: string;
+  }[];
+  recommended_actions: string[];
+};
+
 export type AutomationDiagnostics = {
   available_dates: string[];
+  business_acceptance?: AutomationBusinessAcceptance;
   counts: {
     drop_candidates: number;
     final_candidates: number;
