@@ -10,6 +10,7 @@ import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
 import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
+import { buildDecisionTriage, buildLeadEvidenceChips, hasEvidenceIssue, needsActionAttention, type TriageFilter } from "./leadTriage";
 import { productVersion, productVersionLabel } from "./productVersion";
 import type { AutomationDiagnostics, Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
@@ -23,7 +24,9 @@ type Filters = {
   city: string;
   releaseWindow: string;
   reviewStatus: "全部" | ReviewStatus;
+  evidenceIssues: boolean;
   missingLinks: boolean;
+  needsAction: boolean;
 };
 
 type NormalizedSteamLink = {
@@ -68,7 +71,7 @@ type DecisionLane = {
   empty: string;
 };
 
-const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", missingLinks: false };
+const emptyFilters: Filters = { query: "", bucket: "全部", region: "全部", stage: "全部", owner: "", city: "", releaseWindow: "", reviewStatus: "全部", evidenceIssues: false, missingLinks: false, needsAction: false };
 const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
 const stageOptions: ("全部" | Stage)[] = ["全部", "new", "watch", "active", "negotiating", "won", "rejected"];
@@ -138,8 +141,10 @@ export default function App() {
     const cityMatch = !filters.city || [lead.city, lead.country].filter(Boolean).join(" ").toLowerCase().includes(filters.city.toLowerCase());
     const releaseMatch = !filters.releaseWindow || (lead.release_window ?? "").toLowerCase().includes(filters.releaseWindow.toLowerCase());
     const reviewMatch = filters.reviewStatus === "全部" || lead.review_status === filters.reviewStatus;
+    const evidenceMatch = !filters.evidenceIssues || hasEvidenceIssue(lead);
     const missingLinkMatch = !filters.missingLinks || needsSteamLinkTriage(lead);
-    return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && missingLinkMatch;
+    const actionMatch = !filters.needsAction || needsActionAttention(lead);
+    return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && evidenceMatch && missingLinkMatch && actionMatch;
   }), [filters, leads]);
 
   const selectedLead = useMemo(() => filteredLeads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, selectedId]);
@@ -348,12 +353,13 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
   handleLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
   moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
 }) {
-  const insights = useMemo(() => buildSourcingInsights(leads, stats), [leads, stats]);
+  const triage = useMemo(() => buildDecisionTriage(leads), [leads]);
+  const actionLane = triage.lanes.find((lane) => lane.key === "action");
   const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
   const focusLabel = activeFilterLabel(filters);
 
-  function applyMetricFilter(patch: Partial<Filters>) {
+  function applyTriageFilter(patch: Partial<Filters> | TriageFilter) {
     setFilters({ ...emptyFilters, ...patch });
     setSelectedId(null);
   }
@@ -371,29 +377,19 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
       </div>
       <div className="dashboard-head-meta">
         <span>{filteredLeads.length} / {stats.total} 条记录</span>
-        <span>{stats.follow + stats.push} 个重点推进</span>
+        <span>{actionLane?.count ?? 0} 个需要动作</span>
       </div>
     </section>
 
-    <section className="metric-strip">
-      <Metric label="未处理" value={stats.unread} tone="purple" active={filters.reviewStatus === "未处理"} onClick={() => applyMetricFilter({ reviewStatus: "未处理" })} />
-      <Metric label="待评测" value={stats.evaluation} tone="amber" active={filters.bucket === "待评测"} onClick={() => applyMetricFilter({ bucket: "待评测" })} />
-      <Metric label="测试中" value={stats.testing} tone="cyan" active={filters.bucket === "测试中"} onClick={() => applyMetricFilter({ bucket: "测试中" })} />
-      <Metric label="跟进中" value={stats.follow} tone="green" active={filters.bucket === "跟进中"} onClick={() => applyMetricFilter({ bucket: "跟进中" })} />
-      <Metric label="观察池" value={stats.watch} tone="blue" active={filters.bucket === "观察池"} onClick={() => applyMetricFilter({ bucket: "观察池" })} />
-      <Metric label="淘汰池" value={stats.drop} tone="red" active={filters.bucket === "淘汰池"} onClick={() => applyMetricFilter({ bucket: "淘汰池" })} />
-      <Metric label="缺链接" value={stats.missingLinks} tone="neutral" active={filters.missingLinks} onClick={() => applyMetricFilter({ missingLinks: true })} />
-    </section>
-
     <section className="decision-board" aria-label="今日决策流">
-      {insights.decisionLanes.map((lane) => (
-        <article className="decision-lane" key={lane.key}>
+      {triage.lanes.map((lane) => (
+        <article className={`decision-lane decision-lane-${lane.key}`} key={lane.key}>
           <div className="decision-lane-head">
             <div>
               <p className="eyebrow">{lane.kicker}</p>
               <h3>{lane.title}</h3>
             </div>
-            <button className="lane-count" type="button" onClick={() => applyMetricFilter(lane.filter)}>{lane.count}</button>
+            <button className="lane-count" type="button" onClick={() => applyTriageFilter(lane.filter)}>{lane.count}</button>
           </div>
           <p>{lane.description}</p>
           <ul className="decision-lead-list">
@@ -410,52 +406,8 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
       ))}
     </section>
 
-    <section className="sourcing-brief">
-      <div className="brief-head">
-        <h3>本周 Sourcing 概况</h3>
-        <span>{insights.weekLabel}</span>
-      </div>
-      <article className="brief-card">
-        <div className="brief-card-head">
-          <span className="brief-icon"><TrendingUp size={16} /></span>
-          <div>
-            <span className="brief-kicker">重点推进</span>
-            <strong>{insights.pipelineCount} 个项目需要继续动作</strong>
-          </div>
-        </div>
-        <div className="brief-metrics">
-          <span><b>{insights.weekSourced}</b>本周新增</span>
-          <span><b>{insights.enteredFollowThisWeek}</b>本周进跟进/推进</span>
-          <span><b>{insights.highPriorityPipeline}</b>P1/P2 重点</span>
-        </div>
-        <ul className="brief-list">
-          {insights.focusLeads.length ? insights.focusLeads.map((lead) => (
-            <li key={lead.id}><b>{lead.project}</b><span>{lead.priority} · {lead.bucket} · {lead.release_window || "窗口待确认"}</span></li>
-          )) : <li><b>暂无高优先级积压</b><span>可以从待评测或观察池补充新候选。</span></li>}
-        </ul>
-      </article>
-      <article className="brief-card">
-        <div className="brief-card-head">
-          <span className="brief-icon"><AlertTriangle size={16} /></span>
-          <div>
-            <span className="brief-kicker">测试优先</span>
-            <strong>先测游戏，测不过直接淘汰</strong>
-          </div>
-        </div>
-        <div className="brief-metrics">
-          <span><b>{stats.evaluation + stats.testing}</b>待评测/测试中</span>
-          <span><b>{insights.dueSoon}</b>7 天内到期</span>
-          <span><b>{stats.missingLinks}</b>缺可验证链接</span>
-        </div>
-        <ul className="brief-list">
-          {insights.actions.map((action) => <li key={action}><b>下一步</b><span>{action}</span></li>)}
-          {insights.dropReasons.slice(0, 2).map((reason) => <li key={reason.label}><b>{reason.label}</b><span>{reason.count} 个淘汰记录，适合回看规则是否过严。</span></li>)}
-        </ul>
-      </article>
-    </section>
-
     <section className="filters">
-      <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由 / 备注" /></label>
+      <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由" /></label>
       <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
       <Select label="地区" value={filters.region} options={regionOptions} onChange={(region) => setFilters({ ...filters, region })} />
       <Select label="阶段" value={filters.stage} options={stageOptions} onChange={(stage) => setFilters({ ...filters, stage })} />
@@ -470,25 +422,23 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
         <table className="lead-table">
           <colgroup>
             <col className="lead-col-project" />
-            <col className="lead-col-region" />
-            <col className="lead-col-contact" />
+            <col className="lead-col-evidence" />
             <col className="lead-col-reason" />
             <col className="lead-col-progress" />
-            <col className="lead-col-notes" />
+            <col className="lead-col-actions" />
           </colgroup>
-          <thead><tr><th>项目</th><th>地区</th><th>联系方式</th><th>推荐理由 / 规则</th><th>进度 / 发行</th><th>备注</th></tr></thead>
+          <thead><tr><th>项目</th><th>证据</th><th>推荐理由</th><th>进度 / 发行</th><th>处理</th></tr></thead>
           <tbody>
-            {loading ? <tr><td colSpan={6} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
+            {loading ? <tr><td colSpan={5} className="empty-cell">加载中</td></tr> : filteredLeads.map((lead) => (
               <tr key={lead.id} className={`${lead.id === selectedLead?.id ? "selected-row" : ""} ${lead.review_status === "未处理" ? "unread-row" : ""} priority-${priorityTone(lead.priority)} ${isTestingOverdue(lead) ? "testing-overdue-row" : ""}`} onClick={() => setSelectedId(lead.id)}>
                 <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{isTestingOverdue(lead) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={14} /></span>}{lead.project}</strong><small><span className={`priority-pill priority-${priorityTone(lead.priority)}`}>{priorityLabel(lead.priority)}</span> · {lead.bucket} · {lead.review_status}</small></div></div></td>
-                <td><strong>{lead.region}</strong><small className="subline">{[lead.country, lead.city].filter(Boolean).join(" · ") || "待补充"}</small></td>
-                <td><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
-                <td><strong>{lead.priority_reason ?? "待补充"}</strong><small className="subline">{lead.rule_fit ?? "待复核"}</small></td>
-                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><QuickActions lead={lead} onPatch={handleLeadPatch} compact missingLinksMode={filters.missingLinks} /></td>
-                <td>{lead.notes ?? ""}</td>
+                <td><EvidenceChips lead={lead} /></td>
+                <td><strong>{lead.priority_reason ?? "待判断"}</strong><small className="subline">{[lead.genre, lead.gameplay].filter(Boolean).join(" · ") || lead.bilibili_fit || "玩法待补充"}</small></td>
+                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
+                <td className="lead-action-cell"><QuickActions lead={lead} onPatch={handleLeadPatch} compact missingLinksMode={filters.missingLinks} /></td>
               </tr>
             ))}
-            {!loading && !filteredLeads.length && <tr><td colSpan={6} className="empty-cell">无匹配 leads</td></tr>}
+            {!loading && !filteredLeads.length && <tr><td colSpan={5} className="empty-cell">无匹配 leads</td></tr>}
           </tbody>
         </table>
       </div>
@@ -498,6 +448,8 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
 }
 
 function activeFilterLabel(filters: Filters) {
+  if (filters.needsAction) return "需要动作";
+  if (filters.evidenceIssues) return "证据不足";
   if (filters.missingLinks) return "缺链接补全";
   if (filters.reviewStatus !== "全部") return filters.reviewStatus;
   if (filters.bucket !== "全部") return filters.bucket;
@@ -1036,6 +988,14 @@ function ContactChips({ contacts, links }: { contacts: ContactMethod[]; links: s
     chip.href
       ? <a className="chip contact-chip-link" key={chip.key} href={chip.href} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} title={chip.title}><ExternalLink size={12} /><span className="chip-label">{chip.label}</span></a>
       : <span className="chip" key={chip.key} title={chip.title}><span className="chip-label">{chip.label}</span></span>
+  ))}</div>;
+}
+
+function EvidenceChips({ lead }: { lead: Lead }) {
+  const chips = buildLeadEvidenceChips(lead).slice(0, 6);
+  if (!chips.length) return <span className="muted">待复核</span>;
+  return <div className="evidence-chip-list">{chips.map((chip) => (
+    <span className={`evidence-chip evidence-${chip.tone}`} key={chip.label}>{chip.label}</span>
   ))}</div>;
 }
 

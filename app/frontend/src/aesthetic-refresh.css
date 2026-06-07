@@ -45,6 +45,7 @@ button:hover {
 
 .topbar,
 .dashboard-head,
+.decision-board,
 .sourcing-brief,
 .metric-strip,
 .filters,
@@ -628,14 +629,14 @@ button:hover {
 }
 
 .lead-table {
-  min-width: 1040px;
+  min-width: 1060px;
 }
 
-.lead-col-project { width: 20%; }
-.lead-col-region { width: 10%; }
-.lead-col-contact { width: 22%; }
-.lead-col-reason { width: 27%; }
-.lead-col-progress { width: 21%; }
+.lead-col-project { width: 21%; }
+.lead-col-evidence { width: 18%; }
+.lead-col-reason { width: 30%; }
+.lead-col-progress { width: 23%; }
+.lead-col-actions { width: 8%; }
 
 .lead-table th {
   background: rgba(250, 249, 246, 0.98);
@@ -741,6 +742,50 @@ button:hover {
 .contact-chip-link:hover {
   background: #eef5ff;
   border-color: #c5d7ff;
+}
+
+.evidence-chip-list {
+  gap: 7px;
+}
+
+.evidence-chip {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 820;
+  max-width: 92px;
+  padding: 6px 8px;
+}
+
+.evidence-complete {
+  background: #eefaf1;
+  border-color: #bde8ca;
+  color: #087f43;
+}
+
+.evidence-review {
+  background: #eef4ff;
+  border-color: #c5d7ff;
+  color: #1d4ed8;
+}
+
+.evidence-risk {
+  background: #fff0f0;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.evidence-unknown {
+  background: #fffbeb;
+  border-color: #f5d78e;
+  color: #9a5c10;
+}
+
+.lead-progress-cell .contact-chip-list {
+  margin-top: 10px;
+}
+
+.lead-action-cell .quick-actions.compact {
+  justify-content: flex-start;
 }
 
 .quick-actions.compact {
