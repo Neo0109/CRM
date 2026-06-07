@@ -82,15 +82,15 @@ export function deriveMediaDecisionFields({
   alreadyReleased = false,
   officialSourceMatched = false
 } = {}) {
-  const sourceQuality = officialSourceMatched ? "官方/开发者源复核命中" : "媒体/B站产品信号";
+  const sourceSignal = officialSourceMatched ? "官方源已确认" : /b站|bilibili/i.test(source) ? "B站来源待复核" : "媒体来源待复核";
   if (alreadyReleased || progress === "正式上线") {
     return {
-      priority_reason: `${sourceQuality}，但 Steam 交叉验证显示《${title}》已正式上线，前置BD窗口已过。`,
-      rule_fit: "已上线项目不进入未处理 review；只作为淘汰或市场背景，避免重复占用首轮判断时间。",
-      bilibili_fit: "可作为上线后内容表现参考，不作为新签约线索。",
+      priority_reason: `《${title}》已正式上线，前置发行窗口偏弱；除非已有热度数据或可争取中国区权益，否则签约 upside 有限。`,
+      rule_fit: "正式上线；不进入新线索队列，保留为市场复盘或竞品观察。",
+      bilibili_fit: "可看上线后内容热度和用户反馈，但不作为新签约优先线索。",
       amplification: "",
       risks: "已正式上线，合作窗口和权益空间大概率不足。",
-      verdict: "不进入新线索队列。",
+      verdict: "",
       next_action: null,
       notes: null
     };
@@ -98,12 +98,12 @@ export function deriveMediaDecisionFields({
 
   const priorityHint = confidence === "strict" || score >= 52 ? "优先看" : "先核验";
   return {
-    priority_reason: `${sourceQuality}：${progress}，${gameplay}；${priorityHint}玩法、画面和B站内容钩子。`,
-    rule_fit: `${progress}；${steamAppId ? `已补 Steam AppID ${steamAppId}` : "非Steam来源可先进未处理"}；国内媒体/B站发现源，先做产品判断，再决定是否补商务资料。`,
-    bilibili_fit: "看实机/PV、弹幕评论和UP主表达，判断是否能转化为选题、试玩、直播或发行前种草。",
-    amplification: "若核心循环清晰，可用B站做首测反馈、内容验证和愿望单/预约转化。",
+    priority_reason: `${gameplay} + ${progress}；${priorityHint}玩法循环、收入 upside、B站内容放大和团队签约窗口。`,
+    rule_fit: `${progress}；${steamAppId ? "Steam 交叉验证已建立" : sourceSignal}；适合由 BD 先判断产品质量、B站适配和签约概率。`,
+    bilibili_fit: "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+    amplification: "",
     risks: steamAppId ? "仍需确认团队、发行占位和中国区权益空间。" : "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
-    verdict: "进入未处理，由人工决定提测、观察或淘汰。",
+    verdict: "",
     next_action: null,
     notes: null
   };

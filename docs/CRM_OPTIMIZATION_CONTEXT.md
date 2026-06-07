@@ -189,6 +189,19 @@ Most importantly, for existing leads, automation should enrich rather than rerou
 
 For automation debugging, inspect generated daily files first, then inspect `data/automation_runs/YYYY-MM-DD-slot.json` receipts. Generated files prove the report step ran; receipts prove whether the CRM sync endpoint confirmed `synced=true`.
 
+## Detail Panel Decision Cleanup
+
+The Leads Review right detail panel should be a BD decision workspace, not an automation-log dump.
+
+Important implementation points:
+
+- Keep `评测结果` as the primary human judgment area: grade, one-line evaluation result, and optional next action.
+- Keep the evidence panel read-only and compact so it supports judgment without overwhelming it.
+- Keep `联系方式` and `产品与发行` structured; do not paste Steam links, Bilibili descriptions, or source traces into long gameplay or notes fields.
+- Hide low-signal automation fields from the default right panel: `rule_fit`, `amplification`, `exposure_trail`, `public_signals`, raw `links`, rule-exclusion checkboxes, and standalone `verdict`.
+- Preserve the underlying fields for compatibility; do not delete schema fields or erase historical data.
+- New sourcing fields should keep `priority_reason` focused on BD-useful reasons such as gameplay strength, revenue upside, market heat, Bilibili amplification, and signing probability.
+
 ## Codex Cloud 工作说明
 
 本项目当前以 `Neo0109/CRM` 仓库和 `main` 分支作为 Codex Cloud 的云端工作源。后续云端任务应默认从该来源继续，保持自动日报规则、产品功能迭代和 UI 迭代分开处理，并在完成修改后通过 PR 合并，避免直接修改 `main`。
