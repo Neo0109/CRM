@@ -1,0 +1,895 @@
+{
+  "report_date": "2026-06-07",
+  "summary": "Steam大盘V6.2：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Roguelike / Deckbuilder、Strategy / Tactical、Action / Visual Hook；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_06_07_category_risers",
+      "title": "近期冒头品类：Roguelike / Deckbuilder、Strategy / Tactical、Action / Visual Hook",
+      "summary": "样本中 Roguelike / Deckbuilder（55/90）、Strategy / Tactical（55/90）、Action / Visual Hook（40/90）、Simulation / Management（27/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_07_demo_window",
+      "title": "Demo/活动窗口：50 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 2 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_07_publisher_slate",
+      "title": "发行商新品：YogurtGames(4)、米学长工作室(2)、Lenja Kaufmann(2)、Dorara and Kwfafa(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_07_data_quality",
+      "title": "数据面：0 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 17 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_06_07_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（55/90）",
+      "signal": "55 个候选命中；代表样本：Alpha Doomsday War、Ashes of Morgravia、Chronicle of Wuxia & Xianxia Survivors。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_07_strategy_tactical",
+      "genre": "Strategy / Tactical（55/90）",
+      "signal": "55 个候选命中；代表样本：Cute Country、WATERFUL: a tiny oasis builder、明末：甲申年。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_07_action_visual_hook",
+      "genre": "Action / Visual Hook（40/90）",
+      "signal": "40 个候选命中；代表样本：Alpha Doomsday War、Chronicle of Wuxia & Xianxia Survivors、Cluster - Roguelike Tower Defense。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_07_simulation_management",
+      "genre": "Simulation / Management（27/90）",
+      "signal": "27 个候选命中；代表样本：Cute Country、WATERFUL: a tiny oasis builder、明末：甲申年。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_07_survival_sandbox",
+      "genre": "Survival / Sandbox（12/90）",
+      "signal": "12 个候选命中；代表样本：Ashes of Morgravia、Gambetto、Runes & Rivets。",
+      "why_it_matters": "生存沙盒容易产生长视频和社区服务器玩法，但内容体量、更新节奏和差异化很关键。",
+      "bd_action": "看首测是否有明确生存压力、社交目标和长期内容；素材不足先观察。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Survival/",
+        "https://store.steampowered.com/tags/en/Sandbox/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_06_07_4370100",
+      "title": "Cute Country",
+      "steam_app_id": "4370100",
+      "rank_bucket": "Steam CN Management Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Management Keyword Upcoming；发售窗口 2026-08-31。\n公开数据：推荐数 无公开；素材 8图/4视频；有Demo/试玩窗口。\n产品观察：You can build your own royal city. With over 100+buildings and massive home decorations, create an unparalleled kingdom. There are many mysterious races in the alternate world, and you can recruit humans, elves, beasts, or even rarer demons, dragons, etc. to build your kingdom together.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4370100/",
+        "https://steamdb.info/app/4370100/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_4414110",
+      "title": "WATERFUL: a tiny oasis builder",
+      "steam_app_id": "4414110",
+      "rank_bucket": "Steam CN Indie Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Indie Keyword Upcoming；发售窗口 2027-01-01。\n公开数据：推荐数 无公开；素材 7图/1视频；暂无明确Demo信号。\n产品观察：A peaceful nature-builder where you dig riverbeds to guide water through tiny desert valleys. Grow a variety of plants and discover all the animals drawn to the new habitats. Complete quests and unlock new contraptions to transform the dry landscape into a lush oasis!。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4414110/",
+        "https://steamdb.info/app/4414110/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_4785790",
+      "title": "明末：甲申年",
+      "steam_app_id": "4785790",
+      "rank_bucket": "Steam CN Guofeng Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Guofeng Keyword Upcoming；发售窗口 To be announced。\n公开数据：推荐数 无公开；素材 5图/0视频；暂无明确Demo信号。\n产品观察：公元1644年，甲申之变。李自成兵临北京，清军虎视关外，大明江山风雨飘摇。在这天命更迭的十字路口，你可以选择成为崇祯皇帝，在绝境中重振朝纲；亦可投身闯王麾下，为大顺开疆拓土；甚至扮演诸方势力或平民问鼎中原。这是一款基于真实历史的大语言模型辅助驱动策略游戏。。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4785790/",
+        "https://steamdb.info/app/4785790/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_4099250",
+      "title": "薪上人 Salaryman",
+      "steam_app_id": "4099250",
+      "rank_bucket": "Steam CN Management Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Management Keyword Upcoming；发售窗口 Q3 2026。\n公开数据：推荐数 无公开；素材 12图/0视频；暂无明确Demo信号。\n产品观察：Salaried Life is a sim-romance GalGame. Broke and jobless, you meet 5 women—a nightclub girl, single mom, working student, factory worker, clinic nurse—while scraping by. Share life's hardships, spark connections in daily grind, write your working story.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4099250/",
+        "https://steamdb.info/app/4099250/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_2815910",
+      "title": "遥遥领先",
+      "steam_app_id": "2815910",
+      "rank_bucket": "Steam CN Management Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN Management Keyword Upcoming；发售窗口 Q4 2026。\n公开数据：推荐数 无公开；素材 8图/0视频；暂无明确Demo信号。\n产品观察：You transmigrated back to the 1980s, you decided to start a business and accurately seized every opportunity for success. You hired legendary managers to work for you, allowing your products to dominate both the national and global markets. Eventually, you became a &quot;far ahead&quot; business legend.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/2815910/",
+        "https://steamdb.info/app/2815910/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_6",
+      "title": "主神的游戏",
+      "steam_app_id": "3565290",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产官方PV / https://www.bilibili.com/video/BV1pM7C6BE1g/\n产品观察：媒体 / B站待确认 / ACT / Adventure / Indie",
+      "source": "B站视频-国产官方PV",
+      "links": [
+        "https://www.bilibili.com/video/BV1pM7C6BE1g/",
+        "https://store.steampowered.com/app/3565290/_/",
+        "https://store.steampowered.com/app/3565290/",
+        "https://steamdb.info/app/3565290/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 即将发售；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_7",
+      "title": "Cute Country",
+      "steam_app_id": "4370100",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Management Keyword Upcoming / Steam App 4370100\n产品观察：You can build your own royal city. With over 100+buildings and massive home decorations, create an unparalleled kingdom. There are many mysterious races in the alternate world, and you can recruit humans, elves, beasts, or even rarer demons, dragons, etc. to build your kingdom together.",
+      "source": "Steam CN Management Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4370100/",
+        "https://steamdb.info/app/4370100/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约85天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_8",
+      "title": "斩神之凡尘神域",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产二游新作 / https://www.bilibili.com/video/BV1QtE46CEw2/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-国产二游新作",
+      "links": [
+        "https://www.bilibili.com/video/BV1QtE46CEw2/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_9",
+      "title": "WATERFUL: a tiny oasis builder",
+      "steam_app_id": "4414110",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Indie Keyword Upcoming / Steam App 4414110\n产品观察：A peaceful nature-builder where you dig riverbeds to guide water through tiny desert valleys. Grow a variety of plants and discover all the animals drawn to the new habitats. Complete quests and unlock new contraptions to transform the dry landscape into a lush oasis!",
+      "source": "Steam CN Indie Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4414110/",
+        "https://steamdb.info/app/4414110/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Indie Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约208天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_10",
+      "title": "明末：甲申年",
+      "steam_app_id": "4785790",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Guofeng Keyword Upcoming / Steam App 4785790\n产品观察：公元1644年，甲申之变。李自成兵临北京，清军虎视关外，大明江山风雨飘摇。在这天命更迭的十字路口，你可以选择成为崇祯皇帝，在绝境中重振朝纲；亦可投身闯王麾下，为大顺开疆拓土；甚至扮演诸方势力或平民问鼎中原。这是一款基于真实历史的大语言模型辅助驱动策略游戏。",
+      "source": "Steam CN Guofeng Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4785790/",
+        "https://steamdb.info/app/4785790/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Guofeng Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_11",
+      "title": "薪上人 Salaryman",
+      "steam_app_id": "4099250",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Management Keyword Upcoming / Steam App 4099250\n产品观察：Salaried Life is a sim-romance GalGame. Broke and jobless, you meet 5 women—a nightclub girl, single mom, working student, factory worker, clinic nurse—while scraping by. Share life's hardships, spark connections in daily grind, write your working story.",
+      "source": "Steam CN Management Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4099250/",
+        "https://steamdb.info/app/4099250/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_07_fallback_12",
+      "title": "遥遥领先",
+      "steam_app_id": "2815910",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Management Keyword Upcoming / Steam App 2815910\n产品观察：You transmigrated back to the 1980s, you decided to start a business and accurately seized every opportunity for success. You hired legendary managers to work for you, allowing your products to dominate both the national and global markets. Eventually, you became a &quot;far ahead&quot; business legend.",
+      "source": "Steam CN Management Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/2815910/",
+        "https://steamdb.info/app/2815910/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-07T17:18:00+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_media_20260607_zdzkqn",
+      "project": "主神的游戏",
+      "steam_app_id": "3565290",
+      "team": "ZodiacStudio",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 即将发售；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "即将发售；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "gameplay": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "progress": "即将发售",
+      "release_window": "Coming soon",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "ZodiacStudio；B站线索已补 Steam 交叉验证",
+      "publisher_name": "ZodiacStudio",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产官方PV 分数 153；B站视频/搜索语境；已从文本补 Steam AppID 3565290。",
+      "public_signals": "B站视频-国产官方PV / https://www.bilibili.com/video/BV1pM7C6BE1g/",
+      "contact": "B站: https://www.bilibili.com/video/BV1pM7C6BE1g/；Email: contact@happyplayer.com；Steam: https://steamcommunity.com/app/3565290/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1pM7C6BE1g/",
+          "note": "B站视频-国产官方PV 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "contact@happyplayer.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3565290/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1pM7C6BE1g/",
+        "https://store.steampowered.com/app/3565290/_/",
+        "https://store.steampowered.com/app/3565290/",
+        "https://steamdb.info/app/3565290/"
+      ],
+      "exposure_trail": "自动从B站视频-国产官方PV捕捉到媒体/B站线索（2026-06-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4370100_2026-06-07",
+      "project": "Cute Country",
+      "steam_app_id": "4370100",
+      "team": "米学长工作室",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约85天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；距发售约85天；窗口仍在，允许优先触达",
+      "genre": "Adventure / Casual / Simulation / Strategy",
+      "gameplay": "You can build your own royal city. With over 100+buildings and massive home decorations, create an unparalleled kingdom. There are many mysterious races in the alternate world, and you can recruit humans, elves, beasts, or even rarer demons, dragons, etc. to build your kingdom together.",
+      "progress": "Steam Steam CN Management Keyword Upcoming；发售窗口：2026-08-31；Demo/试玩信号需优先复核",
+      "release_window": "2026-08-31",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "米学长工作室；未见成熟中国发行能力占位",
+      "publisher_name": "米学长工作室",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Management Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Management Keyword Upcoming / Steam App 4370100",
+      "contact": "Email: 8274919999@qq.com；Steam: https://steamcommunity.com/app/4370100/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "8274919999@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4370100/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4370100/",
+        "https://steamdb.info/app/4370100/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Management Keyword Upcoming（2026-06-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260607_1eme6dd",
+      "project": "斩神之凡尘神域",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产二游新作 分数 100；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产二游新作 / https://www.bilibili.com/video/BV1QtE46CEw2/",
+      "contact": "B站: https://www.bilibili.com/video/BV1QtE46CEw2/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1QtE46CEw2/",
+          "note": "B站视频-国产二游新作 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1QtE46CEw2/"
+      ],
+      "exposure_trail": "自动从B站视频-国产二游新作捕捉到媒体/B站线索（2026-06-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4414110_2026-06-07",
+      "project": "WATERFUL: a tiny oasis builder",
+      "steam_app_id": "4414110",
+      "team": "Lenja Kaufmann",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Indie Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约208天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；距发售约208天；窗口仍在，允许优先触达",
+      "genre": "Casual / Indie / Simulation / Strategy",
+      "gameplay": "A peaceful nature-builder where you dig riverbeds to guide water through tiny desert valleys. Grow a variety of plants and discover all the animals drawn to the new habitats. Complete quests and unlock new contraptions to transform the dry landscape into a lush oasis!",
+      "progress": "Steam Steam CN Indie Keyword Upcoming；发售窗口：2027-01-01",
+      "release_window": "2027-01-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Lenja Kaufmann；未见成熟中国发行能力占位",
+      "publisher_name": "Lenja Kaufmann",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Indie Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Indie Keyword Upcoming / Steam App 4414110",
+      "contact": "Email: waterful@findlinggames.com；Steam: https://steamcommunity.com/app/4414110/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "waterful@findlinggames.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4414110/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4414110/",
+        "https://steamdb.info/app/4414110/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Indie Keyword Upcoming（2026-06-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_steam_4785790_2026-06-07",
+      "project": "明末：甲申年",
+      "steam_app_id": "4785790",
+      "team": "Zirbry Studio",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Guofeng Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；窗口仍在，允许优先触达",
+      "genre": "RPG / Simulation / Strategy",
+      "gameplay": "公元1644年，甲申之变。李自成兵临北京，清军虎视关外，大明江山风雨飘摇。在这天命更迭的十字路口，你可以选择成为崇祯皇帝，在绝境中重振朝纲；亦可投身闯王麾下，为大顺开疆拓土；甚至扮演诸方势力或平民问鼎中原。这是一款基于真实历史的大语言模型辅助驱动策略游戏。",
+      "progress": "Steam Steam CN Guofeng Keyword Upcoming；发售窗口：To be announced",
+      "release_window": "To be announced",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "HistAxis Games；未见成熟中国发行能力占位",
+      "publisher_name": "HistAxis Games",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Guofeng Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Guofeng Keyword Upcoming / Steam App 4785790",
+      "contact": "Email: zirbry2014@yeah.net；Steam: https://steamcommunity.com/app/4785790/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "zirbry2014@yeah.net",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4785790/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4785790/",
+        "https://steamdb.info/app/4785790/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Guofeng Keyword Upcoming（2026-06-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_steam_4099250_2026-06-07",
+      "project": "薪上人 Salaryman",
+      "steam_app_id": "4099250",
+      "team": "拾光创梦",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；窗口仍在，允许优先触达",
+      "genre": "Adventure / Casual / Indie / Simulation / Strategy",
+      "gameplay": "Salaried Life is a sim-romance GalGame. Broke and jobless, you meet 5 women—a nightclub girl, single mom, working student, factory worker, clinic nurse—while scraping by. Share life's hardships, spark connections in daily grind, write your working story.",
+      "progress": "Steam Steam CN Management Keyword Upcoming；发售窗口：Q3 2026",
+      "release_window": "Q3 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "拾光创梦 / 糕薯科技；未见成熟中国发行能力占位",
+      "publisher_name": "拾光创梦",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Management Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Management Keyword Upcoming / Steam App 4099250",
+      "contact": "Email: 476457480@qq.com；Steam: https://steamcommunity.com/app/4099250/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "476457480@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4099250/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4099250/",
+        "https://steamdb.info/app/4099250/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Management Keyword Upcoming（2026-06-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_steam_2815910_2026-06-07",
+      "project": "遥遥领先",
+      "steam_app_id": "2815910",
+      "team": "Dorara and Kwfafa",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Management Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，窗口待确认，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；窗口仍在，允许优先触达",
+      "genre": "Indie / Simulation / Strategy",
+      "gameplay": "You transmigrated back to the 1980s, you decided to start a business and accurately seized every opportunity for success. You hired legendary managers to work for you, allowing your products to dominate both the national and global markets. Eventually, you became a &quot;far ahead&quot; business legend.",
+      "progress": "Steam Steam CN Management Keyword Upcoming；发售窗口：Q4 2026",
+      "release_window": "Q4 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Dorara and Kwfafa；未见成熟中国发行能力占位",
+      "publisher_name": "Dorara and Kwfafa",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Management Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Management Keyword Upcoming / Steam App 2815910",
+      "contact": "Email: 2380090525@qq.com；Steam: https://steamcommunity.com/app/2815910/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "2380090525@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/2815910/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/2815910/",
+        "https://steamdb.info/app/2815910/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Management Keyword Upcoming（2026-06-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260607_dwgowp",
+      "project": "剑星：血雨",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "游民星空 分数 48；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "游民星空 / https://www.gamersky.com/news/202606/2152660.shtml",
+      "contact": "官网: https://www.gamersky.com/news/202606/2152660.shtml",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.gamersky.com/news/202606/2152660.shtml",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.gamersky.com/news/202606/2152660.shtml"
+      ],
+      "exposure_trail": "自动从游民星空捕捉到媒体/B站线索（2026-06-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260607_1n3udct",
+      "project": "BigWall：WildKnight",
+      "steam_app_id": "4351460",
+      "team": "BigWallStudios",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 即将发售；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "即将发售；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "gameplay": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "progress": "即将发售",
+      "release_window": "2026-01-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "BigWallStudios；B站线索已补 Steam 交叉验证",
+      "publisher_name": "BigWallStudios",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产官方PV 分数 135；B站视频/搜索语境；已从文本补 Steam AppID 4351460。",
+      "public_signals": "B站视频-国产官方PV / https://www.bilibili.com/video/BV1hmEA6kEVL/",
+      "contact": "B站: https://www.bilibili.com/video/BV1hmEA6kEVL/；Email: wubijianying@163.com；Steam: https://steamcommunity.com/app/4351460/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1hmEA6kEVL/",
+          "note": "B站视频-国产官方PV 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "wubijianying@163.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4351460/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1hmEA6kEVL/",
+        "https://store.steampowered.com/app/4351460/_/",
+        "https://store.steampowered.com/app/4351460/",
+        "https://steamdb.info/app/4351460/"
+      ],
+      "exposure_trail": "自动从B站视频-国产官方PV捕捉到媒体/B站线索（2026-06-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260607_s92ocr",
+      "project": "死亡搁浅",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "IT之家 分数 29；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "IT之家 / https://www.ithome.com/0/961/120.htm",
+      "contact": "官网: https://www.ithome.com/0/961/120.htm",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.ithome.com/0/961/120.htm",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.ithome.com/0/961/120.htm"
+      ],
+      "exposure_trail": "自动从IT之家捕捉到媒体/B站线索（2026-06-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260607_1o0240t",
+      "project": "10款Steam上好评如潮的肉鸽Roguelike/Roguelite新游戏推荐-New Rog",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Roguelike + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "Roguelike",
+      "gameplay": "Roguelike",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产肉鸽卡牌 分数 125；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产肉鸽卡牌 / https://www.bilibili.com/video/BV1Zg7z6SEYu/",
+      "contact": "B站: https://www.bilibili.com/video/BV1Zg7z6SEYu/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1Zg7z6SEYu/",
+          "note": "B站视频-国产肉鸽卡牌 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1Zg7z6SEYu/"
+      ],
+      "exposure_trail": "自动从B站视频-国产肉鸽卡牌捕捉到媒体/B站线索（2026-06-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-07",
+      "notes": null
+    }
+  ]
+}
