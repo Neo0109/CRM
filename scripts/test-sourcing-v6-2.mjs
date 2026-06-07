@@ -60,8 +60,29 @@ const fields = deriveMediaDecisionFields({
   officialSourceMatched: true
 });
 assert.ok(fields.priority_reason.includes("官方") || fields.priority_reason.includes("B站"), "priority reason should explain the source quality");
+assert.match(fields.priority_reason, /玩法|商业|收入|B站|签约|热度/, "priority reason should be BD-decision oriented");
+assert.doesNotMatch(fields.priority_reason, /媒体\/B站产品信号|官方\/开发者源复核命中|已补 Steam AppID|先进未处理|先做产品判断|流水|扫描|候选/, "priority reason should not contain automation bookkeeping");
 assert.ok(fields.rule_fit.includes("Demo") || fields.rule_fit.includes("试玩"), "rule fit should give concise insight");
+assert.doesNotMatch(fields.rule_fit, /已补 Steam AppID|先进未处理|补商务资料/, "rule fit should avoid workflow bookkeeping");
+assert.equal(fields.amplification, "", "amplification should stay empty by default to avoid noisy right-panel text");
+assert.equal(fields.verdict, "", "verdict should stay empty by default; human evaluation_result owns the conclusion");
 assert.equal(fields.next_action, null, "next_action should default empty for human BD input");
 assert.equal(fields.notes, null, "notes should default empty unless there is important extra evidence");
+
+const releasedFields = deriveMediaDecisionFields({
+  title: "卡牌仙宗",
+  source: "B站官方视频",
+  confidence: "strict",
+  score: 70,
+  steamAppId: "3612130",
+  progress: "正式上线",
+  gameplay: "Card/Deckbuilder / Simulation",
+  alreadyReleased: true,
+  officialSourceMatched: true
+});
+assert.match(releasedFields.priority_reason, /正式上线|合作窗口|签约|权益空间/, "released priority reason should explain BD downside");
+assert.doesNotMatch(releasedFields.priority_reason, /复核命中|产品信号|扫描|候选/, "released priority reason should not be source bookkeeping");
+assert.equal(releasedFields.notes, null, "released notes should stay empty by default");
+assert.equal(releasedFields.next_action, null, "released next_action should stay empty by default");
 
 console.log(JSON.stringify({ ok: true, checked: "sourcing-v6.2-quality" }, null, 2));

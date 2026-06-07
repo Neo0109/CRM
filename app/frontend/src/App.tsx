@@ -753,12 +753,11 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
 
     <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />
     <BucketButtons lead={draft} onMove={moveDraft} />
-    <LeadEvidencePanel lead={draft} />
 
     <section className="review-command-card">
       <div className="review-command-summary">
         <div>
-          <p className="eyebrow">BD Review Card</p>
+          <p className="eyebrow">评测结论</p>
           <h3>{leadDecisionHeadline(draft)}</h3>
           <p>{leadDecisionSummary(draft)}</p>
         </div>
@@ -774,11 +773,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
       </div>
     </section>
 
-    <div className="signal-grid three">
-      <Signal label="推荐理由" value={draft.priority_reason ?? "待补充"} />
-      <Signal label="规则判断" value={draft.rule_fit ?? "待复核"} />
-      <Signal label="B站适配" value={draft.bilibili_fit} />
-    </div>
+    <LeadEvidencePanel lead={draft} />
 
     <SteamLinkEditor lead={draft} onApply={applySteamLink} />
 
@@ -797,7 +792,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
     </div>
 
     <div className="form-section">
-      <h3>Review 结论</h3>
+      <h3>人工决策</h3>
       <div className="form-grid two">
         <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value), ...reviewPatchForBucket(value) } : current))} />
         <Select label="阶段" value={draft.stage} options={stageValues} onChange={(value) => setField("stage", value)} />
@@ -811,19 +806,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
         </div>
       </div>
       <TextareaField label="优先级高/低的原因" value={draft.priority_reason} onChange={(value) => setField("priority_reason", value)} />
-      <TextareaField label="是否符合规则" value={draft.rule_fit} onChange={(value) => setField("rule_fit", value)} />
-      <TextareaField label="下一步动作" value={draft.next_action} onChange={(value) => setField("next_action", value)} />
       <TextareaField label="备注" value={draft.notes} onChange={(value) => setField("notes", value)} />
-    </div>
-
-    <div className="form-section evaluation-section">
-      <h3>评测结果</h3>
-      <div className="form-grid two">
-        <Select label="评级" value={draft.evaluation_grade ?? "未评级"} options={evaluationGradeOptions} onChange={(value) => setField("evaluation_grade", value === "未评级" ? null : value)} />
-        <TextField label="评测时间" value={draft.evaluated_at?.slice(0, 10) ?? ""} type="date" onChange={(value) => setField("evaluated_at", value || null)} />
-      </div>
-      <TextareaField label="具体评测内容" value={draft.evaluation_result} onChange={(value) => setField("evaluation_result", value)} />
-      <p className="field-hint">这里写运营/测试后的真实判断：玩法手感、内容看点、数据表现、B站可放大点、主要风险和是否建议商务深入。</p>
     </div>
 
     <div className="form-section">
@@ -849,18 +832,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
       <TextareaField label="进度" value={draft.progress} onChange={(value) => setField("progress", value || "待补充")} />
       <TextareaField label="发行结构" value={draft.publisher_status} onChange={(value) => setField("publisher_status", value || "待确认")} />
       <TextareaField label="B站适配度" value={draft.bilibili_fit} onChange={(value) => setField("bilibili_fit", value || "待评估")} />
-      <TextareaField label="放大作用" value={draft.amplification} onChange={(value) => setField("amplification", value || "待评估")} />
       <TextareaField label="风险" value={draft.risks} onChange={(value) => setField("risks", value)} />
-      <TextareaField label="结论" value={draft.verdict} onChange={(value) => setField("verdict", value || "待判断")} />
-      <TextareaField label="曝光轨迹" value={draft.exposure_trail} onChange={(value) => setField("exposure_trail", value)} />
-      <TextareaField label="旧公开信号" value={draft.public_signals} onChange={(value) => setField("public_signals", value)} />
-      <TextareaField label="链接，一行一个" value={draft.links.join("\n")} onChange={(value) => setField("links", (value ?? "").split("\n").map((line) => line.trim()).filter(Boolean))} />
-      <div className="check-grid">
-        <CheckboxField label="PC Early Access" checked={draft.early_access} onChange={(value) => setField("early_access", value)} />
-        <CheckboxField label="叙事主导" checked={draft.narrative_heavy} onChange={(value) => setField("narrative_heavy", value)} />
-        <CheckboxField label="印度团队" checked={draft.india_team} onChange={(value) => setField("india_team", value)} />
-        <CheckboxField label="中国能力已占位" checked={draft.china_capability_occupied} onChange={(value) => setField("china_capability_occupied", value)} />
-      </div>
     </div>
   </aside>;
 }
@@ -878,7 +850,6 @@ function leadDecisionHeadline(lead: Lead) {
 function leadDecisionSummary(lead: Lead) {
   return firstText([
     lead.evaluation_result,
-    lead.verdict,
     lead.priority_reason,
     lead.bilibili_fit,
     lead.next_action
@@ -888,9 +859,9 @@ function leadDecisionSummary(lead: Lead) {
 function buildReviewEvidence(lead: Lead) {
   return [
     { label: "产品亮点", value: firstText([lead.priority_reason, lead.gameplay, lead.genre], "待补充玩法钩子、视觉或数据亮点。") },
-    { label: "B站赋能", value: firstText([lead.bilibili_fit, lead.amplification], "待判断直播、切片、二创或 UP 主传播空间。") },
+    { label: "B站适配", value: firstText([lead.bilibili_fit], "待判断直播、切片、二创或 UP 主传播空间。") },
     { label: "商务可行", value: firstText([lead.publisher_status, `${lead.region_priority} · ${lead.release_window ?? "窗口待确认"}`], "待确认团队地区、发行空位和发售窗口。") },
-    { label: "风险反证", value: firstText([lead.risks, lead.rule_fit], "待补充为什么不该推进，避免只看亮点。") }
+    { label: "风险反证", value: firstText([lead.risks], "待补充为什么不该推进，避免只看亮点。") }
   ];
 }
 

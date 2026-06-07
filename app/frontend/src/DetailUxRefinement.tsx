@@ -10,13 +10,6 @@ const stageLabels: Record<string, string> = {
   rejected: "Rejected"
 };
 
-const ruleLabels: Record<string, string> = {
-  "PC Early Access": "PC Early Access（排除）",
-  "叙事主导": "叙事主导（排除）",
-  "印度团队": "印度团队（排除）",
-  "中国能力已占位": "中国能力已占位（降权）"
-};
-
 export function DetailUxRefinement() {
   useEffect(() => {
     let frame = 0;
@@ -25,7 +18,6 @@ export function DetailUxRefinement() {
       frame = 0;
       syncVersionLabel();
       relabelStageOptions();
-      clarifyRuleFlags();
       foldRawDueDateField();
     };
 
@@ -68,29 +60,6 @@ function relabelStageOptions() {
   }
 }
 
-function clarifyRuleFlags() {
-  const labels = Array.from(document.querySelectorAll<HTMLElement>(".checkbox-field span"));
-  let ruleGrid: HTMLElement | null = null;
-
-  for (const label of labels) {
-    const normalized = normalizeRuleLabel(label.textContent ?? "");
-    const nextLabel = ruleLabels[normalized];
-    if (!nextLabel) continue;
-
-    label.textContent = nextLabel;
-    label.dataset.ruleFlagLabel = normalized;
-    const grid = label.closest(".check-grid") as HTMLElement | null;
-    if (grid) ruleGrid = grid;
-  }
-
-  if (!ruleGrid || ruleGrid.previousElementSibling?.classList.contains("rule-flag-explainer")) return;
-
-  const explainer = document.createElement("div");
-  explainer.className = "rule-flag-explainer";
-  explainer.innerHTML = "<strong>排除 / 降权规则</strong><span>用于复核推荐理由和优先级，不是展示标签。</span>";
-  ruleGrid.parentElement?.insertBefore(explainer, ruleGrid);
-}
-
 function foldRawDueDateField() {
   const detailPanel = document.querySelector<HTMLElement>(".detail-panel");
   if (!detailPanel) return;
@@ -113,8 +82,4 @@ function addFollowUpReminderNote(container: Element | null) {
   note.className = "followup-reminder-note";
   note.innerHTML = "<strong>跟进提醒</strong><span>下次跟进日统一在“日历”里设置；只有主动加入日历的 Lead 才会显示提醒。</span>";
   container.appendChild(note);
-}
-
-function normalizeRuleLabel(value: string) {
-  return value.trim().replace(/（(?:排除|降权)）$/, "");
 }
