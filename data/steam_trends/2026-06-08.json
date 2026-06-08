@@ -1,53 +1,64 @@
 {
   "report_date": "2026-06-08",
-  "summary": "Steam大盘V6.2：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Strategy / Tactical、Roguelike / Deckbuilder、Action / Visual Hook；候选入库仍只进入未处理 inbox，人工再分池。",
+  "summary": "Steam大盘V6.2：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Action / Visual Hook、Strategy / Tactical、Roguelike / Deckbuilder；候选入库仍只进入未处理 inbox，人工再分池。",
   "market_insights": [
     {
       "id": "steam_macro_2026_06_08_category_risers",
-      "title": "近期冒头品类：Strategy / Tactical、Roguelike / Deckbuilder、Action / Visual Hook",
-      "summary": "样本中 Strategy / Tactical（48/90）、Roguelike / Deckbuilder（47/90）、Action / Visual Hook（43/90）、Simulation / Management（29/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "title": "近期冒头品类：Action / Visual Hook、Strategy / Tactical、Roguelike / Deckbuilder",
+      "summary": "样本中 Action / Visual Hook（42/90）、Strategy / Tactical（40/90）、Roguelike / Deckbuilder（38/90）、Simulation / Management（31/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
       "signal_level": "高",
       "source": "Steam Store / AppDetails scan",
       "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
       "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_macro_2026_06_08_demo_window",
-      "title": "Demo/活动窗口：56 个候选带试玩或新品节信号",
-      "summary": "其中国内相关 4 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "title": "Demo/活动窗口：54 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 3 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
       "signal_level": "高",
       "source": "Steam Demo / Next Fest / Upcoming",
       "link": "https://store.steampowered.com/sale/nextfest",
       "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_macro_2026_06_08_publisher_slate",
-      "title": "发行商新品：Kojika Games(2)、Ill-Fated Studios(2)、Dongrenran(2)、Ninefold(2)",
+      "title": "发行商新品：Frontier Developments(2)、Hidden Moon(2)、HillRock Studio(2)、芝兰之室(2)",
       "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
       "signal_level": "中",
       "source": "Steam publisher/developer fields",
       "link": "https://store.steampowered.com/search/?filter=topsellers",
       "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_macro_2026_06_08_data_quality",
       "title": "数据面：0 个样本有公开热度或强素材信号",
-      "summary": "扫描样本 90 个，国内 17 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
+      "summary": "扫描样本 90 个，国内 16 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
       "signal_level": "中",
       "source": "Steam recommendations / media assets / SteamDB",
       "link": "https://steamdb.info/charts/",
       "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     }
   ],
   "genre_signals": [
     {
+      "id": "steam_genre_2026_06_08_action_visual_hook",
+      "genre": "Action / Visual Hook（42/90）",
+      "signal": "42 个候选命中；代表样本：Demon Rising、Assassin's Creed Black Flag Resynced、Boby and the Witch。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
       "id": "steam_genre_2026_06_08_strategy_tactical",
-      "genre": "Strategy / Tactical（48/90）",
-      "signal": "48 个候选命中；代表样本：It's Fine、Duo Quest、Runes & Rivets。",
+      "genre": "Strategy / Tactical（40/90）",
+      "signal": "40 个候选命中；代表样本：Planet Zoo 2、STAR WARS Zero Company™、Demon Rising。",
       "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
       "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
       "links": [
@@ -57,8 +68,8 @@
     },
     {
       "id": "steam_genre_2026_06_08_roguelike_deckbuilder",
-      "genre": "Roguelike / Deckbuilder（47/90）",
-      "signal": "47 个候选命中；代表样本：Duo Quest、Runes & Rivets、Gorotsuki Paradise。",
+      "genre": "Roguelike / Deckbuilder（38/90）",
+      "signal": "38 个候选命中；代表样本：Demon Rising、Assassin's Creed Black Flag Resynced、CHEAT。",
       "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
       "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
       "links": [
@@ -67,20 +78,9 @@
       ]
     },
     {
-      "id": "steam_genre_2026_06_08_action_visual_hook",
-      "genre": "Action / Visual Hook（43/90）",
-      "signal": "43 个候选命中；代表样本：Sunset Summit、Kill The Nova、Sheeple。",
-      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
-      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
-      "links": [
-        "https://store.steampowered.com/tags/en/Action/",
-        "https://store.steampowered.com/tags/en/Shooter/"
-      ]
-    },
-    {
       "id": "steam_genre_2026_06_08_simulation_management",
-      "genre": "Simulation / Management（29/90）",
-      "signal": "29 个候选命中；代表样本：It's Fine、Dorts : A Darts Roguelike、When I'm Not Drawing。",
+      "genre": "Simulation / Management（31/90）",
+      "signal": "31 个候选命中；代表样本：Planet Zoo 2、Shift At Midnight、When I'm Not Drawing。",
       "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
       "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
       "links": [
@@ -91,7 +91,7 @@
     {
       "id": "steam_genre_2026_06_08_co_op_multiplayer",
       "genre": "Co-op / Multiplayer（18/90）",
-      "signal": "18 个候选命中；代表样本：Duo Quest、Sunset Summit、Gorotsuki Paradise。",
+      "signal": "18 个候选命中；代表样本：Shift At Midnight、Playful Day、Crazy Fruit Shooter。",
       "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
       "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
       "links": [
@@ -103,25 +103,42 @@
   "items": [
     {
       "id": "steam_trend_2026_06_08_fallback_1",
-      "title": "百度网盘 618 探底再来：SVIP 超级会员 13.5 元 / 月、162 元 / 年",
+      "title": "乌合之众",
       "steam_app_id": null,
       "rank_bucket": "Domestic media/Bilibili fallback",
-      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：IT之家 / https://www.ithome.com/0/961/595.htm\n产品观察：媒体 / B站待确认",
-      "source": "IT之家",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1PgEH6DEtn/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-国产游戏试玩",
       "links": [
-        "https://www.ithome.com/0/961/595.htm"
+        "https://www.bilibili.com/video/BV1PgEH6DEtn/"
       ],
       "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
-      "reason": "媒体 / B站待确认 + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
       "auto_import": true,
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_08_fallback_2",
+      "title": "超时空怪盗",
+      "steam_app_id": "4642670",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1VyEt6QE1Q/\n产品观察：媒体 / B站待确认 / Adventure / RPG",
+      "source": "B站视频-国产游戏试玩",
+      "links": [
+        "https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+        "https://store.steampowered.com/app/4642670/",
+        "https://steamdb.info/app/4642670/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 / Adventure / RPG + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_trend_2026_06_08_diagnostic_1",
-      "title": "近期冒头品类：Strategy / Tactical、Roguelike / Deckbuilder、Action / Visual Hook",
+      "title": "近期冒头品类：Action / Visual Hook、Strategy / Tactical、Roguelike / Deckbuilder",
       "steam_app_id": null,
       "rank_bucket": "Steam diagnostics fallback",
-      "signal": "样本中 Strategy / Tactical（48/90）、Roguelike / Deckbuilder（47/90）、Action / Visual Hook（43/90）、Simulation / Management（29/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal": "样本中 Action / Visual Hook（42/90）、Strategy / Tactical（40/90）、Roguelike / Deckbuilder（38/90）、Simulation / Management（31/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
       "source": "Steam Store / AppDetails scan",
       "links": [
         "https://store.steampowered.com/search/?filter=popularcomingsoon"
@@ -129,14 +146,14 @@
       "bilibili_fit": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
       "reason": "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。",
       "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_trend_2026_06_08_diagnostic_2",
-      "title": "Demo/活动窗口：56 个候选带试玩或新品节信号",
+      "title": "Demo/活动窗口：54 个候选带试玩或新品节信号",
       "steam_app_id": null,
       "rank_bucket": "Steam diagnostics fallback",
-      "signal": "其中国内相关 4 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal": "其中国内相关 3 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
       "source": "Steam Demo / Next Fest / Upcoming",
       "links": [
         "https://store.steampowered.com/sale/nextfest"
@@ -144,11 +161,11 @@
       "bilibili_fit": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
       "reason": "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。",
       "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_trend_2026_06_08_diagnostic_3",
-      "title": "发行商新品：Kojika Games(2)、Ill-Fated Studios(2)、Dongrenran(2)、Ninefold(2)",
+      "title": "发行商新品：Frontier Developments(2)、Hidden Moon(2)、HillRock Studio(2)、芝兰之室(2)",
       "steam_app_id": null,
       "rank_bucket": "Steam diagnostics fallback",
       "signal": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
@@ -159,14 +176,14 @@
       "bilibili_fit": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
       "reason": "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。",
       "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_trend_2026_06_08_diagnostic_4",
       "title": "数据面：0 个样本有公开热度或强素材信号",
       "steam_app_id": null,
       "rank_bucket": "Steam diagnostics fallback",
-      "signal": "扫描样本 90 个，国内 17 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
+      "signal": "扫描样本 90 个，国内 16 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
       "source": "Steam recommendations / media assets / SteamDB",
       "links": [
         "https://steamdb.info/charts/"
@@ -174,46 +191,14 @@
       "bilibili_fit": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
       "reason": "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。",
       "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
     },
     {
       "id": "steam_trend_2026_06_08_diagnostic_5",
-      "title": "Strategy / Tactical（48/90）",
+      "title": "Action / Visual Hook（42/90）",
       "steam_app_id": null,
       "rank_bucket": "Steam diagnostics fallback",
-      "signal": "48 个候选命中；代表样本：It's Fine、Duo Quest、Runes & Rivets。\n策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
-      "source": "Steam tag / genre signal",
-      "links": [
-        "https://store.steampowered.com/tags/en/Strategy/",
-        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
-      ],
-      "bilibili_fit": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
-      "reason": "Steam 品类信号补位卡片；用于提醒 BD 看品类变化，不作为 CRM lead 自动入库。",
-      "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
-    },
-    {
-      "id": "steam_trend_2026_06_08_diagnostic_6",
-      "title": "Roguelike / Deckbuilder（47/90）",
-      "steam_app_id": null,
-      "rank_bucket": "Steam diagnostics fallback",
-      "signal": "47 个候选命中；代表样本：Duo Quest、Runes & Rivets、Gorotsuki Paradise。\n机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
-      "source": "Steam tag / genre signal",
-      "links": [
-        "https://store.steampowered.com/tags/en/Roguelike/",
-        "https://store.steampowered.com/tags/en/Deckbuilding/"
-      ],
-      "bilibili_fit": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
-      "reason": "Steam 品类信号补位卡片；用于提醒 BD 看品类变化，不作为 CRM lead 自动入库。",
-      "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
-    },
-    {
-      "id": "steam_trend_2026_06_08_diagnostic_7",
-      "title": "Action / Visual Hook（43/90）",
-      "steam_app_id": null,
-      "rank_bucket": "Steam diagnostics fallback",
-      "signal": "43 个候选命中；代表样本：Sunset Summit、Kill The Nova、Sheeple。\n动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "signal": "42 个候选命中；代表样本：Demon Rising、Assassin's Creed Black Flag Resynced、Boby and the Witch。\n动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
       "source": "Steam tag / genre signal",
       "links": [
         "https://store.steampowered.com/tags/en/Action/",
@@ -222,13 +207,29 @@
       "bilibili_fit": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
       "reason": "Steam 品类信号补位卡片；用于提醒 BD 看品类变化，不作为 CRM lead 自动入库。",
       "auto_import": false,
-      "captured_at": "2026-06-08T19:01:57+08:00"
+      "captured_at": "2026-06-08T20:08:02+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_08_diagnostic_6",
+      "title": "Strategy / Tactical（40/90）",
+      "steam_app_id": null,
+      "rank_bucket": "Steam diagnostics fallback",
+      "signal": "40 个候选命中；代表样本：Planet Zoo 2、STAR WARS Zero Company™、Demon Rising。\n策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "source": "Steam tag / genre signal",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ],
+      "bilibili_fit": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "reason": "Steam 品类信号补位卡片；用于提醒 BD 看品类变化，不作为 CRM lead 自动入库。",
+      "auto_import": false,
+      "captured_at": "2026-06-08T20:08:02+08:00"
     }
   ],
   "crm_candidates": [
     {
-      "id": "lead_media_20260608_1as3oxl",
-      "project": "百度网盘 618 探底再来：SVIP 超级会员 13.5 元 / 月、162 元 / 年",
+      "id": "lead_media_20260608_v818rw",
+      "project": "乌合之众",
       "steam_app_id": null,
       "team": null,
       "team_size": null,
@@ -238,12 +239,12 @@
       "region_priority": "国内优先",
       "bucket": "未处理",
       "stage": "new",
-      "priority": "P2",
-      "priority_reason": "媒体 / B站待确认 + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
-      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
       "genre": "媒体 / B站待确认",
       "gameplay": "媒体 / B站待确认",
-      "progress": "待确认",
+      "progress": "试玩 Demo",
       "release_window": null,
       "early_access": false,
       "narrative_heavy": false,
@@ -251,23 +252,84 @@
       "publisher_status": "媒体/B站信号，发行结构待确认",
       "publisher_name": null,
       "china_capability_occupied": false,
-      "traction_summary": "IT之家 分数 27；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
-      "public_signals": "IT之家 / https://www.ithome.com/0/961/595.htm",
-      "contact": "官网: https://www.ithome.com/0/961/595.htm",
+      "traction_summary": "B站视频-国产游戏试玩 分数 107；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1PgEH6DEtn/",
+      "contact": "B站: https://www.bilibili.com/video/BV1PgEH6DEtn/",
       "contact_methods": [
         {
-          "type": "官网",
-          "value": "https://www.ithome.com/0/961/595.htm",
-          "note": "B站/媒体简介中提取"
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1PgEH6DEtn/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
         }
       ],
       "links": [
-        "https://www.ithome.com/0/961/595.htm"
+        "https://www.bilibili.com/video/BV1PgEH6DEtn/"
       ],
-      "exposure_trail": "自动从IT之家捕捉到媒体/B站线索（2026-06-08）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-06-08）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
       "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
       "amplification": "",
       "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260608_45s5fq",
+      "project": "超时空怪盗",
+      "steam_app_id": "4642670",
+      "team": "百里嘻声",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 / Adventure / RPG + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / Adventure / RPG",
+      "gameplay": "媒体 / B站待确认 / Adventure / RPG",
+      "progress": "试玩 Demo",
+      "release_window": "Q4 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "百里嘻声；B站线索已补 Steam 交叉验证",
+      "publisher_name": "百里嘻声",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏试玩 分数 135；B站视频/搜索语境；已从文本补 Steam AppID 4642670。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+      "contact": "B站: https://www.bilibili.com/video/BV1VyEt6QE1Q/；Email: http://www.1284981098.qq.com；Steam: https://steamcommunity.com/app/4642670/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "http://www.1284981098.qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4642670/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+        "https://store.steampowered.com/app/4642670/",
+        "https://steamdb.info/app/4642670/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-06-08）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
       "verdict": "",
       "next_action": null,
       "owner": null,

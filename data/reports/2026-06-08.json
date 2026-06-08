@@ -1,6 +1,6 @@
 {
   "report_date": "2026-06-08",
-  "summary": "Sourcing V6.2线上自动化：扫描 Steam 候选 260 条、富化 90 条，另从国内媒体/B站提取产品线索 1 条，官方源命中 0 条；进入日报候选 13 条；推荐优先复核 0 条、普通复核 1 条、淘汰 12 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。",
+  "summary": "Sourcing V6.2线上自动化：扫描 Steam 候选 260 条、富化 90 条，另从国内媒体/B站提取产品线索 2 条，官方源命中 0 条；进入日报候选 14 条；推荐优先复核 1 条、普通复核 1 条、淘汰 12 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。",
   "insights": [
     "V6.2把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
     "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
@@ -16,11 +16,10 @@
     "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。",
     "低量、Steam 429、B站单源异常不会让定时日报整体断档；系统会发布低量但有效的日报并输出诊断。"
   ],
-  "push_pool": [],
-  "watch_pool": [
+  "push_pool": [
     {
-      "id": "lead_media_20260608_1as3oxl",
-      "project": "百度网盘 618 探底再来：SVIP 超级会员 13.5 元 / 月、162 元 / 年",
+      "id": "lead_media_20260608_v818rw",
+      "project": "乌合之众",
       "steam_app_id": null,
       "team": null,
       "team_size": null,
@@ -30,12 +29,12 @@
       "region_priority": "国内优先",
       "bucket": "未处理",
       "stage": "new",
-      "priority": "P2",
-      "priority_reason": "媒体 / B站待确认 + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
-      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
       "genre": "媒体 / B站待确认",
       "gameplay": "媒体 / B站待确认",
-      "progress": "待确认",
+      "progress": "试玩 Demo",
       "release_window": null,
       "early_access": false,
       "narrative_heavy": false,
@@ -43,20 +42,20 @@
       "publisher_status": "媒体/B站信号，发行结构待确认",
       "publisher_name": null,
       "china_capability_occupied": false,
-      "traction_summary": "IT之家 分数 27；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
-      "public_signals": "IT之家 / https://www.ithome.com/0/961/595.htm",
-      "contact": "官网: https://www.ithome.com/0/961/595.htm",
+      "traction_summary": "B站视频-国产游戏试玩 分数 107；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1PgEH6DEtn/",
+      "contact": "B站: https://www.bilibili.com/video/BV1PgEH6DEtn/",
       "contact_methods": [
         {
-          "type": "官网",
-          "value": "https://www.ithome.com/0/961/595.htm",
-          "note": "B站/媒体简介中提取"
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1PgEH6DEtn/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
         }
       ],
       "links": [
-        "https://www.ithome.com/0/961/595.htm"
+        "https://www.bilibili.com/video/BV1PgEH6DEtn/"
       ],
-      "exposure_trail": "自动从IT之家捕捉到媒体/B站线索（2026-06-08）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-06-08）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
       "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
       "amplification": "",
       "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
@@ -68,12 +67,75 @@
       "notes": null
     }
   ],
+  "watch_pool": [
+    {
+      "id": "lead_media_20260608_45s5fq",
+      "project": "超时空怪盗",
+      "steam_app_id": "4642670",
+      "team": "百里嘻声",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 / Adventure / RPG + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / Adventure / RPG",
+      "gameplay": "媒体 / B站待确认 / Adventure / RPG",
+      "progress": "试玩 Demo",
+      "release_window": "Q4 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "百里嘻声；B站线索已补 Steam 交叉验证",
+      "publisher_name": "百里嘻声",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏试玩 分数 135；B站视频/搜索语境；已从文本补 Steam AppID 4642670。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+      "contact": "B站: https://www.bilibili.com/video/BV1VyEt6QE1Q/；Email: http://www.1284981098.qq.com；Steam: https://steamcommunity.com/app/4642670/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "http://www.1284981098.qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4642670/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1VyEt6QE1Q/",
+        "https://store.steampowered.com/app/4642670/",
+        "https://steamdb.info/app/4642670/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-06-08）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": null
+    }
+  ],
   "drop_pool": [
     {
-      "id": "lead_steam_3936270_2026-06-08",
-      "project": "It's Fine",
-      "steam_app_id": "3936270",
-      "team": "Buma Games",
+      "id": "lead_steam_3219030_2026-06-08",
+      "project": "Planet Zoo 2",
+      "steam_app_id": "3219030",
+      "team": "Frontier Developments",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -83,48 +145,37 @@
       "stage": "rejected",
       "priority": "P3",
       "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Casual / Indie / Simulation / Strategy",
-      "gameplay": "Idle / Incremental about developing a game with your dog Joe. Unlock unique mechanic, evolve with multi-layered prestige, find secrets, beat all alt endings, and deliver your game on time!",
-      "progress": "Steam Steam CN Indie Keyword Upcoming；发售窗口：Q3 2026；Demo/试玩信号需优先复核",
-      "release_window": "Q3 2026",
+      "rule_fit": "玩法具备内容化潜力；距发售约127天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "genre": "Simulation / Strategy",
+      "gameplay": "Build a wilder world in Planet Zoo 2. Create distinctive zoos around the globe filled with awe-inspiring animals, including fully aquatic and flying species, before taking your experience beyond the zoo to release your animals into expansive Wildlife Reserves.",
+      "progress": "Steam Steam CN Popular Upcoming；发售窗口：2026-10-13",
+      "release_window": "2026-10-13",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Buma Games / SpaceJazz；未见成熟中国发行能力占位",
-      "publisher_name": "Buma Games",
+      "publisher_status": "Frontier Developments；未见成熟中国发行能力占位",
+      "publisher_name": "Frontier Developments",
       "china_capability_occupied": false,
-      "traction_summary": "Steam CN Indie Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Indie Keyword Upcoming / Steam App 3936270",
-      "contact": "Email: dog@buma-games.com；官网: https://itsfinegame.com；官网: https://buma-games.com；Email: 605a7baede844d278b89dc95ae0a9123@sentry-next.wixpress.com",
+      "traction_summary": "Steam CN Popular Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Popular Upcoming / Steam App 3219030",
+      "contact": "官网: https://support.frontier.co.uk/kb/；Steam: https://steamcommunity.com/app/3219030/discussions/",
       "contact_methods": [
         {
-          "type": "Email",
-          "value": "dog@buma-games.com",
-          "note": "Steam support email"
-        },
-        {
           "type": "官网",
-          "value": "https://itsfinegame.com",
+          "value": "https://support.frontier.co.uk/kb/",
           "note": "Steam official website"
         },
         {
-          "type": "官网",
-          "value": "https://buma-games.com",
-          "note": "Steam support URL"
-        },
-        {
-          "type": "Email",
-          "value": "605a7baede844d278b89dc95ae0a9123@sentry-next.wixpress.com",
-          "note": "Found on official site"
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3219030/discussions/",
+          "note": "Steam community backup"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3936270/",
-        "https://steamdb.info/app/3936270/",
-        "https://itsfinegame.com"
+        "https://store.steampowered.com/app/3219030/",
+        "https://steamdb.info/app/3219030/"
       ],
-      "exposure_trail": "最早自动捕捉：Steam CN Indie Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "exposure_trail": "最早自动捕捉：Steam CN Popular Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
       "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
       "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
@@ -136,10 +187,10 @@
       "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
     },
     {
-      "id": "lead_steam_3572800_2026-06-08",
-      "project": "Duo Quest",
-      "steam_app_id": "3572800",
-      "team": "1+1 Studios",
+      "id": "lead_steam_2075800_2026-06-08",
+      "project": "STAR WARS Zero Company™",
+      "steam_app_id": "2075800",
+      "team": "Bit Reactor",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -149,50 +200,50 @@
       "stage": "rejected",
       "priority": "P3",
       "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约100天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Casual / Indie / Strategy",
-      "gameplay": "Dive into a fantasy world where your bond is your greatest weapon! Team up with a friend to battle monsters by answering quirky and thought-provoking questions about each other, while building decks and exploring an ever-changing world. Can your relationship survive the ultimate test?",
-      "progress": "Steam Steam CN Deckbuilder Keyword Upcoming；发售窗口：2026-09-16；Demo/试玩信号需优先复核",
-      "release_window": "2026-09-16",
+      "rule_fit": "玩法具备内容化潜力；距发售约80天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "genre": "Strategy",
+      "gameplay": "Command an elite squad through a gritty and authentic story in STAR WARS Zero Company™, a single-player turn-based tactics game set in the twilight of the Clone Wars.",
+      "progress": "Steam Steam CN Popular Upcoming；发售窗口：2026-08-27",
+      "release_window": "2026-08-27",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Rising Tide；未见成熟中国发行能力占位",
-      "publisher_name": "Rising Tide",
+      "publisher_status": "Electronic Arts；未见成熟中国发行能力占位",
+      "publisher_name": "Electronic Arts",
       "china_capability_occupied": false,
-      "traction_summary": "Steam CN Deckbuilder Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Deckbuilder Keyword Upcoming / Steam App 3572800",
-      "contact": "Email: enquiries@1plus1gamestudios.com；官网: https://1plus1gamestudios.com/duo-quest-digital-game/；官网: https://1plus1gamestudios.com/contact-us-2/；Steam: https://steamcommunity.com/app/3572800/discussions/",
+      "traction_summary": "Steam CN Popular Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Popular Upcoming / Steam App 2075800",
+      "contact": "官网: https://www.ea.com/games/starwars/zero-company；官网: https://help.ea.com/；Email: contact_eahelp@ea.com；Discord: http://discord.gg/EAStarWars",
       "contact_methods": [
         {
-          "type": "Email",
-          "value": "enquiries@1plus1gamestudios.com",
-          "note": "Steam support email"
-        },
-        {
           "type": "官网",
-          "value": "https://1plus1gamestudios.com/duo-quest-digital-game/",
+          "value": "https://www.ea.com/games/starwars/zero-company",
           "note": "Steam official website"
         },
         {
           "type": "官网",
-          "value": "https://1plus1gamestudios.com/contact-us-2/",
+          "value": "https://help.ea.com/",
           "note": "Steam support URL"
         },
         {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/3572800/discussions/",
-          "note": "Steam community backup"
+          "type": "Email",
+          "value": "contact_eahelp@ea.com",
+          "note": "Found on official site"
+        },
+        {
+          "type": "Discord",
+          "value": "http://discord.gg/EAStarWars",
+          "note": "Found on official site"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3572800/",
-        "https://steamdb.info/app/3572800/",
-        "https://1plus1gamestudios.com/duo-quest-digital-game/"
+        "https://store.steampowered.com/app/2075800/",
+        "https://steamdb.info/app/2075800/",
+        "https://www.ea.com/games/starwars/zero-company"
       ],
-      "exposure_trail": "最早自动捕捉：Steam CN Deckbuilder Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "amplification": "可做多人首测、主播局和社交传播节点。",
+      "exposure_trail": "最早自动捕捉：Steam CN Popular Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
       "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
       "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
       "next_action": "归档原因，避免重复讨论",
@@ -202,10 +253,186 @@
       "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
     },
     {
-      "id": "lead_steam_3874450_2026-06-08",
-      "project": "Sunset Summit",
-      "steam_app_id": "3874450",
-      "team": "Joe Fender, Andrew Fender",
+      "id": "lead_steam_4753210_2026-06-08",
+      "project": "Demon Rising",
+      "steam_app_id": "4753210",
+      "team": "Demon Castle Games",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "其他",
+      "bucket": "淘汰池",
+      "stage": "rejected",
+      "priority": "P3",
+      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "rule_fit": "玩法具备内容化潜力；距发售约53天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "genre": "Indie / RPG / Strategy",
+      "gameplay": "Rule as the Demon Lord in a dark fantasy roguelike auto-battler. Recruit AI-driven demons who talk back, build deadly class synergies, equip relics, and survive brutal heroes, bosses, and events.",
+      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-07-31；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-31",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Orphius；未见成熟中国发行能力占位",
+      "publisher_name": "Orphius",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 4753210",
+      "contact": "Email: yxhzdm@gmail.com；Steam: https://steamcommunity.com/app/4753210/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "yxhzdm@gmail.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4753210/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4753210/",
+        "https://steamdb.info/app/4753210/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
+      "next_action": "归档原因，避免重复讨论",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
+    },
+    {
+      "id": "lead_steam_3751950_2026-06-08",
+      "project": "Assassin's Creed Black Flag Resynced",
+      "steam_app_id": "3751950",
+      "team": "Ubisoft Singapore",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "淘汰池",
+      "stage": "rejected",
+      "priority": "P3",
+      "priority_reason": "命中排除项：印度团队/印度开发主体",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；距发售约31天；命中排除项：印度团队/印度开发主体",
+      "genre": "Action / Adventure",
+      "gameplay": "The iconic solo pirate adventure returns. Sail the Caribbean as Edward Kenway during the Golden Age of Piracy in this faithfully enhanced remake featuring stunning visuals, upgraded gameplay, and new content.",
+      "progress": "Steam Steam CN Demo/Next Fest Window；发售窗口：2026-07-09；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-09",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": true,
+      "publisher_status": "Ubisoft；未见成熟中国发行能力占位",
+      "publisher_name": "Ubisoft",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Demo/Next Fest Window；素材/截图/视频可验证；Demo/试玩信号。",
+      "public_signals": "Steam CN Demo/Next Fest Window / Steam App 3751950",
+      "contact": "官网: https://support.ubi.com/；Steam: https://steamcommunity.com/app/3751950/discussions/",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://support.ubi.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3751950/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3751950/",
+        "https://steamdb.info/app/3751950/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Demo/Next Fest Window（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "命中排除项：印度团队/印度开发主体",
+      "verdict": "命中排除项：印度团队/印度开发主体，暂不投入BD时间",
+      "next_action": "归档原因，避免重复讨论",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": "V6判断：命中排除项：印度团队/印度开发主体。"
+    },
+    {
+      "id": "lead_steam_3722330_2026-06-08",
+      "project": "Shift At Midnight",
+      "steam_app_id": "3722330",
+      "team": "Bun Muen",
+      "team_size": null,
+      "country": "海外",
+      "region": "海外",
+      "city": null,
+      "region_priority": "其他",
+      "bucket": "淘汰池",
+      "stage": "rejected",
+      "priority": "P3",
+      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "rule_fit": "玩法具备内容化潜力；距发售约9天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "genre": "Indie / Simulation",
+      "gameplay": "An online co-op detective horror for up to 3 players. Work together across randomly generated shifts to investigate your customers, as some are only pretending to be human. Make one mistake, and you’ll be forced to board up, set traps, and hide.",
+      "progress": "Steam Steam CN Popular Upcoming；发售窗口：2026-06-17；Demo/试玩信号需优先复核",
+      "release_window": "2026-06-17",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Kwalee；未见成熟中国发行能力占位",
+      "publisher_name": "Kwalee",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Popular Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Popular Upcoming / Steam App 3722330",
+      "contact": "官网: https://www.bunmuen.com/；官网: https://www.kwalee.com/game-support/；Email: info@mysite.com；Discord: https://discord.gg/caseoh\\n_________________________________________________________________",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.bunmuen.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.kwalee.com/game-support/",
+          "note": "Steam support URL"
+        },
+        {
+          "type": "Email",
+          "value": "info@mysite.com",
+          "note": "Found on official site"
+        },
+        {
+          "type": "Discord",
+          "value": "https://discord.gg/caseoh\\n_________________________________________________________________",
+          "note": "Found on official site"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3722330/",
+        "https://steamdb.info/app/3722330/",
+        "https://www.bunmuen.com/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Popular Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
+      "next_action": "归档原因，避免重复讨论",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
+    },
+    {
+      "id": "lead_steam_4381390_2026-06-08",
+      "project": "When I'm Not Drawing",
+      "steam_app_id": "4381390",
+      "team": "Hidden Moon",
       "team_size": null,
       "country": "中国（待确认）",
       "region": "中国",
@@ -215,47 +442,142 @@
       "stage": "rejected",
       "priority": "P3",
       "priority_reason": "Steam 页面显示已发售，不符合前置BD窗口",
-      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；已发售约158天；Steam 页面显示已发售，不符合前置BD窗口",
-      "genre": "Action / Adventure / Indie",
-      "gameplay": "A co-op group climbing game for 1-8 friends! Head out on a chill but challenging climb with regular checkpoints. Use axes, ropes, pogo sticks, item delivery drones and more to reach the summit. Just remember to watch your step!",
-      "progress": "Steam Steam CN Indie Keyword Upcoming；发售窗口：2026-01-01；Demo/试玩信号需优先复核",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；已发售约158天；Steam 页面显示已发售，不符合前置BD窗口",
+      "genre": "Casual / Indie / RPG / Simulation / Strategy",
+      "gameplay": "In this cozy life-simulation RPG, you play as a young artist who moves to a new city to pursue your dreams. Plan your schedule, balance life and career, explore the city, and meet new friends! Live a fulfilling year on your own, at your own pace.",
+      "progress": "Steam Steam CN Indie Keyword Upcoming；发售窗口：2026-01-01",
       "release_window": "2026-01-01",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Future Friends Games；未见成熟中国发行能力占位",
-      "publisher_name": "Future Friends Games",
+      "publisher_status": "Hidden Moon；未见成熟中国发行能力占位",
+      "publisher_name": "Hidden Moon",
       "china_capability_occupied": false,
-      "traction_summary": "Steam CN Indie Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Indie Keyword Upcoming / Steam App 3874450",
-      "contact": "Email: hello@futurefriendsgames.com；官网: https://futurefriends.lol/；X/Twitter: https://x.com/futurefriendsvg\\；Steam: https://steamcommunity.com/app/3874450/discussions/",
+      "traction_summary": "Steam CN Indie Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Indie Keyword Upcoming / Steam App 4381390",
+      "contact": "Steam: https://steamcommunity.com/app/4381390/discussions/",
+      "contact_methods": [
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4381390/discussions/",
+          "note": "Official Steam community fallback"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4381390/",
+        "https://steamdb.info/app/4381390/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Indie Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "Steam 页面显示已发售，不符合前置BD窗口",
+      "verdict": "Steam 页面显示已发售，不符合前置BD窗口，暂不投入BD时间",
+      "next_action": "归档原因，避免重复讨论",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": "V6判断：Steam 页面显示已发售，不符合前置BD窗口。"
+    },
+    {
+      "id": "lead_steam_4581560_2026-06-08",
+      "project": "Eleven Legends",
+      "steam_app_id": "4581560",
+      "team": "HillRock Studio",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "淘汰池",
+      "stage": "rejected",
+      "priority": "P3",
+      "priority_reason": "Steam 页面显示已发售，不符合前置BD窗口",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；已发售约158天；Steam 页面显示已发售，不符合前置BD窗口",
+      "genre": "RPG / Simulation / Sports / Strategy",
+      "gameplay": "Eleven Legends blends football management, character growth, and strategic matches. You are not just a manager on the sidelines, nor just one player on the pitch. Plan each week, build bonds, find mentors, and lead your team to victory.",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-01-01",
+      "release_window": "2026-01-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "HillRock Studio；未见成熟中国发行能力占位",
+      "publisher_name": "HillRock Studio",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4581560",
+      "contact": "Email: migeescape@foxmail.com；Steam: https://steamcommunity.com/app/4581560/discussions/",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "hello@futurefriendsgames.com",
+          "value": "migeescape@foxmail.com",
           "note": "Steam support email"
         },
         {
-          "type": "官网",
-          "value": "https://futurefriends.lol/",
-          "note": "Steam official website"
-        },
-        {
-          "type": "X/Twitter",
-          "value": "https://x.com/futurefriendsvg\\",
-          "note": "Found on official site"
-        },
-        {
           "type": "Steam",
-          "value": "https://steamcommunity.com/app/3874450/discussions/",
+          "value": "https://steamcommunity.com/app/4581560/discussions/",
           "note": "Steam community backup"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/3874450/",
-        "https://steamdb.info/app/3874450/"
+        "https://store.steampowered.com/app/4581560/",
+        "https://steamdb.info/app/4581560/"
       ],
-      "exposure_trail": "最早自动捕捉：Steam CN Indie Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "Steam 页面显示已发售，不符合前置BD窗口",
+      "verdict": "Steam 页面显示已发售，不符合前置BD窗口，暂不投入BD时间",
+      "next_action": "归档原因，避免重复讨论",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": "V6判断：Steam 页面显示已发售，不符合前置BD窗口。"
+    },
+    {
+      "id": "lead_steam_4752860_2026-06-08",
+      "project": "Playful Day",
+      "steam_app_id": "4752860",
+      "team": "芝兰之室",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "淘汰池",
+      "stage": "rejected",
+      "priority": "P3",
+      "priority_reason": "Steam 页面显示已发售，不符合前置BD窗口",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；已发售约7天；Steam 页面显示已发售，不符合前置BD窗口",
+      "genre": "Casual / Indie",
+      "gameplay": "Playful Day is an all-ages casual game collection developed by game-loving educators. Enjoy lightweight, pure gameplay with global board games, puzzles and brain challenges. Supports local multiplayer &amp; offline play for solo time, family fun and friend gatherings.",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-06-01",
+      "release_window": "2026-06-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "芝兰之室；未见成熟中国发行能力占位",
+      "publisher_name": "芝兰之室",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4752860",
+      "contact": "Email: zldarwin@foxmail.com；Steam: https://steamcommunity.com/app/4752860/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "zldarwin@foxmail.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4752860/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4752860/",
+        "https://steamdb.info/app/4752860/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
       "amplification": "可做多人首测、主播局和社交传播节点。",
       "risks": "Steam 页面显示已发售，不符合前置BD窗口",
@@ -267,65 +589,120 @@
       "notes": "V6判断：Steam 页面显示已发售，不符合前置BD窗口。"
     },
     {
-      "id": "lead_steam_4409310_2026-06-08",
-      "project": "Runes & Rivets",
-      "steam_app_id": "4409310",
-      "team": "Dano Sato",
+      "id": "lead_steam_4364920_2026-06-08",
+      "project": "CHEAT",
+      "steam_app_id": "4364920",
+      "team": "大隆盛工作室",
       "team_size": null,
-      "country": "海外",
-      "region": "海外",
+      "country": "中国（待确认）",
+      "region": "中国",
       "city": null,
-      "region_priority": "其他",
+      "region_priority": "国内优先",
       "bucket": "淘汰池",
       "stage": "rejected",
       "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约23天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Casual / Indie / Strategy",
-      "gameplay": "Runes &amp; Rivets is a steampunk magitech deckbuilder where you run a workshop for 20 turns. Generate gears, metal, mana, and gold to build a crafting engine, forge products, boost them with rune engravings, then sell for big profit.",
-      "progress": "Steam Steam CN Deckbuilder Keyword Upcoming；发售窗口：2026-07-01；Demo/试玩信号需优先复核",
-      "release_window": "2026-07-01",
+      "priority_reason": "Steam 页面显示已发售，不符合前置BD窗口",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；已发售约158天；Steam 页面显示已发售，不符合前置BD窗口",
+      "genre": "Casual / Indie / Simulation / Strategy",
+      "gameplay": "CHEAT is an exam-themed card Roguelike game. You play as a student who must collect and use various bizarre cards and skills. Stay vigilant, dodge the teachers, improve your scores and rankings, and ultimately achieve victory in the exam!",
+      "progress": "Steam Steam CN Guofeng Keyword Upcoming；发售窗口：2026-01-01",
+      "release_window": "2026-01-01",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "RealMono Inc.；未见成熟中国发行能力占位",
-      "publisher_name": "RealMono Inc.",
+      "publisher_status": "大隆盛工作室；未见成熟中国发行能力占位",
+      "publisher_name": "大隆盛工作室",
       "china_capability_occupied": false,
-      "traction_summary": "Steam CN Deckbuilder Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Deckbuilder Keyword Upcoming / Steam App 4409310",
-      "contact": "Email: remostudio22@gmail.com；Steam: https://steamcommunity.com/app/4409310/discussions/",
+      "traction_summary": "Steam CN Guofeng Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Guofeng Keyword Upcoming / Steam App 4364920",
+      "contact": "Email: 1476149098@qq.com；Steam: https://steamcommunity.com/app/4364920/discussions/",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "remostudio22@gmail.com",
+          "value": "1476149098@qq.com",
           "note": "Steam support email"
         },
         {
           "type": "Steam",
-          "value": "https://steamcommunity.com/app/4409310/discussions/",
+          "value": "https://steamcommunity.com/app/4364920/discussions/",
           "note": "Steam community backup"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/4409310/",
-        "https://steamdb.info/app/4409310/"
+        "https://store.steampowered.com/app/4364920/",
+        "https://steamdb.info/app/4364920/"
       ],
-      "exposure_trail": "最早自动捕捉：Steam CN Deckbuilder Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "exposure_trail": "最早自动捕捉：Steam CN Guofeng Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "Steam 页面显示已发售，不符合前置BD窗口",
+      "verdict": "Steam 页面显示已发售，不符合前置BD窗口，暂不投入BD时间",
+      "next_action": "归档原因，避免重复讨论",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-08",
+      "notes": "V6判断：Steam 页面显示已发售，不符合前置BD窗口。"
+    },
+    {
+      "id": "lead_steam_3505320_2026-06-08",
+      "project": "十品芝麻官",
+      "steam_app_id": "3505320",
+      "team": "孟骏远、梁骞、欧阳坤",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "淘汰池",
+      "stage": "rejected",
+      "priority": "P3",
+      "priority_reason": "Steam 页面显示已发售，不符合前置BD窗口",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；已发售约158天；Steam 页面显示已发售，不符合前置BD窗口",
+      "genre": "Adventure / Indie / RPG / Strategy",
+      "gameplay": "Strange History Mystery is a HD2D ancient style pixel role-playing + reasoning and decryption game. Players will play the role of the newly appointed county magistrate Bao Cheng, and seek the truth in the treacherous officialdom and confusing cases, and find their own &quot;way to be an official&quot;.",
+      "progress": "Steam Steam CN Guofeng Keyword Upcoming；发售窗口：2026-01-01",
+      "release_window": "2026-01-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "孟骏远；未见成熟中国发行能力占位",
+      "publisher_name": "孟骏远",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Guofeng Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN Guofeng Keyword Upcoming / Steam App 3505320",
+      "contact": "Email: mengyidong954@gmail.com；Steam: https://steamcommunity.com/app/3505320/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "mengyidong954@gmail.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3505320/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3505320/",
+        "https://steamdb.info/app/3505320/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Guofeng Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
       "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
+      "risks": "Steam 页面显示已发售，不符合前置BD窗口",
+      "verdict": "Steam 页面显示已发售，不符合前置BD窗口，暂不投入BD时间",
       "next_action": "归档原因，避免重复讨论",
       "owner": null,
       "due_date": null,
       "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
+      "notes": "V6判断：Steam 页面显示已发售，不符合前置BD窗口。"
     },
     {
-      "id": "lead_steam_4246340_2026-06-08",
-      "project": "Gorotsuki Paradise",
-      "steam_app_id": "4246340",
-      "team": "Kojika Games",
+      "id": "lead_steam_3798920_2026-06-08",
+      "project": "Boby and the Witch",
+      "steam_app_id": "3798920",
+      "team": "VaragtP",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -335,284 +712,48 @@
       "stage": "rejected",
       "priority": "P3",
       "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约23天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Strategy / Free To Play",
-      "gameplay": "Gorotsuki Paradise is an online PvP card game where you build your deck as you battle.🃏 Recruit over 150 unique &quot;gorotsuki&quot; cards and fight your way to the top of the mad city of Saitama.🦹 It’s completely free to play, with no pay-to-win mechanics!🤑",
-      "progress": "Steam Steam CN Deckbuilder Keyword Upcoming；发售窗口：2026-07-01",
-      "release_window": "2026-07-01",
+      "rule_fit": "距发售约22天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "genre": "Action / Adventure / Casual / Indie / Free To Play",
+      "gameplay": "Boby’s girlfriend has been abducted by a witch—race through 3 worlds and 18 levels to save her. Can you beat it in under 5 minutes?",
+      "progress": "Steam Steam CN Indie Keyword Upcoming；发售窗口：2026-06-30；Demo/试玩信号需优先复核",
+      "release_window": "2026-06-30",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Kojika Games；未见成熟中国发行能力占位",
-      "publisher_name": "Kojika Games",
+      "publisher_status": "VaragtP；未见成熟中国发行能力占位",
+      "publisher_name": "VaragtP",
       "china_capability_occupied": false,
-      "traction_summary": "Steam CN Deckbuilder Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Steam CN Deckbuilder Keyword Upcoming / Steam App 4246340",
-      "contact": "Email: kojikagames@outlook.jp；官网: https://goropara.kojikagames.com/；Steam: https://steamcommunity.com/app/4246340/discussions/",
+      "traction_summary": "Steam CN Indie Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号。",
+      "public_signals": "Steam CN Indie Keyword Upcoming / Steam App 3798920",
+      "contact": "Email: contact@varagtp.com；官网: http://www.varagtp.com；X/Twitter: https://twitter.com/VaragtP；Steam: https://steamcommunity.com/app/3798920/discussions/",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "kojikagames@outlook.jp",
+          "value": "contact@varagtp.com",
           "note": "Steam support email"
         },
         {
           "type": "官网",
-          "value": "https://goropara.kojikagames.com/",
-          "note": "Steam official website"
-        },
-        {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/4246340/discussions/",
-          "note": "Steam community backup"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/4246340/",
-        "https://steamdb.info/app/4246340/",
-        "https://goropara.kojikagames.com/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Deckbuilder Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "amplification": "可做多人首测、主播局和社交传播节点。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
-      "next_action": "归档原因，避免重复讨论",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
-    },
-    {
-      "id": "lead_steam_4542800_2026-06-08",
-      "project": "Kill The Nova",
-      "steam_app_id": "4542800",
-      "team": "NQV4",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "淘汰池",
-      "stage": "rejected",
-      "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约23天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Casual / Indie / Strategy",
-      "gameplay": "Classic puzzle meets roguelike deck-building! Collect a variety of unique pieces, build powerful synergies, and unleash overwhelmingly inflated scores through explosive “multipliers.” Smash impossible numbers straight into your enemies and beat up the final boss—the developer himself!",
-      "progress": "Steam Steam CN Deckbuilder Keyword Upcoming；发售窗口：2026-07-01；Demo/试玩信号需优先复核",
-      "release_window": "2026-07-01",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "ProblemEdge；未见成熟中国发行能力占位",
-      "publisher_name": "ProblemEdge",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Deckbuilder Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Deckbuilder Keyword Upcoming / Steam App 4542800",
-      "contact": "Email: problemedge@gmail.com；官网: https://problemedge.vercel.app/；X/Twitter: https://x.com/Problem_Edge；Steam: https://steamcommunity.com/app/4542800/discussions/",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "problemedge@gmail.com",
-          "note": "Steam support email"
-        },
-        {
-          "type": "官网",
-          "value": "https://problemedge.vercel.app/",
+          "value": "http://www.varagtp.com",
           "note": "Steam official website"
         },
         {
           "type": "X/Twitter",
-          "value": "https://x.com/Problem_Edge",
+          "value": "https://twitter.com/VaragtP",
           "note": "Found on official site"
         },
         {
           "type": "Steam",
-          "value": "https://steamcommunity.com/app/4542800/discussions/",
+          "value": "https://steamcommunity.com/app/3798920/discussions/",
           "note": "Steam community backup"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/4542800/",
-        "https://steamdb.info/app/4542800/",
-        "https://problemedge.vercel.app/"
+        "https://store.steampowered.com/app/3798920/",
+        "https://steamdb.info/app/3798920/",
+        "http://www.varagtp.com"
       ],
-      "exposure_trail": "最早自动捕捉：Steam CN Deckbuilder Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
-      "next_action": "归档原因，避免重复讨论",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
-    },
-    {
-      "id": "lead_steam_2921480_2026-06-08",
-      "project": "Sheeple",
-      "steam_app_id": "2921480",
-      "team": "Ill-Fated Studios",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "淘汰池",
-      "stage": "rejected",
-      "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约54天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Action / Indie / Strategy",
-      "gameplay": "Cast cards to turn the tides of the battlefield, gather your army, and fight to regain The Original Sheep! Sheeple is a grand real time Auto battler with roguelike and deck-building elements.",
-      "progress": "Steam Steam CN Deckbuilder Keyword Upcoming；发售窗口：2026-08-01；Demo/试玩信号需优先复核",
-      "release_window": "2026-08-01",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "Ill-Fated Studios；未见成熟中国发行能力占位",
-      "publisher_name": "Ill-Fated Studios",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Deckbuilder Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Deckbuilder Keyword Upcoming / Steam App 2921480",
-      "contact": "Email: illfatedstudioscontact@gmail.com；Steam: https://steamcommunity.com/app/2921480/discussions/",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "illfatedstudioscontact@gmail.com",
-          "note": "Steam support email"
-        },
-        {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/2921480/discussions/",
-          "note": "Steam community backup"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/2921480/",
-        "https://steamdb.info/app/2921480/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Deckbuilder Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
-      "next_action": "归档原因，避免重复讨论",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
-    },
-    {
-      "id": "lead_steam_4766950_2026-06-08",
-      "project": "Fury Journey",
-      "steam_app_id": "4766950",
-      "team": "Dongrenran",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "淘汰池",
-      "stage": "rejected",
-      "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约3天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Adventure / Casual / Indie / RPG / Strategy",
-      "gameplay": "A Turn-Based Game。 This is a traditional turn-based game featuring roguelite elements. Players can equip up to 4 skills and 3 personal relics, combining them with team relics and items acquired during dungeon runs to conquer challenges.",
-      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-06-11",
-      "release_window": "2026-06-11",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "Dongrenran；未见成熟中国发行能力占位",
-      "publisher_name": "Dongrenran",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
-      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 4766950",
-      "contact": "Email: 1417762302@qq.com；Steam: https://steamcommunity.com/app/4766950/discussions/",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "1417762302@qq.com",
-          "note": "Steam support email"
-        },
-        {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/4766950/discussions/",
-          "note": "Steam community backup"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/4766950/",
-        "https://steamdb.info/app/4766950/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
-      "next_action": "归档原因，避免重复讨论",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
-    },
-    {
-      "id": "lead_steam_3234850_2026-06-08",
-      "project": "HYPERWIRED",
-      "steam_app_id": "3234850",
-      "team": "SIDRALGAMES",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "淘汰池",
-      "stage": "rejected",
-      "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约24天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Action / Indie",
-      "gameplay": "Hyperwired is a classic top-down action shooter, where your spaceship has a plug hanging from it. Wire yourself into sockets, gather upgrades, and unlock ships as you explore a procedurally generated galaxy with roguelike elements.",
-      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-07-02；Demo/试玩信号需优先复核",
-      "release_window": "2026-07-02",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "SelectaPlay / Beep Japan Inc.；未见成熟中国发行能力占位",
-      "publisher_name": "SelectaPlay",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 3234850",
-      "contact": "Email: sidralgames@gmail.com；官网: https://sidralgames.itch.io/；X/Twitter: https://twitter.com/sidralgames；Steam: https://steamcommunity.com/app/3234850/discussions/",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "sidralgames@gmail.com",
-          "note": "Steam support email"
-        },
-        {
-          "type": "官网",
-          "value": "https://sidralgames.itch.io/",
-          "note": "Steam official website"
-        },
-        {
-          "type": "X/Twitter",
-          "value": "https://twitter.com/sidralgames",
-          "note": "Found on official site"
-        },
-        {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/3234850/discussions/",
-          "note": "Steam community backup"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/3234850/",
-        "https://steamdb.info/app/3234850/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "exposure_trail": "最早自动捕捉：Steam CN Indie Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
       "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
       "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
       "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
@@ -624,10 +765,10 @@
       "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
     },
     {
-      "id": "lead_steam_4117890_2026-06-08",
-      "project": "Nine Skies",
-      "steam_app_id": "4117890",
-      "team": "Ninefold",
+      "id": "lead_steam_3346410_2026-06-08",
+      "project": "Club Soko",
+      "steam_app_id": "3346410",
+      "team": "Miracle Tea",
       "team_size": null,
       "country": "海外",
       "region": "海外",
@@ -637,148 +778,49 @@
       "stage": "rejected",
       "priority": "P3",
       "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约35天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Action / Casual / Indie / RPG / Strategy",
-      "gameplay": "Nine Skies is a mythology-themed arena shooter with light roguelike elements. Play as a deity, wield auto-attacking weapons, and cleave through relentless enemies in a fast-paced, chaos-fueled battlefield.",
-      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-07-13；Demo/试玩信号需优先复核",
-      "release_window": "2026-07-13",
+      "rule_fit": "距发售约45天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
+      "genre": "Casual / Indie",
+      "gameplay": "Navigate your way deep into an underground nightclub and discover secrets hidden in its depths.",
+      "progress": "Steam Steam CN Indie Keyword Upcoming；发售窗口：2026-07-23；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-23",
       "early_access": false,
       "narrative_heavy": false,
       "india_team": false,
-      "publisher_status": "Ninefold；未见成熟中国发行能力占位",
-      "publisher_name": "Ninefold",
+      "publisher_status": "Miracle Tea；未见成熟中国发行能力占位",
+      "publisher_name": "Miracle Tea",
       "china_capability_occupied": false,
-      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 4117890",
-      "contact": "Email: NinefoldGames@163.com；Steam: https://steamcommunity.com/app/4117890/discussions/",
+      "traction_summary": "Steam CN Indie Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号。",
+      "public_signals": "Steam CN Indie Keyword Upcoming / Steam App 3346410",
+      "contact": "Email: miracleteastudios@gmail.com；官网: https://miracleteastudios.com/club-soko/；官网: https://discord.com/invite/MYWmsNQ；Steam: https://steamcommunity.com/app/3346410/discussions/",
       "contact_methods": [
         {
           "type": "Email",
-          "value": "NinefoldGames@163.com",
+          "value": "miracleteastudios@gmail.com",
           "note": "Steam support email"
         },
         {
+          "type": "官网",
+          "value": "https://miracleteastudios.com/club-soko/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "官网",
+          "value": "https://discord.com/invite/MYWmsNQ",
+          "note": "Steam support URL"
+        },
+        {
           "type": "Steam",
-          "value": "https://steamcommunity.com/app/4117890/discussions/",
+          "value": "https://steamcommunity.com/app/3346410/discussions/",
           "note": "Steam community backup"
         }
       ],
       "links": [
-        "https://store.steampowered.com/app/4117890/",
-        "https://steamdb.info/app/4117890/"
+        "https://store.steampowered.com/app/3346410/",
+        "https://steamdb.info/app/3346410/",
+        "https://miracleteastudios.com/club-soko/"
       ],
-      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
-      "next_action": "归档原因，避免重复讨论",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
-    },
-    {
-      "id": "lead_steam_4463680_2026-06-08",
-      "project": "Dorts : A Darts Roguelike",
-      "steam_app_id": "4463680",
-      "team": "MovingPixels",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "淘汰池",
-      "stage": "rejected",
-      "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约44天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Casual / Indie / Simulation / Sports / Strategy",
-      "gameplay": "First-person darts roguelike. Throw darts. Earn gold. Buy upgrades. Survive the chaos.",
-      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-07-22；Demo/试玩信号需优先复核",
-      "release_window": "2026-07-22",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "MovingPixels；未见成熟中国发行能力占位",
-      "publisher_name": "MovingPixels",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 4463680",
-      "contact": "Email: hello@movingpixels.dev；Steam: https://steamcommunity.com/app/4463680/discussions/",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "hello@movingpixels.dev",
-          "note": "Steam support email"
-        },
-        {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/4463680/discussions/",
-          "note": "Steam community backup"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/4463680/",
-        "https://steamdb.info/app/4463680/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
-      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
-      "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
-      "next_action": "归档原因，避免重复讨论",
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-06-08",
-      "notes": "V6判断：海外项目缺少PC大数据验证，不符合当前国内BD优先策略。"
-    },
-    {
-      "id": "lead_steam_4021070_2026-06-08",
-      "project": "a monkey",
-      "steam_app_id": "4021070",
-      "team": "toolArt",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "淘汰池",
-      "stage": "rejected",
-      "priority": "P3",
-      "priority_reason": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "rule_fit": "玩法具备内容化潜力；距发售约23天；海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
-      "genre": "Indie / RPG / Strategy",
-      "gameplay": "AMonkey: A fast-paced 2D deck-building roguelike set in Journey to the West. As a Monkey , battle through randomly generated journeys, strategically combining 60+ cards to build unique decks (e.g., Burst, Combo, Defense). Unlock 10+ powerful artifacts and challenge over 10 unique bosses.",
-      "progress": "Steam Steam CN Roguelike Keyword Upcoming；发售窗口：2026-07-01；Demo/试玩信号需优先复核",
-      "release_window": "2026-07-01",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "toolArt；未见成熟中国发行能力占位",
-      "publisher_name": "toolArt",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Roguelike Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Roguelike Keyword Upcoming / Steam App 4021070",
-      "contact": "Email: 1012338654@qq.com；Steam: https://steamcommunity.com/app/4021070/discussions/",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "1012338654@qq.com",
-          "note": "Steam support email"
-        },
-        {
-          "type": "Steam",
-          "value": "https://steamcommunity.com/app/4021070/discussions/",
-          "note": "Steam community backup"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/4021070/",
-        "https://steamdb.info/app/4021070/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Roguelike Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "exposure_trail": "最早自动捕捉：Steam CN Indie Keyword Upcoming（2026-06-08）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
       "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
       "risks": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略",
       "verdict": "海外项目缺少PC大数据验证，不符合当前国内BD优先策略，暂不投入BD时间",
