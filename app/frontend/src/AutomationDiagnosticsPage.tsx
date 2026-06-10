@@ -1,11 +1,12 @@
 import { AlertTriangle, CheckCircle2, ExternalLink, FileCheck2, ServerCog, ShieldAlert, TrendingUp } from "lucide-react";
 import { ReportHistoryControls } from "./ReportHistoryControls";
-import type { AutomationDiagnostics, AutomationDiagnosticsStatus, AutomationFileHealth, AutomationReceiptSummary } from "./types";
+import type { AutomationDiagnostics, AutomationDiagnosticsStatus, AutomationFileHealth, AutomationReceiptSummary, SourcingLearningReport } from "./types";
 
-export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange }: {
+export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange, sourcingLearning }: {
   diagnostics: AutomationDiagnostics | null;
   loading: boolean;
   onDateChange: (date: string) => void;
+  sourcingLearning: SourcingLearningReport | null;
 }) {
   if (loading) return <section className="diagnostics-shell"><div className="empty-cell">加载自动化诊断中</div></section>;
 
@@ -44,6 +45,8 @@ export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange }
       </div>
 
       {diagnostics.business_acceptance && <BusinessAcceptanceBlock acceptance={diagnostics.business_acceptance} />}
+
+      <SourcingLearningBlock report={sourcingLearning} />
 
       <div className="diagnostics-grid diagnostics-grid-panels">
         <article className="diagnostics-panel">
@@ -89,6 +92,43 @@ export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange }
       </div>
     </>}
   </section>;
+}
+
+function SourcingLearningBlock({ report }: { report: SourcingLearningReport | null }) {
+  return <article className="diagnostics-business acceptance-needs_attention">
+    <div className="diagnostics-business-head">
+      <div>
+        <span>Sourcing 学习</span>
+        <h3>人工决策漏斗</h3>
+      </div>
+      <strong>{report ? `${report.cohort.total_active} 个流程内样本` : "等待数据"}</strong>
+    </div>
+    {!report ? <p>还没有读取到学习数据；处理 lead 后这里会显示评级、淘汰原因和流转结果。</p> : <>
+      <p>{report.learning_note}</p>
+      <div className="business-metric-grid">
+        <div className="business-metric metric-status-pass"><span>正向结果</span><strong>{report.outcomes.positive}</strong><small>跟进/推进或高评级</small></div>
+        <div className="business-metric metric-status-fail"><span>负向结果</span><strong>{report.outcomes.negative}</strong><small>淘汰或低评级</small></div>
+        <div className="business-metric metric-status-warn"><span>中间状态</span><strong>{report.outcomes.intermediate}</strong><small>待评测/测试/观察</small></div>
+        <div className="business-metric metric-status-unknown"><span>记录事件</span><strong>{report.events.total}</strong><small>人工保存动作</small></div>
+      </div>
+      <div className="business-cause-grid">
+        <div>
+          <h4>漏斗</h4>
+          <div className="diagnostics-tags">
+            {report.funnel.map((item) => <span key={item.bucket}>{item.bucket} {item.count}</span>)}
+          </div>
+        </div>
+        <div>
+          <h4>评级 / 淘汰原因</h4>
+          <div className="diagnostics-tags">
+            {Object.entries(report.grade_distribution).map(([grade, count]) => <span key={grade}>{grade} {count}</span>)}
+            {report.drop_reasons.slice(0, 6).map((item) => <span key={item.reason}>{item.reason} {item.count}</span>)}
+            {!Object.keys(report.grade_distribution).length && !report.drop_reasons.length ? <span>继续积累样本</span> : null}
+          </div>
+        </div>
+      </div>
+    </>}
+  </article>;
 }
 
 function StatusIcon({ status }: { status: AutomationDiagnosticsStatus }) {

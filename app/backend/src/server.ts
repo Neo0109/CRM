@@ -23,6 +23,7 @@ type Lead = {
   bucket: Bucket;
   stage: Stage;
   priority: Priority;
+  drop_reason: string | null;
   genre: string | null;
   gameplay: string | null;
   progress: string;
@@ -357,6 +358,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     bucket: raw.bucket ?? "未处理",
     stage: raw.stage ?? stageFromBucket(raw.bucket),
     priority: raw.priority ?? priorityFromBucket(raw.bucket),
+    drop_reason: valueOrNull(raw.drop_reason),
     genre: valueOrNull(raw.genre),
     gameplay: valueOrNull(raw.gameplay),
     progress: raw.progress ?? "待补充",
@@ -396,7 +398,7 @@ function leadKeys(lead: Lead) {
 }
 
 function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "country", "bucket", "stage", "priority", "genre", "progress", "release_window", "publisher_status", "public_signals", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "country", "bucket", "stage", "priority", "drop_reason", "genre", "progress", "release_window", "publisher_status", "public_signals", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;

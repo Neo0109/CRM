@@ -44,6 +44,8 @@ export type CrmUser = {
   permissions: string[];
 };
 
+export type AccessUser = Pick<CrmUser, "username" | "display_name" | "role" | "permissions">;
+
 export type CrmUsersParseStatus = "empty" | "valid" | "repaired" | "invalid";
 
 export type CrmUsersParseResult = {
@@ -73,6 +75,7 @@ export type Lead = {
   priority: Priority;
   review_status: ReviewStatus;
   reviewed_at: string | null;
+  drop_reason: string | null;
   priority_reason: string | null;
   rule_fit: string | null;
   genre: string | null;
@@ -129,14 +132,25 @@ type ImportStats = {
 };
 
 export async function requireAccess(request: Request, env: Env) {
+  const user = await getAccessUser(request, env);
+  if (user) return null;
+  return json({ error: "CRM login required" }, 401);
+}
+
+export async function getAccessUser(request: Request, env: Env): Promise<AccessUser | null> {
   const headerToken = request.headers.get("x-crm-token");
   const cookieToken = readCookie(request.headers.get("cookie"), "crm_access_token");
   const headerUsername = request.headers.get("x-crm-username");
   const cookieUsername = readCookie(request.headers.get("cookie"), "crm_username");
   const result = await validateLoginCredentials(env, headerUsername ?? cookieUsername, headerToken ?? cookieToken, false);
 
-  if (result.ok) return null;
-  return json({ error: "CRM login required" }, 401);
+  if (!result.ok) return null;
+  return {
+    username: result.username ?? "",
+    display_name: result.display_name ?? displayNameForUsername(result.username),
+    role: result.role ?? "member",
+    permissions: result.permissions ?? []
+  };
 }
 
 export function requireAutomationAccess(request: Request, env: Env) {
@@ -550,7 +564,7 @@ export function isDailyReport(value: unknown): value is DailyReport {
 }
 
 export function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "evaluation_grade", "evaluation_result", "evaluated_at", "next_action", "owner", "due_date", "calendar_enabled", "follow_up_interval", "notes", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "region", "country", "city", "bucket", "stage", "priority", "review_status", "reviewed_at", "drop_reason", "priority_reason", "rule_fit", "genre", "progress", "release_window", "publisher_status", "contact_methods", "links", "bilibili_fit", "amplification", "verdict", "evaluation_grade", "evaluation_result", "evaluated_at", "next_action", "owner", "due_date", "calendar_enabled", "follow_up_interval", "notes", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;
@@ -600,6 +614,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     priority: raw.priority ?? priorityFromBucket(bucket),
     review_status: normalizeReviewStatus(raw.review_status, bucket),
     reviewed_at: valueOrNull(raw.reviewed_at),
+    drop_reason: valueOrNull(raw.drop_reason),
     priority_reason: valueOrNull(raw.priority_reason) ?? inferPriorityReason(raw),
     rule_fit: valueOrNull(raw.rule_fit) ?? inferRuleFit(raw, country, links),
     genre: valueOrNull(raw.genre),
@@ -651,6 +666,7 @@ function mergeLead(current: Lead, incoming: Lead): Lead {
     follow_up_interval: current.follow_up_interval ?? incoming.follow_up_interval,
     review_status: keepCurrentWorkflow ? current.review_status : incoming.review_status,
     reviewed_at: keepCurrentWorkflow ? current.reviewed_at : incoming.reviewed_at,
+    drop_reason: current.drop_reason ?? incoming.drop_reason,
     evaluation_grade: current.evaluation_grade ?? incoming.evaluation_grade,
     evaluation_result: current.evaluation_result ?? incoming.evaluation_result,
     evaluated_at: current.evaluated_at ?? incoming.evaluated_at,
