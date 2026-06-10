@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6.2",
-  "updated_at": "2026-06-04",
+  "rule_version": "sourcing-rules-v6.3",
+  "updated_at": "2026-06-10",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
@@ -60,7 +60,8 @@
     "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Already released products must not enter push/watch review candidates.",
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
     "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
-    "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence."
+    "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",
+    "Low-volume backfill must never write automation bookkeeping, rule-version labels, or fallback diagnostics into user-facing lead fields such as notes, next_action, verdict, priority_reason, or rule_fit."
   ],
   "bilibili_media_quality_gates": {
     "max_bilibili_lead_age_days": 120,
@@ -85,6 +86,7 @@
     "The generator must route Bilibili/media items with confirmed already-released Steam status to drop_pool or market background, not push/watch.",
     "The generator log must include candidate total, duplicate filtered count, released filtered count, Bilibili official-source hits, and final non-dropped import candidates.",
     "Only schema damage, file write failure, or CRM sync authentication/write failure should fail the scheduled automation.",
+    "GitHub Actions and Cloudflare sync paths must prefer CRM_AUTOMATION_TOKEN, with CRM_ACCESS_TOKEN only as a backwards-compatible fallback where explicitly supported.",
     "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
     "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source."
   ]

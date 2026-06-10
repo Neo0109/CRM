@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.2.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.3.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { execFile as execFileCallback } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -9,9 +9,9 @@ import {
   deriveMediaDecisionFields,
   formatMediaGameplay,
   formatMediaProgress,
-  normalizeMediaLinks as normalizeMediaLinksV62,
-  steamAppIdFromLinks as steamAppIdFromLinksV62
-} from "./sourcing_v6_2_quality.mjs";
+  normalizeMediaLinks as normalizeMediaLinksV63,
+  steamAppIdFromLinks as steamAppIdFromLinksV63
+} from "./sourcing_v6_3_quality.mjs";
 
 const rootDir = process.cwd();
 const execFile = promisify(execFileCallback);
@@ -28,7 +28,7 @@ const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, 120, 1
 const maxOfficialLookups = boundedNumber(args.maxOfficialLookups, 12, 0, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 const sourcingDiagnostics = {
-  rule_version: "sourcing-rules-v6.2",
+  rule_version: "sourcing-rules-v6.3",
   source_failures: 0,
   media_signals_raw: 0,
   media_stale_filtered: 0,
@@ -103,8 +103,8 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport(en
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v6_2",
-  rule_version: "sourcing-rules-v6.2",
+  generator: "online_daily_v4_sourcing_rules_v6_3",
+  rule_version: "sourcing-rules-v6.3",
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
@@ -570,18 +570,44 @@ function buildPools(candidates, mediaLeads = []) {
 }
 
 function toBackfillReviewLead(lead) {
+  const progress = shortProgressLabel(lead.progress);
+  const gameplay = shortGameplayLabel(lead.gameplay);
   return {
     ...lead,
     _class: "watch",
     bucket: "未处理",
     stage: "new",
     priority: lead.priority === "P3" ? "P2" : lead.priority,
-    priority_reason: "国内候选未达到强推荐标准，但源信号具体且仍可先测/先看；为避免漏掉可签概率更高的国内项目，补入未处理首轮 review。",
-    rule_fit: `${lead.rule_fit}；V6低置信度保底复核，不代表已进入观察、待评测或商务推进。`,
-    verdict: "低置信度国内保底候选：先做产品判断，能测就提测，不成立直接淘汰；不要先花时间补全商务资料。",
-    next_action: "打开 Steam/原始链接快速判断玩法、实机和B站内容钩子；通过首测后再补官网、联系人和商务窗口。",
-    notes: `${lead.notes ?? ""} V6保底补入未处理：原因是当天 review 候选低于质量闸门，且该国内候选仍有人工首轮判断价值。`.trim()
+    priority_reason: `${gameplay} + ${progress}；国内/中文语境信号仍有首轮判断价值，优先看玩法强度、内容传播点、收入 upside 和签约窗口。`,
+    rule_fit: "国内候选信号具体，但证据强度不足；只进入未处理 inbox，由人工首轮判断是否提测、观察或淘汰。",
+    verdict: "",
+    next_action: null,
+    notes: null
   };
+}
+
+function shortProgressLabel(value) {
+  const text = String(value ?? "");
+  if (/正式上线|released/i.test(text)) return "正式上线";
+  if (/demo|试玩/i.test(text)) return "试玩 Demo";
+  if (/early access|EA\b|抢先体验/i.test(text)) return "EA";
+  if (/即将发售|coming soon|商店页/i.test(text)) return "即将发售";
+  return "进度待确认";
+}
+
+function shortGameplayLabel(value) {
+  const text = String(value ?? "").replace(/https?:\/\/\S+/gi, " ");
+  const tags = [];
+  const add = (tag) => {
+    if (!tags.includes(tag)) tags.push(tag);
+  };
+  if (/card|deck|卡牌|构筑/i.test(text)) add("Card/Deckbuilder");
+  if (/rogue|肉鸽/i.test(text)) add("Roguelike");
+  if (/strategy|策略|战棋/i.test(text)) add("Strategy");
+  if (/simulation|management|模拟|经营/i.test(text)) add("Simulation");
+  if (/rpg|角色扮演/i.test(text)) add("RPG");
+  if (/action|动作|ACT/i.test(text)) add("ACT");
+  return tags.slice(0, 3).join(" / ") || "玩法待确认";
 }
 
 function interleaveLeads(primary, secondary) {
@@ -1096,8 +1122,8 @@ async function enrichMediaLeadWithOfficialBilibiliContext(lead) {
 
   sourcingDiagnostics.bilibili_official_source_hits += 1;
   const officialText = `${preferred.title} ${preferred.summary} ${preferred.source} ${preferred.link}`;
-  const officialLinks = normalizeMediaLinksV62([preferred.link, officialText]);
-  const officialSteamAppId = steamAppIdFromLinksV62(officialLinks);
+  const officialLinks = normalizeMediaLinksV63([preferred.link, officialText]);
+  const officialSteamAppId = steamAppIdFromLinksV63(officialLinks);
   if (officialSteamAppId && officialSteamAppId !== lead.steam_app_id) sourcingDiagnostics.media_steam_appids_extracted += 1;
 
   return {
@@ -1210,8 +1236,8 @@ function mediaSignalToLead(item, confidence = "strict") {
   const confidencePenalty = confidence === "expanded" ? 6 : confidence === "rescue" ? 10 : 0;
   const isBilibili = isBilibiliSignal(item);
   const mediaText = `${item.title} ${item.summary} ${item.source} ${item.link}`;
-  const extractedLinks = normalizeMediaLinksV62([item.link, mediaText]);
-  const steamAppId = steamAppIdFromLinksV62(extractedLinks);
+  const extractedLinks = normalizeMediaLinksV63([item.link, mediaText]);
+  const steamAppId = steamAppIdFromLinksV63(extractedLinks);
   if (steamAppId) sourcingDiagnostics.media_steam_appids_extracted += 1;
   const releasedByText = hasAlreadyReleasedMediaText(mediaText);
   const isPush = !releasedByText && confidence === "strict" && score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(mediaText);
@@ -1450,9 +1476,9 @@ function hashText(value) {
 function buildDailyReport(pools, rawCount, enrichedCount, mediaLeadCount) {
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.2线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条，官方源命中 ${sourcingDiagnostics.bilibili_official_source_hits} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V6.3线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条，官方源命中 ${sourcingDiagnostics.bilibili_official_source_hits} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V6.2把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V6.3把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
@@ -1478,7 +1504,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   if (!candidates.length) {
     return {
       report_date: reportDate,
-      summary: `Sourcing V6.2行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      summary: `Sourcing V6.3行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
       items: mediaItems
     };
   }
@@ -1496,7 +1522,7 @@ function buildRadarReport(candidates, pools, industrySignals) {
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.2行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V6.3行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -1534,7 +1560,7 @@ function buildSteamTrendReport(candidates, pools) {
   });
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6.2：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    summary: `Steam大盘V6.3：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...steamItems, ...mediaFallbackItems, ...diagnosticFallbackItems].slice(0, 12),
@@ -1584,7 +1610,7 @@ function buildSteamUnavailableFallbackTrendReport(pools) {
 
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6.2：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
+    summary: `Steam大盘V6.3：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...fallbackItems, ...diagnosticItems].slice(0, 12),

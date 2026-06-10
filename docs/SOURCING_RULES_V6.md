@@ -1,8 +1,8 @@
 # Sourcing Rules V6
 
-Date: 2026-06-02
+Date: 2026-06-10
 
-Active supplement: `sourcing-rules-v6.2`, updated 2026-06-04.
+Active supplement: `sourcing-rules-v6.3`, updated 2026-06-10.
 
 ## One-Line Standard
 
@@ -83,6 +83,15 @@ Generated fields must be decision-grade:
 - `progress`: short state such as `试玩 Demo`, `EA`, `即将发售`, `正式上线`.
 - `next_action` and `notes`: empty by default unless there is genuinely important evidence.
 
+### V6.3 Backfill Hygiene And Automation Token Guard
+
+V6.3 keeps the V6.2 source-quality rules and fixes two stability problems:
+
+- Low-volume backfill can keep the daily review queue useful, but it must never expose automation bookkeeping to BD users. Do not write `V6`, fallback reasons, candidate counts, or sync diagnostics into `notes`, `next_action`, `verdict`, `priority_reason`, or `rule_fit`.
+- Backfilled leads still enter `未处理` only and should be framed as clean BD questions: gameplay strength, income upside, market heat, Bilibili amplification, team/region fit, and signing probability.
+- GitHub Actions and Cloudflare sync flows should prefer `CRM_AUTOMATION_TOKEN`; use `CRM_ACCESS_TOKEN` only as a backwards-compatible fallback when the workflow explicitly supports it.
+- Product version, sourcing-rule version, and workflow health are separate. Rules can iterate without changing product UI version, login, schema, or manual review behavior.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -120,5 +129,5 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1/V6.2 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2/V6.3 verification gate before becoming fresh `未处理` leads.
 - Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.

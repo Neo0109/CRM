@@ -321,6 +321,24 @@ button:hover {
 .metric-blue::before { background: #2563eb; }
 .metric-neutral::before { background: #8a92a0; }
 
+.bucket-nav {
+  grid-template-columns: repeat(8, minmax(112px, 1fr));
+  margin-bottom: 12px;
+}
+
+.bucket-nav-card {
+  cursor: pointer;
+  min-height: 88px;
+}
+
+.bucket-nav-card strong {
+  font-size: 28px;
+}
+
+.supporting-triage {
+  margin-bottom: 18px;
+}
+
 .bucket-button.active.unread,
 .bucket-button.unread:hover {
   background: #fdf2f8;
@@ -1203,6 +1221,10 @@ button:hover {
     grid-template-columns: repeat(4, minmax(130px, 1fr));
   }
 
+  .bucket-nav {
+    grid-template-columns: repeat(4, minmax(130px, 1fr));
+  }
+
   .decision-board {
     grid-template-columns: 1fr;
   }
@@ -1255,6 +1277,10 @@ button:hover {
   }
 
   .metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bucket-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
