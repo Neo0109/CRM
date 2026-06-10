@@ -10,7 +10,7 @@ import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
 import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
-import { buildDecisionTriage, buildLeadEvidenceChips, hasEvidenceIssue, needsActionAttention, type TriageFilter } from "./leadTriage";
+import { buildBucketNavigation, buildDecisionTriage, buildLeadEvidenceChips, hasEvidenceIssue, needsActionAttention, type BucketNavigationItem, type TriageFilter } from "./leadTriage";
 import { productVersion, productVersionLabel } from "./productVersion";
 import type { AutomationDiagnostics, Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
 
@@ -354,6 +354,7 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
   moveBucket: (lead: Lead, bucket: Bucket) => Promise<void>;
 }) {
   const triage = useMemo(() => buildDecisionTriage(leads), [leads]);
+  const bucketNavigation = useMemo(() => buildBucketNavigation(leads), [leads]);
   const actionLane = triage.lanes.find((lane) => lane.key === "action");
   const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
@@ -381,7 +382,21 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
       </div>
     </section>
 
-    <section className="decision-board" aria-label="今日决策流">
+    <section className="metric-strip bucket-nav" aria-label="池子导航">
+      {bucketNavigation.map((item) => (
+        <button
+          className={`metric bucket-nav-card metric-${bucketNavigationToneClass(item.tone)} ${isBucketNavigationActive(filters, item) ? "active" : ""}`}
+          key={item.key}
+          onClick={() => applyTriageFilter(item.filter)}
+          type="button"
+        >
+          <span>{item.label}</span>
+          <strong>{item.count}</strong>
+        </button>
+      ))}
+    </section>
+
+    <section className="decision-board supporting-triage" aria-label="辅助复核视角">
       {triage.lanes.map((lane) => (
         <article className={`decision-lane decision-lane-${lane.key}`} key={lane.key}>
           <div className="decision-lane-head">
@@ -449,12 +464,28 @@ function LeadsView({ leads, filters, setFilters, stats, loading, filteredLeads, 
 
 function activeFilterLabel(filters: Filters) {
   if (filters.needsAction) return "需要动作";
-  if (filters.evidenceIssues) return "证据不足";
+  if (filters.evidenceIssues) return "证据不足复核";
   if (filters.missingLinks) return "缺链接补全";
   if (filters.reviewStatus !== "全部") return filters.reviewStatus;
   if (filters.bucket !== "全部") return filters.bucket;
   if (filters.query) return "搜索结果";
   return "Leads Review";
+}
+
+function isBucketNavigationActive(filters: Filters, item: BucketNavigationItem) {
+  if (item.filter.missingLinks) return filters.missingLinks;
+  return Boolean(item.filter.bucket && filters.bucket === item.filter.bucket && !filters.evidenceIssues && !filters.needsAction && !filters.missingLinks);
+}
+
+function bucketNavigationToneClass(tone: BucketNavigationItem["tone"]) {
+  if (tone === "unread") return "purple";
+  if (tone === "evaluation") return "amber";
+  if (tone === "testing") return "cyan";
+  if (tone === "watch") return "blue";
+  if (tone === "follow") return "green";
+  if (tone === "push") return "blue";
+  if (tone === "drop") return "red";
+  return "neutral";
 }
 
 function getDashboardGreeting(displayName: string, date = new Date()) {

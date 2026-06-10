@@ -53,11 +53,11 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
-## Sourcing Rules V6.2 Iteration
+## Sourcing Rules V6.3 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v6.2`, focused on official-source verification, structured link extraction, decision-grade field hygiene, and automation stability while preserving the V6 low-volume fix.
+The latest sourcing-logic iteration is `sourcing-rules-v6.3`, focused on official-source verification, structured link extraction, decision-grade field hygiene, automation stability, and clean low-volume backfill while preserving the V6 low-volume fix.
 
-V6.2 intent:
+V6.3 intent:
 
 - Bilibili video leads must be enriched from video descriptions before candidate creation.
 - Recommendation-UP videos are discovery signals only; official/developer/studio/publisher sources should be preferred before final candidate creation.
@@ -67,7 +67,13 @@ V6.2 intent:
 - Bilibili video leads must be timely. Old videos/news only become leads when they contain a current playable build, demo, update, publishing window, or business event.
 - `priority_reason`, `rule_fit`, `gameplay`, and `progress` must stay concise and decision-grade; `next_action` and `notes` stay empty by default for human BD input.
 - Low volume, Steam 429, or a single media/Bilibili source failure should produce diagnostics and a low-volume valid report when effective candidates still exist; only schema, file write, or CRM sync authentication/write errors should fail the workflow.
+- Low-volume backfill must not write automation bookkeeping, rule labels, candidate counts, or fallback diagnostics into visible lead fields.
+- GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`, with `CRM_ACCESS_TOKEN` only as a compatibility fallback where supported.
 - Rules, automation, and product features remain separate modules; a sourcing-rule iteration must not change login, UI, schema, or other product behavior.
+
+## Sourcing Rules V6.2 Iteration
+
+The previous sourcing-logic iteration was `sourcing-rules-v6.2`, focused on official-source verification, structured link extraction, decision-grade field hygiene, and automation stability while preserving the V6 low-volume fix.
 
 ## Sourcing Rules V6.1 Iteration
 

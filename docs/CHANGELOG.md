@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 日报规则升级到 `sourcing-rules-v6.3`：保留 V6.2 的官方源优先、结构化链接、Steam 交叉验证和低量 fallback，同时清理低量 backfill 写入可见字段的自动化流水账；watchdog 同步也统一优先使用 `CRM_AUTOMATION_TOKEN`。本次不修改登录、UI schema、人工分池流程或产品版本号。
 - 自动化诊断新增只读业务验收面板：基于当天日报、行业雷达、Steam 趋势和 automation_runs receipt 判断“今天是否业务可用”、核心问题、关键证据和建议动作；低候选量会归类到来源池/过滤压力/同步等原因。本次不触发重跑、不写 CRM、不修改日报规则、登录、线索 schema 或人工流程。
 - 日报自动化稳定护栏：Steam 趋势低量时补足诊断卡片和品类信号，避免 `steam trends has fewer than 8 items` 打断整条日报；同步 receipt 在失败残留文件存在时会先临时 stash 再提交运行记录，避免 `git pull --rebase` 因 unstaged generated artifacts 再次失败。本次只改日报自动化链路，不修改登录、UI、人工分池、产品 schema 或产品版本号。
 - 日报规则 `sourcing-rules-v6.2` 追加质量修复：扩大 B站官方/开发者/Steam 商店页导向的国内来源池，B站搜索页只接收视频结果，过滤泛评论/PV反应/空间页/课程页等非产品候选，并在自动化诊断中记录媒体原始量、旧视频过滤、低分过滤、非产品过滤和扩展候选数。本次只改 sourcing 自动化链路，不修改登录、UI、人工分池、产品 schema 或产品版本号。

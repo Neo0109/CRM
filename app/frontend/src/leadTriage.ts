@@ -11,8 +11,17 @@ export type EvidenceChip = {
 export type TriageFilter = {
   bucket?: "全部" | Bucket;
   evidenceIssues?: boolean;
+  missingLinks?: boolean;
   needsAction?: boolean;
   reviewStatus?: "全部" | ReviewStatus;
+};
+
+export type BucketNavigationItem = {
+  key: Bucket | "缺链接";
+  label: string;
+  count: number;
+  tone: "unread" | "evaluation" | "testing" | "watch" | "follow" | "push" | "drop" | "missing";
+  filter: TriageFilter;
 };
 
 export type TriageLane = {
@@ -31,6 +40,16 @@ export type DecisionTriage = {
 };
 
 const activeActionBuckets: Bucket[] = ["待评测", "测试中", "跟进中", "推进池"];
+const bucketNavigationConfig: Omit<BucketNavigationItem, "count">[] = [
+  { key: "未处理", label: "未处理", tone: "unread", filter: { bucket: "未处理" } },
+  { key: "待评测", label: "待评测", tone: "evaluation", filter: { bucket: "待评测" } },
+  { key: "测试中", label: "测试中", tone: "testing", filter: { bucket: "测试中" } },
+  { key: "观察池", label: "观察池", tone: "watch", filter: { bucket: "观察池" } },
+  { key: "跟进中", label: "跟进中", tone: "follow", filter: { bucket: "跟进中" } },
+  { key: "推进池", label: "推进池", tone: "push", filter: { bucket: "推进池" } },
+  { key: "淘汰池", label: "淘汰池", tone: "drop", filter: { bucket: "淘汰池" } },
+  { key: "缺链接", label: "缺链接", tone: "missing", filter: { missingLinks: true } }
+];
 
 const flagLabelMap: Record<string, EvidenceChip> = {
   "已正式上线": { label: "已上线", tone: "risk" },
@@ -90,7 +109,7 @@ export function buildDecisionTriage(leads: Lead[], now = new Date()): DecisionTr
       {
         key: "evidence",
         kicker: "EVIDENCE",
-        title: "证据不足",
+        title: "证据不足复核",
         description: "先看缺 Steam、缺触达、来源偏旧、已上线或疑似重复的项目。",
         count: evidenceLeads.length,
         filter: { evidenceIssues: true },
@@ -111,10 +130,28 @@ export function buildDecisionTriage(leads: Lead[], now = new Date()): DecisionTr
   };
 }
 
+export function buildBucketNavigation(leads: Lead[]): BucketNavigationItem[] {
+  return bucketNavigationConfig.map((item) => ({
+    ...item,
+    count: item.key === "缺链接"
+      ? leads.filter(needsGameLinkTriage).length
+      : leads.filter((lead) => lead.bucket === item.key).length
+  }));
+}
+
 export function hasEvidenceIssue(lead: Lead, now = new Date()) {
   if (isDroppedLead(lead)) return false;
   const evidence = buildLeadEvidence(lead, now);
   return evidence.status !== "证据完整" || evidence.flags.some((flag) => flag.tone !== "complete");
+}
+
+function needsGameLinkTriage(lead: Lead) {
+  if (isDroppedLead(lead)) return false;
+  return !lead.links.some((link) => isGameLink(link));
+}
+
+function isGameLink(value: string) {
+  return /store\.steampowered\.com\/app\/\d+|steamdb\.info\/app\/\d+|steamcommunity\.com\/app\/\d+|bilibili\.com\/video\/|space\.bilibili\.com|taptap\.cn|indienova\.com|gamespress\.com/i.test(value);
 }
 
 export function needsActionAttention(lead: Lead, now = new Date()) {

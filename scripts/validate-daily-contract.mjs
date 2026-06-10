@@ -104,10 +104,10 @@ function validateDate(date, thresholds) {
         errors.push(`${lead.project}: Bilibili/media text mentions a Steam store page but links do not contain a normalized Steam URL`);
       }
       if (enforceV62 && /https?:\/\//i.test(String(lead.gameplay ?? ""))) {
-        errors.push(`${lead.project}: V6.2 gameplay must be compact tags and must not contain raw URLs`);
+        errors.push(`${lead.project}: V6.2+ gameplay must be compact tags and must not contain raw URLs`);
       }
       if (enforceV62 && /https?:\/\//i.test(String(lead.progress ?? ""))) {
-        errors.push(`${lead.project}: V6.2 progress must be a short status and must not contain raw URLs`);
+        errors.push(`${lead.project}: V6.2+ progress must be a short status and must not contain raw URLs`);
       }
     }
   }

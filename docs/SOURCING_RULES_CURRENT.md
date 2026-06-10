@@ -1,8 +1,8 @@
 # Current Daily Report Rules
 
-Date: 2026-06-04
+Date: 2026-06-10
 
-The current daily report rule version is `sourcing-rules-v6.2`.
+The current daily report rule version is `sourcing-rules-v6.3`.
 
 Canonical human-readable rule document:
 
@@ -96,7 +96,7 @@ The online generator must preserve the product intent of these rules:
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.2`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.3`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
 
@@ -127,3 +127,12 @@ V6.2 keeps the first-version sourcing ambition but adds guardrails so sourcing q
 - Field hygiene: generated media leads should keep `priority_reason`, `rule_fit`, `gameplay`, `progress`, `bilibili_fit`, `amplification`, `risks`, and `verdict` concise. `next_action` and `notes` are for human BD work and should stay empty by default.
 - Stability: low volume, Steam 429, a single Bilibili source failure, or media parsing failure should not fail the scheduled job by itself. The generator must publish a low-volume but valid report when it has effective candidates and must log candidate totals, duplicate filters, released filters, official-source hits, and final import candidates.
 - Hard failures remain hard: schema breakage, generated file write failure, or CRM sync authentication/write failure must still fail the workflow.
+
+## V6.3 Backfill Hygiene And Token Guard
+
+V6.3 keeps the V6.2 sourcing behavior and tightens two operational edges:
+
+- Low-volume review backfill is allowed only as a clean first-pass `未处理` candidate. It must not write rule-version labels, fallback diagnostics, or automation receipts into user-facing fields such as `notes`, `next_action`, `verdict`, `priority_reason`, or `rule_fit`.
+- Backfilled leads should still explain BD value through gameplay strength, income upside, market heat, Bilibili amplification, team/region fit, and signing probability.
+- GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`; `CRM_ACCESS_TOKEN` remains only a backwards-compatible fallback where explicitly wired.
+- Product version, daily-report rule version, and GitHub workflow health are separate concerns. A sourcing-rule update must not bump the product UI version or change unrelated product features.

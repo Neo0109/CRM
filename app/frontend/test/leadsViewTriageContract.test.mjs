@@ -17,4 +17,12 @@ describe("LeadsView triage contract", () => {
     assert.match(source, /evidenceIssues/);
     assert.match(source, /needsAction/);
   });
+
+  it("keeps bucket navigation as the primary switching surface", () => {
+    assert.match(source, /buildBucketNavigation/);
+    assert.match(source, /aria-label="池子导航"/);
+    assert.match(source, /bucket-nav/);
+    assert.match(source, /证据不足复核/);
+    assert.doesNotMatch(source, /证据不足池/);
+  });
 });
