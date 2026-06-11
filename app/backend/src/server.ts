@@ -23,6 +23,7 @@ type Lead = {
   bucket: Bucket;
   stage: Stage;
   priority: Priority;
+  drop_reason: string | null;
   genre: string | null;
   gameplay: string | null;
   progress: string;
@@ -229,7 +230,7 @@ async function readLeads(): Promise<Lead[]> {
 
   try {
     const leads = JSON.parse(await readFile(dataPath, "utf8")) as Lead[];
-    return leads.map((lead) => normalizeLead(lead));
+    return leads.filter((lead) => !isSystemLeadRow({ id: lead.id, data: lead })).map((lead) => normalizeLead(lead));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       await writeLeads([]);
@@ -250,9 +251,9 @@ async function writeLeads(leads: Lead[]) {
 }
 
 async function readLeadsFromSupabase(client: SupabaseClient): Promise<Lead[]> {
-  const { data, error } = await client.from("crm_leads").select("data").order("updated_at", { ascending: false });
+  const { data, error } = await client.from("crm_leads").select("id,data").order("updated_at", { ascending: false });
   if (error) throw new Error(`Supabase read failed: ${error.message}`);
-  return (data ?? []).map((row: { data: Lead }) => normalizeLead(row.data));
+  return (data ?? []).filter((row: { id: string; data: Lead }) => !isSystemLeadRow(row)).map((row: { data: Lead }) => normalizeLead(row.data));
 }
 
 async function writeLeadsToSupabase(client: SupabaseClient, leads: Lead[]) {
@@ -357,6 +358,7 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     bucket: raw.bucket ?? "未处理",
     stage: raw.stage ?? stageFromBucket(raw.bucket),
     priority: raw.priority ?? priorityFromBucket(raw.bucket),
+    drop_reason: valueOrNull(raw.drop_reason),
     genre: valueOrNull(raw.genre),
     gameplay: valueOrNull(raw.gameplay),
     progress: raw.progress ?? "待补充",
@@ -384,6 +386,14 @@ function normalizeLead(raw: Partial<Lead>): Lead {
   };
 }
 
+function isSystemLeadRow(row: { id?: string | null; data?: (Partial<Lead> & { type?: string }) | null }) {
+  return Boolean(
+    row.id?.startsWith("__crm_")
+      || row.data?.id?.startsWith("__crm_")
+      || row.data?.type === "sourcing_decision_event"
+  );
+}
+
 function mergeLead(current: Lead, incoming: Lead): Lead {
   return { ...current, ...incoming, id: current.id, first_seen: current.first_seen, notes: mergeNotes(current.notes, incoming.notes) };
 }
@@ -396,7 +406,7 @@ function leadKeys(lead: Lead) {
 }
 
 function toCsv(leads: Lead[]) {
-  const columns: (keyof Lead)[] = ["project", "team", "country", "bucket", "stage", "priority", "genre", "progress", "release_window", "publisher_status", "public_signals", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "first_seen"];
+  const columns: (keyof Lead)[] = ["project", "team", "country", "bucket", "stage", "priority", "drop_reason", "genre", "progress", "release_window", "publisher_status", "public_signals", "bilibili_fit", "amplification", "verdict", "next_action", "owner", "due_date", "first_seen"];
   const header = columns.join(",");
   const rows = leads.map((lead) => columns.map((column) => csvCell(lead[column])).join(","));
   return `${header}\n${rows.join("\n")}\n`;

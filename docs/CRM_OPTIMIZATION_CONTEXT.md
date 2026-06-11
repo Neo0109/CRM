@@ -208,6 +208,22 @@ Important implementation points:
 - Preserve the underlying fields for compatibility; do not delete schema fields or erase historical data.
 - New sourcing fields should keep `priority_reason` focused on BD-useful reasons such as gameplay strength, revenue upside, market heat, Bilibili amplification, and signing probability.
 
+## Sourcing Learning Loop V1
+
+The CRM now records human BD decisions as a sourcing-learning dataset. This is analysis support, not an automated rule writer.
+
+Important implementation points:
+
+- Active learning cohort includes current leads in `未处理`, `待评测`, `测试中`, `观察池`, `跟进中`, and `推进池`.
+- Historical leads already in `淘汰池` are not backfilled; future manual actions on a lead can still create new events.
+- Manual saves create `__crm_decision_event__...` system rows only when tracked decision fields change: bucket/stage/status, priority, evaluation grade/result/time, drop reason, owner, due date, or next action.
+- Notes-only edits do not create learning events.
+- The right detail panel includes `淘汰原因（若淘汰）` to keep rejection learning from becoming guesswork.
+- Diagnostics expose `Sourcing 学习` with funnel, outcomes, rating distribution, and drop reasons.
+- Fewer than 30 resolved positive/negative samples should be treated as sample accumulation, not a stable sourcing-weight conclusion.
+
+Version record: `docs/releases/sourcing-learning-v1.md`.
+
 ## Codex Cloud 工作说明
 
 本项目当前以 `Neo0109/CRM` 仓库和 `main` 分支作为 Codex Cloud 的云端工作源。后续云端任务应默认从该来源继续，保持自动日报规则、产品功能迭代和 UI 迭代分开处理，并在完成修改后通过 PR 合并，避免直接修改 `main`。

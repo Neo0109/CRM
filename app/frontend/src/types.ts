@@ -28,6 +28,7 @@ export type Lead = {
   priority: Priority;
   review_status: ReviewStatus;
   reviewed_at: string | null;
+  drop_reason: string | null;
   priority_reason: string | null;
   rule_fit: string | null;
   genre: string | null;
@@ -244,6 +245,42 @@ export type WeeklyReport = {
 };
 
 export type AutomationDiagnosticsStatus = "healthy" | "warning" | "failed" | "missing";
+export type SourcingLearningSignalStats = {
+  total: number;
+  positive: number;
+  negative: number;
+  positive_rate: number;
+  negative_rate: number;
+};
+
+export type SourcingLearningReport = {
+  generated_at: string;
+  cohort: {
+    total_active: number;
+    by_bucket: Record<string, number>;
+  };
+  events: {
+    total: number;
+    by_action: Record<string, number>;
+  };
+  outcomes: {
+    positive: number;
+    negative: number;
+    intermediate: number;
+    pending: number;
+  };
+  grade_distribution: Record<string, number>;
+  drop_reasons: { reason: string; count: number }[];
+  funnel: { bucket: string; count: number }[];
+  signal_summary: {
+    by_region: Record<string, SourcingLearningSignalStats>;
+    by_gameplay: Record<string, SourcingLearningSignalStats>;
+    by_progress: Record<string, SourcingLearningSignalStats>;
+  };
+  recommendations_ready: boolean;
+  learning_note: string;
+};
+
 export type AutomationBusinessAcceptanceStatus = "pass" | "needs_attention" | "fail";
 export type AutomationBusinessMetricStatus = "pass" | "warn" | "fail" | "unknown";
 export type AutomationBusinessRootCauseCategory = "files" | "sync" | "source_pool" | "filter_pressure" | "import_quality" | "content_board";

@@ -1,6 +1,6 @@
 import { Activity, AlertTriangle, ArrowDownToLine, Bot, CalendarCheck, CheckCircle2, ExternalLink, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
+import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSourcingLearning, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
 import { AutomationDiagnosticsPage } from "./AutomationDiagnosticsPage";
 import { LeadEvidencePanel } from "./LeadEvidencePanel";
@@ -12,7 +12,7 @@ import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
 import { buildBucketNavigation, buildDecisionTriage, buildLeadEvidenceChips, hasEvidenceIssue, needsActionAttention, type BucketNavigationItem, type TriageFilter } from "./leadTriage";
 import { productVersion, productVersionLabel } from "./productVersion";
-import type { AutomationDiagnostics, Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, Stage, SteamTrendReport } from "./types";
+import type { AutomationDiagnostics, Bucket, ContactMethod, ContactType, EvaluationGrade, Lead, Priority, RadarCategory, RadarReport, Region, RegionPriority, ReviewStatus, SourcingLearningReport, Stage, SteamTrendReport } from "./types";
 
 type View = "leads" | "assistant" | "radar" | "steam" | "diagnostics" | "settings";
 type Filters = {
@@ -83,6 +83,7 @@ const regionOptions: ("全部" | Region)[] = ["全部", ...regionValues];
 const regionPriorityValues: RegionPriority[] = ["国内优先", "海外-高视觉", "海外-强数据", "其他"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 const radarCategories: RadarCategory[] = ["行业新闻", "发行八卦", "AI 游戏", "新梗热点", "B站趋势"];
+const dropReasonOptions = ["未选择", "已上线", "已有中国合作伙伴", "画面不符合中国", "画面差", "玩法粗糙", "题材/合规风险", "商业化空间弱", "B站适配弱", "数据/热度不足", "团队/发行结构不清晰", "重复项目", "联系不到/缺触达", "窗口不合适", "其他"] as const;
 
 export default function App() {
   const [view, setView] = useState<View>("leads");
@@ -101,6 +102,7 @@ export default function App() {
   const [steamTrends, setSteamTrends] = useState<SteamTrendReport | null>(null);
   const [steamLoading, setSteamLoading] = useState(false);
   const [diagnostics, setDiagnostics] = useState<AutomationDiagnostics | null>(null);
+  const [sourcingLearning, setSourcingLearning] = useState<SourcingLearningReport | null>(null);
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
 
   useEffect(() => {
@@ -202,6 +204,11 @@ export default function App() {
     try {
       setDiagnosticsLoading(true);
       setDiagnostics(await fetchAutomationDiagnostics(date));
+      try {
+        setSourcingLearning(await fetchSourcingLearning());
+      } catch {
+        setSourcingLearning(null);
+      }
       setError(null);
     } catch (nextError) {
       handleDataError(nextError, "自动化诊断加载失败");
@@ -331,7 +338,7 @@ export default function App() {
         displayName={displayName}
         handleLeadPatch={handleLeadPatch}
         moveBucket={moveBucket}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} /> : <SettingsPage onStatus={setStatus} />}
+      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
     </main>
   );
 }
@@ -675,7 +682,7 @@ function Metric({ label, value, tone, active, onClick }: { label: string; value:
   return <button className={`metric metric-${tone} ${active ? "active" : ""}`} onClick={onClick} type="button" aria-pressed={active}><span>{label}</span><strong>{value}</strong></button>;
 }
 
-function Select<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: T[]; onChange: (value: T) => void }) {
+function Select<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: readonly T[]; onChange: (value: T) => void }) {
   return <label className="field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value as T)}>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>;
 }
 
@@ -783,6 +790,7 @@ function LeadDetail({ lead, onPatch, onMove, missingLinksMode }: { lead: Lead | 
         <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
         <TextField label="Due Date" type="date" value={draft.due_date} onChange={(value) => setField("due_date", value || null)} />
         <TextField label="发售窗口" value={draft.release_window} onChange={(value) => setField("release_window", value)} />
+        {(draft.bucket === "未处理" || draft.bucket === "淘汰池" || draft.drop_reason) ? <Select label="淘汰原因（若淘汰）" value={draft.drop_reason ?? "未选择"} options={dropReasonOptions} onChange={(value) => setField("drop_reason", value === "未选择" ? null : value)} /> : null}
         <div className="due-date-actions span-2">
           <button className="ghost-button" onClick={confirmCalendarReminder}><CalendarCheck size={16} />确认放入日历</button>
           {draft.calendar_enabled && draft.due_date ? <span>已在日历显示：{draft.due_date}</span> : <span>只有点确认后才会进入日历，避免页面被系统自动塞满。</span>}
