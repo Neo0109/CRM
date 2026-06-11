@@ -166,4 +166,28 @@ describe("buildSourcingLearningReport", () => {
     assert.equal(report.recommendations_ready, false);
     assert.match(report.learning_note, /30/);
   });
+
+  it("prioritizes final rejection over a positive evaluation grade", () => {
+    const rejectedAfterGoodTest = buildDecisionEvent(
+      lead({ id: "rejected-positive-grade", bucket: "测试中" }),
+      lead({
+        id: "rejected-positive-grade",
+        bucket: "淘汰池",
+        stage: "rejected",
+        review_status: "已淘汰",
+        evaluation_grade: "A",
+        evaluation_result: "测试表现不错，但确认已有中国合作伙伴，不能继续推进。",
+        drop_reason: "有中国合作伙伴"
+      }),
+      actor,
+      "2026-06-10T12:30:00.000Z"
+    );
+
+    const report = buildSourcingLearningReport([], [rejectedAfterGoodTest].filter(Boolean), "2026-06-10T13:00:00.000Z");
+
+    assert.equal(report.outcomes.positive, 0);
+    assert.equal(report.outcomes.negative, 1);
+    assert.equal(report.grade_distribution.A, 1);
+    assert.equal(report.drop_reasons.find((item) => item.reason === "有中国合作伙伴")?.count, 1);
+  });
 });

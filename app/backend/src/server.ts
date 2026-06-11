@@ -230,7 +230,7 @@ async function readLeads(): Promise<Lead[]> {
 
   try {
     const leads = JSON.parse(await readFile(dataPath, "utf8")) as Lead[];
-    return leads.map((lead) => normalizeLead(lead));
+    return leads.filter((lead) => !isSystemLeadRow({ id: lead.id, data: lead })).map((lead) => normalizeLead(lead));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       await writeLeads([]);
@@ -251,9 +251,9 @@ async function writeLeads(leads: Lead[]) {
 }
 
 async function readLeadsFromSupabase(client: SupabaseClient): Promise<Lead[]> {
-  const { data, error } = await client.from("crm_leads").select("data").order("updated_at", { ascending: false });
+  const { data, error } = await client.from("crm_leads").select("id,data").order("updated_at", { ascending: false });
   if (error) throw new Error(`Supabase read failed: ${error.message}`);
-  return (data ?? []).map((row: { data: Lead }) => normalizeLead(row.data));
+  return (data ?? []).filter((row: { id: string; data: Lead }) => !isSystemLeadRow(row)).map((row: { data: Lead }) => normalizeLead(row.data));
 }
 
 async function writeLeadsToSupabase(client: SupabaseClient, leads: Lead[]) {
@@ -384,6 +384,14 @@ function normalizeLead(raw: Partial<Lead>): Lead {
     first_seen: firstSeen,
     notes: valueOrNull(raw.notes)
   };
+}
+
+function isSystemLeadRow(row: { id?: string | null; data?: (Partial<Lead> & { type?: string }) | null }) {
+  return Boolean(
+    row.id?.startsWith("__crm_")
+      || row.data?.id?.startsWith("__crm_")
+      || row.data?.type === "sourcing_decision_event"
+  );
 }
 
 function mergeLead(current: Lead, incoming: Lead): Lead {

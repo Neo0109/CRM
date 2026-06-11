@@ -400,7 +400,15 @@ function cleanAuthValue(value: string | null | undefined) {
 export async function readLeads(env: Env): Promise<Lead[]> {
   const response = await supabaseFetch(env, "/rest/v1/crm_leads?select=id,data&order=updated_at.desc");
   const rows = (await response.json()) as { id: string; data: Lead }[];
-  return rows.filter((row) => !row.id.startsWith("__crm_")).map((row) => normalizeLead(row.data));
+  return rows.filter((row) => !isSystemLeadRow(row)).map((row) => normalizeLead(row.data));
+}
+
+function isSystemLeadRow(row: { id?: string | null; data?: Partial<Lead> & { type?: string } | null }) {
+  return Boolean(
+    row.id?.startsWith("__crm_")
+      || row.data?.id?.startsWith("__crm_")
+      || row.data?.type === "sourcing_decision_event"
+  );
 }
 
 export async function writeLeads(env: Env, leads: Lead[]) {

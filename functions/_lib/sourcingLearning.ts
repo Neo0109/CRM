@@ -242,8 +242,8 @@ function classifyAction(before: Lead, after: Lead, changedFields: (keyof Decisio
 }
 
 function classifyOutcome(event: DecisionEvent): DecisionOutcome {
-  if (event.after.bucket === "推进池" || event.after.bucket === "跟进中" || positiveGrades.has(event.after.evaluation_grade ?? "")) return "positive";
   if (event.after.bucket === "淘汰池" || negativeGrades.has(event.after.evaluation_grade ?? "")) return "negative";
+  if (event.after.bucket === "推进池" || event.after.bucket === "跟进中" || positiveGrades.has(event.after.evaluation_grade ?? "")) return "positive";
   if (["待评测", "测试中", "观察池"].includes(event.after.bucket)) return "intermediate";
   return "pending";
 }
