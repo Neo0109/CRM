@@ -643,18 +643,21 @@ button:hover {
 }
 
 .lead-table-wrap {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .lead-table {
-  min-width: 1060px;
+  min-width: 0;
+  table-layout: fixed;
+  width: 100%;
 }
 
-.lead-col-project { width: 21%; }
-.lead-col-evidence { width: 18%; }
-.lead-col-reason { width: 30%; }
-.lead-col-progress { width: 23%; }
-.lead-col-actions { width: 8%; }
+.lead-col-project { width: 18%; }
+.lead-col-evidence { width: 13%; }
+.lead-col-reason { width: 35%; }
+.lead-col-progress { width: 28%; }
+.lead-col-actions { width: 100px; }
 
 .lead-table th {
   background: rgba(250, 249, 246, 0.98);
@@ -802,22 +805,30 @@ button:hover {
   margin-top: 10px;
 }
 
+.lead-action-cell {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 .lead-action-cell .quick-actions.compact {
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .quick-actions.compact {
-  gap: 8px;
-  grid-template-columns: repeat(3, 32px);
-  justify-content: flex-start;
+  gap: 4px;
+  grid-template-columns: repeat(3, 28px);
+  justify-content: center;
 }
+
+.quick-actions.compact[data-action-count="2"] { grid-template-columns: repeat(2, 28px); }
+.quick-actions.compact[data-action-count="3"] { grid-template-columns: repeat(3, 28px); }
 
 .quick-actions.compact .quick-button {
   background: rgba(255, 253, 250, 0.88);
   border-color: #d8d1c5;
-  height: 32px;
-  min-height: 32px;
-  width: 32px;
+  height: 28px;
+  min-height: 28px;
+  width: 28px;
 }
 
 .detail-panel {
