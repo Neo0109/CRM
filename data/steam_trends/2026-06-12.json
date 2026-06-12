@@ -1,0 +1,569 @@
+{
+  "report_date": "2026-06-12",
+  "summary": "Steam大盘V6.3：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Action / Visual Hook、Strategy / Tactical、Simulation / Management；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_06_12_category_risers",
+      "title": "近期冒头品类：Action / Visual Hook、Strategy / Tactical、Simulation / Management",
+      "summary": "样本中 Action / Visual Hook（47/90）、Strategy / Tactical（37/90）、Simulation / Management（29/90）、Roguelike / Deckbuilder（27/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_12_demo_window",
+      "title": "Demo/活动窗口：61 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 0 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_12_publisher_slate",
+      "title": "发行商新品：Overay Inc.(4)、狗狗显卡(2)、CI Games(2)、MiThiKaL Productions(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_12_data_quality",
+      "title": "数据面：0 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 7 个，推荐数/口碑/强数据命中 0 个，素材充足样本 90 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_06_12_action_visual_hook",
+      "genre": "Action / Visual Hook（47/90）",
+      "signal": "47 个候选命中；代表样本：出马Spirit Rider、Crab Rhapsody、Lords of the Fallen II。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_12_strategy_tactical",
+      "genre": "Strategy / Tactical（37/90）",
+      "signal": "37 个候选命中；代表样本：出马Spirit Rider、Lords of the Fallen II、Rogue Mate。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_12_simulation_management",
+      "genre": "Simulation / Management（29/90）",
+      "signal": "29 个候选命中；代表样本：FeeBay Simulator、Cradle of the Dark Brood、Clown Camp。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_12_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（27/90）",
+      "signal": "27 个候选命中；代表样本：Rogue Mate、FeeBay Simulator、Iron Bird。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_12_co_op_multiplayer",
+      "genre": "Co-op / Multiplayer（14/90）",
+      "signal": "14 个候选命中；代表样本：Lords of the Fallen II、Goblin Company、Halo: Campaign Evolved。",
+      "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Co-op/",
+        "https://store.steampowered.com/tags/en/Multiplayer/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_06_12_4821680",
+      "title": "出马Spirit Rider",
+      "steam_app_id": "4821680",
+      "rank_bucket": "Steam CN China Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN China Keyword Upcoming；发售窗口 2026-06-24。\n公开数据：推荐数 无公开；素材 5图/1视频；暂无明确Demo信号。\n产品观察：A fast-paced first-person shooter where you blast through monsters with zero fuss. No deep strategy, just pure pick-up-and-play action.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据；发售过近。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4821680/",
+        "https://steamdb.info/app/4821680/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "B站赋能：画面素材较完整，适合先做视觉向短内容和愿望单转化测试。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_2402540",
+      "title": "Crab Rhapsody",
+      "steam_app_id": "2402540",
+      "rank_bucket": "Steam CN Guofeng Keyword Upcoming",
+      "signal": "大盘位置：Survival / Sandbox；来源 Steam CN Guofeng Keyword Upcoming；发售窗口 To be announced。\n公开数据：推荐数 无公开；素材 22图/1视频；暂无明确Demo信号。\n产品观察：Earn Claw Coins and become unstoppable! Help Mr. Claw stop Crab-GPT and its agents from monopolizing music copyrights. Build your band, unlock ability dressup, and buy Claw Chips anytime, anywhere to upgrade weapons, trigger wild combos, and craft insane builds.🤘🦀🎸。\nBD判断：优势 截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/2402540/",
+        "https://steamdb.info/app/2402540/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "B站赋能：画面素材较完整，适合先做视觉向短内容和愿望单转化测试。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_fallback_3",
+      "title": "地渊珠宝匠",
+      "steam_app_id": "3797790",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产官方PV / https://www.bilibili.com/video/BV1sGEy6mEpw/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-国产官方PV",
+      "links": [
+        "https://www.bilibili.com/video/BV1sGEy6mEpw/",
+        "https://store.steampowered.com/app/3797790/?utm_source=bili&utm_campaign=v_desc",
+        "https://store.steampowered.com/app/3797790/",
+        "https://steamdb.info/app/3797790/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_fallback_4",
+      "title": "卷尺人",
+      "steam_app_id": "4051290",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1iYEy6PE3L/\n产品观察：媒体 / B站待确认 / ACT / Adventure / Indie",
+      "source": "B站视频-国产游戏试玩",
+      "links": [
+        "https://www.bilibili.com/video/BV1iYEy6PE3L/",
+        "https://store.steampowered.com/app/4051290/",
+        "https://steamdb.info/app/4051290/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_fallback_5",
+      "title": "赌命无常：出千为王",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：机核 / https://www.gcores.com/articles/215804\n产品观察：Roguelike",
+      "source": "机核",
+      "links": [
+        "https://www.gcores.com/articles/215804"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "Roguelike + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_fallback_6",
+      "title": "出马Spirit Rider",
+      "steam_app_id": "4821680",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN China Keyword Upcoming / Steam App 4821680\n产品观察：A fast-paced first-person shooter where you blast through monsters with zero fuss. No deep strategy, just pure pick-up-and-play action.",
+      "source": "Steam CN China Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4821680/",
+        "https://steamdb.info/app/4821680/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "Steam CN China Keyword Upcoming 有国内前置信号，距发售约12天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_fallback_7",
+      "title": "烤串大厨! 餐厅模拟器",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：机核 / https://www.gcores.com/articles/215806\n产品观察：Simulation / Management",
+      "source": "机核",
+      "links": [
+        "https://www.gcores.com/articles/215806"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "Simulation / Management + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_12_fallback_8",
+      "title": "Crab Rhapsody",
+      "steam_app_id": "2402540",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Guofeng Keyword Upcoming / Steam App 2402540\n产品观察：Earn Claw Coins and become unstoppable! Help Mr. Claw stop Crab-GPT and its agents from monopolizing music copyrights. Build your band, unlock ability dressup, and buy Claw Chips anytime, anywhere to upgrade weapons, trigger wild combos, and craft insane builds.🤘🦀🎸",
+      "source": "Steam CN Guofeng Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/2402540/",
+        "https://steamdb.info/app/2402540/",
+        "https://www.crabrhapsody.com/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "Steam CN Guofeng Keyword Upcoming 有国内前置信号，窗口待确认；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-12T14:12:00+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_media_20260612_fdlogp",
+      "project": "地渊珠宝匠",
+      "steam_app_id": "3797790",
+      "team": "Light Worm",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": "To be announced",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "XD；B站线索已补 Steam 交叉验证",
+      "publisher_name": "XD",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产官方PV 分数 135；B站视频/搜索语境；已从文本补 Steam AppID 3797790。",
+      "public_signals": "B站视频-国产官方PV / https://www.bilibili.com/video/BV1sGEy6mEpw/",
+      "contact": "B站: https://www.bilibili.com/video/BV1sGEy6mEpw/；Email: indie@xindong.com；Steam: https://steamcommunity.com/app/3797790/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1sGEy6mEpw/",
+          "note": "B站视频-国产官方PV 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "indie@xindong.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3797790/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1sGEy6mEpw/",
+        "https://store.steampowered.com/app/3797790/?utm_source=bili&utm_campaign=v_desc",
+        "https://store.steampowered.com/app/3797790/",
+        "https://steamdb.info/app/3797790/"
+      ],
+      "exposure_trail": "自动从B站视频-国产官方PV捕捉到媒体/B站线索（2026-06-12）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-12",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260612_iz48fc",
+      "project": "卷尺人",
+      "steam_app_id": "4051290",
+      "team": "Tear Bird",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "gameplay": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "progress": "试玩 Demo",
+      "release_window": "2026-01-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Tear Bird / indienova；B站线索已补 Steam 交叉验证",
+      "publisher_name": "Tear Bird",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏试玩 分数 121；B站视频/搜索语境；已从文本补 Steam AppID 4051290。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1iYEy6PE3L/",
+      "contact": "B站: https://www.bilibili.com/video/BV1iYEy6PE3L/；Email: 18851651551@163.com；Steam: https://steamcommunity.com/app/4051290/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1iYEy6PE3L/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "18851651551@163.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4051290/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1iYEy6PE3L/",
+        "https://store.steampowered.com/app/4051290/",
+        "https://steamdb.info/app/4051290/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-06-12）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-12",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260612_j922ot",
+      "project": "赌命无常：出千为王",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Roguelike + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "Roguelike",
+      "gameplay": "Roguelike",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "机核 分数 73；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "机核 / https://www.gcores.com/articles/215804",
+      "contact": "官网: https://www.gcores.com/articles/215804",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.gcores.com/articles/215804",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.gcores.com/articles/215804"
+      ],
+      "exposure_trail": "自动从机核捕捉到媒体/B站线索（2026-06-12）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-12",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4821680_2026-06-12",
+      "project": "出马Spirit Rider",
+      "steam_app_id": "4821680",
+      "team": "狗狗显卡",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN China Keyword Upcoming 有国内前置信号，距发售约12天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；距发售约12天",
+      "genre": "Action / Adventure / Casual / Indie / RPG",
+      "gameplay": "A fast-paced first-person shooter where you blast through monsters with zero fuss. No deep strategy, just pure pick-up-and-play action.",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-06-24",
+      "release_window": "2026-06-24",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "狗狗显卡；未见成熟中国发行能力占位",
+      "publisher_name": "狗狗显卡",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4821680",
+      "contact": "Steam: https://steamcommunity.com/app/4821680/discussions/",
+      "contact_methods": [
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4821680/discussions/",
+          "note": "Official Steam community fallback"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4821680/",
+        "https://steamdb.info/app/4821680/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-06-12）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-12",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    },
+    {
+      "id": "lead_media_20260612_1u3szlx",
+      "project": "烤串大厨! 餐厅模拟器",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Simulation / Management + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "Simulation / Management",
+      "gameplay": "Simulation / Management",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "机核 分数 55；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "机核 / https://www.gcores.com/articles/215806",
+      "contact": "官网: https://www.gcores.com/articles/215806",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.gcores.com/articles/215806",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.gcores.com/articles/215806"
+      ],
+      "exposure_trail": "自动从机核捕捉到媒体/B站线索（2026-06-12）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-12",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_2402540_2026-06-12",
+      "project": "Crab Rhapsody",
+      "steam_app_id": "2402540",
+      "team": "RIFF DEV",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN Guofeng Keyword Upcoming 有国内前置信号，窗口待确认；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先",
+      "genre": "Action / Adventure / Indie / RPG",
+      "gameplay": "Earn Claw Coins and become unstoppable! Help Mr. Claw stop Crab-GPT and its agents from monopolizing music copyrights. Build your band, unlock ability dressup, and buy Claw Chips anytime, anywhere to upgrade weapons, trigger wild combos, and craft insane builds.🤘🦀🎸",
+      "progress": "Steam Steam CN Guofeng Keyword Upcoming；发售窗口：To be announced",
+      "release_window": "To be announced",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "RIFF DEV / Phoenix Game；未见成熟中国发行能力占位",
+      "publisher_name": "RIFF DEV",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Guofeng Keyword Upcoming；素材/截图/视频可验证。",
+      "public_signals": "Steam CN Guofeng Keyword Upcoming / Steam App 2402540",
+      "contact": "Email: hello@riffdev.com；官网: https://www.crabrhapsody.com/；Steam: https://steamcommunity.com/app/2402540/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "hello@riffdev.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.crabrhapsody.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/2402540/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/2402540/",
+        "https://steamdb.info/app/2402540/",
+        "https://www.crabrhapsody.com/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Guofeng Keyword Upcoming（2026-06-12）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-12",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    }
+  ]
+}
