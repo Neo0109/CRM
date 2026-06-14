@@ -1,0 +1,680 @@
+{
+  "report_date": "2026-06-14",
+  "summary": "Steam大盘V6.3：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Action / Visual Hook、Strategy / Tactical、Simulation / Management；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_06_14_category_risers",
+      "title": "近期冒头品类：Action / Visual Hook、Strategy / Tactical、Simulation / Management",
+      "summary": "样本中 Action / Visual Hook（47/90）、Strategy / Tactical（46/90）、Simulation / Management（27/90）、Roguelike / Deckbuilder（24/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_14_demo_window",
+      "title": "Demo/活动窗口：55 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 1 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_14_publisher_slate",
+      "title": "发行商新品：Big & Curly Games(2)、Shanhai: Spirits of Myth(2)、Rogue Duck Interactive(2)、Six Foot Three Foot, LLC(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_14_data_quality",
+      "title": "数据面：0 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 5 个，推荐数/口碑/强数据命中 0 个，素材充足样本 90 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_06_14_action_visual_hook",
+      "genre": "Action / Visual Hook（47/90）",
+      "signal": "47 个候选命中；代表样本：Shanhai: Spirits of Myth、Halloween: The Game、Upload Aliens。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_14_strategy_tactical",
+      "genre": "Strategy / Tactical（46/90）",
+      "signal": "46 个候选命中；代表样本：Know Lychees / 来高州识荔枝、寻味记、Halloween: The Game。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_14_simulation_management",
+      "genre": "Simulation / Management（27/90）",
+      "signal": "27 个候选命中；代表样本：Shanhai: Spirits of Myth、Treasure Beach、2026 U.S. Election Simulator。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_14_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（24/90）",
+      "signal": "24 个候选命中；代表样本：Elevens Up! (11's Up)、Upload Aliens、Just Dying。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_14_co_op_multiplayer",
+      "genre": "Co-op / Multiplayer（16/90）",
+      "signal": "16 个候选命中；代表样本：Shanhai: Spirits of Myth、Halloween: The Game、2026 U.S. Election Simulator。",
+      "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Co-op/",
+        "https://store.steampowered.com/tags/en/Multiplayer/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_06_14_2899760",
+      "title": "さくら、もゆ。-as the Night's, Reincarnation-",
+      "steam_app_id": "2899760",
+      "rank_bucket": "Steam CN Demo/Next Fest Window",
+      "signal": "大盘位置：国内前置样本；来源 Steam CN Demo/Next Fest Window；发售窗口 2026-06-19。\n公开数据：推荐数 无公开；素材 10图/1视频；有Demo/试玩窗口。\n产品观察：――これは“魔法少女”のための物語だ。。\nBD判断：优势 截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/2899760/",
+        "https://steamdb.info/app/2899760/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "B站赋能：画面素材较完整，适合先做视觉向短内容和愿望单转化测试。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_4843190",
+      "title": "Know Lychees / 来高州识荔枝",
+      "steam_app_id": "4843190",
+      "rank_bucket": "Steam CN China Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN China Keyword Upcoming；发售窗口 2026-07-01。\n公开数据：推荐数 无公开；素材 8图/1视频；暂无明确Demo信号。\n产品观察：A solo-developed, lightweight puzzle game themed around Gaozhou lychees. Learn lychee varieties and Gaozhou culture through three modes: Eat Lychees, Know Lychees, and Find Lychees.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据；发售过近。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4843190/",
+        "https://steamdb.info/app/4843190/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_4799240",
+      "title": "Shanhai: Spirits of Myth",
+      "steam_app_id": "4799240",
+      "rank_bucket": "Steam CN China Keyword Upcoming",
+      "signal": "大盘位置：Simulation / Management；来源 Steam CN China Keyword Upcoming；发售窗口 2026-07-01。\n公开数据：推荐数 无公开；素材 5图/1视频；暂无明确Demo信号。\n产品观察：[Shanhai: Spirits of Myth]Embark on an Epic Journey Through the Ancient World of the Classic of Mountains and Seas.You are a cultivator chosen by fate, destined to journey across the vast world of Shanhai.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据；发售过近。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4799240/",
+        "https://steamdb.info/app/4799240/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "reason": "B站赋能：多人协作适合直播切片、挑战局和UP主联动。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_4",
+      "title": "绝境边缘",
+      "steam_app_id": "4595350",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站官方复核 / https://www.bilibili.com/video/BV1vZEe6TEg5/\n产品观察：媒体 / B站待确认 / ACT / Adventure / Indie",
+      "source": "B站官方复核",
+      "links": [
+        "https://www.bilibili.com/video/BV11cJc6FE1p/",
+        "https://store.steampowered.com/app/4595350/Isolation_Edge/",
+        "https://store.steampowered.com/app/4595350/",
+        "https://steamdb.info/app/4595350/",
+        "https://www.bilibili.com/video/BV1vZEe6TEg5/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_5",
+      "title": "堕落之主2",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：3DM / https://www.3dmgame.com/news/202606/3946317.html\n产品观察：媒体 / B站待确认",
+      "source": "3DM",
+      "links": [
+        "https://www.3dmgame.com/news/202606/3946317.html"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_6",
+      "title": "Know Lychees / 来高州识荔枝",
+      "steam_app_id": "4843190",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN China Keyword Upcoming / Steam App 4843190\n产品观察：A solo-developed, lightweight puzzle game themed around Gaozhou lychees. Learn lychee varieties and Gaozhou culture through three modes: Eat Lychees, Know Lychees, and Find Lychees.",
+      "source": "Steam CN China Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4843190/",
+        "https://steamdb.info/app/4843190/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN China Keyword Upcoming 有国内前置信号，距发售约17天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_7",
+      "title": "Weather Roll",
+      "steam_app_id": "4409890",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV18EJ46CENb/\n产品观察：媒体 / B站待确认 / Casual / Indie / RPG",
+      "source": "B站视频-独立游戏开发日志",
+      "links": [
+        "https://www.bilibili.com/video/BV18EJ46CENb/",
+        "https://store.steampowered.com/app/4409890/_/",
+        "https://store.steampowered.com/app/4409890/",
+        "https://steamdb.info/app/4409890/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 / Casual / Indie / RPG + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_8",
+      "title": "Shanhai: Spirits of Myth",
+      "steam_app_id": "4799240",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN China Keyword Upcoming / Steam App 4799240\n产品观察：[Shanhai: Spirits of Myth]Embark on an Epic Journey Through the Ancient World of the Classic of Mountains and Seas.You are a cultivator chosen by fate, destined to journey across the vast world of Shanhai.",
+      "source": "Steam CN China Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4799240/",
+        "https://steamdb.info/app/4799240/"
+      ],
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "reason": "Steam CN China Keyword Upcoming 有国内前置信号，距发售约17天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_9",
+      "title": "殉爆和敌方2d小人",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV14fJF6aEfy/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-独立游戏开发日志",
+      "links": [
+        "https://www.bilibili.com/video/BV14fJF6aEfy/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_14_fallback_10",
+      "title": "さくら、もゆ。-as the Night's, Reincarnation-",
+      "steam_app_id": "2899760",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Demo/Next Fest Window / Steam App 2899760\n产品观察：――これは“魔法少女”のための物語だ。",
+      "source": "Steam CN Demo/Next Fest Window",
+      "links": [
+        "https://store.steampowered.com/app/2899760/",
+        "https://steamdb.info/app/2899760/",
+        "https://seikeiproduction.com/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "Steam CN Demo/Next Fest Window 有国内前置信号，距发售约5天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-14T14:14:44+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_media_20260614_6vml4b",
+      "project": "绝境边缘",
+      "steam_app_id": "4595350",
+      "team": "EzGameStudio",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 / ACT / Adventure / Indie + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "gameplay": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "progress": "试玩 Demo",
+      "release_window": "Q3 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "EzGameStudio；B站线索已补 Steam 交叉验证",
+      "publisher_name": "EzGameStudio",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 123；B站视频/搜索语境；已从文本补 Steam AppID 4595350。",
+      "public_signals": "B站官方复核 / https://www.bilibili.com/video/BV1vZEe6TEg5/",
+      "contact": "B站: https://www.bilibili.com/video/BV11cJc6FE1p/；B站: https://www.bilibili.com/video/BV1vZEe6TEg5/；Email: wuj039694@gmail.com；Steam: https://steamcommunity.com/app/4595350/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV11cJc6FE1p/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        },
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1vZEe6TEg5/",
+          "note": "B站官方复核 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "wuj039694@gmail.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4595350/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV11cJc6FE1p/",
+        "https://store.steampowered.com/app/4595350/Isolation_Edge/",
+        "https://store.steampowered.com/app/4595350/",
+        "https://steamdb.info/app/4595350/",
+        "https://www.bilibili.com/video/BV1vZEe6TEg5/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-14）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260614_18xpeey",
+      "project": "堕落之主2",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "3DM 分数 28；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "3DM / https://www.3dmgame.com/news/202606/3946317.html",
+      "contact": "官网: https://www.3dmgame.com/news/202606/3946317.html",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.3dmgame.com/news/202606/3946317.html",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.3dmgame.com/news/202606/3946317.html"
+      ],
+      "exposure_trail": "自动从3DM捕捉到媒体/B站线索（2026-06-14）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4843190_2026-06-14",
+      "project": "Know Lychees / 来高州识荔枝",
+      "steam_app_id": "4843190",
+      "team": "Big & Curly Games",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN China Keyword Upcoming 有国内前置信号，距发售约17天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；距发售约17天",
+      "genre": "Casual / Indie / Strategy",
+      "gameplay": "A solo-developed, lightweight puzzle game themed around Gaozhou lychees. Learn lychee varieties and Gaozhou culture through three modes: Eat Lychees, Know Lychees, and Find Lychees.",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-07-01",
+      "release_window": "2026-07-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Big & Curly Games；未见成熟中国发行能力占位",
+      "publisher_name": "Big & Curly Games",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4843190",
+      "contact": "Email: 70060320@qq.com；Steam: https://steamcommunity.com/app/4843190/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "70060320@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4843190/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4843190/",
+        "https://steamdb.info/app/4843190/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-06-14）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    },
+    {
+      "id": "lead_media_20260614_16kh8i8",
+      "project": "Weather Roll",
+      "steam_app_id": "4409890",
+      "team": "咖啡灌蛋饼",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 / Casual / Indie / RPG + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / Casual / Indie / RPG",
+      "gameplay": "媒体 / B站待确认 / Casual / Indie / RPG",
+      "progress": "试玩 Demo",
+      "release_window": "Coming soon",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "咖啡灌蛋饼；B站线索已补 Steam 交叉验证",
+      "publisher_name": "咖啡灌蛋饼",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 143；B站视频/搜索语境；已从文本补 Steam AppID 4409890。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV18EJ46CENb/",
+      "contact": "B站: https://www.bilibili.com/video/BV18EJ46CENb/；Email: apurer@qq.com；官网: https://blog.apurer.cn/；B站: https://space.bilibili.com/299415521；Steam: https://steamcommunity.com/app/4409890/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV18EJ46CENb/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "apurer@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://blog.apurer.cn/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "B站",
+          "value": "https://space.bilibili.com/299415521",
+          "note": "Found on official site"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4409890/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV18EJ46CENb/",
+        "https://store.steampowered.com/app/4409890/_/",
+        "https://store.steampowered.com/app/4409890/",
+        "https://steamdb.info/app/4409890/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-14）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4799240_2026-06-14",
+      "project": "Shanhai: Spirits of Myth",
+      "steam_app_id": "4799240",
+      "team": "Shanhai: Spirits of Myth",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN China Keyword Upcoming 有国内前置信号，距发售约17天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先；玩法具备内容化潜力；距发售约17天",
+      "genre": "Action / Adventure / Casual / Massively Multiplayer / RPG / Simulation",
+      "gameplay": "[Shanhai: Spirits of Myth]Embark on an Epic Journey Through the Ancient World of the Classic of Mountains and Seas.You are a cultivator chosen by fate, destined to journey across the vast world of Shanhai.",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-07-01",
+      "release_window": "2026-07-01",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Shanhai: Spirits of Myth；未见成熟中国发行能力占位",
+      "publisher_name": "Shanhai: Spirits of Myth",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4799240",
+      "contact": "Email: liangjiamin2026@163.com；Steam: https://steamcommunity.com/app/4799240/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "liangjiamin2026@163.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4799240/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4799240/",
+        "https://steamdb.info/app/4799240/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-06-14）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "多人协作适合直播切片、挑战局和UP主联动。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    },
+    {
+      "id": "lead_media_20260614_1ycrlyf",
+      "project": "殉爆和敌方2d小人",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 81；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV14fJF6aEfy/",
+      "contact": "B站: https://www.bilibili.com/video/BV14fJF6aEfy/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV14fJF6aEfy/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV14fJF6aEfy/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-14）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_2899760_2026-06-14",
+      "project": "さくら、もゆ。-as the Night's, Reincarnation-",
+      "steam_app_id": "2899760",
+      "team": "Favorite",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN Demo/Next Fest Window 有国内前置信号，距发售约5天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；距发售约5天",
+      "genre": "Adventure",
+      "gameplay": "――これは“魔法少女”のための物語だ。",
+      "progress": "Steam Steam CN Demo/Next Fest Window；发售窗口：2026-06-19；Demo/试玩信号需优先复核",
+      "release_window": "2026-06-19",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Syawase Works China / Seikei Production；未见成熟中国发行能力占位",
+      "publisher_name": "Syawase Works China",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Demo/Next Fest Window；素材/截图/视频可验证；Demo/试玩信号。",
+      "public_signals": "Steam CN Demo/Next Fest Window / Steam App 2899760",
+      "contact": "Email: info@syawaseworks.com；官网: https://seikeiproduction.com/；Steam: https://steamcommunity.com/app/2899760/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "info@syawaseworks.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://seikeiproduction.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/2899760/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/2899760/",
+        "https://steamdb.info/app/2899760/",
+        "https://seikeiproduction.com/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Demo/Next Fest Window（2026-06-14）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-14",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    }
+  ]
+}
