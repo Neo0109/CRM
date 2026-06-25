@@ -1,0 +1,590 @@
+{
+  "report_date": "2026-06-25",
+  "summary": "Steam大盘V6.3：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Strategy / Tactical、Simulation / Management、Action / Visual Hook；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_06_25_category_risers",
+      "title": "近期冒头品类：Strategy / Tactical、Simulation / Management、Action / Visual Hook",
+      "summary": "样本中 Strategy / Tactical（46/90）、Simulation / Management（38/90）、Action / Visual Hook（31/90）、Roguelike / Deckbuilder（17/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_25_demo_window",
+      "title": "Demo/活动窗口：76 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 4 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_25_publisher_slate",
+      "title": "发行商新品：PiqFocus Interactive(4)、YiXia Studio(2)、2P Games(2)、mop(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_macro_2026_06_25_data_quality",
+      "title": "数据面：0 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 5 个，推荐数/口碑/强数据命中 0 个，素材充足样本 87 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_06_25_strategy_tactical",
+      "genre": "Strategy / Tactical（46/90）",
+      "signal": "46 个候选命中；代表样本：Against Wokou Frontline、The Hidden Scrolls、Total Blade: Mythology。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_25_simulation_management",
+      "genre": "Simulation / Management（38/90）",
+      "signal": "38 个候选命中；代表样本：Total Blade: Mythology、Tech Resale Simulator、Supermarket Chaos。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_25_action_visual_hook",
+      "genre": "Action / Visual Hook（31/90）",
+      "signal": "31 个候选命中；代表样本：Total Blade: Mythology、Valor Mortis、Tap Dungeon。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_25_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（17/90）",
+      "signal": "17 个候选命中；代表样本：The Hidden Scrolls、Tokyo Valkyries、Tap Dungeon。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_06_25_co_op_multiplayer",
+      "genre": "Co-op / Multiplayer（10/90）",
+      "signal": "10 个候选命中；代表样本：Master Healer Kale with useless party、Left Fore Dead: Zombie Battle Golf、HAUNTMATES。",
+      "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Co-op/",
+        "https://store.steampowered.com/tags/en/Multiplayer/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_06_25_4256560",
+      "title": "Against Wokou Frontline",
+      "steam_app_id": "4256560",
+      "rank_bucket": "Steam CN China Keyword Upcoming",
+      "signal": "大盘位置：Strategy / Tactical；来源 Steam CN China Keyword Upcoming；发售窗口 2026-07-19。\n公开数据：推荐数 无公开；素材 12图/2视频；有Demo/试玩窗口。\n产品观察：Amidst the Wokou raids along the southeast coast of China during the Ming Dynasty (1552–1565), lead your troops, fortify your line, and repel the brutal invaders in this heroic tower defense game. Defend the common people and secure the shore!。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4256560/",
+        "https://steamdb.info/app/4256560/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_3201830",
+      "title": "The Hidden Scrolls",
+      "steam_app_id": "3201830",
+      "rank_bucket": "Steam CN Guofeng Keyword Upcoming",
+      "signal": "大盘位置：Roguelike / Deckbuilder；来源 Steam CN Guofeng Keyword Upcoming；发售窗口 2026-07-15。\n公开数据：推荐数 无公开；素材 8图/1视频；有Demo/试玩窗口。\n产品观察：A turn-based tactical roguelike fusing Spring and Autumn history with supernatural fantasy. Assemble knights in an ink-oil aesthetic world, venture into five perilous realms, battle monsters and human-born demons, and collect lost bamboo slips to unravel hidden secrets.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3201830/",
+        "https://steamdb.info/app/3201830/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_4643000",
+      "title": "箱舟キバウ",
+      "steam_app_id": "4643000",
+      "rank_bucket": "Steam CN Demo/Next Fest Window",
+      "signal": "大盘位置：国内前置样本；来源 Steam CN Demo/Next Fest Window；发售窗口 2026-06-25。\n公开数据：推荐数 无公开；素材 7图/1视频；有Demo/试玩窗口。\n产品观察：余命1日の主人公によるちょっと非常識で不条理なADVノベル。 解像度の低い隔絶された世界で揺蕩う。。\nBD判断：优势 截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4643000/",
+        "https://steamdb.info/app/4643000/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "B站赋能：画面素材较完整，适合先做视觉向短内容和愿望单转化测试。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_4735070",
+      "title": "Fu Sha 3: Night Clinic",
+      "steam_app_id": "4735070",
+      "rank_bucket": "Steam CN Demo/Next Fest Window",
+      "signal": "大盘位置：国内前置样本；来源 Steam CN Demo/Next Fest Window；发售窗口 2026-06-25。\n公开数据：推荐数 无公开；素材 5图/1视频；有Demo/试玩窗口。\n产品观察：Spend a terrifying night of uncertain life and death in a late-night hospital via text adventure. *Fu Sha 3: Night Clinic * has numerous side choices and over twenty endings. Every choice may trigger unbearable horror—can you make the right ones, avoid fatal dangers, and escape this death curse?。\nBD判断：优势 截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4735070/",
+        "https://steamdb.info/app/4735070/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "B站赋能：画面素材较完整，适合先做视觉向短内容和愿望单转化测试。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_fallback_5",
+      "title": "Against Wokou Frontline",
+      "steam_app_id": "4256560",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN China Keyword Upcoming / Steam App 4256560\n产品观察：Amidst the Wokou raids along the southeast coast of China during the Ming Dynasty (1552–1565), lead your troops, fortify your line, and repel the brutal invaders in this heroic tower defense game. Defend the common people and secure the shore!",
+      "source": "Steam CN China Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4256560/",
+        "https://steamdb.info/app/4256560/",
+        "https://discord.com/channels/1480526075296743507/1480526570685861888"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN China Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约24天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_fallback_6",
+      "title": "The Hidden Scrolls",
+      "steam_app_id": "3201830",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Guofeng Keyword Upcoming / Steam App 3201830\n产品观察：A turn-based tactical roguelike fusing Spring and Autumn history with supernatural fantasy. Assemble knights in an ink-oil aesthetic world, venture into five perilous realms, battle monsters and human-born demons, and collect lost bamboo slips to unravel hidden secrets.",
+      "source": "Steam CN Guofeng Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/3201830/",
+        "https://steamdb.info/app/3201830/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Guofeng Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约20天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_fallback_7",
+      "title": "独游日志：根本卷不动",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1knjR6NEPP/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-独立游戏开发日志",
+      "links": [
+        "https://www.bilibili.com/video/BV1knjR6NEPP/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_fallback_8",
+      "title": "箱舟キバウ",
+      "steam_app_id": "4643000",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Demo/Next Fest Window / Steam App 4643000\n产品观察：余命1日の主人公によるちょっと非常識で不条理なADVノベル。 解像度の低い隔絶された世界で揺蕩う。",
+      "source": "Steam CN Demo/Next Fest Window",
+      "links": [
+        "https://store.steampowered.com/app/4643000/",
+        "https://steamdb.info/app/4643000/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "Steam CN Demo/Next Fest Window 有国内前置信号，距发售约0天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_fallback_9",
+      "title": "荣耀之经",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1GJ786XEZH/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-独立游戏开发日志",
+      "links": [
+        "https://www.bilibili.com/video/BV1GJ786XEZH/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    },
+    {
+      "id": "steam_trend_2026_06_25_fallback_10",
+      "title": "Fu Sha 3: Night Clinic",
+      "steam_app_id": "4735070",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Demo/Next Fest Window / Steam App 4735070\n产品观察：Spend a terrifying night of uncertain life and death in a late-night hospital via text adventure. *Fu Sha 3: Night Clinic * has numerous side choices and over twenty endings. Every choice may trigger unbearable horror—can you make the right ones, avoid fatal dangers, and escape this death curse?",
+      "source": "Steam CN Demo/Next Fest Window",
+      "links": [
+        "https://store.steampowered.com/app/4735070/",
+        "https://steamdb.info/app/4735070/"
+      ],
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "reason": "Steam CN Demo/Next Fest Window 有国内前置信号，距发售约0天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "auto_import": true,
+      "captured_at": "2026-06-25T17:27:22+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_steam_4256560_2026-06-25",
+      "project": "Against Wokou Frontline",
+      "steam_app_id": "4256560",
+      "team": "YiXia Studio",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN China Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约24天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；距发售约24天；窗口仍在，允许优先触达",
+      "genre": "Adventure / Indie / Strategy",
+      "gameplay": "Amidst the Wokou raids along the southeast coast of China during the Ming Dynasty (1552–1565), lead your troops, fortify your line, and repel the brutal invaders in this heroic tower defense game. Defend the common people and secure the shore!",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-07-19；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-19",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "YiXia Studio；未见成熟中国发行能力占位",
+      "publisher_name": "YiXia Studio",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4256560",
+      "contact": "Email: 2696732373@qq.com；官网: https://discord.com/channels/1480526075296743507/1480526570685861888；Steam: https://steamcommunity.com/app/4256560/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "2696732373@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://discord.com/channels/1480526075296743507/1480526570685861888",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4256560/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4256560/",
+        "https://steamdb.info/app/4256560/",
+        "https://discord.com/channels/1480526075296743507/1480526570685861888"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-06-25）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-25",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_steam_3201830_2026-06-25",
+      "project": "The Hidden Scrolls",
+      "steam_app_id": "3201830",
+      "team": "Red Dragon Studio",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Guofeng Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约20天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；距发售约20天；窗口仍在，允许优先触达",
+      "genre": "Indie / RPG / Strategy",
+      "gameplay": "A turn-based tactical roguelike fusing Spring and Autumn history with supernatural fantasy. Assemble knights in an ink-oil aesthetic world, venture into five perilous realms, battle monsters and human-born demons, and collect lost bamboo slips to unravel hidden secrets.",
+      "progress": "Steam Steam CN Guofeng Keyword Upcoming；发售窗口：2026-07-15；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-15",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "2P Games；未见成熟中国发行能力占位",
+      "publisher_name": "2P Games",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Guofeng Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Guofeng Keyword Upcoming / Steam App 3201830",
+      "contact": "Email: support@2pgames.net；Steam: https://steamcommunity.com/app/3201830/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "support@2pgames.net",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3201830/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3201830/",
+        "https://steamdb.info/app/3201830/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Guofeng Keyword Upcoming（2026-06-25）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-25",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260625_1l2s7ig",
+      "project": "独游日志：根本卷不动",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 111；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1knjR6NEPP/",
+      "contact": "B站: https://www.bilibili.com/video/BV1knjR6NEPP/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1knjR6NEPP/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1knjR6NEPP/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-25）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-25",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4643000_2026-06-25",
+      "project": "箱舟キバウ",
+      "steam_app_id": "4643000",
+      "team": "mop",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN Demo/Next Fest Window 有国内前置信号，距发售约0天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；距发售约0天",
+      "genre": "Adventure / Indie",
+      "gameplay": "余命1日の主人公によるちょっと非常識で不条理なADVノベル。 解像度の低い隔絶された世界で揺蕩う。",
+      "progress": "Steam Steam CN Demo/Next Fest Window；发售窗口：2026-06-25；Demo/试玩信号需优先复核",
+      "release_window": "2026-06-25",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "mop；未见成熟中国发行能力占位",
+      "publisher_name": "mop",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Demo/Next Fest Window；素材/截图/视频可验证；Demo/试玩信号。",
+      "public_signals": "Steam CN Demo/Next Fest Window / Steam App 4643000",
+      "contact": "Email: mopmopmop25mop@gmail.com；Steam: https://steamcommunity.com/app/4643000/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "mopmopmop25mop@gmail.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4643000/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4643000/",
+        "https://steamdb.info/app/4643000/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Demo/Next Fest Window（2026-06-25）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-25",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    },
+    {
+      "id": "lead_media_20260625_l6woz5",
+      "project": "荣耀之经",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 待确认；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 81；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1GJ786XEZH/",
+      "contact": "B站: https://www.bilibili.com/video/BV1GJ786XEZH/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1GJ786XEZH/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1GJ786XEZH/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-06-25）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-25",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4735070_2026-06-25",
+      "project": "Fu Sha 3: Night Clinic",
+      "steam_app_id": "4735070",
+      "team": "1号观测员",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Steam CN Demo/Next Fest Window 有国内前置信号，距发售约0天；先进入未处理 inbox，由人工决定是否提测或观察",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；距发售约0天",
+      "genre": "Adventure / Casual / Indie / RPG",
+      "gameplay": "Spend a terrifying night of uncertain life and death in a late-night hospital via text adventure. *Fu Sha 3: Night Clinic * has numerous side choices and over twenty endings. Every choice may trigger unbearable horror—can you make the right ones, avoid fatal dangers, and escape this death curse?",
+      "progress": "Steam Steam CN Demo/Next Fest Window；发售窗口：2026-06-25；Demo/试玩信号需优先复核",
+      "release_window": "2026-06-25",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "世界观测站；未见成熟中国发行能力占位",
+      "publisher_name": "世界观测站",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Demo/Next Fest Window；素材/截图/视频可验证；Demo/试玩信号。",
+      "public_signals": "Steam CN Demo/Next Fest Window / Steam App 4735070",
+      "contact": "Email: forever_to_end@aliyun.com；Steam: https://steamcommunity.com/app/4735070/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "forever_to_end@aliyun.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4735070/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4735070/",
+        "https://steamdb.info/app/4735070/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Demo/Next Fest Window（2026-06-25）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-06-25",
+      "notes": "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。"
+    }
+  ]
+}
