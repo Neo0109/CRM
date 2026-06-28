@@ -53,9 +53,28 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
+## Sourcing Rules V6.4 Bilibili Probe Iteration
+
+The latest sourcing-logic iteration is `sourcing-rules-v6.4-bili-probe`, focused on adding a configurable Bilibili sourcing probe while preserving the V6.3 official-source verification, structured link extraction, decision-grade field hygiene, automation stability, and clean low-volume backfill.
+
+V6.4 intent:
+
+- Use a configurable Bilibili source pool: official UIDs, developer UIDs, publisher UIDs, media UIDs, trusted creator UIDs, keywords, required keywords, blacklists, and max video age.
+- Prefer official/developer/publisher Bilibili sources over recommendation UP videos when both point to the same product or Steam AppID.
+- Enrich video details from public Bilibili endpoints before candidate creation: title, owner, publish time, description, tags, and interaction stats.
+- Extract Steam/TapTap/official/community links from Bilibili descriptions into structured links, not long text fields.
+- Filter old videos, generic recommendation collections, blacklisted sources, duplicates, and already released Steam products before they enter the new `未处理` queue.
+- Add receipt diagnostics for Bilibili probe raw candidates, detail success/failure, official-source hits, extracted links, stale filters, blacklist filters, duplicate filters, and final candidate counts.
+- Treat a single Bilibili keyword or UP-source failure as diagnostic data, not as a scheduled-daily hard failure.
+- Do not change login, UI schema, manual review flow, product version, or GitHub Actions schedule.
+
+Version record:
+
+- `docs/releases/daily-report-v6.4-bilibili-probe.md`
+
 ## Sourcing Rules V6.3 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v6.3`, focused on official-source verification, structured link extraction, decision-grade field hygiene, automation stability, and clean low-volume backfill while preserving the V6 low-volume fix.
+The previous sourcing-logic iteration was `sourcing-rules-v6.3`, focused on official-source verification, structured link extraction, decision-grade field hygiene, automation stability, and clean low-volume backfill while preserving the V6 low-volume fix.
 
 V6.3 intent:
 

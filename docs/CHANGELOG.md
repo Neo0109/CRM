@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 日报规则升级到 `sourcing-rules-v6.4-bili-probe`：新增可配置 B站 Sourcing 探头，支持官方/开发者/发行商/媒体/可信 UP/关键词来源池、视频详情富化、简介链接结构化抽取、黑名单、旧视频/合集/重复过滤和诊断留痕。本次只增强 sourcing 来源池与自动化诊断，不修改登录、主 UI、人工流程、产品 schema 或产品版本号。
 - 日报规则升级到 `sourcing-rules-v6.3`：保留 V6.2 的官方源优先、结构化链接、Steam 交叉验证和低量 fallback，同时清理低量 backfill 写入可见字段的自动化流水账；watchdog 同步也统一优先使用 `CRM_AUTOMATION_TOKEN`。本次不修改登录、UI schema、人工分池流程或产品版本号。
 - 自动化诊断新增只读业务验收面板：基于当天日报、行业雷达、Steam 趋势和 automation_runs receipt 判断“今天是否业务可用”、核心问题、关键证据和建议动作；低候选量会归类到来源池/过滤压力/同步等原因。本次不触发重跑、不写 CRM、不修改日报规则、登录、线索 schema 或人工流程。
 - 日报自动化稳定护栏：Steam 趋势低量时补足诊断卡片和品类信号，避免 `steam trends has fewer than 8 items` 打断整条日报；同步 receipt 在失败残留文件存在时会先临时 stash 再提交运行记录，避免 `git pull --rebase` 因 unstaged generated artifacts 再次失败。本次只改日报自动化链路，不修改登录、UI、人工分池、产品 schema 或产品版本号。

@@ -1,8 +1,8 @@
 # Current Daily Report Rules
 
-Date: 2026-06-10
+Date: 2026-06-29
 
-The current daily report rule version is `sourcing-rules-v6.3`.
+The current daily report rule version is `sourcing-rules-v6.4-bili-probe`.
 
 Canonical human-readable rule document:
 
@@ -96,7 +96,7 @@ The online generator must preserve the product intent of these rules:
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.3`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.4-bili-probe`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
 
@@ -136,3 +136,15 @@ V6.3 keeps the V6.2 sourcing behavior and tightens two operational edges:
 - Backfilled leads should still explain BD value through gameplay strength, income upside, market heat, Bilibili amplification, team/region fit, and signing probability.
 - GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`; `CRM_ACCESS_TOKEN` remains only a backwards-compatible fallback where explicitly wired.
 - Product version, daily-report rule version, and GitHub workflow health are separate concerns. A sourcing-rule update must not bump the product UI version or change unrelated product features.
+
+## V6.4 Bilibili Probe V1
+
+V6.4 adds a dedicated Bilibili sourcing probe inspired by configurable crawler patterns, without importing external crawler code or changing product UI.
+
+- Bilibili source configuration now separates `official_uids`, `developer_uids`, `publisher_uids`, `media_uids`, `trusted_creator_uids`, keywords, required keywords, UID/BVID blacklist, and video-age limits.
+- Official/developer/publisher Bilibili sources are preferred over recommendation UP videos when both point to the same product or Steam AppID.
+- The probe enriches video details before creating candidates, including title, owner, publish time, description, tags, and play/like/favorite stats when public endpoints return them.
+- Steam/TapTap/official-site/community links found in Bilibili descriptions are extracted into structured links, not copied into gameplay/progress/notes.
+- Old videos, generic recommendation collections, blacklisted videos, duplicate BVID/source/Steam AppID candidates, and already released Steam projects must not become fresh `未处理` leads.
+- Receipt diagnostics include Bilibili probe raw candidates, detail successes/failures, official-source hits, extracted-link counts, stale filters, blacklist filters, duplicate filters, and final candidate counts.
+- A Bilibili keyword or UP-source failure is diagnostic data, not a hard failure. The cloud daily report should continue with other sources and fallback candidates unless schema/write/sync authentication fails.

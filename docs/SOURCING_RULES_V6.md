@@ -1,8 +1,8 @@
 # Sourcing Rules V6
 
-Date: 2026-06-10
+Date: 2026-06-29
 
-Active supplement: `sourcing-rules-v6.3`, updated 2026-06-10.
+Active supplement: `sourcing-rules-v6.4-bili-probe`, updated 2026-06-29.
 
 ## One-Line Standard
 
@@ -92,6 +92,18 @@ V6.3 keeps the V6.2 source-quality rules and fixes two stability problems:
 - GitHub Actions and Cloudflare sync flows should prefer `CRM_AUTOMATION_TOKEN`; use `CRM_ACCESS_TOKEN` only as a backwards-compatible fallback when the workflow explicitly supports it.
 - Product version, sourcing-rule version, and workflow health are separate. Rules can iterate without changing product UI version, login, schema, or manual review behavior.
 
+### V6.4 Bilibili Probe V1
+
+V6.4 adds a configurable Bilibili probe to improve source quality and explain low sourcing volume without making Bilibili a fragile single point of failure.
+
+- Source configuration distinguishes official, developer, publisher, media, trusted creator, keyword, required keyword, UID/BVID blacklist, and maximum video-age lists.
+- Official/developer/publisher sources beat recommendation UP videos when multiple Bilibili signals point to the same project, source URL, or Steam AppID.
+- The probe fetches video detail metadata where public endpoints allow it: title, owner, publish time, description, tags, and interaction stats.
+- Steam/TapTap/official-site/community links extracted from Bilibili descriptions must enter structured `links`; real business touch points enter `contact_methods`.
+- Old videos, generic recommendation collections, blacklisted BVID/UIDs, released Steam projects, and duplicates must not enter the fresh `未处理` queue.
+- Diagnostics must record raw candidates, detail success/failure, official-source hits, links extracted, Steam links extracted, stale filters, blacklist filters, duplicate filters, source failures, and final candidate counts.
+- A single failed Bilibili keyword/UP source should only be logged. It must not fail the daily workflow while other sources or valid fallback candidates exist.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -129,5 +141,5 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1/V6.2/V6.3 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4 verification gate before becoming fresh `未处理` leads.
 - Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.
