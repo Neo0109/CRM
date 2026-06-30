@@ -4,6 +4,8 @@
 
 This release adds a deterministic learning loop for human BD decisions. It does not change daily-report scheduling, sourcing generation rules, login, or product version.
 
+Versioning note: this release included user-visible learning diagnostics and rejection-reason UI. Those product-visible surfaces are now covered by the `v2.5-version-governance-catchup` product version record.
+
 ## Behavior
 
 - Current leads in `未处理`, `待评测`, `测试中`, `观察池`, `跟进中`, and `推进池` are treated as the active learning cohort.
