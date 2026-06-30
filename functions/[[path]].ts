@@ -2,7 +2,7 @@ import type { PagesContext } from "./_lib/crm";
 
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260604-automation-diagnostics-center-v24";
+const assetVersion = "20260630-version-governance-catchup-v25";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;
