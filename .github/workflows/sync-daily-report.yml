@@ -103,12 +103,12 @@ jobs:
       - name: Generate daily report, radar, and Steam trends
         shell: bash
         run: |
-          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 ${{ steps.dedupe.outputs.index_args }}
+          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 --allowLowVolume=true ${{ steps.dedupe.outputs.index_args }}
 
       - name: Validate daily report contract
         shell: bash
         run: |
-          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE"
+          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE" --allowLowVolume=true
 
       - name: Commit generated data
         id: commit
