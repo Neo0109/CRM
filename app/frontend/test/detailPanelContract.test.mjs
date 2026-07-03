@@ -25,8 +25,8 @@ function quickActionSource() {
 }
 
 describe("Lead detail panel contract", () => {
-  it("keeps direct drop available from evaluation leads", () => {
-    assert.match(quickActionSource(), /lead\.bucket === "待评测"\)\s*return \[testing,\s*drop\]/);
+  it("keeps watch and direct drop available from evaluation leads", () => {
+    assert.match(quickActionSource(), /lead\.bucket === "待评测"\)\s*return \[testing,\s*watch,\s*drop\]/);
   });
 
   it("does not render noisy automation/source fields in the default detail editor", () => {

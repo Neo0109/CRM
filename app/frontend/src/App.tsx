@@ -987,7 +987,7 @@ function quickActionSpecs(lead: Lead, missingLinksMode: boolean): QuickActionSpe
   };
 
   if (isUnread) return [evaluate, watch, drop];
-  if (lead.bucket === "待评测") return [testing, drop];
+  if (lead.bucket === "待评测") return [testing, watch, drop];
   if (lead.bucket === "测试中") return [follow, watch, drop];
   if (lead.bucket === "观察池") return [evaluate, follow, drop];
   if (lead.bucket === "淘汰池") return [watch, evaluate];
