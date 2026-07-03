@@ -11,13 +11,16 @@ const thresholds = {
   minSteamMarketInsights: numberArg(args.minSteamMarketInsights, 3),
   minSteamGenreSignals: numberArg(args.minSteamGenreSignals, 3)
 };
+const allowLowVolume = booleanArg(args.allowLowVolume);
 const allErrors = [];
+const allWarnings = [];
 const summaries = [];
 
 for (const date of dates) {
   const result = validateDate(date, thresholds);
   summaries.push(result.summary);
   allErrors.push(...result.errors.map((error) => `${date}: ${error}`));
+  allWarnings.push(...result.warnings.map((warning) => `${date}: ${warning}`));
 }
 
 if (allErrors.length) {
@@ -26,9 +29,15 @@ if (allErrors.length) {
   process.exit(1);
 }
 
+if (allWarnings.length) {
+  console.warn("Daily report contract validation warnings:");
+  for (const warning of allWarnings) console.warn(`- ${warning}`);
+}
+
 console.log(JSON.stringify({
   ok: true,
   checked_dates: dates,
+  warnings: allWarnings,
   summaries
 }, null, 2));
 
@@ -47,10 +56,11 @@ function validateDate(date, thresholds) {
   };
 
   const errors = [];
+  const warnings = [];
   for (const [label, filePath] of Object.entries(files)) {
     if (!existsSync(path.join(rootDir, filePath))) errors.push(`missing ${filePath}`);
   }
-  if (errors.length) return { errors, summary: { date, missing: errors.length } };
+  if (errors.length) return { errors, warnings, summary: { date, missing: errors.length } };
 
   const report = loadJson(files.report);
   const radar = loadJson(files.radar);
@@ -64,10 +74,10 @@ function validateDate(date, thresholds) {
   if (report.report_date !== date) errors.push(`report_date mismatch in ${files.report}: ${report.report_date}`);
   if (radar.report_date !== date) errors.push(`report_date mismatch in ${files.radar}: ${radar.report_date}`);
   if (steamTrends.report_date !== date) errors.push(`report_date mismatch in ${files.steamTrends}: ${steamTrends.report_date}`);
-  if ((radar.items?.length ?? 0) < thresholds.minRadarItems) errors.push(`radar has fewer than ${thresholds.minRadarItems} items`);
-  if ((steamTrends.items?.length ?? 0) < thresholds.minSteamTrendItems) errors.push(`steam trends has fewer than ${thresholds.minSteamTrendItems} items`);
-  if ((steamTrends.market_insights?.length ?? 0) < thresholds.minSteamMarketInsights) errors.push(`steam trends has fewer than ${thresholds.minSteamMarketInsights} market insights`);
-  if ((steamTrends.genre_signals?.length ?? 0) < thresholds.minSteamGenreSignals) errors.push(`steam trends has fewer than ${thresholds.minSteamGenreSignals} genre signals`);
+  addVolumeIssue(warnings, errors, allowLowVolume, (radar.items?.length ?? 0) < thresholds.minRadarItems, `radar has fewer than ${thresholds.minRadarItems} items`);
+  addVolumeIssue(warnings, errors, allowLowVolume, (steamTrends.items?.length ?? 0) < thresholds.minSteamTrendItems, `steam trends has fewer than ${thresholds.minSteamTrendItems} items`);
+  addVolumeIssue(warnings, errors, allowLowVolume, (steamTrends.market_insights?.length ?? 0) < thresholds.minSteamMarketInsights, `steam trends has fewer than ${thresholds.minSteamMarketInsights} market insights`);
+  addVolumeIssue(warnings, errors, allowLowVolume, (steamTrends.genre_signals?.length ?? 0) < thresholds.minSteamGenreSignals, `steam trends has fewer than ${thresholds.minSteamGenreSignals} genre signals`);
 
   const poolEntries = [
     ...poolLeads(report, "push_pool"),
@@ -127,6 +137,7 @@ function validateDate(date, thresholds) {
 
   return {
     errors,
+    warnings,
     summary: {
       date,
       push: report.push_pool?.length ?? 0,
@@ -257,6 +268,16 @@ function parseArgs(argv) {
 function numberArg(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function booleanArg(value) {
+  return value === true || value === "true" || value === "1" || value === "yes";
+}
+
+function addVolumeIssue(warnings, errors, allowLowVolume, condition, message) {
+  if (!condition) return;
+  if (allowLowVolume) warnings.push(message);
+  else errors.push(message);
 }
 
 function normalizeLeadName(value) {
