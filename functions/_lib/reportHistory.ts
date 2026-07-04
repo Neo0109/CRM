@@ -50,7 +50,7 @@ export async function fetchHistoricalJson<T extends Record<string, unknown>>(
       report_date: requested,
       summary: options.fallbackSummary,
       items: []
-    } as T,
+    } as unknown as T,
     requested_date: requested,
     source
   };
