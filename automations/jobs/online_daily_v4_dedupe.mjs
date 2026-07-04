@@ -23,13 +23,47 @@ function sourcePriority(item) {
 export function dedupeMediaSignals(items) {
   const seen = new Set();
   const out = [];
-  for (const item of items) {
-    const key = normalizeText(item.title).slice(0, 80);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
+  const ranked = [...items].sort((a, b) => mediaSignalDedupeRank(b) - mediaSignalDedupeRank(a));
+  for (const item of ranked) {
+    const keys = mediaSignalDedupeKeys(item);
+    if (!keys.length || keys.some((key) => seen.has(key))) continue;
+    for (const key of keys) seen.add(key);
     out.push(item);
   }
   return out;
+}
+
+function mediaSignalDedupeRank(item) {
+  if (!item?.bilibili_probe) return 0;
+  let rank = Number(item.source_quality ?? 0);
+  const sourceKind = item.bilibili_probe.source_kind;
+  if (sourceKind === "official") rank += 1000;
+  if (sourceKind === "developer") rank += 900;
+  if (sourceKind === "publisher") rank += 850;
+  if (sourceKind === "media") rank += 650;
+  if (sourceKind === "trusted_creator") rank += 500;
+  return rank;
+}
+
+function mediaSignalDedupeKeys(item) {
+  const keys = [];
+  const bvid = item.bvid ?? bvidFromUrl(item.link);
+  if (bvid) keys.push(`bvid:${normalizeText(bvid)}`);
+  const link = normalizeUrl(item.link ?? "");
+  if (link) keys.push(`link:${link}`);
+  const steamAppId = item.bilibili_probe?.steam_app_id ?? steamAppIdFromText(`${item.title ?? ""} ${item.summary ?? ""} ${item.link ?? ""}`);
+  if (steamAppId) keys.push(`steam:${steamAppId}`);
+  const titleKey = normalizeText(item.title).slice(0, 80);
+  if (titleKey) keys.push(`title:${titleKey}`);
+  return [...new Set(keys)];
+}
+
+function bvidFromUrl(value) {
+  return String(value ?? "").match(/bilibili\.com\/video\/([^/?#]+)/i)?.[1] ?? "";
+}
+
+function steamAppIdFromText(value) {
+  return String(value ?? "").match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i)?.[1] ?? null;
 }
 
 export function selectDiverseMediaSignals(items, limit) {

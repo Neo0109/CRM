@@ -1,8 +1,8 @@
 # Current Daily Report Rules
 
-Date: 2026-06-10
+Date: 2026-07-05
 
-The current daily report rule version is `sourcing-rules-v6.3`.
+The current daily report rule version is `sourcing-rules-v6.4-bili-probe`.
 
 Canonical human-readable rule document:
 
@@ -88,6 +88,7 @@ The online generator must preserve the product intent of these rules:
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
 - Bilibili candidates must be enriched from video descriptions before candidate creation, then checked for Steam release status, duplicate CRM history, and stale source age.
+- Bilibili probe candidates from configured official, developer, publisher, media, trusted creator, and keyword sources must prefer official/developer/publisher evidence when the same Steam AppID or video/link appears more than once.
 - Candidate fields must stay useful for decision work: `priority_reason` only explains priority, `rule_fit` gives the rule judgment and insight, `gameplay` is compact genre/tag text, `progress` is a short status such as `试玩 Demo` / `EA` / `正式上线` / `即将发售`, and `next_action` / `notes` default empty for human BD input.
 - Industry Radar is a compact China + overseas news board. `行业新闻` is reserved for macro market/platform/regulatory/company-level news. Concrete game recommendations, fun products, IP moments, legal/company gossip, and former `发行八卦` items belong in `今日亮点`.
 - Radar output should be broad enough to show trends, not just a few similar cards. When sources are available, include both domestic and global signals across macro news, product highlights, AI/tooling, memes/community, and Bilibili trends.
@@ -96,7 +97,7 @@ The online generator must preserve the product intent of these rules:
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded scoring and formatting logic while executing `sourcing-rules-v6.3`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded sourcing orchestration while executing `sourcing-rules-v6.4-bili-probe`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
 
@@ -136,3 +137,13 @@ V6.3 keeps the V6.2 sourcing behavior and tightens two operational edges:
 - Backfilled leads should still explain BD value through gameplay strength, income upside, market heat, Bilibili amplification, team/region fit, and signing probability.
 - GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`; `CRM_ACCESS_TOKEN` remains only a backwards-compatible fallback where explicitly wired.
 - Product version, daily-report rule version, and GitHub workflow health are separate concerns. A sourcing-rule update must not bump the product UI version or change unrelated product features.
+
+## V6.4 Bilibili Probe
+
+V6.4 adds a configurable Bilibili sourcing probe without changing CRM UI, schema, sync behavior, or GitHub Actions triggers.
+
+- The probe can scan configured official, developer, publisher, media, trusted creator, and keyword sources.
+- Video details must be enriched before scoring so descriptions can contribute Steam, SteamDB, official-site, and contact evidence.
+- Blacklisted UID/BVID/keywords, stale videos, generic recommendation collections, and non-official videos without required product-window keywords are filtered before lead creation.
+- When multiple Bilibili signals point to the same Steam AppID, BVID, or source link, official/developer/publisher sources must beat recommendation or keyword sources.
+- Probe diagnostics must be visible in automation summary fields, but probe counts and rule labels must not be written into user-facing lead fields.

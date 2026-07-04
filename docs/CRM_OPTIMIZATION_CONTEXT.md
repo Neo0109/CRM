@@ -53,14 +53,16 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
-## Sourcing Rules V6.3 Iteration
+## Sourcing Rules V6.4 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v6.3`, focused on official-source verification, structured link extraction, decision-grade field hygiene, automation stability, and clean low-volume backfill while preserving the V6 low-volume fix.
+The latest sourcing-logic iteration is `sourcing-rules-v6.4-bili-probe`, focused on configurable Bilibili probe intake, official/developer/publisher source preference, structured link extraction, probe diagnostics, and preserving the V6.3 field-hygiene and low-volume stability fixes.
 
-V6.3 intent:
+V6.4 intent:
 
+- Bilibili probe scans configured official, developer, publisher, media, trusted creator, and keyword sources without adding a CRM page or changing UI/schema.
 - Bilibili video leads must be enriched from video descriptions before candidate creation.
 - Recommendation-UP videos are discovery signals only; official/developer/studio/publisher sources should be preferred before final candidate creation.
+- Duplicate probe signals with the same BVID, source link, or Steam AppID should keep the official/developer/publisher source when available.
 - Steam links/AppIDs found in Bilibili or media descriptions must be used for release-state cross-checks.
 - Already fully released products must not enter push/watch review candidates; use drop/background unless a post-launch review is explicitly requested.
 - Existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys must be used for dedupe, so a Bilibili video does not recreate a product already sourced from Steam.
@@ -70,6 +72,10 @@ V6.3 intent:
 - Low-volume backfill must not write automation bookkeeping, rule labels, candidate counts, or fallback diagnostics into visible lead fields.
 - GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`, with `CRM_ACCESS_TOKEN` only as a compatibility fallback where supported.
 - Rules, automation, and product features remain separate modules; a sourcing-rule iteration must not change login, UI, schema, or other product behavior.
+
+## Sourcing Rules V6.3 Iteration
+
+The previous sourcing-logic iteration was `sourcing-rules-v6.3`, focused on official-source verification, structured link extraction, decision-grade field hygiene, automation stability, and clean low-volume backfill while preserving the V6 low-volume fix.
 
 ## Sourcing Rules V6.2 Iteration
 

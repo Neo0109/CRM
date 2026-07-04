@@ -22,6 +22,8 @@
     "typecheck:functions": "tsc -p functions/tsconfig.json --noEmit",
     "test:sourcing-v6-2": "node scripts/test-sourcing-v6-2.mjs",
     "test:sourcing-v6-3": "node scripts/test-sourcing-v6-3.mjs",
+    "test:bilibili-probe": "node scripts/test-bilibili-probe.mjs",
+    "test:sourcing-v6-4": "node scripts/test-sourcing-v6-3.mjs && node scripts/test-bilibili-probe.mjs",
     "test:sourcing-learning": "node --test scripts/test-sourcing-learning.mjs"
   },
   "devDependencies": {
