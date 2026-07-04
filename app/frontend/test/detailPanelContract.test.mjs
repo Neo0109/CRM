@@ -5,23 +5,21 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const appSource = readFileSync(resolve(__dirname, "../src/App.tsx"), "utf8");
+const detailSource = readFileSync(resolve(__dirname, "../src/features/leads/LeadDetail.tsx"), "utf8");
+const workflowSource = readFileSync(resolve(__dirname, "../src/features/leads/leadWorkflow.ts"), "utf8");
 const detailUxSource = readFileSync(resolve(__dirname, "../src/DetailUxRefinement.tsx"), "utf8");
 
 function leadDetailSource() {
-  const start = appSource.indexOf("function LeadDetail");
-  const end = appSource.indexOf("function leadDecisionHeadline");
+  const start = detailSource.indexOf("export function LeadDetail");
+  const end = detailSource.indexOf("function leadDecisionHeadline");
   assert.notEqual(start, -1, "LeadDetail should exist");
   assert.notEqual(end, -1, "leadDecisionHeadline should follow LeadDetail");
-  return appSource.slice(start, end);
+  return detailSource.slice(start, end);
 }
 
 function quickActionSource() {
-  const start = appSource.indexOf("function quickActionSpecs");
-  const end = appSource.indexOf("function BucketButtons");
-  assert.notEqual(start, -1, "quickActionSpecs should exist");
-  assert.notEqual(end, -1, "BucketButtons should follow quickActionSpecs");
-  return appSource.slice(start, end);
+  assert.match(workflowSource, /export function buildQuickActionSpecs/);
+  return workflowSource;
 }
 
 describe("Lead detail panel contract", () => {

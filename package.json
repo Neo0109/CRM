@@ -17,6 +17,7 @@
     "validate:daily": "node scripts/validate-daily-contract.mjs",
     "watchdog:daily": "node scripts/daily-report-watchdog.mjs",
     "test:daily-v4": "node --test automations/test/*.mjs",
+    "test:frontend": "tsx --test app/frontend/test/*.mjs",
     "test:crm-core": "tsx --test functions/test/*.test.ts",
     "typecheck:functions": "tsc -p functions/tsconfig.json --noEmit",
     "test:sourcing-v6-2": "node scripts/test-sourcing-v6-2.mjs",
