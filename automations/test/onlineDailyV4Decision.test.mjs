@@ -181,4 +181,49 @@ describe("online daily v4 volume and dedupe helpers", () => {
       { title: "Another", source: "C" }
     ]);
   });
+
+  it("deduplicates probe media signals by BVID, link, and Steam AppID while keeping official sources", () => {
+    const official = {
+      title: "九宫幻境录 官方PV",
+      source: "B站探头-官方源",
+      link: "https://www.bilibili.com/video/BVOFFICIAL/",
+      source_quality: 1000,
+      bilibili_probe: {
+        source_kind: "official",
+        steam_app_id: "2921670"
+      }
+    };
+    const creatorDuplicate = {
+      title: "九宫幻境录 Demo 试玩",
+      source: "B站探头-可信UP",
+      link: "https://www.bilibili.com/video/BVREC/",
+      source_quality: 500,
+      bilibili_probe: {
+        source_kind: "trusted_creator",
+        steam_app_id: "2921670"
+      }
+    };
+    const linkDuplicate = {
+      title: "另一个标题",
+      source: "B站探头-关键词",
+      link: "https://www.bilibili.com/video/BVOFFICIAL/",
+      source_quality: 100,
+      bilibili_probe: {
+        source_kind: "keyword",
+        steam_app_id: null
+      }
+    };
+    const other = {
+      title: "另一款国产策略 Demo",
+      source: "B站探头-开发者源",
+      link: "https://www.bilibili.com/video/BVDEV/",
+      source_quality: 900,
+      bilibili_probe: {
+        source_kind: "developer",
+        steam_app_id: "3000000"
+      }
+    };
+
+    assert.deepEqual(dedupeMediaSignals([creatorDuplicate, linkDuplicate, other, official]), [official, other]);
+  });
 });

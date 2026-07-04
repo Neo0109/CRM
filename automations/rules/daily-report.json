@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6.3",
-  "updated_at": "2026-06-10",
+  "rule_version": "sourcing-rules-v6.4-bili-probe",
+  "updated_at": "2026-07-05",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
@@ -55,6 +55,8 @@
     "Industry radar should prioritize high-quality domestic and global sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, market direction, platform policy, or Bilibili content angles.",
     "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID.",
     "Bilibili video leads must be enriched from video descriptions before CRM candidate creation, because descriptions often contain Steam store links, official sites, Discord, email, or other business-contact clues.",
+    "Bilibili probe must support configured official, developer, publisher, media, trusted creator, keyword, required keyword, blacklist UID/BVID, and max video age sources.",
+    "Bilibili probe should fetch video details for title, owner, publish time, description, tags, and public engagement before lead scoring.",
     "Bilibili recommendation videos are discovery signals only. Before creating a lead, search for and prefer official, developer, studio, or publisher Bilibili sources when they match the concrete project.",
     "Steam, TapTap, official-site, and community links found in Bilibili descriptions, media bodies, gameplay text, or summaries must be extracted into structured links before validation and CRM sync.",
     "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Already released products must not enter push/watch review candidates.",
@@ -65,6 +67,8 @@
   ],
   "bilibili_media_quality_gates": {
     "max_bilibili_lead_age_days": 120,
+    "probe_config": "automations/rules/bilibili-probe.json",
+    "official_developer_publisher_sources_preferred": true,
     "description_enrichment_required": true,
     "steam_cross_check_required_when_link_present": true,
     "dedupe_against_existing_projects_appids_links_and_keys": true,

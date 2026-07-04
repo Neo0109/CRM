@@ -9,17 +9,18 @@ import {
 } from "./online_daily_v4_dedupe.mjs";
 
 export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCount, reportDate, diagnostics }) {
+  const probe = diagnostics.bilibili_probe ?? {};
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.3线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条，官方源命中 ${diagnostics.bilibili_official_source_hits} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V6.4线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；B站探头候选 ${probe.raw_candidates ?? 0} 条、最终 ${probe.final_candidates ?? 0} 条、官方源命中 ${diagnostics.bilibili_official_source_hits} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
     insights: [
-      "V6.3把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V6.4把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
       "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
       "国内开发者的Demo/试玩信号一律提权；窗口可以更早更长，不再把60天当唯一前置判断，国内项目先测再商务。",
-      "B站视频线索必须优先复核官方号/开发者号/发行商号，补读简介，提取Steam/官网/联系方式，交叉验证是否已发售，并和历史CRM记录去重。",
+      "B站视频线索通过探头配置优先扫描官方号/开发者号/发行商号，补读简介，提取Steam/官网/联系方式，交叉验证是否已发售，并和历史CRM记录去重。",
       "B站/媒体字段必须保持决策台可读：Steam链接写入links，玩法写标签，进度写短状态，下一步动作和备注默认留给人工。",
       "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
@@ -39,7 +40,7 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
   if (!candidates.length) {
     return {
       report_date: reportDate,
-      summary: `Sourcing V6.3行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      summary: `Sourcing V6.4行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
       items: mediaItems
     };
   }
@@ -49,7 +50,7 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
     "bilibili_bd_lens",
     "B站趋势",
     `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
-    `样本高频不等于推荐。V6只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
+    `样本高频不等于推荐。V6.4只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
     "中",
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
@@ -58,7 +59,7 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.3行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V6.4行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -97,7 +98,7 @@ export function buildSteamTrendReport({ candidates, pools, reportDate, capturedA
   }, context);
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6.3：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    summary: `Steam大盘V6.4：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...steamItems, ...mediaFallbackItems, ...diagnosticFallbackItems].slice(0, 12),
@@ -150,7 +151,7 @@ function buildSteamUnavailableFallbackTrendReport(pools, context) {
 
   return {
     report_date: context.reportDate,
-    summary: `Steam大盘V6.3：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
+    summary: `Steam大盘V6.4：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...fallbackItems, ...diagnosticItems].slice(0, 12),

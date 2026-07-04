@@ -40,7 +40,7 @@ async function loadRules(filePath) {
 function validateRules(value) {
   if (!value || typeof value !== "object") throw new Error("Daily report rules must be a JSON object.");
   if (value.schema_version !== 1) throw new Error(`Unsupported daily report rule schema: ${value.schema_version}`);
-  if (value.rule_version !== "sourcing-rules-v6.3") throw new Error(`Unsupported daily report rule version: ${value.rule_version}`);
+  if (value.rule_version !== "sourcing-rules-v6.4-bili-probe") throw new Error(`Unsupported daily report rule version: ${value.rule_version}`);
   if (!Array.isArray(value.compatible_generators) || !value.compatible_generators.includes(generatorRepoPath)) {
     throw new Error(`Daily report rules are not marked compatible with ${generatorRepoPath}.`);
   }

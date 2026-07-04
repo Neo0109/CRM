@@ -1,8 +1,8 @@
 # Sourcing Rules V6
 
-Date: 2026-06-10
+Date: 2026-07-05
 
-Active supplement: `sourcing-rules-v6.3`, updated 2026-06-10.
+Active supplement: `sourcing-rules-v6.4-bili-probe`, updated 2026-07-05.
 
 ## One-Line Standard
 
@@ -92,6 +92,16 @@ V6.3 keeps the V6.2 source-quality rules and fixes two stability problems:
 - GitHub Actions and Cloudflare sync flows should prefer `CRM_AUTOMATION_TOKEN`; use `CRM_ACCESS_TOKEN` only as a backwards-compatible fallback when the workflow explicitly supports it.
 - Product version, sourcing-rule version, and workflow health are separate. Rules can iterate without changing product UI version, login, schema, or manual review behavior.
 
+### V6.4 Bilibili Probe
+
+V6.4 adds a configurable Bilibili sourcing probe while preserving the existing daily report output shape and CRM review workflow.
+
+- Probe sources can include configured official, developer, publisher, media, trusted creator, and keyword searches.
+- Probe candidates must fetch video details before scoring so descriptions, tags, owners, public engagement, Steam links, SteamDB links, official sites, and contact clues can be extracted.
+- Blacklisted UID/BVID/keywords, stale videos, generic recommendation collections, and non-official videos without required product-window keywords are filtered before candidate creation.
+- When duplicate Bilibili signals point to the same BVID, source link, or Steam AppID, official/developer/publisher signals beat trusted creator or keyword signals.
+- Probe diagnostics belong in automation summaries and health checks, not in user-facing lead fields.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -129,5 +139,5 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1/V6.2/V6.3 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4 verification gate before becoming fresh `未处理` leads.
 - Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.

@@ -1,9 +1,10 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.3.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.4.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { execFile as execFileCallback } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
+import { collectBilibiliProbeSignals, defaultBilibiliProbeDiagnostics } from "./bilibili_probe.mjs";
 import {
   choosePreferredBilibiliSignal,
   deriveMediaDecisionFields,
@@ -28,6 +29,8 @@ import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalT
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
 const rootDir = process.cwd();
+const sourcingRuleVersion = "sourcing-rules-v6.4-bili-probe";
+const generatorName = "online_daily_v4_sourcing_rules_v6_4_bili_probe";
 const execFile = promisify(execFileCallback);
 const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
@@ -42,7 +45,7 @@ const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, 120, 1
 const maxOfficialLookups = boundedNumber(args.maxOfficialLookups, 12, 0, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 const sourcingDiagnostics = {
-  rule_version: "sourcing-rules-v6.3",
+  rule_version: sourcingRuleVersion,
   source_failures: 0,
   media_signals_raw: 0,
   media_stale_filtered: 0,
@@ -56,6 +59,7 @@ const sourcingDiagnostics = {
   media_released_routed_to_drop: 0,
   bilibili_official_source_lookups: 0,
   bilibili_official_source_hits: 0,
+  bilibili_probe: defaultBilibiliProbeDiagnostics(),
   low_volume_warnings: []
 };
 
@@ -139,8 +143,8 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport({
 
 console.log(JSON.stringify({
   ok: true,
-  generator: "online_daily_v4_sourcing_rules_v6_3",
-  rule_version: "sourcing-rules-v6.3",
+  generator: generatorName,
+  rule_version: sourcingRuleVersion,
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
   candidates_enriched: enrichedCandidates.length,
@@ -159,6 +163,8 @@ console.log(JSON.stringify({
   duplicate_filtered: sourcingDiagnostics.media_duplicate_filtered,
   released_filtered: sourcingDiagnostics.media_released_routed_to_drop,
   bilibili_official_source_hits: sourcingDiagnostics.bilibili_official_source_hits,
+  bilibili_probe_candidates: sourcingDiagnostics.bilibili_probe?.raw_candidates ?? 0,
+  bilibili_probe_final_candidates: sourcingDiagnostics.bilibili_probe?.final_candidates ?? 0,
   final_import_candidates: pools.push.length + pools.watch.length,
   push_pool: pools.push.length,
   watch_pool: pools.watch.length,
@@ -1181,7 +1187,9 @@ function hashText(value) {
 }
 
 async function fetchMediaSignals() {
-  const results = (await Promise.all(mediaSources().map(fetchMediaSource))).flat();
+  const baseResults = (await Promise.all(mediaSources().map(fetchMediaSource))).flat();
+  const probeResults = await fetchBilibiliProbeMediaSignals();
+  const results = [...baseResults, ...probeResults];
   sourcingDiagnostics.media_signals_raw += results.length;
   const enrichedResults = await enrichBilibiliVideoSignals(results);
   const scored = [];
@@ -1204,6 +1212,31 @@ async function fetchMediaSignals() {
   scored.sort((a, b) => b.score - a.score);
 
   return dedupeMediaSignals(scored);
+}
+
+async function fetchBilibiliProbeMediaSignals() {
+  try {
+    const result = await collectBilibiliProbeSignals({
+      rootDir,
+      reportDate,
+      configPath: args.bilibiliProbeConfig,
+      maxVideoAgeDays: maxBilibiliLeadAgeDays
+    });
+    sourcingDiagnostics.bilibili_probe = result.diagnostics;
+    sourcingDiagnostics.source_failures += result.diagnostics.source_failures ?? 0;
+    sourcingDiagnostics.bilibili_official_source_hits += result.diagnostics.official_source_hits ?? 0;
+    return result.signals;
+  } catch (error) {
+    sourcingDiagnostics.source_failures += 1;
+    sourcingDiagnostics.bilibili_probe = {
+      ...defaultBilibiliProbeDiagnostics(),
+      source_failures: 1,
+      last_error: error.message
+    };
+    sourcingDiagnostics.low_volume_warnings.push(`B站探头失败：${error.message}`);
+    console.warn(`Bilibili probe failed: ${error.message}`);
+    return [];
+  }
 }
 
 async function enrichBilibiliVideoSignals(items) {

@@ -5,6 +5,7 @@
 ### 产品变化
 
 - 产品可见版本升级为 `v2.5`（`v2.5-version-governance-catchup`）：补齐近期已进入主线的用户可见能力版本记录，并明确产品功能版本、sourcing 规则版本和日报自动化补丁记录分开治理；后续用户可见产品功能必须通过 `npm run version:product` 同步更新，不再用日报规则版本替代产品版本。
+- 日报规则升级到 `sourcing-rules-v6.4-bili-probe`：新增 configurable 的 B站 sourcing probe，支持官方/开发者/发行商/媒体/可信UP/关键词源、视频详情富化、黑名单、旧视频和泛合集过滤、Steam/SteamDB 链接抽取和 probe 诊断计数。本次只改 sourcing 自动化层，不修改登录、UI、schema、人工分池流程或产品版本号。
 - 日报规则升级到 `sourcing-rules-v6.3`：保留 V6.2 的官方源优先、结构化链接、Steam 交叉验证和低量 fallback，同时清理低量 backfill 写入可见字段的自动化流水账；watchdog 同步也统一优先使用 `CRM_AUTOMATION_TOKEN`。本次不修改登录、UI schema、人工分池流程或产品版本号。
 - 自动化诊断新增只读业务验收面板：基于当天日报、行业雷达、Steam 趋势和 automation_runs receipt 判断“今天是否业务可用”、核心问题、关键证据和建议动作；低候选量会归类到来源池/过滤压力/同步等原因。本次不触发重跑、不写 CRM、不修改日报规则、登录、线索 schema 或人工流程。
 - 日报自动化稳定护栏：Steam 趋势低量时补足诊断卡片和品类信号，避免 `steam trends has fewer than 8 items` 打断整条日报；同步 receipt 在失败残留文件存在时会先临时 stash 再提交运行记录，避免 `git pull --rebase` 因 unstaged generated artifacts 再次失败。本次只改日报自动化链路，不修改登录、UI、人工分池、产品 schema 或产品版本号。
