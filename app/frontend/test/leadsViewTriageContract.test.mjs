@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 
-const source = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+const source = readFileSync(new URL("../src/features/leads/LeadsView.tsx", import.meta.url), "utf8");
 
 describe("LeadsView triage contract", () => {
   it("uses the triage helper instead of the old sourcing overview", () => {
