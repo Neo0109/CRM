@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
 import { buildAutomationDiagnostics } from "../functions/_lib/automationDiagnostics";
+import {
+  buildBusinessAcceptance,
+  buildCounts,
+  buildFileHealth,
+  buildNextActions,
+  buildStatus,
+  buildWarnings,
+  parseSourceBreakdown
+} from "../functions/_lib/automationDiagnosticsModel";
 
 type JsonValue = Record<string, unknown> | unknown[];
 
@@ -29,8 +38,185 @@ function listEntry(name: string) {
   return { name, type: "file" };
 }
 
+function fetchResult<T>(data: T | null, exists = true, status = exists ? 200 : 404) {
+  return {
+    data,
+    exists,
+    source: exists ? "mock://artifact.json" : "mock://missing.json",
+    status
+  };
+}
+
+function receiptSummary(name: string, status: string, sync: Record<string, unknown> | null) {
+  return {
+    attempts: null,
+    captured_at: null,
+    event_name: null,
+    event_schedule: null,
+    generated_changed: null,
+    name,
+    report_date: null,
+    run_number: null,
+    run_url: null,
+    slot: null,
+    status,
+    sync
+  };
+}
+
 const base = "https://raw.githubusercontent.com/Neo0109/CRM/main";
 const api = "https://api.github.com/repos/Neo0109/CRM/contents";
+
+function testModelParsesSourceBreakdownAndCountsArtifacts() {
+  const sourceBreakdown = parseSourceBreakdown("Sourcing V6.2线上自动化：扫描 Steam 候选 219 条、富化 90 条，官方源命中 6 条，另从国内媒体/B站提取产品线索 17 条；进入日报候选 29 条。");
+  assert.equal(sourceBreakdown.steam_scanned, 219);
+  assert.equal(sourceBreakdown.steam_enriched, 90);
+  assert.equal(sourceBreakdown.official_source_hits, 6);
+  assert.equal(sourceBreakdown.media_bilibili_leads, 17);
+  assert.equal(sourceBreakdown.final_candidates, 29);
+  assert.equal(parseSourceBreakdown(null).raw_summary, null);
+
+  const counts = buildCounts(
+    {
+      push_pool: [{ id: "push" }],
+      watch_pool: [{ id: "watch-1" }, { id: "watch-2" }],
+      drop_pool: [{ id: "drop" }]
+    },
+    {
+      items: [{ category: "行业新闻" }, { category: "今日亮点" }, { category: 42 }]
+    },
+    {
+      crm_candidates: [{ id: "crm" }],
+      genre_signals: [{ id: "genre" }],
+      items: [{ id: "steam-1" }, { id: "steam-2" }],
+      market_insights: [{ id: "market" }]
+    }
+  );
+
+  assert.equal(counts.push_candidates, 1);
+  assert.equal(counts.watch_candidates, 2);
+  assert.equal(counts.review_candidates, 3);
+  assert.equal(counts.drop_candidates, 1);
+  assert.equal(counts.final_candidates, 4);
+  assert.deepEqual(counts.radar_categories, { "今日亮点": 1, "行业新闻": 1, "未分类": 1 });
+  assert.equal(counts.steam_crm_candidates, 1);
+  assert.equal(counts.steam_items, 2);
+}
+
+function testModelBuildsWarningsStatusAndActions() {
+  const counts = buildCounts(
+    { push_pool: [{ id: "one" }], watch_pool: [], drop_pool: [] },
+    { items: [] },
+    { market_insights: [], genre_signals: [], items: [] }
+  );
+  const warnings = buildWarnings({
+    counts,
+    latestSyncedReceipt: null,
+    radarResult: fetchResult(null, false),
+    reportResult: fetchResult({ push_pool: [{ id: "one" }], watch_pool: [], drop_pool: [] }),
+    sourceBreakdown: parseSourceBreakdown("国内媒体/B站提取产品线索 1 条；进入日报候选 1 条。"),
+    steamResult: fetchResult(null, false)
+  });
+  const status = buildStatus({
+    latestReceipt: null,
+    latestSyncedReceipt: null,
+    radarResult: fetchResult(null, false),
+    reportResult: fetchResult({}),
+    steamResult: fetchResult(null, false),
+    warnings
+  });
+  const actions = buildNextActions(warnings, status);
+
+  assert.equal(status, "warning");
+  assert.ok(warnings.some((warning) => warning.includes("行业雷达文件缺失")));
+  assert.ok(warnings.some((warning) => warning.includes("Steam 趋势文件缺失")));
+  assert.ok(warnings.some((warning) => warning.includes("非淘汰候选 1 条")));
+  assert.ok(actions.some((action) => action.includes("Run workflow")));
+  assert.ok(actions.some((action) => action.includes("source breakdown")));
+
+  const missingStatus = buildStatus({
+    latestReceipt: null,
+    latestSyncedReceipt: null,
+    radarResult: fetchResult(null, false),
+    reportResult: fetchResult(null, false),
+    steamResult: fetchResult(null, false),
+    warnings
+  });
+  assert.equal(missingStatus, "missing");
+
+  const failedStatus = buildStatus({
+    latestReceipt: receiptSummary("2026-06-04-morning.json", "success", { synced: false }),
+    latestSyncedReceipt: null,
+    radarResult: fetchResult({}),
+    reportResult: fetchResult({}),
+    steamResult: fetchResult({}),
+    warnings: []
+  });
+  assert.equal(failedStatus, "failed");
+}
+
+function testModelBuildsBusinessAcceptanceAndFileHealth() {
+  const files = {
+    report: buildFileHealth("data/reports", "2026-06-04", fetchResult({})),
+    radar: buildFileHealth("data/radar", "2026-06-04", fetchResult({ items: [] })),
+    steam_trends: buildFileHealth("data/steam_trends", "2026-06-04", fetchResult(null, false))
+  };
+  const counts = buildCounts(
+    {
+      push_pool: Array.from({ length: 2 }, (_, index) => ({ id: `push-${index}` })),
+      watch_pool: Array.from({ length: 10 }, (_, index) => ({ id: `watch-${index}` })),
+      drop_pool: Array.from({ length: 8 }, (_, index) => ({ id: `drop-${index}` }))
+    },
+    { items: Array.from({ length: 4 }, (_, index) => ({ id: `radar-${index}`, category: "行业新闻" })) },
+    { market_insights: [{ id: "market" }], genre_signals: [{ id: "genre" }] }
+  );
+  const acceptance = buildBusinessAcceptance({
+    counts,
+    files,
+    importStats: { created_unprocessed: 3, visible_unprocessed: 3 },
+    latestReceipt: receiptSummary("2026-06-04-morning.json", "success", { synced: false }),
+    latestSyncedReceipt: null,
+    sourceBreakdown: parseSourceBreakdown("国内媒体/B站提取产品线索 5 条；进入日报候选 20 条。")
+  });
+
+  assert.equal(files.steam_trends.exists, false);
+  assert.equal(files.steam_trends.path, "data/steam_trends/2026-06-04.json");
+  assert.equal(acceptance.status, "fail");
+  assert.equal(acceptance.primary_issue, "核心文件缺失");
+  assert.ok(acceptance.root_causes.some((cause) => cause.category === "files"));
+  assert.ok(acceptance.root_causes.some((cause) => cause.category === "sync"));
+  assert.ok(acceptance.root_causes.some((cause) => cause.category === "import_quality"));
+  assert.ok(acceptance.recommended_actions.some((action) => action.includes("Daily online CRM automation")));
+
+  const passCounts = buildCounts(
+    {
+      push_pool: Array.from({ length: 4 }, (_, index) => ({ id: `push-${index}` })),
+      watch_pool: Array.from({ length: 16 }, (_, index) => ({ id: `watch-${index}` })),
+      drop_pool: Array.from({ length: 8 }, (_, index) => ({ id: `drop-${index}` }))
+    },
+    { items: Array.from({ length: 9 }, (_, index) => ({ id: `radar-${index}`, category: "今日亮点" })) },
+    {
+      genre_signals: Array.from({ length: 3 }, (_, index) => ({ id: `genre-${index}` })),
+      market_insights: Array.from({ length: 3 }, (_, index) => ({ id: `market-${index}` }))
+    }
+  );
+  const passAcceptance = buildBusinessAcceptance({
+    counts: passCounts,
+    files: {
+      report: buildFileHealth("data/reports", "2026-06-04", fetchResult({})),
+      radar: buildFileHealth("data/radar", "2026-06-04", fetchResult({})),
+      steam_trends: buildFileHealth("data/steam_trends", "2026-06-04", fetchResult({}))
+    },
+    importStats: { created_unprocessed: 8, visible_unprocessed: 8 },
+    latestReceipt: receiptSummary("2026-06-04-morning.json", "success", { synced: true }),
+    latestSyncedReceipt: receiptSummary("2026-06-04-morning.json", "success", { synced: true }),
+    sourceBreakdown: parseSourceBreakdown("国内媒体/B站提取产品线索 12 条；进入日报候选 28 条。")
+  });
+
+  assert.equal(passAcceptance.status, "pass");
+  assert.equal(passAcceptance.primary_issue, null);
+  assert.deepEqual(passAcceptance.recommended_actions, ["无需人工介入；继续观察下一次定时日报。"]);
+}
 
 async function testHealthyDiagnostics() {
   const report = {
@@ -198,6 +384,9 @@ async function testMissingArtifactsFailBusinessAcceptance() {
 }
 
 async function main() {
+  testModelParsesSourceBreakdownAndCountsArtifacts();
+  testModelBuildsWarningsStatusAndActions();
+  testModelBuildsBusinessAcceptanceAndFileHealth();
   await testHealthyDiagnostics();
   await testLowVolumeWarning();
   await testLowReviewCandidatesClassifiesSourcePoolWhenSynced();
