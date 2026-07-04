@@ -1,0 +1,51 @@
+import { isBilibiliSignal, normalizeDisplayText } from "./online_daily_v4_dedupe.mjs";
+
+export function bilibiliAuthor(item) {
+  return String(item.summary ?? "").match(/UP主：([^\s]+)/)?.[1] ?? "";
+}
+
+export function isOfficialOrDeveloperBilibiliSignal(item) {
+  if (!isBilibiliSignal(item)) return false;
+  const text = `${item.title ?? ""} ${item.summary ?? ""} ${item.source ?? ""}`;
+  const author = bilibiliAuthor(item);
+  if (/官方|开发者|制作组|工作室|studio|games|发行商|开发日志/i.test(author)) return true;
+  if (/官方号|官方PV|官方\s*PV|开发者|制作组|工作室|studio|games|发行商|开发日志/i.test(text)) return true;
+  if (/store\.steampowered\.com\/app\/\d+|steam商店页|官网|taptap|好游快爆|indienova/i.test(text)) return true;
+  return false;
+}
+
+export function isNonLeadMediaTopicText(text) {
+  return /gdc|趋势报告|行业报告|市场报告|白皮书|财报|主线|版本更新|大版本|赛季|联动|周年|资料片|dlc|第二章|第三章|黑神话|游科|诡秘之主|人间地狱|锐评|逐帧|reaction|反应/i.test(text);
+}
+
+export function isBannedMediaLeadText(text) {
+  const bannedPatterns = [
+    /招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|如何报名|报名steam新品节|愿望单经验|曝光量|经验分享|开发经验|开发教程/i,
+    /cosplay|壁纸|周边|赛事战报|补丁说明|停服|维护|android|pixel|iphone|手机也能升|主机情报|次世代|硬件|显卡|处理器|大会|峰会|获奖名单|流水|营收/i,
+    /手游推荐|游戏推荐|必玩|好玩到爆|盘点|合集|几款|十款|\d+\s*款|锐评|吐槽/i,
+    /黑神话：悟空|黑神话钟馗|诡秘之主|蔚蓝档案|galgame|国gal|恋爱模拟|致郁系|情书|我在b站做|占比百分之/i
+  ];
+  return bannedPatterns.some((pattern) => pattern.test(text));
+}
+
+export function hasConcreteMediaProductMarker(item) {
+  const text = `${item.title ?? ""} ${item.summary ?? ""} ${item.source ?? ""}`;
+  const author = bilibiliAuthor(item);
+  if (/《[^》]{2,48}》/.test(text)) return true;
+  if (/store\.steampowered\.com\/app\/\d+|steam商店页|steam页面|愿望单|taptap|好游快爆|indienova|官网|qq群|qq\s*群|discord/i.test(text)) return true;
+  if (/官方|开发者|制作组|工作室|studio|games|发行商|开发日志/i.test(`${author} ${text}`)) return true;
+  return false;
+}
+
+export function looksLikeCommentaryVideoTitle(title) {
+  const text = normalizeDisplayText(title);
+  if (/看完|看了|感觉|值不值得|到底|如何评价|锐评|吐槽|试玩了一下|实况|片段|少量实机|最新pv|新pv|pv片段|预告片反应|reaction/i.test(text)) return true;
+  if (/^[^《》]{8,80}[，,！!？?][^《》]{4,80}$/.test(text)) return true;
+  return false;
+}
+
+export function hasAlreadyReleasedMediaText(value) {
+  const text = String(value ?? "");
+  if (/商店页已上线|商店页面已上线|页面已上线|store page is live|(?:demo|试玩|测试)[^。；.!?]{0,12}(?:已上线|上线)|(?:已上线|上线)[^。；.!?]{0,12}(?:demo|试玩|测试)/i.test(text)) return false;
+  return /现已上线|已经上线|现已发售|已经发售|已发售|正式发售|首发优惠|国区首发|发售\s*PV|available now|out now|released now/i.test(text);
+}
