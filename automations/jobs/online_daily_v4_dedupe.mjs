@@ -1,3 +1,5 @@
+import { defaultDailyRuleConfig } from "./online_daily_v4_rules.mjs";
+
 export function dedupeByAppId(items) {
   const byAppId = new Map();
   for (const item of items) {
@@ -66,55 +68,62 @@ function steamAppIdFromText(value) {
   return String(value ?? "").match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i)?.[1] ?? null;
 }
 
-export function selectDiverseMediaSignals(items, limit) {
+export function selectDiverseMediaSignals(items, limit, config) {
+  const diversity = normalizeRadarDiversityConfig(limit, config);
   const selected = [];
   const sourceCount = new Map();
   const familyCount = new Map();
   const regionCount = new Map();
 
-  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "行业新闻" && mediaRegion(item) === "china", 2);
-  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "行业新闻" && mediaRegion(item) === "global", 3);
-  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "今日亮点" && mediaRegion(item) === "china", 4);
-  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "今日亮点" && mediaRegion(item) === "global", 2);
-  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => categoryForMediaSignal(item) === "AI 游戏", 2);
-  takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, (item) => ["B站趋势", "新梗热点"].includes(categoryForMediaSignal(item)), 1);
+  for (const target of diversity.targets) {
+    takeRadarSignals(
+      items,
+      selected,
+      sourceCount,
+      familyCount,
+      regionCount,
+      diversity,
+      (item) => radarTargetMatches(item, target),
+      target.count
+    );
+  }
 
   for (const item of items) {
     if (selected.includes(item)) continue;
-    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount)) continue;
+    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount, diversity)) continue;
     selected.push(item);
     bumpRadarCounts(item, sourceCount, familyCount, regionCount);
-    if (selected.length >= limit) return selected;
+    if (selected.length >= diversity.limit) return selected;
   }
 
   for (const item of items) {
     if (selected.includes(item)) continue;
     selected.push(item);
-    if (selected.length >= limit) break;
+    if (selected.length >= diversity.limit) break;
   }
 
   return selected;
 }
 
-function takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, limit, predicate, target) {
+function takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, diversity, predicate, target) {
   let taken = 0;
   for (const item of items) {
     if (selected.includes(item)) continue;
     if (!predicate(item)) continue;
-    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount)) continue;
+    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount, diversity)) continue;
     selected.push(item);
     bumpRadarCounts(item, sourceCount, familyCount, regionCount);
     taken += 1;
-    if (selected.length >= limit || taken >= target) break;
+    if (selected.length >= diversity.limit || taken >= target) break;
   }
 }
 
-function canSelectRadarSignal(item, sourceCount, familyCount, regionCount) {
+function canSelectRadarSignal(item, sourceCount, familyCount, regionCount, diversity) {
   const family = mediaTopicFamily(item);
   const region = mediaRegion(item);
-  if ((sourceCount.get(item.source) ?? 0) >= 2) return false;
-  if ((familyCount.get(family) ?? 0) >= 4) return false;
-  if ((regionCount.get(region) ?? 0) >= 8) return false;
+  if ((sourceCount.get(item.source) ?? 0) >= diversity.sourceCap) return false;
+  if ((familyCount.get(family) ?? 0) >= diversity.familyCap) return false;
+  if ((regionCount.get(region) ?? 0) >= diversity.regionCap) return false;
   return true;
 }
 
@@ -124,6 +133,31 @@ function bumpRadarCounts(item, sourceCount, familyCount, regionCount) {
   sourceCount.set(item.source, (sourceCount.get(item.source) ?? 0) + 1);
   familyCount.set(family, (familyCount.get(family) ?? 0) + 1);
   regionCount.set(region, (regionCount.get(region) ?? 0) + 1);
+}
+
+function radarTargetMatches(item, target) {
+  const category = categoryForMediaSignal(item);
+  if (target.category && category !== target.category) return false;
+  if (target.categories && !target.categories.includes(category)) return false;
+  if (target.region && mediaRegion(item) !== target.region) return false;
+  return true;
+}
+
+function normalizeRadarDiversityConfig(limit, config) {
+  const defaults = defaultDailyRuleConfig().radarDiversity;
+  const configuredLimit = Number(limit ?? config?.limit ?? defaults.limit);
+  return {
+    limit: Number.isFinite(configuredLimit) ? configuredLimit : defaults.limit,
+    sourceCap: boundedNumber(config?.sourceCap, defaults.sourceCap),
+    familyCap: boundedNumber(config?.familyCap, defaults.familyCap),
+    regionCap: boundedNumber(config?.regionCap, defaults.regionCap),
+    targets: Array.isArray(config?.targets) && config.targets.length ? config.targets : defaults.targets
+  };
+}
+
+function boundedNumber(value, fallback) {
+  const number = Number(value ?? fallback);
+  return Number.isFinite(number) ? number : fallback;
 }
 
 export function mediaRegion(item) {

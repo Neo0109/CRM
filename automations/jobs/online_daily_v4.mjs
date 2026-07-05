@@ -14,6 +14,7 @@ import {
 import { buildMediaLeadCandidates } from "./online_daily_v4_media_leads.mjs";
 import { fetchMediaSignals } from "./online_daily_v4_media_sources.mjs";
 import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalToRadarItem } from "./online_daily_v4_reports.mjs";
+import { buildDailyRuleConfig, loadDailyRules, validateDailyRules } from "./online_daily_v4_rules.mjs";
 import { buildSteamCandidateTasks, enrichSteamCandidates } from "./online_daily_v4_steam_source.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
@@ -22,6 +23,9 @@ const rootDir = process.cwd();
 const sourcingRuleVersion = "sourcing-rules-v6.4-bili-probe";
 const generatorName = "online_daily_v4_sourcing_rules_v6_4_bili_probe";
 const args = parseArgs(process.argv.slice(2));
+const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
+validateDailyRules(dailyRules);
+const ruleConfig = buildDailyRuleConfig(dailyRules);
 const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
 const requestedMaxCandidates = Number(args.maxCandidates ?? 320);
@@ -30,7 +34,7 @@ const maxSteamDetails = boundedNumber(args.maxSteamDetails, 90, 40, 160);
 const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
 const minReviewBackfillScore = boundedNumber(args.minReviewBackfillScore, 18, 8, 48);
 const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
-const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, 120, 14, 365);
+const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, ruleConfig.mediaQualityGates.maxBilibiliLeadAgeDays, 14, 365);
 const maxOfficialLookups = boundedNumber(args.maxOfficialLookups, 12, 0, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 const sourcingDiagnostics = {
@@ -54,6 +58,7 @@ const sourcingDiagnostics = {
 const sourceContext = {
   rootDir,
   args,
+  ruleConfig,
   reportDate,
   diagnostics: sourcingDiagnostics,
   maxBilibiliLeadAgeDays,
@@ -66,7 +71,7 @@ const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).f
   .slice(0, maxCandidates);
 
 const mediaSignals = await fetchMediaSignals(sourceContext);
-const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), 14);
+const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), ruleConfig.radarDiversity.limit, ruleConfig.radarDiversity);
 const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, sourceContext);
 const enrichedCandidates = await enrichSteamCandidates(rawCandidates.slice(0, maxSteamDetails), sourceContext);
 

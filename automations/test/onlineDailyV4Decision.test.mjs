@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { dedupeByAppId, dedupeMediaSignals } from "../jobs/online_daily_v4_dedupe.mjs";
+import { dedupeByAppId, dedupeMediaSignals, selectDiverseMediaSignals } from "../jobs/online_daily_v4_dedupe.mjs";
 import { buildPools, scoreCandidate } from "../jobs/online_daily_v4_decision.mjs";
 import { validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
 
@@ -225,5 +225,26 @@ describe("online daily v4 volume and dedupe helpers", () => {
     };
 
     assert.deepEqual(dedupeMediaSignals([creatorDuplicate, linkDuplicate, other, official]), [official, other]);
+  });
+
+  it("selects radar signals with configured diversity caps and limit", () => {
+    const signals = [
+      { title: "国产策略新作公布 Demo", summary: "国产团队公开 Steam 试玩", source: "Source A", source_focus: ["china"] },
+      { title: "国产模拟新作公布 Demo", summary: "国产团队公开 Steam 试玩", source: "Source A", source_focus: ["china"] },
+      { title: "国产动作新作公布 Demo", summary: "国产团队公开 Steam 试玩", source: "Source B", source_focus: ["china"] },
+      { title: "国产解谜新作公布 Demo", summary: "国产团队公开 Steam 试玩", source: "Source C", source_focus: ["china"] }
+    ];
+    const diversity = {
+      limit: 3,
+      sourceCap: 1,
+      familyCap: 4,
+      regionCap: 8,
+      targets: [{ category: "今日亮点", region: "china", count: 3 }]
+    };
+
+    assert.deepEqual(
+      selectDiverseMediaSignals(signals, undefined, diversity).map((item) => item.source),
+      ["Source A", "Source B", "Source C"]
+    );
   });
 });
