@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   fetchMediaSource,
+  fetchMediaSignals,
+  isStaleMediaSignal,
   mediaSources,
   parseBilibiliVideoSearch,
   parseFeedItems,
@@ -202,5 +204,58 @@ describe("online daily v4 media source parsing", () => {
 
   it("keeps source list date-filtered and non-empty", () => {
     assert.ok(mediaSources("2026-07-05").length > 30);
+  });
+
+  it("builds media sources from rule config and filters inactive configured sources", () => {
+    const sources = mediaSources("2026-07-05", {
+      mediaSources: [
+        { name: "Expired", url: "https://expired.example.com", type: "page", quality: 1, focus: [], activeUntil: "2026-07-01" },
+        { name: "B站视频-配置测试", type: "bilibili_video_search", url: "https://api.example.test/search", fallbackUrl: "https://search.example.test/all", quality: 15, focus: ["china", "bilibili"] }
+      ]
+    });
+
+    assert.deepEqual(sources, [
+      { name: "B站视频-配置测试", type: "bilibili_video_search", url: "https://api.example.test/search", fallbackUrl: "https://search.example.test/all", quality: 15, focus: ["china", "bilibili"] }
+    ]);
+  });
+
+  it("uses rule quality gates for low-score and stale Bilibili filtering", async () => {
+    const localDiagnostics = diagnostics();
+    const items = await fetchMediaSignals({
+      diagnostics: localDiagnostics,
+      reportDate: "2026-07-05",
+      mediaSourcesImpl: () => [{ name: "Configured Source", url: "https://example.test", type: "page", quality: 5, focus: ["china"] }],
+      fetchMediaSourceImpl: async () => [{
+        title: "国产新作公布 Steam Demo",
+        summary: "国产团队公开试玩版本",
+        source: "Configured Source",
+        link: "https://example.test/news",
+        source_quality: 5,
+        source_focus: ["china"]
+      }],
+      collectBilibiliProbeSignalsImpl: async () => ({ signals: [], diagnostics: { source_failures: 0, official_source_hits: 0 } }),
+      ruleConfig: {
+        mediaQualityGates: {
+          lowScoreThreshold: 90,
+          maxBilibiliLeadAgeDays: 10
+        }
+      }
+    });
+
+    assert.equal(items.length, 0);
+    assert.equal(localDiagnostics.media_low_score_filtered, 1);
+    assert.equal(isStaleMediaSignal({
+      title: "旧视频",
+      source: "B站视频-国产游戏试玩",
+      link: "https://www.bilibili.com/video/BVOLD/",
+      published_at: "2026-06-01T00:00:00.000Z"
+    }, {
+      reportDate: "2026-07-05",
+      ruleConfig: {
+        mediaQualityGates: {
+          maxBilibiliLeadAgeDays: 10
+        }
+      }
+    }), true);
   });
 });
