@@ -14,6 +14,7 @@ import {
   type BackendDailyReport,
   type BackendLead
 } from "./lib/backendLeadModel.js";
+import { findProjectRoot } from "./lib/projectRoot.js";
 import {
   buildBackendUsers,
   cleanBackendAuthValue,
@@ -24,7 +25,7 @@ import {
 import { createLeadRepository } from "./lib/leadRepository.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(dirname, "../../..");
+const rootDir = findProjectRoot(dirname);
 const dataPath = path.join(rootDir, "data/leads.json");
 const frontendDistPath = path.join(rootDir, "app/frontend/dist");
 const leadSchemaPath = path.join(rootDir, "schemas/sourcing_lead.schema.json");
