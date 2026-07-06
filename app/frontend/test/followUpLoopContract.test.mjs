@@ -16,8 +16,12 @@ describe("follow-up loop product contract", () => {
 
   it("keeps Calendar opt-in while showing the same weekly queue", () => {
     assert.match(calendarSource, /buildFollowUpQueue/);
+    assert.match(calendarSource, /buildCalendarReminderPatch/);
+    assert.match(calendarSource, /canQuickAddFollowUpToCalendar/);
     assert.match(calendarSource, /本周待办/);
     assert.match(calendarSource, /followUpQueue\.count/);
+    assert.match(calendarSource, /onAddToCalendar/);
+    assert.match(calendarSource, /加入日历/);
     assert.match(calendarSource, /日历只显示你手动加入/);
     assert.doesNotMatch(calendarSource, /followUpQueue\.items\.forEach[\s\S]*calendar_enabled:\s*true/);
   });

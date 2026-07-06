@@ -1,7 +1,8 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, ExternalLink, RefreshCw, X } from "lucide-react";
+import { CalendarCheck, CalendarDays, ChevronLeft, ChevronRight, Clock3, ExternalLink, RefreshCw, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { fetchLeads, updateLead } from "./api";
+import { buildCalendarReminderPatch, canQuickAddFollowUpToCalendar } from "./calendarFollowUpActions";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "./followUpQueue";
 import { productVersion } from "./productVersion";
 import { officialSteamEvents, steamEventsSource, type SteamEventKind } from "./steamEvents";
@@ -149,6 +150,15 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
     });
   }
 
+  async function quickAddFollowUpToCalendar(lead: Lead) {
+    const patch = buildCalendarReminderPatch(lead);
+    if (!patch) {
+      setError("请先选择一个具体日期");
+      return;
+    }
+    await patchLead(lead, patch);
+  }
+
   async function removeCalendarReminder(lead: Lead) {
     await patchLead(lead, {
       due_date: null,
@@ -218,7 +228,12 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
           <section className="calendar-panel">
             <div className="calendar-panel-head"><h3>本周待办</h3><span>{followUpQueue.count}</span></div>
             {followUpQueue.items.length ? <div className="follow-reminder-list">{followUpQueue.items.slice(0, 5).map((item) => (
-              <FollowUpQueueCard item={item} key={item.lead.id} />
+              <FollowUpQueueCard
+                item={item}
+                key={item.lead.id}
+                onAddToCalendar={quickAddFollowUpToCalendar}
+                saving={savingId === item.lead.id}
+              />
             ))}</div> : <div className="calendar-empty">本周没有逾期、临近到期或缺下一步的项目。</div>}
           </section>
 
@@ -252,7 +267,13 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
   </div>;
 }
 
-function FollowUpQueueCard({ item }: { item: FollowUpQueueItem }) {
+function FollowUpQueueCard({ item, onAddToCalendar, saving }: {
+  item: FollowUpQueueItem;
+  onAddToCalendar: (lead: Lead) => Promise<void>;
+  saving: boolean;
+}) {
+  const canAddToCalendar = canQuickAddFollowUpToCalendar(item.lead);
+
   return <article className="follow-reminder-card">
     <div>
       <strong>{item.lead.project}</strong>
@@ -262,6 +283,9 @@ function FollowUpQueueCard({ item }: { item: FollowUpQueueItem }) {
     <div className="evidence-chip-list follow-up-chip-list">
       {item.reasons.map((reason) => <span className={`evidence-chip evidence-${reason.tone}`} key={reason.key}>{reason.label}</span>)}
     </div>
+    {canAddToCalendar && <div className="follow-reminder-actions calendar-queue-actions">
+      <button onClick={() => void onAddToCalendar(item.lead)} disabled={saving}><CalendarCheck size={14} />加入日历</button>
+    </div>}
   </article>;
 }
 
