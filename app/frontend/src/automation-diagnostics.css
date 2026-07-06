@@ -238,6 +238,56 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+.learning-review-grid {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.learning-signal-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.learning-signal-section > strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.learning-signal-list {
+  display: grid;
+  gap: 8px;
+}
+
+.learning-signal {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+}
+
+.learning-signal b {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.learning-signal small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.learning-empty-hints {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
 .business-cause-grid h4 {
   font-size: 14px;
   margin-bottom: 8px;
@@ -382,7 +432,8 @@
   .diagnostics-grid-panels,
   .diagnostics-grid-bottom,
   .business-metric-grid,
-  .business-cause-grid {
+  .business-cause-grid,
+  .learning-review-grid {
     grid-template-columns: 1fr;
   }
 
