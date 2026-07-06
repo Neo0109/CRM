@@ -2,6 +2,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Clock3, ExternalLink, RefreshC
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { fetchLeads, updateLead } from "./api";
+import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "./followUpQueue";
 import { productVersion } from "./productVersion";
 import { officialSteamEvents, steamEventsSource, type SteamEventKind } from "./steamEvents";
 import type { Lead } from "./types";
@@ -79,6 +80,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
   }, []);
 
   const calendarLeads = useMemo(() => leads.filter(isLeadCalendarVisible), [leads]);
+  const followUpQueue = useMemo(() => buildFollowUpQueue(leads), [leads]);
   const reminderEvents = useMemo<CalendarEvent[]>(() => calendarLeads
     .filter((lead) => lead.bucket !== "淘汰池")
     .map((lead) => ({
@@ -177,6 +179,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
         <div className="calendar-metric danger"><span>已过期</span><strong>{overdueCount}</strong></div>
         <div className="calendar-metric warn"><span>14天内</span><strong>{soonCount}</strong></div>
         <div className="calendar-metric"><span>跟进中待加入</span><strong>{pendingFollowCount}</strong></div>
+        <div className="calendar-metric warn"><span>本周待办</span><strong>{followUpQueue.count}</strong></div>
         <div className="calendar-metric steam"><span>本月 Steam 活动</span><strong>{monthSteamEvents.length}</strong></div>
       </div>
 
@@ -213,6 +216,13 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
           </section>
 
           <section className="calendar-panel">
+            <div className="calendar-panel-head"><h3>本周待办</h3><span>{followUpQueue.count}</span></div>
+            {followUpQueue.items.length ? <div className="follow-reminder-list">{followUpQueue.items.slice(0, 5).map((item) => (
+              <FollowUpQueueCard item={item} key={item.lead.id} />
+            ))}</div> : <div className="calendar-empty">本周没有逾期、临近到期或缺下一步的项目。</div>}
+          </section>
+
+          <section className="calendar-panel">
             <div className="calendar-panel-head"><h3>设置跟进提醒</h3><span>{loading ? "..." : followLeads.length}</span></div>
             {loading ? <div className="calendar-empty">加载中</div> : followLeads.length ? <div className="follow-reminder-list">{followLeads.map((lead) => {
               const choice = choiceByLead[lead.id] ?? (lead.follow_up_interval as ReminderChoice | null) ?? "1m";
@@ -240,6 +250,19 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
       </div>
     </section>
   </div>;
+}
+
+function FollowUpQueueCard({ item }: { item: FollowUpQueueItem }) {
+  return <article className="follow-reminder-card">
+    <div>
+      <strong>{item.lead.project}</strong>
+      <small>{item.lead.bucket} · {item.lead.priority}</small>
+    </div>
+    <p>{formatFollowUpSummary(item)}</p>
+    <div className="evidence-chip-list follow-up-chip-list">
+      {item.reasons.map((reason) => <span className={`evidence-chip evidence-${reason.tone}`} key={reason.key}>{reason.label}</span>)}
+    </div>
+  </article>;
 }
 
 function CalendarAgendaItem({ event }: { event: CalendarEvent }) {

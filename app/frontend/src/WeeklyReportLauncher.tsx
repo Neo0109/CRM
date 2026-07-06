@@ -1,7 +1,8 @@
 import { BarChart3, ExternalLink, RefreshCw, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { fetchWeeklyReport } from "./api";
+import { fetchLeads, fetchWeeklyReport } from "./api";
+import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueue, type FollowUpQueueItem } from "./followUpQueue";
 import type { WeeklyLeadSummary, WeeklyReport } from "./types";
 
 export function WeeklyReportLauncher() {
@@ -27,6 +28,8 @@ export function WeeklyReportLauncher() {
 function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
   const [anchorDate, setAnchorDate] = useState(todayKey());
   const [report, setReport] = useState<WeeklyReport | null>(null);
+  const [followUpQueue, setFollowUpQueue] = useState<FollowUpQueue | null>(null);
+  const [followUpError, setFollowUpError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +40,15 @@ function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
   async function reload(date = anchorDate) {
     try {
       setLoading(true);
-      setReport(await fetchWeeklyReport(date));
+      const nextReport = await fetchWeeklyReport(date);
+      setReport(nextReport);
+      try {
+        setFollowUpQueue(buildFollowUpQueue(await fetchLeads()));
+        setFollowUpError(null);
+      } catch (nextError) {
+        setFollowUpQueue(null);
+        setFollowUpError(nextError instanceof Error ? `本周待办暂时加载失败：${nextError.message}` : "本周待办暂时加载失败，周报仍可查看。");
+      }
       setError(null);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "周报加载失败");
@@ -87,6 +98,16 @@ function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
 
         <section className="weekly-section">
           <div className="weekly-section-head">
+            <div><p className="eyebrow">WORK QUEUE</p><h3>本周待办</h3></div>
+            <span>{followUpQueue?.count ?? "..."}</span>
+          </div>
+          {followUpError ? <div className="weekly-empty">{followUpError}</div> : followUpQueue?.items.length ? <div className="weekly-card-grid">
+            {followUpQueue.items.slice(0, 6).map((item) => <WeeklyFollowUpCard item={item} key={item.lead.id} />)}
+          </div> : <div className="weekly-empty">本周没有逾期、临近到期或缺下一步的项目。</div>}
+        </section>
+
+        <section className="weekly-section">
+          <div className="weekly-section-head">
             <div><p className="eyebrow">ACTIVE FOLLOW-UP PRODUCTS</p><h3>正在跟进的产品</h3></div>
             <span>{report.follow_up_leads.length}</span>
           </div>
@@ -108,6 +129,23 @@ function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
       </>}
     </section>
   </div>;
+}
+
+function WeeklyFollowUpCard({ item }: { item: FollowUpQueueItem }) {
+  return <article className="weekly-lead-card">
+    <div className="weekly-lead-head">
+      <div>
+        <p className="eyebrow">{item.lead.bucket} · {item.lead.priority}</p>
+        <h3>{item.lead.project}</h3>
+      </div>
+      <div className="evidence-chip-list follow-up-chip-list">
+        {item.reasons.map((reason) => <span className={`evidence-chip evidence-${reason.tone}`} key={reason.key}>{reason.label}</span>)}
+      </div>
+    </div>
+    <dl className="weekly-lead-facts">
+      <div><dt>待办原因</dt><dd>{formatFollowUpSummary(item)}</dd></div>
+    </dl>
+  </article>;
 }
 
 function Metric({ label, value, tone }: { label: string; value: number; tone: "neutral" | "green" | "amber" | "red" | "blue" | "cyan" | "purple" }) {
