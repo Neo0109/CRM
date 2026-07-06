@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, ExternalLink, FileCheck2, ServerCog, ShieldAlert, TrendingUp } from "lucide-react";
 import { ReportHistoryControls } from "./ReportHistoryControls";
+import { buildSourcingLearningView } from "./sourcingLearningView";
 import type { AutomationDiagnostics, AutomationDiagnosticsStatus, AutomationFileHealth, AutomationReceiptSummary, SourcingLearningReport } from "./types";
 
 export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange, sourcingLearning }: {
@@ -95,39 +96,80 @@ export function AutomationDiagnosticsPage({ diagnostics, loading, onDateChange, 
 }
 
 function SourcingLearningBlock({ report }: { report: SourcingLearningReport | null }) {
+  if (!report) {
+    return <article className="diagnostics-business acceptance-needs_attention">
+      <div className="diagnostics-business-head">
+        <div>
+          <span>Sourcing 学习</span>
+          <h3>人工决策复盘</h3>
+        </div>
+        <strong>等待数据</strong>
+      </div>
+      <p>还没有读取到学习数据；处理 lead 后这里会显示评级、淘汰原因和流转结果。</p>
+    </article>;
+  }
+
+  const view = buildSourcingLearningView(report);
+
   return <article className="diagnostics-business acceptance-needs_attention">
     <div className="diagnostics-business-head">
       <div>
         <span>Sourcing 学习</span>
-        <h3>人工决策漏斗</h3>
+        <h3>人工决策复盘</h3>
       </div>
-      <strong>{report ? `${report.cohort.total_active} 个流程内样本` : "等待数据"}</strong>
+      <strong>{`${view.sampleStatus.resolvedSamples}/${view.sampleStatus.threshold} 明确样本`}</strong>
     </div>
-    {!report ? <p>还没有读取到学习数据；处理 lead 后这里会显示评级、淘汰原因和流转结果。</p> : <>
-      <p>{report.learning_note}</p>
+    <>
+      <p><b>{view.sampleStatus.label}</b>：{view.sampleStatus.helper}</p>
+      <h4>正向样本 / 负向样本</h4>
       <div className="business-metric-grid">
-        <div className="business-metric metric-status-pass"><span>正向结果</span><strong>{report.outcomes.positive}</strong><small>跟进/推进或高评级</small></div>
-        <div className="business-metric metric-status-fail"><span>负向结果</span><strong>{report.outcomes.negative}</strong><small>淘汰或低评级</small></div>
-        <div className="business-metric metric-status-warn"><span>中间状态</span><strong>{report.outcomes.intermediate}</strong><small>待评测/测试/观察</small></div>
-        <div className="business-metric metric-status-unknown"><span>记录事件</span><strong>{report.events.total}</strong><small>人工保存动作</small></div>
+        {view.outcomeCards.map((card) => <div className={`business-metric metric-status-${card.tone}`} key={card.key}>
+          <span>{card.label}</span>
+          <strong>{card.value}</strong>
+          <small>{card.helper}</small>
+        </div>)}
       </div>
       <div className="business-cause-grid">
         <div>
-          <h4>漏斗</h4>
+          <h4>样本积累</h4>
           <div className="diagnostics-tags">
             {report.funnel.map((item) => <span key={item.bucket}>{item.bucket} {item.count}</span>)}
           </div>
         </div>
         <div>
-          <h4>评级 / 淘汰原因</h4>
+          <h4>Top 淘汰原因</h4>
           <div className="diagnostics-tags">
-            {Object.entries(report.grade_distribution).map(([grade, count]) => <span key={grade}>{grade} {count}</span>)}
-            {report.drop_reasons.slice(0, 6).map((item) => <span key={item.reason}>{item.reason} {item.count}</span>)}
-            {!Object.keys(report.grade_distribution).length && !report.drop_reasons.length ? <span>继续积累样本</span> : null}
+            {view.dropReasonItems.map((item) => <span key={item.label}>{item.label} {item.count}</span>)}
+            {!view.dropReasonItems.length ? <span>继续积累样本</span> : null}
           </div>
         </div>
       </div>
-    </>}
+      <div className="learning-review-grid">
+        <div>
+          <h4>评级分布</h4>
+          <div className="diagnostics-tags">
+            {view.gradeItems.map((item) => <span key={item.label}>{item.label} {item.count}</span>)}
+            {!view.gradeItems.length ? <span>继续积累样本</span> : null}
+          </div>
+        </div>
+        <div>
+          <h4>信号复盘</h4>
+          {view.signalSections.map((section) => <div className="learning-signal-section" key={section.key}>
+            <strong>{section.label}</strong>
+            <div className="learning-signal-list">
+              {section.items.map((item) => <span className={`learning-signal metric-status-${item.tone}`} key={`${section.key}-${item.label}`}>
+                <b>{item.label}</b>
+                <small>{item.summary}</small>
+              </span>)}
+              {!section.items.length ? <span className="learning-signal metric-status-unknown"><b>{section.label}</b><small>继续积累样本</small></span> : null}
+            </div>
+          </div>)}
+        </div>
+      </div>
+      {view.emptyHints.length ? <ul className="diagnostics-list learning-empty-hints">
+        {view.emptyHints.map((hint) => <li key={hint}>{hint}</li>)}
+      </ul> : null}
+    </>
   </article>;
 }
 
