@@ -1,35 +1,5 @@
-:root {
-  --bg: #f7f5f0;
-  --paper: #fffdfa;
-  --paper-soft: rgba(255, 253, 250, 0.86);
-  --ink: #16181d;
-  --muted: #69717f;
-  --faint: #9ba2ad;
-  --line: #e6e1d8;
-  --line-strong: #d8d1c5;
-  --blue: #2563eb;
-  --blue-dark: #1d4ed8;
-  --pink: #fb7299;
-  --cyan: #0891b2;
-  --green: #059669;
-  --amber: #b7791f;
-  --red: #dc2626;
-  --navy: #16181d;
-  --shadow-sm: 0 1px 2px rgba(24, 26, 31, 0.05), 0 18px 48px rgba(24, 26, 31, 0.055);
-  --shadow-md: 0 24px 80px rgba(24, 26, 31, 0.11);
-  background:
-    radial-gradient(circle at 78% 0%, rgba(37, 99, 235, 0.06), transparent 28%),
-    linear-gradient(180deg, rgba(255, 253, 250, 0.96), rgba(247, 245, 240, 0.98)),
-    url("./assets/crm-paper-texture.png");
-  background-attachment: fixed;
-  background-size: cover;
-}
-
 body {
-  background:
-    radial-gradient(circle at 78% 0%, rgba(37, 99, 235, 0.06), transparent 28%),
-    linear-gradient(180deg, rgba(255, 253, 250, 0.96), rgba(247, 245, 240, 0.98)),
-    url("./assets/crm-paper-texture.png");
+  background: var(--page-background);
   background-attachment: fixed;
   background-size: cover;
 }
@@ -1022,15 +992,15 @@ button:hover {
 }
 
 .bucket-button.active.push,
-.bucket-button.push:hover { background: #ecfdf3; border-color: #8fd6aa; color: #087f43; }
+.bucket-button.push:hover { background: var(--bucket-push-bg); border-color: var(--bucket-push-border); color: var(--bucket-push-text); }
 .bucket-button.active.follow,
 .bucket-button.follow:hover,
-.quick-button.follow:hover { background: #ecfeff; border-color: #98e0ea; color: #0e7490; }
+.quick-button.follow:hover { background: var(--bucket-follow-bg); border-color: var(--bucket-follow-border); color: var(--bucket-follow-text); }
 .bucket-button.active.watch,
-.bucket-button.watch:hover { background: #fff8df; border-color: #efd27c; color: #9a5b00; }
+.bucket-button.watch:hover { background: var(--bucket-watch-bg); border-color: var(--bucket-watch-border); color: var(--bucket-watch-text); }
 .bucket-button.active.drop,
 .bucket-button.drop:hover,
-.quick-button.drop:hover { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
+.quick-button.drop:hover { background: var(--bucket-drop-bg); border-color: var(--bucket-drop-border); color: var(--bucket-drop-text); }
 
 .radar-shell {
   padding: 22px;
