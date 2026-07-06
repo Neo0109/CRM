@@ -3,7 +3,7 @@
   background: linear-gradient(135deg, #fb7299 0%, #ff8ab1 58%, #00a7e1 100%);
   border: 0;
   border-radius: 999px;
-  bottom: 22px;
+  bottom: calc(22px + env(safe-area-inset-bottom));
   box-shadow: 0 18px 38px rgba(251, 114, 153, 0.32);
   color: #fff;
   cursor: pointer;
@@ -185,8 +185,12 @@
 }
 
 @media (max-width: 720px) {
+  body:has(.manual-floating-button) .app-shell.has-manual-floating-action {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
   .manual-floating-button {
-    bottom: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
     justify-content: center;
     left: 14px;
     right: 14px;

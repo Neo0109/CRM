@@ -4,7 +4,6 @@ import App from "./App";
 import { CalendarLauncher } from "./CalendarLauncher";
 import { DetailUxRefinement } from "./DetailUxRefinement";
 import { HeaderUiRefinement } from "./HeaderUiRefinement";
-import { ManualLeadLauncher } from "./ManualLeadLauncher";
 import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
 import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
@@ -26,7 +25,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <App />
     <CalendarLauncher />
     <WeeklyReportLauncher />
-    <ManualLeadLauncher />
     <ReviewQueueBehavior />
     <SteamStoreLinkBehavior />
     <DetailUxRefinement />
