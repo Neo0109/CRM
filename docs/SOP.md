@@ -27,14 +27,17 @@
 
 ## 自动同步
 
-1. 将每日扫描结果保存为 `data/reports/YYYY-MM-DD.json`。
-2. 运行自动同步命令：
+1. 日报主线由 `.github/workflows/sync-daily-report.yml` 定时或手动触发。
+2. Workflow 运行 `automations/jobs/online_daily_runner.mjs -> online_daily_v4.mjs`，加载 `automations/rules/daily-report.json`，生成当天 `data/reports/`、`data/radar/` 和 `data/steam_trends/` 文件。
+3. Workflow 完成结构校验后自动同步到 CRM；打开 CRM 直接 review（无需手动粘贴 JSON）。
+
+## 手动兜底导入
+
+仅当云端自动化异常、且已经确认某个日报 JSON 可用时，才使用本地手动兜底：
 
 ```bash
 npm run import:daily -- data/reports/YYYY-MM-DD.json
 ```
-
-3. 打开 CRM 直接 review（无需手动粘贴 JSON）。
 
 ## 人工处理
 

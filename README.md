@@ -52,11 +52,12 @@ docs/
 
 ## 每日流程
 
-1. 用 `automations/prompts/daily_scan.md` 生成当天日报 JSON。
-2. 将日报保存到 `data/reports/` 后运行自动同步：
+1. GitHub Actions 通过 `.github/workflows/sync-daily-report.yml` 定时或手动触发日报。
+2. 云端 workflow 运行 `automations/jobs/online_daily_runner.mjs -> online_daily_v4.mjs`，先校验 `automations/rules/daily-report.json`，再生成日报、行业雷达和 Steam 趋势，并同步到 CRM。
+3. 打开 CRM 进入 review 工作台；自动化非淘汰线索先进入 `未处理` inbox，人工再决定观察、待评测、跟进、推进或淘汰。
+
+手动兜底导入只用于云端自动化异常后的已知日报文件：
 
 ```bash
-npm run import:daily -- data/reports/daily_report.example.json
+npm run import:daily -- data/reports/YYYY-MM-DD.json
 ```
-
-3. 打开 CRM 进入 review 工作台，筛选推进池、观察池、淘汰池，补充 Owner / Due Date / 下一步动作。
