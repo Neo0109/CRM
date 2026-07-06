@@ -16,6 +16,14 @@ Machine-readable automation rule source:
 automations/rules/daily-report.json
 ```
 
+Active automation entrypoint:
+
+```text
+automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
+```
+
+The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
+
 ## Operating Principle
 
 The daily report is for a Bilibili game publishing BD owner. It must reduce BD judgment cost. It should not produce generic trend text, internal automation notes, or category filler.
@@ -97,7 +105,7 @@ The online generator must preserve the product intent of these rules:
 
 ## Current Known Gap
 
-`automations/jobs/online_daily_v4.mjs` still contains substantial hard-coded sourcing orchestration while executing `sourcing-rules-v6.4-bili-probe`. The rule JSON is the online source and run guard, but future cleanup should gradually move configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules out of the generator and into the rule file.
+`automations/jobs/online_daily_runner.mjs` is the active cloud entrypoint and `online_daily_v4.mjs` is the active generator. The rule JSON is the online source and run guard; future cleanup should keep configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules in the rule file where practical.
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
 
