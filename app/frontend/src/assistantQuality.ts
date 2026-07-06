@@ -17,6 +17,21 @@ export type AssistantDraftAnalysis = {
   suggestions: string[];
 };
 
+export type AssistantResultGroupKey = "needs-review" | "ready" | "skipped";
+
+export type AssistantResultGroupItem = {
+  project: string;
+  summary: string;
+  suggestions: string[];
+};
+
+export type AssistantResultGroup = {
+  key: AssistantResultGroupKey;
+  title: string;
+  tone: "warning" | "success" | "muted";
+  items: AssistantResultGroupItem[];
+};
+
 type AssistantDraftInput = {
   text: string;
   attachments: LeadAssistantAttachment[];
@@ -59,24 +74,14 @@ export function analyzeAssistantDraft({ text, attachments }: AssistantDraftInput
 
 export function buildAssistantResultHints(result: LeadAssistantResult): string[] {
   const hints: string[] = [];
+  const groups = buildAssistantResultGroups(result);
 
-  if (result.skipped.length) {
-    hints.push(`跳过 ${result.skipped.length} 条：优先检查是否为 DLC、原声、工具或缺少可验证游戏主体。`);
-  }
+  const skippedGroup = groups.find((group) => group.key === "skipped");
+  if (skippedGroup) hints.push(`跳过 ${skippedGroup.items.length} 条：优先检查是否为 DLC、原声、工具或缺少可验证游戏主体。`);
 
-  for (const lead of result.leads) {
-    const project = lead.project?.trim() || "未命名线索";
-    const leadHints: string[] = [];
-    const needsSteam = !hasSteamEvidence(lead) && mentionsMissingSteam(lead);
-    const needsContact = !hasContactEvidence(lead);
-    const needsPublisherReview = /待确认发行结构|待人工复核|待确认/i.test(lead.publisher_status ?? "");
-
-    if (needsSteam) leadHints.push("补 Steam/SteamDB 或官网主体链接");
-    if (needsContact) leadHints.push("补充可触达联系方式");
-    if (needsPublisherReview) leadHints.push("复核发行结构");
-
-    if (leadHints.length) hints.push(`${project}：${leadHints.join("；")}。`);
-    else hints.push(`${project}：已具备 Steam/联系方式，可进入 Leads Review 复核。`);
+  for (const group of groups) {
+    if (group.key === "skipped") continue;
+    for (const item of group.items) hints.push(`${item.project}：${item.suggestions.join("；")}。`);
   }
 
   if (!hints.length && result.created + result.updated > 0) {
@@ -84,6 +89,35 @@ export function buildAssistantResultHints(result: LeadAssistantResult): string[]
   }
 
   return hints;
+}
+
+export function buildAssistantResultGroups(result: LeadAssistantResult): AssistantResultGroup[] {
+  const needsReview: AssistantResultGroupItem[] = [];
+  const ready: AssistantResultGroupItem[] = [];
+  const skipped: AssistantResultGroupItem[] = result.skipped.map((item) => ({
+    project: item,
+    summary: "未写入 CRM",
+    suggestions: ["优先检查是否为 DLC、原声、工具或缺少可验证游戏主体。"]
+  }));
+
+  for (const lead of result.leads) {
+    const project = lead.project?.trim() || "未命名线索";
+    const suggestions = leadResultSuggestions(lead);
+    const item: AssistantResultGroupItem = {
+      project,
+      summary: leadResultSummary(lead),
+      suggestions: suggestions.length ? suggestions : ["已具备 Steam/联系方式，可进入 Leads Review 复核。"]
+    };
+
+    if (suggestions.length) needsReview.push(item);
+    else ready.push(item);
+  }
+
+  return [
+    buildGroup("needs-review", "需要补充", "warning", needsReview),
+    buildGroup("ready", "可复核线索", "success", ready),
+    buildGroup("skipped", "跳过项", "muted", skipped)
+  ].filter((group) => group.items.length > 0);
 }
 
 export function readinessLabel(readiness: AssistantDraftReadiness) {
@@ -105,6 +139,34 @@ function buildDraftSuggestions({ missing, readiness, screenshots }: {
   if (missing.includes("contact")) suggestions.push("补联系方式：Email、微信、Discord、官网联系页或 Steam 社区入口。");
   if (screenshots > 0 && missing.length) suggestions.push("截图可保留上下文，但文字里补关键信息会更稳。");
   return suggestions;
+}
+
+function leadResultSuggestions(lead: Partial<Lead>) {
+  const suggestions: string[] = [];
+  const needsSteam = !hasSteamEvidence(lead) && mentionsMissingSteam(lead);
+  const needsContact = !hasContactEvidence(lead);
+  const needsPublisherReview = /待确认发行结构|待人工复核|待确认/i.test(lead.publisher_status ?? "");
+
+  if (needsSteam) suggestions.push("补 Steam/SteamDB 或官网主体链接");
+  if (needsContact) suggestions.push("补充可触达联系方式");
+  if (needsPublisherReview) suggestions.push("复核发行结构");
+  return suggestions;
+}
+
+function leadResultSummary(lead: Partial<Lead>) {
+  const priority = lead.priority ?? "P2";
+  const bucket = lead.bucket ?? "观察池";
+  const reason = lead.priority_reason ?? "待复核";
+  return `${priority} · ${bucket} · ${reason}`;
+}
+
+function buildGroup(
+  key: AssistantResultGroupKey,
+  title: AssistantResultGroup["title"],
+  tone: AssistantResultGroup["tone"],
+  items: AssistantResultGroupItem[]
+): AssistantResultGroup {
+  return { key, title, tone, items };
 }
 
 function extractSteamAppIds(text: string, links: string[]) {
