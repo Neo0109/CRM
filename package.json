@@ -21,6 +21,8 @@
     "test:backend": "tsx --test app/backend/test/*.test.ts",
     "test:crm-core": "tsx --test functions/test/*.test.ts",
     "typecheck:functions": "tsc -p functions/tsconfig.json --noEmit",
+    "verify:all": "node scripts/verify-all.mjs",
+    "test:verify-all": "node --test scripts/test-verify-all.mjs",
     "test:sourcing-v6-2": "node scripts/test-sourcing-v6-2.mjs",
     "test:sourcing-v6-3": "node scripts/test-sourcing-v6-3.mjs",
     "test:bilibili-probe": "node scripts/test-bilibili-probe.mjs",
