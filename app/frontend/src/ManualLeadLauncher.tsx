@@ -2,9 +2,15 @@ import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { ManualImportPage } from "./ManualImportPage";
 
-export function ManualLeadLauncher() {
+type ManualLeadLauncherProps = {
+  visible?: boolean;
+};
+
+export function ManualLeadLauncher({ visible = true }: ManualLeadLauncherProps) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+
+  if (!visible) return null;
 
   async function handleImported() {
     setStatus("已写入 CRM，正在刷新列表");

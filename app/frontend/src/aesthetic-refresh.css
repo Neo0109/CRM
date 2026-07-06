@@ -1253,6 +1253,79 @@ button:hover {
     padding: 12px;
   }
 
+  .app-shell.has-manual-floating-action {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    gap: 12px;
+    margin-bottom: 12px;
+    min-height: auto;
+    padding: 14px 16px;
+  }
+
+  .hero-copy {
+    gap: 4px;
+  }
+
+  .brand-mark {
+    height: 24px;
+    margin-bottom: 6px;
+    width: 62px;
+  }
+
+  .hero-copy h1 {
+    font-size: 26px;
+    line-height: 1.12;
+  }
+
+  .hero-copy .eyebrow {
+    margin-bottom: 4px;
+  }
+
+  .hero-subtitle {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 8px;
+    padding: 6px 8px;
+  }
+
+  .mobile-menu-button {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid var(--border-info);
+    border-radius: 12px;
+    color: var(--blue-dark);
+    display: inline-flex;
+    font-weight: 900;
+    gap: 8px;
+    justify-content: center;
+    min-height: 38px;
+    width: 100%;
+  }
+
+  .actions {
+    align-items: stretch;
+    display: grid;
+    gap: 8px;
+  }
+
+  .actions[data-mobile-open="false"] {
+    display: none;
+  }
+
+  .actions[data-mobile-open="true"] {
+    display: grid;
+  }
+
+  .actions[data-mobile-open="true"] .nav-group {
+    display: grid;
+  }
+
+  .actions[data-mobile-open="true"] .nav-section-label {
+    padding-left: 0;
+  }
+
   .dashboard-head h2 {
     font-size: 26px;
   }

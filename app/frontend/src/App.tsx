@@ -1,4 +1,4 @@
-import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Newspaper, RefreshCw, Settings as SettingsIcon, TrendingUp } from "lucide-react";
+import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Menu, Newspaper, RefreshCw, Settings as SettingsIcon, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSourcingLearning, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
@@ -6,6 +6,7 @@ import { AutomationDiagnosticsPage } from "./AutomationDiagnosticsPage";
 import { LeadsView } from "./features/leads";
 import { RadarPage } from "./features/radar";
 import { LoginPage } from "./LoginPage";
+import { ManualLeadLauncher } from "./ManualLeadLauncher";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
 import bilibiliLogo from "./assets/bilibili-game-logo.png";
@@ -15,8 +16,18 @@ import type { AutomationDiagnostics, Lead, RadarReport, SourcingLearningReport, 
 
 type View = "leads" | "assistant" | "radar" | "steam" | "diagnostics" | "settings";
 
+const viewLabels: Record<View, string> = {
+  leads: "Leads Review",
+  assistant: "线索助手",
+  radar: "行业雷达",
+  steam: "Steam 趋势",
+  diagnostics: "自动化诊断",
+  settings: "设置"
+};
+
 export default function App() {
   const [view, setView] = useState<View>("leads");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -142,6 +153,11 @@ export default function App() {
     setStatus(`${updated.project} 已保存`);
   }
 
+  function switchView(nextView: View) {
+    setView(nextView);
+    setMobileNavOpen(false);
+  }
+
   function refreshCurrentView() {
     if (view === "leads") void reload("force");
     if (view === "assistant") void reload(false);
@@ -171,6 +187,7 @@ export default function App() {
     setSteamLoading(false);
     setDiagnosticsLoading(false);
     setView("leads");
+    setMobileNavOpen(false);
     setError(null);
   }
 
@@ -181,7 +198,7 @@ export default function App() {
   const dailyQuote = getDailyPhilosophyQuote();
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${view === "leads" || view === "assistant" ? "has-manual-floating-action" : ""}`}>
       <header className="topbar">
         <div className="hero-copy">
           <span className="brand-mark"><img src={bilibiliLogo} alt="bilibili" /></span>
@@ -189,14 +206,23 @@ export default function App() {
           <h1>BD 决策工作台</h1>
           <p className="hero-subtitle">{dailyQuote}</p>
         </div>
-        <div className="actions">
+        <button
+          className="mobile-menu-button"
+          type="button"
+          aria-expanded={mobileNavOpen}
+          aria-controls="mobile-nav-panel"
+          onClick={() => setMobileNavOpen((open) => !open)}
+        >
+          <Menu size={16} />{viewLabels[view]}
+        </button>
+        <div className="actions" id="mobile-nav-panel" data-mobile-open={mobileNavOpen}>
           <div className="nav-group">
-            <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => setView("leads")}><ListChecks size={16} />Leads Review</button>
-            <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}><Bot size={16} />线索助手</button>
-            <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => setView("radar")}><Newspaper size={16} />行业雷达</button>
-            <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => setView("steam")}><TrendingUp size={16} />Steam 趋势</button>
-            <button className={`tab-button ${view === "diagnostics" ? "active" : ""}`} onClick={() => setView("diagnostics")}><Activity size={16} />自动化诊断</button>
-            <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => setView("settings")}><SettingsIcon size={16} />设置</button>
+            <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => switchView("leads")}><ListChecks size={16} />Leads Review</button>
+            <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => switchView("assistant")}><Bot size={16} />线索助手</button>
+            <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => switchView("radar")}><Newspaper size={16} />行业雷达</button>
+            <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => switchView("steam")}><TrendingUp size={16} />Steam 趋势</button>
+            <button className={`tab-button ${view === "diagnostics" ? "active" : ""}`} onClick={() => switchView("diagnostics")}><Activity size={16} />自动化诊断</button>
+            <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => switchView("settings")}><SettingsIcon size={16} />设置</button>
           </div>
           <div className="nav-section-label">数据操作</div>
           <div className="nav-group nav-tools">
@@ -220,6 +246,7 @@ export default function App() {
         displayName={displayName}
         onLeadPatch={handleLeadPatch}
       /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
+      <ManualLeadLauncher visible={view === "leads" || view === "assistant"} />
     </main>
   );
 }
