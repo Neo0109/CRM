@@ -285,9 +285,9 @@ button:hover {
 
 .metric-green::before { background: #059669; }
 .metric-cyan::before { background: #0891b2; }
-.metric-purple::before { background: #fb7299; }
+.metric-purple::before { background: var(--metric-purple); }
 .metric-amber::before { background: #b7791f; }
-.metric-red::before { background: #dc2626; }
+.metric-red::before { background: var(--metric-red); }
 .metric-blue::before { background: #2563eb; }
 .metric-neutral::before { background: #8a92a0; }
 
@@ -389,7 +389,7 @@ button:hover {
 }
 
 .decision-lead-list button:hover {
-  background: #f8fbff;
+  background: var(--surface-info-soft);
   border-color: #c5d7ff;
 }
 
@@ -654,24 +654,24 @@ button:hover {
 }
 
 .lead-table tbody tr {
-  --lead-row-bg: rgba(255, 253, 250, 0.94);
+  --lead-row-bg: var(--lead-row-default);
 }
 
 .lead-table tbody tr:hover {
-  --lead-row-bg: #f8fbff;
+  --lead-row-bg: var(--lead-row-hover);
 }
 
 .lead-table tbody tr.selected-row {
-  --lead-row-bg: #eff6ff;
+  --lead-row-bg: var(--lead-row-selected);
 }
 
 .lead-table tbody tr.unread-row {
-  --lead-row-bg: #fff9fb;
+  --lead-row-bg: var(--lead-row-unread);
 }
 
 .lead-table tbody tr.unread-row:hover,
 .lead-table tbody tr.unread-row.selected-row {
-  --lead-row-bg: #fff4f8;
+  --lead-row-bg: var(--lead-row-unread-active);
 }
 
 .lead-table tbody tr > td:first-child {
@@ -761,7 +761,7 @@ button:hover {
 
 .evidence-risk {
   background: #fff0f0;
-  border-color: #fecaca;
+  border-color: var(--status-danger-border);
   color: #b91c1c;
 }
 
