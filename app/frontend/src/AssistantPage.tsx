@@ -2,6 +2,7 @@ import { Bot, Camera, Clipboard, FileImage, Sparkles, Trash2, XCircle } from "lu
 import { useState } from "react";
 import type { ChangeEvent, ClipboardEvent } from "react";
 import { runLeadAssistant } from "./api";
+import { analyzeAssistantDraft, buildAssistantResultHints, readinessLabel } from "./assistantQuality";
 import type { LeadAssistantAttachment, LeadAssistantResult } from "./types";
 import "./assistant.css";
 
@@ -25,6 +26,8 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LeadAssistantResult | null>(null);
+  const draftAnalysis = analyzeAssistantDraft({ text, attachments });
+  const resultHints = result ? buildAssistantResultHints(result) : [];
 
   async function handleSubmit() {
     if (!text.trim() && !attachments.length) {
@@ -112,6 +115,24 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
           <textarea value={text} onChange={(event) => setText(event.target.value)} onPaste={handlePaste} placeholder={"项目：\nSteam：https://store.steampowered.com/app/...\n团队 / 国家 / 联系方式 / 看到它的原因"} />
         </label>
 
+        <div className={`assistant-quality assistant-quality-${draftAnalysis.readiness}`}>
+          <div className="assistant-quality-head">
+            <strong>录入质量</strong>
+            <span>{readinessLabel(draftAnalysis.readiness)}</span>
+          </div>
+          <div className="assistant-quality-signals">
+            {draftAnalysis.signals.projectName && <span>项目：{draftAnalysis.signals.projectName}</span>}
+            {draftAnalysis.signals.steamAppIds.length > 0 && <span>Steam：{draftAnalysis.signals.steamAppIds.join(", ")}</span>}
+            {!draftAnalysis.signals.steamAppIds.length && draftAnalysis.signals.gameLinks.length > 0 && <span>链接：{draftAnalysis.signals.gameLinks.length}</span>}
+            {draftAnalysis.signals.contacts.length > 0 && <span>联系方式：{draftAnalysis.signals.contacts.length}</span>}
+            {draftAnalysis.signals.screenshots > 0 && <span>截图：{draftAnalysis.signals.screenshots}</span>}
+            {!draftAnalysis.signals.projectName && !draftAnalysis.signals.gameLinks.length && !draftAnalysis.signals.contacts.length && !draftAnalysis.signals.screenshots && <span>等待关键信息</span>}
+          </div>
+          {draftAnalysis.suggestions.length > 0 && <ul className="assistant-quality-suggestions">
+            {draftAnalysis.suggestions.map((item) => <li key={item}>{item}</li>)}
+          </ul>}
+        </div>
+
         <div className="paste-target" tabIndex={0} onPaste={handlePaste}>
           <span><Clipboard size={18} />直接粘贴截图</span>
           <span className="paste-hint">Ctrl+V</span>
@@ -154,6 +175,10 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
             <strong>{lead.project}</strong>
             <small>{lead.priority ?? "P2"} · {lead.bucket ?? "观察池"} · {lead.priority_reason ?? "待复核"}</small>
           </div>)}</div>}
+          {resultHints.length > 0 && <div className="assistant-result-hints">
+            <strong>补充建议</strong>
+            <ul>{resultHints.map((hint) => <li key={hint}>{hint}</li>)}</ul>
+          </div>}
           {result.skipped.length > 0 && <div className="assistant-skipped">{result.skipped.map((item) => <span key={item}><XCircle size={13} />{item}</span>)}</div>}
         </>}
       </article>
