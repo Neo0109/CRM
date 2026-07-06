@@ -46,6 +46,7 @@ Build output directory: app/frontend/dist
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
 CRM_USERS_JSON=[{"username":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]}]
+EXCEL_EXPORT_PASSWORD=choose-a-private-export-password
 ```
 
 Do not set `NODE_ENV=production` in Cloudflare Pages build variables. It can make npm skip type-related dev packages during build.
@@ -78,6 +79,7 @@ npm run start --workspace app/backend
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
 CRM_USERS_JSON=[{"username":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]}]
+EXCEL_EXPORT_PASSWORD=choose-a-private-export-password
 NODE_ENV=production
 ```
 
@@ -105,6 +107,7 @@ Environment variables:
 SUPABASE_URL=your-supabase-url
 SUPABASE_SECRET_KEY=your-server-side-key
 CRM_USERS_JSON=[{"username":"Neo","password":"choose-a-private-password","role":"admin","permissions":["*"]}]
+EXCEL_EXPORT_PASSWORD=choose-a-private-export-password
 NODE_ENV=production
 ```
 
@@ -115,6 +118,8 @@ The app will serve the React CRM and API from the same online URL.
 Open the deployed URL in any browser.
 
 If `CRM_USERS_JSON` is configured, enter one of its usernames and passwords on the CRM login page. The browser saves the current user's credentials locally and sends them with API requests.
+
+Account settings are managed in Cloudflare Pages Variables and Secrets. Use `CRM_USERS_JSON` for login accounts and login passwords, and `EXCEL_EXPORT_PASSWORD` for the Excel export password. The CRM 设置页 only shows the Cloudflare-managed state and export entry; it does not edit 登录密码 or 导出密码 online.
 
 Single-user legacy variables are still supported:
 
