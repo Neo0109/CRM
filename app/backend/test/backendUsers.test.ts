@@ -1,12 +1,58 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   buildBackendUsers,
   validateBackendLogin,
   validateBackendSession
 } from "../src/lib/backendUsers.ts";
+import {
+  buildConfiguredUsers,
+  parseCrmUsersJsonWithDiagnostics
+} from "../../../functions/_lib/crmUsers.ts";
+
+const backendUsersSource = new URL("../src/lib/backendUsers.ts", import.meta.url);
 
 describe("backend user helpers", () => {
+  it("delegates pure user parsing to the canonical Functions user model", () => {
+    const source = readFileSync(backendUsersSource, "utf8");
+
+    assert.match(source, /functions\/_lib\/crmUsers\.js/, "backendUsers should import the canonical crmUsers module");
+    for (const forbiddenHelper of [
+      "function parseBackendUsersPayload",
+      "function parseConcatenatedUsersPayload",
+      "function topLevelJsonChunks",
+      "function usersFromParsedPayload",
+      "function userFromArrayItem",
+      "function userFromObjectEntry",
+      "function dedupeBackendUsers",
+      "function displayNameForUsername",
+      "function authKey",
+      "function readPermissions"
+    ]) {
+      assert.equal(source.includes(forbiddenHelper), false, `backendUsers should not inline ${forbiddenHelper}`);
+    }
+  });
+
+  it("matches canonical user parsing for shared CRM_USERS_JSON behavior", () => {
+    const payload = JSON.stringify([
+      { username: " Neo ", password: " token-1 ", display_name: "Neo Admin", role: "admin", permissions: "leads, export" },
+      { username: "neo", password: "token-2", displayName: "Duplicate" },
+      { name: "jojo", accessToken: " token-3 ", label: "Jojo BD" }
+    ]);
+
+    assert.deepEqual(
+      buildBackendUsers({ rawUsers: payload }),
+      buildConfiguredUsers({ rawUsers: payload })
+    );
+
+    const concatenated = "[{\"username\":\"jojo\",\"password\":\"one\"}]{\"neo\":\"two\"}";
+    assert.deepEqual(
+      buildBackendUsers({ rawUsers: concatenated }),
+      parseCrmUsersJsonWithDiagnostics(concatenated).users
+    );
+  });
+
   it("parses array and object CRM_USERS_JSON, trims credentials, and keeps the first duplicate user", () => {
     const users = buildBackendUsers({
       rawUsers: JSON.stringify([

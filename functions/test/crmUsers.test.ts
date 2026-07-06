@@ -69,6 +69,17 @@ describe("crm user parsing helpers", () => {
     assert.equal(typeof result.error, "string");
   });
 
+  it("repairs top-level concatenated CRM_USERS_JSON payloads", () => {
+    const broken = `[{"username":"jojo","password":"one"}]{"neo":"two"}`;
+    const result = parseCrmUsersJsonWithDiagnostics(broken);
+
+    assert.equal(result.status, "repaired");
+    assert.deepEqual(result.users.map((user) => [user.username, user.password, user.role, user.permissions]), [
+      ["jojo", "one", "member", []],
+      ["neo", "two", "member", []]
+    ]);
+  });
+
   it("dedupes users and appends legacy username/password fallback", () => {
     const parsed = parseCrmUsersPayloadInput(JSON.stringify({
       neo: "first",
@@ -78,10 +89,10 @@ describe("crm user parsing helpers", () => {
     assert.equal(parsed.ok ? parsed.users.length : 0, 2);
 
     assert.deepEqual(dedupeCrmUsers([
-      { username: "neo", display_name: "Neo", password: "first", role: "admin", permissions: ["*"] },
+      { username: "Neo", display_name: "Neo", password: "first", role: "admin", permissions: ["*"] },
       { username: "neo", display_name: "Neo 2", password: "second", role: "member", permissions: [] }
     ]), [
-      { username: "neo", display_name: "Neo", password: "first", role: "admin", permissions: ["*"] }
+      { username: "Neo", display_name: "Neo", password: "first", role: "admin", permissions: ["*"] }
     ]);
 
     assert.deepEqual(buildConfiguredUsers({
