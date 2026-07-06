@@ -6,7 +6,7 @@
 }
 
 .weekly-overlay {
-  background: rgba(15, 23, 42, 0.42);
+  background: var(--overlay-backdrop);
   inset: 0;
   overflow: auto;
   padding: 20px;
@@ -16,7 +16,7 @@
 
 .weekly-workspace {
   background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
-  border: 1px solid #dbe5f1;
+  border: 1px solid var(--border-cool);
   border-radius: 10px;
   box-shadow: 0 26px 80px rgba(15, 23, 42, 0.26);
   margin: 0 auto;
@@ -36,7 +36,7 @@
 }
 
 .weekly-head p {
-  color: #475569;
+  color: var(--text-slate);
   line-height: 1.55;
   margin: 6px 0 0;
   max-width: 760px;
@@ -65,7 +65,7 @@
   background: #fff;
   border: 1px solid #c4d2e2;
   border-radius: 8px;
-  color: #142033;
+  color: var(--text-navy-soft);
   min-height: 36px;
   padding: 0 10px;
 }
@@ -73,7 +73,7 @@
 .weekly-summary-band,
 .weekly-section {
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #dbe5f1;
+  border: 1px solid var(--border-cool);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(20, 32, 51, 0.06);
   margin-bottom: 14px;
@@ -100,8 +100,8 @@
 
 .weekly-metric {
   background: #fff;
-  border: 1px solid #dbe5f1;
-  border-left: 5px solid #94a3b8;
+  border: 1px solid var(--border-cool);
+  border-left: 5px solid var(--metric-neutral);
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
@@ -116,16 +116,16 @@
 }
 
 .weekly-metric strong {
-  color: #142033;
+  color: var(--text-navy-soft);
   font-size: 24px;
 }
 
-.weekly-metric-blue { border-left-color: #00a7e1; }
-.weekly-metric-green { border-left-color: #16a34a; }
-.weekly-metric-cyan { border-left-color: #20c7de; }
-.weekly-metric-purple { border-left-color: #fb7299; }
-.weekly-metric-red { border-left-color: #dc2626; }
-.weekly-metric-amber { border-left-color: #d97706; }
+.weekly-metric-blue { border-left-color: var(--metric-blue); }
+.weekly-metric-green { border-left-color: var(--metric-green); }
+.weekly-metric-cyan { border-left-color: var(--metric-cyan); }
+.weekly-metric-purple { border-left-color: var(--metric-purple); }
+.weekly-metric-red { border-left-color: var(--metric-red); }
+.weekly-metric-amber { border-left-color: var(--metric-amber); }
 
 .weekly-section-head {
   align-items: center;
@@ -135,9 +135,9 @@
 }
 
 .weekly-section-head span {
-  background: #eef8ff;
+  background: var(--surface-info);
   border-radius: 999px;
-  color: #075985;
+  color: var(--text-info);
   font-size: 12px;
   font-weight: 950;
   padding: 3px 8px;
@@ -151,7 +151,7 @@
 
 .weekly-lead-card {
   background: #fff;
-  border: 1px solid #dbe5f1;
+  border: 1px solid var(--border-cool);
   border-radius: 8px;
   display: grid;
   gap: 12px;
@@ -159,8 +159,8 @@
 }
 
 .weekly-lead-card:hover {
-  border-color: #bfe7fb;
-  box-shadow: 0 12px 28px rgba(0, 167, 225, 0.12);
+  border-color: var(--border-info);
+  box-shadow: 0 12px 28px rgba(var(--metric-blue-rgb), 0.12);
 }
 
 .weekly-lead-head {
@@ -202,9 +202,9 @@
 .weekly-grade.grade-A,
 .weekly-grade.grade-Aminus,
 .weekly-grade.grade-Bplus {
-  background: #eef8ff;
+  background: var(--surface-info);
   border-color: #7dd3fc;
-  color: #075985;
+  color: var(--text-info);
 }
 
 .weekly-grade.grade-B,
@@ -249,7 +249,7 @@
 
 .weekly-link-row a {
   align-items: center;
-  border: 1px solid #bfe7fb;
+  border: 1px solid var(--border-info);
   border-radius: 999px;
   color: #087ea8;
   display: inline-flex;
@@ -260,7 +260,7 @@
 }
 
 .weekly-link-row a:hover {
-  background: #eef8ff;
+  background: var(--surface-info);
 }
 
 .weekly-missing-link {
@@ -294,8 +294,8 @@
 }
 
 .weekly-mini-list li {
-  background: #f8fbff;
-  border: 1px solid #e0e9f3;
+  background: var(--surface-info-soft);
+  border: 1px solid var(--border-info-muted);
   border-radius: 8px;
   display: grid;
   gap: 3px;
@@ -303,7 +303,7 @@
 }
 
 .weekly-mini-list strong {
-  color: #142033;
+  color: var(--text-navy-soft);
 }
 
 .weekly-mini-list small,
@@ -313,7 +313,7 @@
 }
 
 .weekly-empty {
-  background: #f8fbff;
+  background: var(--surface-info-soft);
   border: 1px dashed #c4d2e2;
   border-radius: 8px;
   padding: 14px;

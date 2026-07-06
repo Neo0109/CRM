@@ -16,6 +16,22 @@ function importOffset(sourceText, importPath) {
   return offset;
 }
 
+function assertDefinesTokens(sourceText, tokens) {
+  for (const token of tokens) {
+    assert.match(sourceText, new RegExp(`${token}\\s*:`), `${token} should be defined in design-tokens.css`);
+  }
+}
+
+function assertNoColorLiterals(fileName, sourceText, literals) {
+  for (const literal of literals) {
+    assert.equal(
+      sourceText.includes(literal),
+      false,
+      `${fileName} should consume semantic tokens instead of hard-coding ${literal}`
+    );
+  }
+}
+
 describe("frontend design token contract", () => {
   it("loads design tokens before page and feature styles", () => {
     const mainSource = source("main.tsx");
@@ -31,7 +47,7 @@ describe("frontend design token contract", () => {
     const stylesSource = source("styles.css");
     const aestheticSource = source("aesthetic-refresh.css");
 
-    for (const token of [
+    assertDefinesTokens(tokenSource, [
       "--surface-page",
       "--surface-card",
       "--text-primary",
@@ -51,9 +67,7 @@ describe("frontend design token contract", () => {
       "--paper",
       "--blue",
       "--pink"
-    ]) {
-      assert.match(tokenSource, new RegExp(`${token}\\s*:`), `${token} should be defined in design-tokens.css`);
-    }
+    ]);
 
     assert.doesNotMatch(stylesSource, /^:root\s*\{/m, "styles.css should consume design tokens instead of declaring root tokens");
     assert.doesNotMatch(
@@ -83,6 +97,53 @@ describe("frontend design token contract", () => {
 
     for (const token of ["--status-success-bg", "--status-warning-bg", "--status-danger-bg"]) {
       assert.match(diagnosticsSource, new RegExp(`var\\(${token}\\)`), `${token} should be consumed by diagnostics states`);
+    }
+  });
+
+  it("defines semantic tokens for shared feature styles", () => {
+    const tokenSource = source("design-tokens.css");
+
+    assertDefinesTokens(tokenSource, [
+      "--surface-info",
+      "--surface-info-soft",
+      "--border-info",
+      "--text-info",
+      "--overlay-backdrop",
+      "--focus-ring-strong",
+      "--metric-green",
+      "--metric-cyan",
+      "--metric-purple",
+      "--metric-amber",
+      "--metric-red",
+      "--metric-blue",
+      "--metric-neutral",
+      "--lead-row-default",
+      "--lead-row-hover",
+      "--lead-row-selected",
+      "--lead-row-unread",
+      "--lead-row-unread-active"
+    ]);
+  });
+
+  it("keeps recurring feature status and info colors behind semantic tokens", () => {
+    const repeatedFeatureLiterals = [
+      "#00a7e1",
+      "#bfe7fb",
+      "#e0e9f3",
+      "#dbe5f1",
+      "#475569",
+      "#142033",
+      "#f8fbff",
+      "#eef8ff",
+      "#bbf7d0",
+      "#fef3c7",
+      "#fee2e2",
+      "#fecaca",
+      "rgba(0, 167, 225"
+    ];
+
+    for (const fileName of ["styles.css", "aesthetic-refresh.css", "weekly-report.css", "calendar.css"]) {
+      assertNoColorLiterals(fileName, source(fileName), repeatedFeatureLiterals);
     }
   });
 });
