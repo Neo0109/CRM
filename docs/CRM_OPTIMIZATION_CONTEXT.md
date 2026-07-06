@@ -9,8 +9,9 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - GitHub repository: `Neo0109/CRM`
 - Production CRM domain used by automation: `https://crm-pages.pages.dev`
 - Daily automation workflow: `.github/workflows/sync-daily-report.yml`
-- Current generator: `automations/jobs/online_daily_v4.mjs`
+- Current generator path: `automations/jobs/online_daily_runner.mjs` validates the online rule file, then launches `automations/jobs/online_daily_v4.mjs`
 - Rule guard runner: `automations/jobs/online_daily_runner.mjs`
+- Legacy daily generators: `automations/jobs/online_daily.mjs`, `automations/jobs/online_daily_v2.mjs`, and `automations/jobs/online_daily_v3.mjs` are archived in git history and must not be used as active development or workflow entrypoints.
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V6/V6.1 rules: `docs/SOURCING_RULES_V6.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
@@ -134,11 +135,11 @@ The cleanup added:
 - `automations/rules/daily-report.json` as the machine-readable rule source.
 - `automations/jobs/online_daily_runner.mjs` as a fail-fast rule guard before the existing generator.
 - Workflow path filters include rule files so rule-only changes exercise the automation.
+- The pre-v4 daily generators are archived in git history. Current automation work should enter through `online_daily_runner.mjs` and the V4 module set only.
 
 Known remaining cleanup:
 
-- `online_daily_v4.mjs` still contains hard-coded generator logic while executing the current rule version.
-- Future work should gradually move thresholds, source weights, radar categories, exclusion guardrails, and scoring knobs into `automations/rules/daily-report.json`.
+- Future work should keep configurable thresholds, source weights, radar categories, exclusion guardrails, and scoring knobs in `automations/rules/daily-report.json` where practical.
 
 ## CRM Product Logic V1.8
 
