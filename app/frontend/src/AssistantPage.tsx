@@ -2,7 +2,8 @@ import { Bot, Camera, Clipboard, FileImage, Sparkles, Trash2, XCircle } from "lu
 import { useState } from "react";
 import type { ChangeEvent, ClipboardEvent } from "react";
 import { runLeadAssistant } from "./api";
-import { analyzeAssistantDraft, buildAssistantResultHints, readinessLabel } from "./assistantQuality";
+import { analyzeAssistantDraft, buildAssistantResultGroups, buildAssistantResultHints, readinessLabel } from "./assistantQuality";
+import type { AssistantResultGroup } from "./assistantQuality";
 import type { LeadAssistantAttachment, LeadAssistantResult } from "./types";
 import "./assistant.css";
 
@@ -20,6 +21,12 @@ const maxAttachmentBytes = 8 * 1024 * 1024;
 
 type AttachmentSource = "paste" | "upload" | "camera";
 
+const resultGroupDescriptions: Record<AssistantResultGroup["key"], string> = {
+  "needs-review": "需要补充：先补齐关键信息，再进 Leads Review。",
+  ready: "可复核线索：信息相对完整，可以回到 Leads Review 判断优先级。",
+  skipped: "跳过项：未写入 CRM，适合先排除非游戏主体或无效 App。"
+};
+
 export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   const [text, setText] = useState("");
   const [attachments, setAttachments] = useState<AssistantAttachment[]>([]);
@@ -27,6 +34,7 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LeadAssistantResult | null>(null);
   const draftAnalysis = analyzeAssistantDraft({ text, attachments });
+  const resultGroups = result ? buildAssistantResultGroups(result) : [];
   const resultHints = result ? buildAssistantResultHints(result) : [];
 
   async function handleSubmit() {
@@ -171,17 +179,32 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
             <span>更新 <strong>{result.updated}</strong></span>
             <span>跳过 <strong>{result.skipped.length}</strong></span>
           </div>
-          {result.leads.length > 0 && <div className="assistant-lead-list">{result.leads.map((lead, index) => <div className="assistant-lead" key={`${lead.project}-${index}`}>
-            <strong>{lead.project}</strong>
-            <small>{lead.priority ?? "P2"} · {lead.bucket ?? "观察池"} · {lead.priority_reason ?? "待复核"}</small>
-          </div>)}</div>}
-          {resultHints.length > 0 && <div className="assistant-result-hints">
+          {resultGroups.length > 0 ? <div className="assistant-result-groups">
+            <strong>补充建议</strong>
+            {resultGroups.map((group) => <AssistantResultGroupCard group={group} key={group.key} />)}
+          </div> : resultHints.length > 0 && <div className="assistant-result-hints">
             <strong>补充建议</strong>
             <ul>{resultHints.map((hint) => <li key={hint}>{hint}</li>)}</ul>
           </div>}
-          {result.skipped.length > 0 && <div className="assistant-skipped">{result.skipped.map((item) => <span key={item}><XCircle size={13} />{item}</span>)}</div>}
         </>}
       </article>
+    </div>
+  </section>;
+}
+
+function AssistantResultGroupCard({ group }: { group: AssistantResultGroup }) {
+  return <section className={`assistant-result-group assistant-result-group-${group.tone}`}>
+    <div className="assistant-result-group-head">
+      <span>{group.title}</span>
+      <small>{group.items.length}</small>
+    </div>
+    <p>{resultGroupDescriptions[group.key]}</p>
+    <div className="assistant-lead-list">
+      {group.items.map((item) => <article className="assistant-lead" key={`${group.key}-${item.project}`}>
+        <strong>{group.key === "skipped" && <XCircle size={13} />}{item.project}</strong>
+        <small>{item.summary}</small>
+        <ul>{item.suggestions.map((suggestion) => <li key={suggestion}>{suggestion}</li>)}</ul>
+      </article>)}
     </div>
   </section>;
 }
