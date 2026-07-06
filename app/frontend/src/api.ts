@@ -1,4 +1,4 @@
-import type { AutomationDiagnostics, CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SettingsPatch, SettingsVerification, SourcingLearningReport, SteamTrendReport, WeeklyReport } from "./types";
+import type { AutomationDiagnostics, CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SourcingLearningReport, SteamTrendReport, WeeklyReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 const usernameKey = "sourcing-crm-username";
@@ -122,17 +122,6 @@ export function fetchSourcingLearning() {
 
 export function fetchSettings() {
   return request<CrmSettings>("/api/settings");
-}
-
-export function saveSettings(patch: SettingsPatch) {
-  return request<CrmSettings>("/api/settings", {
-    method: "PATCH",
-    body: JSON.stringify(patch)
-  });
-}
-
-export function sendSettingsVerification() {
-  return request<SettingsVerification>("/api/settings-verification", { method: "POST" });
 }
 
 export function runLeadAssistant(payload: LeadAssistantPayload) {
