@@ -1,6 +1,7 @@
 import { AlertTriangle, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { buildBucketNavigation, buildDecisionTriage, buildLeadEvidenceChips, type BucketNavigationItem, type TriageFilter } from "../../leadTriage";
+import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "../../followUpQueue";
 import type { Lead } from "../../types";
 import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions, stageOptions } from "./leadConstants";
 import { Select } from "./leadControls";
@@ -22,8 +23,15 @@ export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsVie
   const filteredLeads = useMemo(() => filterLeads(leads, filters), [filters, leads]);
   const selectedLead = useMemo(() => filteredLeads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, selectedId]);
   const triage = useMemo(() => buildDecisionTriage(leads), [leads]);
+  const followUpQueue = useMemo(() => buildFollowUpQueue(leads), [leads]);
+  const followUpTopItems = followUpQueue.items.slice(0, 5);
+  const followUpByLeadId = useMemo(() => new Map(followUpTopItems.map((item) => [item.lead.id, item])), [followUpTopItems]);
+  const triageLanes = useMemo(() => triage.lanes.map((lane) => lane.key === "action" ? {
+    ...lane,
+    count: followUpQueue.count,
+    leads: followUpTopItems.map((item) => item.lead)
+  } : lane), [followUpQueue.count, followUpTopItems, triage.lanes]);
   const bucketNavigation = useMemo(() => buildBucketNavigation(leads), [leads]);
-  const actionLane = triage.lanes.find((lane) => lane.key === "action");
   const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
   const focusLabel = activeFilterLabel(filters);
@@ -46,7 +54,7 @@ export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsVie
       </div>
       <div className="dashboard-head-meta">
         <span>{filteredLeads.length} / {stats.total} 条记录</span>
-        <span>{actionLane?.count ?? 0} 个需要动作</span>
+        <span>{followUpQueue.count} 个本周待办</span>
       </div>
     </section>
 
@@ -65,7 +73,7 @@ export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsVie
     </section>
 
     <section className="decision-board supporting-triage" aria-label="辅助复核视角">
-      {triage.lanes.map((lane) => (
+      {triageLanes.map((lane) => (
         <article className={`decision-lane decision-lane-${lane.key}`} key={lane.key}>
           <div className="decision-lane-head">
             <div>
@@ -80,7 +88,9 @@ export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsVie
               <li key={lead.id}>
                 <button type="button" onClick={() => { setFilters({ ...emptyLeadFilters, ...lane.filter }); setSelectedId(lead.id); }}>
                   <span>{lead.project}</span>
-                  <small>{lead.priority} · {lead.bucket} · {lead.region === "中国" ? lead.country : lead.region_priority}</small>
+                  {lane.key === "action" && followUpByLeadId.get(lead.id)
+                    ? <FollowUpQueueBrief item={followUpByLeadId.get(lead.id)!} />
+                    : <small>{lead.priority} · {lead.bucket} · {lead.region === "中国" ? lead.country : lead.region_priority}</small>}
                 </button>
               </li>
             )) : <li className="empty-lane">{lane.empty}</li>}
@@ -127,6 +137,17 @@ export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsVie
       </div>
       <LeadDetail lead={selectedLead} onPatch={onLeadPatch} missingLinksMode={filters.missingLinks} />
     </section>
+  </>;
+}
+
+function FollowUpQueueBrief({ item }: { item: FollowUpQueueItem }) {
+  return <>
+    <small>{formatFollowUpSummary(item)}</small>
+    <span className="evidence-chip-list follow-up-chip-list">
+      {item.reasons.map((reason) => (
+        <span className={`evidence-chip evidence-${reason.tone}`} key={reason.key}>{reason.label}</span>
+      ))}
+    </span>
   </>;
 }
 
