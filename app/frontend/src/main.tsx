@@ -8,6 +8,7 @@ import { ManualLeadLauncher } from "./ManualLeadLauncher";
 import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
 import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
+import "./design-tokens.css";
 import "./styles.css";
 import "./calendar.css";
 import "./calendar-refinement.css";

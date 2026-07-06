@@ -56,22 +56,22 @@
 }
 
 .status-healthy {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #15803d;
+  background: var(--status-success-bg);
+  border-color: var(--status-success-border);
+  color: var(--status-success-text);
 }
 
 .status-warning {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #b45309;
+  background: var(--status-warning-bg);
+  border-color: var(--status-warning-border);
+  color: var(--status-warning-text);
 }
 
 .status-failed,
 .status-missing {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #b91c1c;
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  color: var(--status-danger-text);
 }
 
 .diagnostics-grid {
@@ -213,18 +213,18 @@
 }
 
 .metric-status-pass {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: var(--status-success-bg);
+  border-color: var(--status-success-border);
 }
 
 .metric-status-warn {
-  background: #fffbeb;
-  border-color: #fde68a;
+  background: var(--status-warning-bg);
+  border-color: var(--status-warning-border);
 }
 
 .metric-status-fail {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
 }
 
 .metric-status-unknown {

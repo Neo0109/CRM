@@ -1,0 +1,92 @@
+:root {
+  --font-sans: "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --surface-page: #f7f5f0;
+  --surface-card: #fffdfa;
+  --surface-card-alpha: rgba(255, 253, 250, 0.86);
+  --surface-card-strong: rgba(255, 253, 250, 0.98);
+  --surface-muted: #faf9f6;
+  --surface-cool: #f8fbff;
+
+  --text-primary: #16181d;
+  --text-secondary: #69717f;
+  --text-tertiary: #9ba2ad;
+  --text-inverse: #ffffff;
+
+  --border-default: #e6e1d8;
+  --border-strong: #d8d1c5;
+
+  --action-primary: #2563eb;
+  --action-primary-strong: #1d4ed8;
+  --accent-pink: #fb7299;
+  --accent-cyan: #0891b2;
+  --accent-success: #059669;
+  --accent-warning: #b7791f;
+  --accent-danger: #dc2626;
+
+  --status-success-bg: #f0fdf4;
+  --status-success-surface: #dcfce7;
+  --status-success-border: #bbf7d0;
+  --status-success-text: #15803d;
+  --status-warning-bg: #fffbeb;
+  --status-warning-surface: #fef3c7;
+  --status-warning-border: #fde68a;
+  --status-warning-text: #b45309;
+  --status-danger-bg: #fef2f2;
+  --status-danger-surface: #fee2e2;
+  --status-danger-border: #fecaca;
+  --status-danger-text: #b91c1c;
+
+  --bucket-push-bg: #ecfdf3;
+  --bucket-push-border: #8fd6aa;
+  --bucket-push-text: #087f43;
+  --bucket-follow-bg: #ecfeff;
+  --bucket-follow-border: #98e0ea;
+  --bucket-follow-text: #0e7490;
+  --bucket-watch-bg: #fff8df;
+  --bucket-watch-border: #efd27c;
+  --bucket-watch-text: #9a5b00;
+  --bucket-drop-bg: #fff1f2;
+  --bucket-drop-border: #fecdd3;
+  --bucket-drop-text: #be123c;
+
+  --radius-control: 11px;
+  --radius-card: 18px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgba(24, 26, 31, 0.05), 0 18px 48px rgba(24, 26, 31, 0.055);
+  --shadow-elevated: 0 24px 80px rgba(24, 26, 31, 0.11);
+  --shadow-overlay: 0 24px 90px rgba(24, 26, 31, 0.18);
+  --focus-ring: rgba(37, 99, 235, 0.1);
+
+  --page-background:
+    radial-gradient(circle at 78% 0%, rgba(37, 99, 235, 0.06), transparent 28%),
+    linear-gradient(180deg, rgba(255, 253, 250, 0.96), rgba(247, 245, 240, 0.98)),
+    url("./assets/crm-paper-texture.png");
+
+  --bg: var(--surface-page);
+  --paper: var(--surface-card);
+  --paper-soft: var(--surface-card-alpha);
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --faint: var(--text-tertiary);
+  --line: var(--border-default);
+  --line-strong: var(--border-strong);
+  --blue: var(--action-primary);
+  --blue-dark: var(--action-primary-strong);
+  --pink: var(--accent-pink);
+  --cyan: var(--accent-cyan);
+  --green: var(--accent-success);
+  --amber: var(--accent-warning);
+  --red: var(--accent-danger);
+  --navy: var(--text-primary);
+  --shadow-sm: var(--shadow-card);
+  --shadow-md: var(--shadow-elevated);
+
+  background: var(--page-background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
