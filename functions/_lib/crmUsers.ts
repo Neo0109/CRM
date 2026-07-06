@@ -67,9 +67,27 @@ export function parseCrmUsersPayloadInput(raw: string): { ok: true; users: CrmUs
 }
 
 export function repairCrmUsersJson(raw: string) {
-  return raw
+  const rawChunks = topLevelJsonChunks(raw);
+  if (rawChunks.length > 1) return stringifyUsersFromChunks(rawChunks, raw);
+
+  const commaRepaired = raw
     .replace(/}\s*(?=\{)/g, "},")
     .replace(/]\s*(?=\{)/g, "]},");
+  const chunks = topLevelJsonChunks(commaRepaired);
+  if (chunks.length < 2) return commaRepaired;
+
+  return stringifyUsersFromChunks(chunks, commaRepaired);
+}
+
+function stringifyUsersFromChunks(chunks: string[], fallback: string) {
+  const users: CrmUser[] = [];
+  for (const chunk of chunks) {
+    const parsed = parseCrmUsersPayloadInput(chunk);
+    if (!parsed.ok) return fallback;
+    users.push(...parsed.users);
+  }
+
+  return JSON.stringify(users);
 }
 
 function userFromArrayItem(item: unknown): CrmUser | null {
@@ -134,9 +152,54 @@ export function authKey(value: string | null | undefined) {
 export function dedupeCrmUsers(users: CrmUser[]) {
   const byUsername = new Map<string, CrmUser>();
   for (const user of users) {
-    if (!byUsername.has(user.username)) byUsername.set(user.username, user);
+    const key = authKey(user.username);
+    if (!byUsername.has(key)) byUsername.set(key, user);
   }
   return [...byUsername.values()];
+}
+
+function topLevelJsonChunks(raw: string) {
+  const chunks: string[] = [];
+  let start = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = 0; index < raw.length; index += 1) {
+    const char = raw[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === "\"") {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === "\"") {
+      inString = true;
+      continue;
+    }
+
+    if (char === "{" || char === "[") {
+      if (depth === 0) start = index;
+      depth += 1;
+      continue;
+    }
+
+    if (char === "}" || char === "]") {
+      depth -= 1;
+      if (depth === 0 && start >= 0) {
+        chunks.push(raw.slice(start, index + 1));
+        start = -1;
+      }
+    }
+  }
+
+  return depth === 0 ? chunks : [];
 }
 
 function readString(value: unknown) {
