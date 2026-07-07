@@ -205,7 +205,7 @@ function AssistantResultGroupCard({ group, onReviewLead }: { group: AssistantRes
         <strong>{group.key === "skipped" && <XCircle size={13} />}{item.project}</strong>
         <small>{item.summary}</small>
         <ul>{item.suggestions.map((suggestion) => <li key={suggestion}>{suggestion}</li>)}</ul>
-        {item.reviewTarget && <button className="ghost-button assistant-review-button" type="button" onClick={() => onReviewLead(item.reviewTarget!)}>去 Leads Review 复核</button>}
+        {item.reviewTarget && <button className="ghost-button assistant-review-button" type="button" onClick={() => onReviewLead({ ...item.reviewTarget!, source: "assistant" })}>去 Leads Review 复核</button>}
       </article>)}
     </div>
   </section>;

@@ -5,6 +5,7 @@ export type LeadReviewTarget = {
   leadId?: string | null;
   project?: string | null;
   steamAppId?: string | null;
+  source?: "assistant";
 };
 
 export type ResolvedLeadReviewTarget = {

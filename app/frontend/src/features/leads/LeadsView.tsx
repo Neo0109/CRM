@@ -7,6 +7,7 @@ import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions,
 import { Select } from "./leadControls";
 import { buildDashboardStats, emptyLeadFilters, filterLeads, type LeadFilters } from "./leadFilters";
 import { ContactChips, LeadDetail, QuickActions } from "./LeadDetail";
+import { buildLeadReviewChecklist } from "./leadReviewChecklist";
 import { resolveLeadReviewTarget, type LeadReviewTarget } from "./leadReviewTarget";
 import { isTestingOverdue } from "./leadWorkflow";
 
@@ -18,9 +19,18 @@ type LeadsViewProps = {
   onLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
 };
 
+type AssistantReviewFocus = {
+  leadId: string | null;
+  matched: boolean;
+  project: string;
+  query: string;
+};
+
 export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPatch }: LeadsViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filters, setFilters] = useState<LeadFilters>(emptyLeadFilters);
+  const [assistantReviewFocus, setAssistantReviewFocus] = useState<AssistantReviewFocus | null>(null);
+  const [dismissedAssistantRequestId, setDismissedAssistantRequestId] = useState<number | null>(null);
   const stats = useMemo(() => buildDashboardStats(leads), [leads]);
   const filteredLeads = useMemo(() => filterLeads(leads, filters), [filters, leads]);
   const selectedLead = useMemo(() => filteredLeads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, selectedId]);
@@ -37,24 +47,50 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
   const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
   const focusLabel = activeFilterLabel(filters);
+  const assistantFocusLead = useMemo(() => assistantReviewFocus?.leadId
+    ? leads.find((lead) => lead.id === assistantReviewFocus.leadId) ?? null
+    : null, [assistantReviewFocus, leads]);
+  const assistantChecklist = useMemo(() => assistantFocusLead ? buildLeadReviewChecklist(assistantFocusLead) : [], [assistantFocusLead]);
 
   useEffect(() => {
     if (!reviewTarget) return;
     const resolved = resolveLeadReviewTarget(leads, reviewTarget);
+    const shouldShowAssistantFocus = reviewTarget.source === "assistant" && reviewTarget.requestId !== dismissedAssistantRequestId;
     if (resolved.lead) {
       setFilters(emptyLeadFilters);
       setSelectedId(resolved.lead.id);
+      if (shouldShowAssistantFocus) {
+        setAssistantReviewFocus({
+          leadId: resolved.lead.id,
+          matched: true,
+          project: resolved.lead.project,
+          query: resolved.query
+        });
+      }
       return;
     }
     if (resolved.query) {
       setFilters({ ...emptyLeadFilters, query: resolved.query });
       setSelectedId(null);
+      if (shouldShowAssistantFocus) {
+        setAssistantReviewFocus({
+          leadId: null,
+          matched: false,
+          project: resolved.query,
+          query: resolved.query
+        });
+      }
     }
-  }, [leads, reviewTarget]);
+  }, [dismissedAssistantRequestId, leads, reviewTarget]);
 
   function applyTriageFilter(patch: Partial<LeadFilters> | TriageFilter) {
     setFilters({ ...emptyLeadFilters, ...patch });
     setSelectedId(null);
+  }
+
+  function clearAssistantReviewFocus() {
+    setAssistantReviewFocus(null);
+    setDismissedAssistantRequestId(reviewTarget?.source === "assistant" ? reviewTarget.requestId ?? null : null);
   }
 
   return <>
@@ -73,6 +109,23 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
         <span>{followUpQueue.count} 个本周待办</span>
       </div>
     </section>
+
+    {assistantReviewFocus && <section className="assistant-review-focus" aria-label="助手复核">
+      <div className="assistant-review-focus-copy">
+        <p className="eyebrow">助手复核</p>
+        <h3>{assistantReviewFocus.project || "Assistant 导入线索"}</h3>
+        <p>{assistantReviewFocus.matched
+          ? "已定位到 Assistant 导入线索，按清单完成桌面复核。"
+          : `未找到精确匹配，已为你搜索：${assistantReviewFocus.query}`}</p>
+      </div>
+      {assistantChecklist.length > 0 && <ul className="assistant-review-checklist">
+        {assistantChecklist.map((item) => <li key={item.key}>
+          <strong>{item.label}</strong>
+          <span>{item.detail}</span>
+        </li>)}
+      </ul>}
+      <button className="ghost-button" type="button" onClick={clearAssistantReviewFocus}>清除复核焦点</button>
+    </section>}
 
     <section className="metric-strip bucket-nav" aria-label="池子导航">
       {bucketNavigation.map((item) => (

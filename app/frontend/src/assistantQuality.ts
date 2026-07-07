@@ -30,6 +30,7 @@ export type AssistantResultReviewTarget = {
   leadId?: string;
   project: string;
   steamAppId?: string;
+  source?: "assistant";
 };
 
 export type AssistantResultGroup = {
