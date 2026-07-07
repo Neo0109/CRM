@@ -41,8 +41,10 @@ export default function App() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [radar, setRadar] = useState<RadarReport | null>(null);
   const [radarLoading, setRadarLoading] = useState(false);
+  const [radarError, setRadarError] = useState<string | null>(null);
   const [steamTrends, setSteamTrends] = useState<SteamTrendReport | null>(null);
   const [steamLoading, setSteamLoading] = useState(false);
+  const [steamError, setSteamError] = useState<string | null>(null);
   const [diagnostics, setDiagnostics] = useState<AutomationDiagnostics | null>(null);
   const [sourcingLearning, setSourcingLearning] = useState<SourcingLearningReport | null>(null);
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
@@ -83,8 +85,10 @@ export default function App() {
     try {
       setRadarLoading(true);
       setRadar(await fetchRadar(date));
+      setRadarError(null);
       setError(null);
     } catch (nextError) {
+      setRadarError(errorMessage(nextError, "行业雷达加载失败"));
       handleDataError(nextError, "行业雷达加载失败");
     } finally {
       setRadarLoading(false);
@@ -100,8 +104,10 @@ export default function App() {
         setStatus(`Steam 趋势已同步：新增 ${report.sync_result.created}，更新 ${report.sync_result.updated}`);
         void reload(false);
       }
+      setSteamError(null);
       setError(null);
     } catch (nextError) {
+      setSteamError(errorMessage(nextError, "Steam 趋势加载失败"));
       handleDataError(nextError, "Steam 趋势加载失败");
     } finally {
       setSteamLoading(false);
@@ -126,7 +132,7 @@ export default function App() {
   }
 
   function handleDataError(nextError: unknown, fallback: string) {
-    const message = nextError instanceof Error ? nextError.message : fallback;
+    const message = errorMessage(nextError, fallback);
     if (isAuthError(message)) {
       clearAccessToken();
       setIsAuthenticated(false);
@@ -189,7 +195,9 @@ export default function App() {
     setLoginError(null);
     setLeads([]);
     setRadar(null);
+    setRadarError(null);
     setSteamTrends(null);
+    setSteamError(null);
     setDiagnostics(null);
     setStatus(null);
     setLoading(false);
@@ -256,10 +264,14 @@ export default function App() {
         displayName={displayName}
         reviewTarget={leadReviewTarget}
         onLeadPatch={handleLeadPatch}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onReviewLead={handleAssistantReviewLead} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
+      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onReviewLead={handleAssistantReviewLead} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} error={radarError} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} error={steamError} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
       <ManualLeadLauncher visible={view === "leads" || view === "assistant"} />
     </main>
   );
+}
+
+function errorMessage(nextError: unknown, fallback: string) {
+  return nextError instanceof Error ? nextError.message : fallback;
 }
 
 function isAuthError(message: string | null) {

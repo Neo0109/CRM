@@ -26,9 +26,9 @@ export function ReportHistoryControls({
   const pickerRef = useRef<HTMLDivElement>(null);
   const showPicker = dates.length > 0;
   const fallbackNote = isFallback && reportDate && requestedDate && reportDate !== requestedDate
-    ? `${requestedDate} 尚未生成，先保留最近一次有效${noun}：${reportDate}。`
+    ? `请求日期 ${requestedDate} 尚未生成；展示日期 ${reportDate} 是最近一次有效${noun}。`
     : "";
-  const historyNote = !fallbackNote && dates.length > 1 ? `可回看最近 ${dates.length} 次记录。` : "";
+  const historyNote = !fallbackNote && dates.length > 1 ? `最近记录：可回看最近 ${dates.length} 次${noun}。` : "";
   const minMonth = dates[dates.length - 1]?.slice(0, 7) ?? visibleMonth;
   const maxMonth = dates[0]?.slice(0, 7) ?? visibleMonth;
   const monthDays = useMemo(() => buildMonthDays(visibleMonth), [visibleMonth]);
@@ -53,7 +53,7 @@ export function ReportHistoryControls({
 
   return <div className="report-history-controls">
     {showPicker && <div className="report-history-picker" ref={pickerRef}>
-      <span>回看</span>
+      <span>历史日期</span>
       <div className="report-date-picker">
         <button className="report-date-button" type="button" onClick={() => setOpen((current) => !current)} aria-expanded={open} aria-haspopup="dialog">
           <CalendarDays size={15} />
