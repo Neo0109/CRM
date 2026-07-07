@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { buildBucketNavigation, buildDecisionTriage, buildLeadEvidenceChips, type BucketNavigationItem, type TriageFilter } from "../../leadTriage";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "../../followUpQueue";
 import type { Lead } from "../../types";
-import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions, stageOptions } from "./leadConstants";
+import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions, stageLabel, stageOptions } from "./leadConstants";
 import { Select } from "./leadControls";
 import { buildDashboardStats, emptyLeadFilters, filterLeads, type LeadFilters } from "./leadFilters";
 import { ContactChips, LeadDetail, QuickActions } from "./LeadDetail";
@@ -172,7 +172,7 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
       <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由" /></label>
       <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
       <Select label="地区" value={filters.region} options={regionOptions} onChange={(region) => setFilters({ ...filters, region })} />
-      <Select label="阶段" value={filters.stage} options={stageOptions} onChange={(stage) => setFilters({ ...filters, stage })} />
+      <Select label="阶段" value={filters.stage} options={stageOptions} getOptionLabel={stageLabel} onChange={(stage) => setFilters({ ...filters, stage })} />
       <label><span>城市/国家</span><input value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} /></label>
       <label><span>Owner</span><input value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} /></label>
       <label><span>窗口</span><input value={filters.releaseWindow} onChange={(event) => setFilters({ ...filters, releaseWindow: event.target.value })} /></label>

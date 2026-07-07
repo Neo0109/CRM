@@ -2,7 +2,7 @@ import { AlertTriangle, CalendarCheck, CheckCircle2, ExternalLink, ListChecks, P
 import { useEffect, useState, type ReactElement } from "react";
 import { LeadEvidencePanel } from "../../LeadEvidencePanel";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead } from "../../types";
-import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityValues, regionPriorityValues, regionValues, stageValues } from "./leadConstants";
+import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityValues, regionPriorityValues, regionValues, stageLabel, stageValues } from "./leadConstants";
 import { Select, TextareaField, TextField } from "./leadControls";
 import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
 import { buildLeadReviewChecklist, type LeadReviewChecklistItem } from "./leadReviewChecklist";
@@ -122,7 +122,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       <h3>商务跟进</h3>
       <div className="form-grid two">
         <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value), ...reviewPatchForBucket(value) } : current))} />
-        <Select label="阶段" value={draft.stage} options={stageValues} onChange={(value) => setField("stage", value)} />
+        <Select label="阶段" value={draft.stage} options={stageValues} getOptionLabel={stageLabel} onChange={(value) => setField("stage", value)} />
         <Select label="优先级" value={draft.priority} options={priorityValues} onChange={(value) => setField("priority", value)} />
         <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
         <TextField label="Due Date" type="date" value={draft.due_date} onChange={(value) => setField("due_date", value || null)} />
