@@ -1,4 +1,4 @@
-import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Menu, Newspaper, RefreshCw, Settings as SettingsIcon, TrendingUp } from "lucide-react";
+import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Menu, Newspaper, RefreshCw, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSourcingLearning, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
@@ -13,7 +13,7 @@ import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
 import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
-import { productVersion, productVersionLabel } from "./productVersion";
+import { productVersionLabel } from "./productVersion";
 import type { AutomationDiagnostics, Lead, RadarReport, SourcingLearningReport, SteamTrendReport } from "./types";
 
 type View = "leads" | "assistant" | "radar" | "steam" | "diagnostics" | "settings";
@@ -220,7 +220,7 @@ export default function App() {
       <header className="topbar">
         <div className="hero-copy">
           <span className="brand-mark"><img src={bilibiliLogo} alt="bilibili" /></span>
-          <p className="eyebrow" data-brand-label={productVersionLabel}>Neo's BD Matrix · {productVersion}</p>
+          <p className="eyebrow" data-brand-label={productVersionLabel}>{productVersionLabel}</p>
           <h1>BD 决策工作台</h1>
           <p className="hero-subtitle">{dailyQuote}</p>
         </div>
@@ -240,7 +240,6 @@ export default function App() {
             <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => switchView("radar")}><Newspaper size={16} />行业雷达</button>
             <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => switchView("steam")}><TrendingUp size={16} />Steam 趋势</button>
             <button className={`tab-button ${view === "diagnostics" ? "active" : ""}`} onClick={() => switchView("diagnostics")}><Activity size={16} />自动化诊断</button>
-            <button className={`tab-button ${view === "settings" ? "active" : ""}`} onClick={() => switchView("settings")}><SettingsIcon size={16} />设置</button>
           </div>
           <div className="nav-section-label">数据操作</div>
           <div className="nav-group nav-tools">

@@ -2,8 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { CalendarLauncher } from "./CalendarLauncher";
-import { DetailUxRefinement } from "./DetailUxRefinement";
-import { HeaderUiRefinement } from "./HeaderUiRefinement";
 import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
 import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
@@ -27,7 +25,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <WeeklyReportLauncher />
     <ReviewQueueBehavior />
     <SteamStoreLinkBehavior />
-    <DetailUxRefinement />
-    <HeaderUiRefinement />
   </React.StrictMode>
 );

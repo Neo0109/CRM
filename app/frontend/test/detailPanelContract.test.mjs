@@ -1,13 +1,14 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const detailSource = readFileSync(resolve(__dirname, "../src/features/leads/LeadDetail.tsx"), "utf8");
 const workflowSource = readFileSync(resolve(__dirname, "../src/features/leads/leadWorkflow.ts"), "utf8");
-const detailUxSource = readFileSync(resolve(__dirname, "../src/DetailUxRefinement.tsx"), "utf8");
+const detailUxPath = resolve(__dirname, "../src/DetailUxRefinement.tsx");
+const detailUxSource = existsSync(detailUxPath) ? readFileSync(detailUxPath, "utf8") : "";
 const aestheticSource = readFileSync(resolve(__dirname, "../src/aesthetic-refresh.css"), "utf8");
 const manualSource = readFileSync(resolve(__dirname, "../src/manual.css"), "utf8");
 
