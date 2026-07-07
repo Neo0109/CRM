@@ -115,13 +115,20 @@ describe("assistant quality helpers", () => {
     assert.deepEqual(groups.map((group) => group.key), ["needs-review", "ready", "skipped"]);
     assert.equal(groups[0].title, "需要补充");
     assert.equal(groups[0].items[0].project, "Lunar Garden");
+    assert.deepEqual(groups[0].items[0].reviewTarget, {
+      leadId: undefined,
+      project: "Lunar Garden",
+      steamAppId: undefined
+    });
     assert.ok(groups[0].items[0].suggestions.some((item) => item.includes("Steam")));
     assert.ok(groups[0].items[0].suggestions.some((item) => item.includes("联系方式")));
     assert.ok(groups[0].items[0].suggestions.some((item) => item.includes("发行结构")));
     assert.equal(groups[1].title, "可复核线索");
     assert.equal(groups[1].items[0].project, "Cloud Runner");
+    assert.equal(groups[1].items[0].reviewTarget.steamAppId, "444444");
     assert.ok(groups[1].items[0].suggestions.some((item) => item.includes("Leads Review")));
     assert.equal(groups[2].title, "跳过项");
     assert.deepEqual(groups[2].items.map((item) => item.project), ["666666: music"]);
+    assert.equal(groups[2].items[0].reviewTarget, undefined);
   });
 });
