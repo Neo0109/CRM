@@ -2,17 +2,18 @@ import { ExternalLink } from "lucide-react";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import type { SteamTrendReport } from "./types";
 
-export function SteamTrendsPage({ report, loading, onDateChange }: { report: SteamTrendReport | null; loading: boolean; onDateChange: (date: string) => void }) {
+export function SteamTrendsPage({ report, loading, error, onDateChange }: { report: SteamTrendReport | null; loading: boolean; error?: string | null; onDateChange: (date: string) => void }) {
   if (loading) return <section className="radar-shell"><div className="empty-cell">加载 Steam 趋势中</div></section>;
 
   const marketInsights = report?.market_insights ?? [];
   const genreSignals = report?.genre_signals ?? [];
   const items = report?.items ?? [];
   const hasContent = marketInsights.length > 0 || genreSignals.length > 0 || items.length > 0;
+  const hasHistoryDates = Boolean(report?.available_dates?.length);
 
   return <section className="radar-shell">
     <div className="radar-head">
-      <div className="report-head-main"><div><p className="eyebrow">{report?.report_date ?? "今日"}</p><h2>Steam 趋势</h2></div><p>{report?.summary ?? "暂无 Steam 趋势数据"}</p></div>
+      <div className="report-head-main"><div><p className="eyebrow">{report?.report_date ?? (error ? "加载失败" : "今日")}</p><h2>Steam 趋势</h2></div><p>{report?.summary ?? (error ? "无法取得 Steam 趋势数据" : "暂无可展示的 Steam 趋势记录")}</p></div>
       <ReportHistoryControls
         availableDates={report?.available_dates}
         isFallback={report?.is_fallback}
@@ -22,6 +23,7 @@ export function SteamTrendsPage({ report, loading, onDateChange }: { report: Ste
         requestedDate={report?.requested_date}
       />
     </div>
+    {error && <div className="notice error"><strong>Steam 趋势加载失败</strong><p>{error}</p></div>}
     {report?.sync_result && <div className="notice">已自动合并 CRM 候选：新增 {report.sync_result.created}，更新 {report.sync_result.updated}，当前总数 {report.sync_result.total}</div>}
 
     {marketInsights.length > 0 && <div className="radar-band">
@@ -54,7 +56,7 @@ export function SteamTrendsPage({ report, loading, onDateChange }: { report: Ste
       </article>)}</div>
     </div>}
 
-    {!hasContent && <div className="radar-empty">这一天暂无 Steam 趋势记录；可以用上方回看最近保留的历史内容。</div>}
+    {!hasContent && <div className="radar-empty">{hasHistoryDates ? "这一天暂无 Steam 趋势记录；可通过历史日期查看最近保留内容。" : "暂无可展示的 Steam 趋势记录。每日自动化生成后这里会显示最近内容。"}</div>}
   </section>;
 }
 
