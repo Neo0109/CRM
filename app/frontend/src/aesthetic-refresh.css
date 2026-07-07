@@ -857,15 +857,40 @@ button:hover {
 
 .detail-panel {
   background: rgba(255, 253, 250, 0.9);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 22px;
   scrollbar-color: #d8d1c5 transparent;
 }
 
 .detail-panel[data-detail-layout="pc-review-polish"] {
+  --detail-review-columns: minmax(0, 1fr);
   display: grid;
-  gap: 14px;
-  padding-bottom: 96px;
+  gap: 12px;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 16px;
+  padding-bottom: 28px;
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] > *,
+.detail-panel[data-detail-layout="pc-review-polish"] .field,
+.detail-panel[data-detail-layout="pc-review-polish"] .form-section,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-panel,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-command-card,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-field,
+.detail-panel[data-detail-layout="pc-review-polish"] .steam-link-editor {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] input,
+.detail-panel[data-detail-layout="pc-review-polish"] select,
+.detail-panel[data-detail-layout="pc-review-polish"] textarea {
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
 }
 
 .detail-head {
@@ -960,6 +985,37 @@ button:hover {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-head {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-head .primary-button {
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-form,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-command-form,
+.detail-panel[data-detail-layout="pc-review-polish"] .form-grid.two,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-evidence-grid {
+  grid-template-columns: var(--detail-review-columns);
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] .contact-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-form .span-2,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-action-field.span-2,
+.detail-panel[data-detail-layout="pc-review-polish"] .review-command-form .field:last-child {
+  grid-column: auto;
+}
+
+.detail-panel[data-detail-layout="pc-review-polish"] .contact-row .icon-button {
+  justify-self: start;
 }
 
 .review-action-form .field {
@@ -1158,7 +1214,7 @@ button:hover {
 
 @media (min-width: 1181px) {
   .detail-panel[data-detail-layout="pc-review-polish"] {
-    padding-bottom: 136px;
+    padding-bottom: 32px;
   }
 
   .detail-panel[data-detail-layout="pc-review-polish"] .review-action-panel,
@@ -1168,8 +1224,8 @@ button:hover {
   }
 
   .detail-floating-safe-zone {
-    display: block;
-    min-height: 42px;
+    display: none;
+    min-height: 0;
   }
 }
 

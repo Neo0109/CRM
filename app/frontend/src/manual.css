@@ -179,8 +179,12 @@
 }
 
 @media (min-width: 1181px) {
+  .app-shell.has-manual-floating-action:has(.detail-panel[data-detail-layout="pc-review-polish"]) .manual-floating-button {
+    display: none;
+  }
+
   .app-shell.has-manual-floating-action .detail-panel[data-detail-layout="pc-review-polish"] {
-    padding-bottom: 160px;
+    padding-bottom: 32px;
   }
 }
 
