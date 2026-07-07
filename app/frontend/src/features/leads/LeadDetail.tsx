@@ -5,6 +5,7 @@ import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead } from "
 import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityValues, regionPriorityValues, regionValues, stageValues } from "./leadConstants";
 import { Select, TextareaField, TextField } from "./leadControls";
 import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
+import { buildLeadReviewChecklist, type LeadReviewChecklistItem } from "./leadReviewChecklist";
 import { buildQuickActionSpecs, isTestingOverdue, reviewPatchForBucket, stageFromBucket, type QuickActionSpec } from "./leadWorkflow";
 
 export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | null; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; missingLinksMode: boolean }) {
@@ -39,6 +40,10 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
   }
 
   const addContact = () => setField("contact_methods", [...draft.contact_methods, { type: "微信/QQ", value: "", note: null }]);
+  const ensureContactDraft = () => {
+    if (draft.contact_methods.some((method) => !method.value.trim())) return;
+    addContact();
+  };
   const updateContact = (index: number, patch: Partial<ContactMethod>) => setField("contact_methods", draft.contact_methods.map((method, methodIndex) => methodIndex === index ? { ...method, ...patch } : method));
   const removeContact = (index: number) => setField("contact_methods", draft.contact_methods.filter((_, methodIndex) => methodIndex !== index));
   const moveDraft = async (nextLead: Lead, bucket: Bucket) => {
@@ -55,6 +60,8 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
     return onPatch(lead.id, nextDraft);
   };
   const reviewEvidence = buildReviewEvidence(draft);
+  const reviewChecklist = buildLeadReviewChecklist(draft);
+  const showReviewActionPanel = reviewChecklist.some((item) => item.key !== "ready");
 
   return <aside className="detail-panel">
     <div className="detail-head">
@@ -64,6 +71,15 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
 
     <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />
     <BucketButtons lead={draft} onMove={moveDraft} />
+
+    {showReviewActionPanel && <ReviewActionPanel
+      lead={draft}
+      checklist={reviewChecklist}
+      onAddContactRow={ensureContactDraft}
+      onApplySteamLink={applySteamLink}
+      onFieldChange={setField}
+      onSave={save}
+    />}
 
     <section className="review-command-card">
       <div className="review-command-summary">
@@ -147,6 +163,65 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       <TextareaField label="风险" value={draft.risks} onChange={(value) => setField("risks", value)} />
     </div>
   </aside>;
+}
+
+type LeadFieldSetter = <K extends keyof Lead>(key: K, value: Lead[K]) => void;
+
+function ReviewActionPanel({
+  lead,
+  checklist,
+  onAddContactRow,
+  onApplySteamLink,
+  onFieldChange,
+  onSave
+}: {
+  lead: Lead;
+  checklist: LeadReviewChecklistItem[];
+  onAddContactRow: () => void;
+  onApplySteamLink: (link: NormalizedSteamLink) => Promise<void>;
+  onFieldChange: LeadFieldSetter;
+  onSave: () => Promise<void>;
+}) {
+  const needsGameLink = hasChecklistItem(checklist, "missing-game-link");
+  const needsContact = hasChecklistItem(checklist, "missing-contact");
+  const needsPublisherReview = hasChecklistItem(checklist, "publisher-review");
+  const needsOwner = hasChecklistItem(checklist, "missing-owner");
+  const needsNextAction = hasChecklistItem(checklist, "missing-next-action");
+  const needsDueDate = hasChecklistItem(checklist, "missing-due-date");
+
+  return <section className="review-action-panel" aria-label="复核快填">
+    <div className="review-action-head">
+      <div>
+        <p className="eyebrow">复核快填</p>
+        <h3>把助手提示的缺口直接补在这里</h3>
+      </div>
+      <button className="primary-button" type="button" onClick={() => void onSave()}><Save size={16} />保存复核字段</button>
+    </div>
+    <ul className="review-action-checklist">
+      {checklist.map((item) => <li key={item.key}>
+        <strong>{item.label}</strong>
+        <span>{item.detail}</span>
+      </li>)}
+    </ul>
+    <div className="review-action-form">
+      {needsGameLink && <div className="review-action-field span-2">
+        <SteamLinkEditor lead={lead} onApply={onApplySteamLink} />
+      </div>}
+      {needsContact && <div className="review-action-field span-2">
+        <button className="ghost-button" type="button" onClick={onAddContactRow}><Plus size={16} />添加联系方式行</button>
+        <span>添加后可在下方“联系方式”区域填写微信、QQ、Email、官网或 Steam 社区入口。</span>
+      </div>}
+      {needsPublisherReview && <TextareaField label="发行结构" value={lead.publisher_status} onChange={(value) => onFieldChange("publisher_status", value || "待确认")} />}
+      {needsOwner && <TextField label="Owner" value={lead.owner} onChange={(value) => onFieldChange("owner", value || null)} />}
+      {needsDueDate && <TextField label="Due Date" type="date" value={lead.due_date} onChange={(value) => onFieldChange("due_date", value || null)} />}
+      {needsNextAction && <TextareaField label="下一步动作" value={lead.next_action} onChange={(value) => onFieldChange("next_action", value)} />}
+    </div>
+    {needsDueDate && <p className="review-action-note">Due Date 可以先在详情里设置；是否进入日历仍由“确认放入日历”手动控制。</p>}
+  </section>;
+}
+
+function hasChecklistItem(checklist: LeadReviewChecklistItem[], key: LeadReviewChecklistItem["key"]) {
+  return checklist.some((item) => item.key === key);
 }
 
 export function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean; missingLinksMode?: boolean }) {
