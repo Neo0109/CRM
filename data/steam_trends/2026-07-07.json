@@ -1,0 +1,537 @@
+{
+  "report_date": "2026-07-07",
+  "summary": "Steam大盘V6.4：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Strategy / Tactical、Simulation / Management、Action / Visual Hook；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_07_07_category_risers",
+      "title": "近期冒头品类：Strategy / Tactical、Simulation / Management、Action / Visual Hook",
+      "summary": "样本中 Strategy / Tactical（41/90）、Simulation / Management（32/90）、Action / Visual Hook（32/90）、Roguelike / Deckbuilder（21/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_macro_2026_07_07_demo_window",
+      "title": "Demo/活动窗口：59 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 3 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_macro_2026_07_07_publisher_slate",
+      "title": "发行商新品：金特工工作室(2)、Fantasy Studio(2)、AlwaysGeeky Games(2)、Ginkgo(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_macro_2026_07_07_data_quality",
+      "title": "数据面：0 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 3 个，推荐数/口碑/强数据命中 0 个，素材充足样本 88 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_07_07_strategy_tactical",
+      "genre": "Strategy / Tactical（41/90）",
+      "signal": "41 个候选命中；代表样本：I Am the Demon King: Stop Sun Wukong、Fantasy World / 幻想世界、Voxie Survivor。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_07_simulation_management",
+      "genre": "Simulation / Management（32/90）",
+      "signal": "32 个候选命中；代表样本：Fantasy World / 幻想世界、ΠΟΛΙΣ — Athens、Artesnaut。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_07_action_visual_hook",
+      "genre": "Action / Visual Hook（32/90）",
+      "signal": "32 个候选命中；代表样本：Voxie Survivor、ΠΟΛΙΣ — Athens、Artesnaut。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_07_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（21/90）",
+      "signal": "21 个候选命中；代表样本：I Am the Demon King: Stop Sun Wukong、Fantasy World / 幻想世界、Voxie Survivor。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_07_co_op_multiplayer",
+      "genre": "Co-op / Multiplayer（17/90）",
+      "signal": "17 个候选命中；代表样本：Stick Scholars、Tactical Roulette、Imperial Ambitions。",
+      "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Co-op/",
+        "https://store.steampowered.com/tags/en/Multiplayer/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_07_07_4785810",
+      "title": "I Am the Demon King: Stop Sun Wukong",
+      "steam_app_id": "4785810",
+      "rank_bucket": "Steam CN China Keyword Upcoming",
+      "signal": "大盘位置：Roguelike / Deckbuilder；来源 Steam CN China Keyword Upcoming；发售窗口 2026-07-09。\n公开数据：推荐数 无公开；素材 5图/1视频；有Demo/试玩窗口。\n产品观察：Reverse Journey to the West: You are the Demon King, not the hero Roguelite auto-battler × tower defense gameplay 20 unique Demon Kings + 30 magic traps for endless builds 8-tier Ascension system, 100 stages of permanent progression Hand-drawn cartoon art, Chinese mythology theme。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4785810/",
+        "https://steamdb.info/app/4785810/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_4212170",
+      "title": "Fantasy World / 幻想世界",
+      "steam_app_id": "4212170",
+      "rank_bucket": "Steam CN Strategy Upcoming",
+      "signal": "大盘位置：Roguelike / Deckbuilder；来源 Steam CN Strategy Upcoming；发售窗口 2026-07-11。\n公开数据：推荐数 无公开；素材 19图/3视频；有Demo/试玩窗口。\n产品观察：This is a large-map construction simulation combined with a roguelike game. You will build a civilization, explore the wilderness, discover mysterious underground secrets, command large armies to fight against hordes of enemies, gather various materials and equipment, and build your own kingdom.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4212170/",
+        "https://steamdb.info/app/4212170/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_fallback_3",
+      "title": "凉茶王",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1zG7n6iET2/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-国产游戏试玩",
+      "links": [
+        "https://www.bilibili.com/video/BV1zG7n6iET2/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_fallback_4",
+      "title": "I Am the Demon King: Stop Sun Wukong",
+      "steam_app_id": "4785810",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN China Keyword Upcoming / Steam App 4785810\n产品观察：Reverse Journey to the West: You are the Demon King, not the hero Roguelite auto-battler × tower defense gameplay 20 unique Demon Kings + 30 magic traps for endless builds 8-tier Ascension system, 100 stages of permanent progression Hand-drawn cartoon art, Chinese mythology theme",
+      "source": "Steam CN China Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4785810/",
+        "https://steamdb.info/app/4785810/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN China Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约2天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_fallback_5",
+      "title": "Fantasy World / 幻想世界",
+      "steam_app_id": "4212170",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Strategy Upcoming / Steam App 4212170\n产品观察：This is a large-map construction simulation combined with a roguelike game. You will build a civilization, explore the wilderness, discover mysterious underground secrets, command large armies to fight against hordes of enemies, gather various materials and equipment, and build your own kingdom.",
+      "source": "Steam CN Strategy Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4212170/",
+        "https://steamdb.info/app/4212170/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam CN Strategy Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约4天，先提测验证再决定商务深聊",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_fallback_6",
+      "title": "新晋中式民俗克系恐游试玩：切莫被那荷潭间弥漫的阴潮所侵染",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1XuT26MEvy/\n产品观察：媒体 / B站待确认",
+      "source": "B站视频-国产游戏试玩",
+      "links": [
+        "https://www.bilibili.com/video/BV1XuT26MEvy/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_fallback_7",
+      "title": "国家发改委：预计今年 AI 手机、AI 电脑销量将首超非 AI 产品",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：IT之家 / https://www.ithome.com/0/973/474.htm\n产品观察：媒体 / B站待确认",
+      "source": "IT之家",
+      "links": [
+        "https://www.ithome.com/0/973/474.htm"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "媒体 / B站待确认 + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_07_fallback_8",
+      "title": "兔子守护者",
+      "steam_app_id": null,
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：机核 / https://www.gcores.com/articles/216832\n产品观察：Tower Defense / Shooter",
+      "source": "机核",
+      "links": [
+        "https://www.gcores.com/articles/216832"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "Tower Defense / Shooter + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-07T13:38:18+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_media_20260707_1t5ekbb",
+      "project": "凉茶王",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏试玩 分数 107；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1zG7n6iET2/",
+      "contact": "B站: https://www.bilibili.com/video/BV1zG7n6iET2/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1zG7n6iET2/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1zG7n6iET2/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-07-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-07",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4785810_2026-07-07",
+      "project": "I Am the Demon King: Stop Sun Wukong",
+      "steam_app_id": "4785810",
+      "team": "金特工工作室",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN China Keyword Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约2天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；距发售约2天；窗口仍在，允许优先触达",
+      "genre": "Adventure / Casual / Indie / RPG / Strategy",
+      "gameplay": "Reverse Journey to the West: You are the Demon King, not the hero Roguelite auto-battler × tower defense gameplay 20 unique Demon Kings + 30 magic traps for endless builds 8-tier Ascension system, 100 stages of permanent progression Hand-drawn cartoon art, Chinese mythology theme",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-07-09；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-09",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "金特工工作室；未见成熟中国发行能力占位",
+      "publisher_name": "金特工工作室",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4785810",
+      "contact": "官网: https://steamcommunity.com/；Steam: https://steamcommunity.com/app/4785810/discussions/",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://steamcommunity.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4785810/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4785810/",
+        "https://steamdb.info/app/4785810/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-07-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_steam_4212170_2026-07-07",
+      "project": "Fantasy World / 幻想世界",
+      "steam_app_id": "4212170",
+      "team": "Fantasy Studio",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": "Steam CN Strategy Upcoming 前置信号 + 国内优先 + 系统型玩法，距发售约4天，先提测验证再决定商务深聊",
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；距发售约4天；窗口仍在，允许优先触达",
+      "genre": "Simulation / Strategy",
+      "gameplay": "This is a large-map construction simulation combined with a roguelike game. You will build a civilization, explore the wilderness, discover mysterious underground secrets, command large armies to fight against hordes of enemies, gather various materials and equipment, and build your own kingdom.",
+      "progress": "Steam Steam CN Strategy Upcoming；发售窗口：2026-07-11；Demo/试玩信号需优先复核",
+      "release_window": "2026-07-11",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Fantasy Studio；未见成熟中国发行能力占位",
+      "publisher_name": "Fantasy Studio",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Strategy Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Strategy Upcoming / Steam App 4212170",
+      "contact": "Email: 2937313803@qq.com；Steam: https://steamcommunity.com/app/4212170/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "2937313803@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4212170/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4212170/",
+        "https://steamdb.info/app/4212170/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Strategy Upcoming（2026-07-07）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "可做新手指南、效率对比、失败案例和长期连载。",
+      "risks": "缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位",
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-07",
+      "notes": "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。"
+    },
+    {
+      "id": "lead_media_20260707_nhpbvi",
+      "project": "新晋中式民俗克系恐游试玩：切莫被那荷潭间弥漫的阴潮所侵染",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 试玩 Demo；优先看玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "试玩 Demo；B站来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏试玩 分数 115；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1XuT26MEvy/",
+      "contact": "B站: https://www.bilibili.com/video/BV1XuT26MEvy/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1XuT26MEvy/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1XuT26MEvy/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-07-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-07",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260707_1d9tazy",
+      "project": "国家发改委：预计今年 AI 手机、AI 电脑销量将首超非 AI 产品",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "媒体 / B站待确认 + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认",
+      "gameplay": "媒体 / B站待确认",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "IT之家 分数 29；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "IT之家 / https://www.ithome.com/0/973/474.htm",
+      "contact": "官网: https://www.ithome.com/0/973/474.htm",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.ithome.com/0/973/474.htm",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.ithome.com/0/973/474.htm"
+      ],
+      "exposure_trail": "自动从IT之家捕捉到媒体/B站线索（2026-07-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-07",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260707_tbdn1b",
+      "project": "兔子守护者",
+      "steam_app_id": null,
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "priority_reason": "Tower Defense / Shooter + 待确认；先核验玩法循环、收入 upside、B站内容放大和团队签约窗口。",
+      "rule_fit": "待确认；媒体来源待复核；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "Tower Defense / Shooter",
+      "gameplay": "Tower Defense / Shooter",
+      "progress": "待确认",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "机核 分数 55；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "机核 / https://www.gcores.com/articles/216832",
+      "contact": "官网: https://www.gcores.com/articles/216832",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.gcores.com/articles/216832",
+          "note": "B站/媒体简介中提取"
+        }
+      ],
+      "links": [
+        "https://www.gcores.com/articles/216832"
+      ],
+      "exposure_trail": "自动从机核捕捉到媒体/B站线索（2026-07-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "缺少Steam交叉验证时，先确认项目真实性、可测版本和官方来源。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-07",
+      "notes": null
+    }
+  ]
+}
