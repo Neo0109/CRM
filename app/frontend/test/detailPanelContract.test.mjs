@@ -85,4 +85,37 @@ describe("Lead detail panel contract", () => {
     assert.match(aestheticSource, /\.detail-section/);
     assert.match(manualSource, /\.app-shell\.has-manual-floating-action[\s\S]*\.detail-panel\[data-detail-layout="pc-review-polish"\]/);
   });
+
+  it("prevents the desktop detail rail from becoming a sideways scrolling form", () => {
+    assert.match(
+      aestheticSource,
+      /\.detail-panel\[data-detail-layout="pc-review-polish"\][\s\S]*overflow-x:\s*hidden/,
+      "pc review detail panel should clip horizontal overflow instead of exposing a sideways scrollbar"
+    );
+    assert.match(
+      aestheticSource,
+      /\.detail-panel\[data-detail-layout="pc-review-polish"\][\s\S]*--detail-review-columns:\s*minmax\(0,\s*1fr\)/,
+      "pc review detail panel should default to a single shrink-safe review column"
+    );
+    assert.match(
+      aestheticSource,
+      /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.review-action-form[\s\S]*grid-template-columns:\s*var\(--detail-review-columns\)/,
+      "review quick-fill form should consume the detail panel column contract"
+    );
+    assert.match(
+      aestheticSource,
+      /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.contact-row[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+      "contact editor rows should collapse inside the narrow detail rail"
+    );
+    assert.match(
+      aestheticSource,
+      /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.review-action-head[\s\S]*flex-direction:\s*column/,
+      "review quick-fill header should not force a wide two-sided row"
+    );
+    assert.match(
+      manualSource,
+      /\.app-shell\.has-manual-floating-action:has\(\.detail-panel\[data-detail-layout="pc-review-polish"\]\)[\s\S]*\.manual-floating-button[\s\S]*display:\s*none/,
+      "global add lead action should not float over an active detail review rail"
+    );
+  });
 });
