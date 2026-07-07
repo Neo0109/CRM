@@ -1,5 +1,5 @@
 import { AlertTriangle, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buildBucketNavigation, buildDecisionTriage, buildLeadEvidenceChips, type BucketNavigationItem, type TriageFilter } from "../../leadTriage";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "../../followUpQueue";
 import type { Lead } from "../../types";
@@ -7,16 +7,18 @@ import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions,
 import { Select } from "./leadControls";
 import { buildDashboardStats, emptyLeadFilters, filterLeads, type LeadFilters } from "./leadFilters";
 import { ContactChips, LeadDetail, QuickActions } from "./LeadDetail";
+import { resolveLeadReviewTarget, type LeadReviewTarget } from "./leadReviewTarget";
 import { isTestingOverdue } from "./leadWorkflow";
 
 type LeadsViewProps = {
   leads: Lead[];
   loading: boolean;
   displayName: string;
+  reviewTarget?: LeadReviewTarget | null;
   onLeadPatch: (id: string, patch: Partial<Lead>) => Promise<void>;
 };
 
-export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsViewProps) {
+export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPatch }: LeadsViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filters, setFilters] = useState<LeadFilters>(emptyLeadFilters);
   const stats = useMemo(() => buildDashboardStats(leads), [leads]);
@@ -35,6 +37,20 @@ export function LeadsView({ leads, loading, displayName, onLeadPatch }: LeadsVie
   const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
   const focusLabel = activeFilterLabel(filters);
+
+  useEffect(() => {
+    if (!reviewTarget) return;
+    const resolved = resolveLeadReviewTarget(leads, reviewTarget);
+    if (resolved.lead) {
+      setFilters(emptyLeadFilters);
+      setSelectedId(resolved.lead.id);
+      return;
+    }
+    if (resolved.query) {
+      setFilters({ ...emptyLeadFilters, query: resolved.query });
+      setSelectedId(null);
+    }
+  }, [leads, reviewTarget]);
 
   function applyTriageFilter(patch: Partial<LeadFilters> | TriageFilter) {
     setFilters({ ...emptyLeadFilters, ...patch });

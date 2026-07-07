@@ -1,9 +1,11 @@
 import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Menu, Newspaper, RefreshCw, Settings as SettingsIcon, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSourcingLearning, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
+import type { AssistantResultReviewTarget } from "./assistantQuality";
 import { AutomationDiagnosticsPage } from "./AutomationDiagnosticsPage";
 import { LeadsView } from "./features/leads";
+import type { LeadReviewTarget } from "./features/leads/leadReviewTarget";
 import { RadarPage } from "./features/radar";
 import { LoginPage } from "./LoginPage";
 import { ManualLeadLauncher } from "./ManualLeadLauncher";
@@ -27,6 +29,7 @@ const viewLabels: Record<View, string> = {
 
 export default function App() {
   const [view, setView] = useState<View>("leads");
+  const reviewTargetRequestId = useRef(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [status, setStatus] = useState<string | null>(null);
@@ -43,6 +46,7 @@ export default function App() {
   const [diagnostics, setDiagnostics] = useState<AutomationDiagnostics | null>(null);
   const [sourcingLearning, setSourcingLearning] = useState<SourcingLearningReport | null>(null);
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
+  const [leadReviewTarget, setLeadReviewTarget] = useState<LeadReviewTarget | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -158,6 +162,12 @@ export default function App() {
     setMobileNavOpen(false);
   }
 
+  function handleAssistantReviewLead(target: AssistantResultReviewTarget) {
+    reviewTargetRequestId.current += 1;
+    setLeadReviewTarget({ ...target, requestId: reviewTargetRequestId.current });
+    switchView("leads");
+  }
+
   function refreshCurrentView() {
     if (view === "leads") void reload("force");
     if (view === "assistant") void reload(false);
@@ -244,8 +254,9 @@ export default function App() {
         leads={leads}
         loading={loading}
         displayName={displayName}
+        reviewTarget={leadReviewTarget}
         onLeadPatch={handleLeadPatch}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
+      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onReviewLead={handleAssistantReviewLead} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
       <ManualLeadLauncher visible={view === "leads" || view === "assistant"} />
     </main>
   );

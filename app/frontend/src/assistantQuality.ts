@@ -23,6 +23,13 @@ export type AssistantResultGroupItem = {
   project: string;
   summary: string;
   suggestions: string[];
+  reviewTarget?: AssistantResultReviewTarget;
+};
+
+export type AssistantResultReviewTarget = {
+  leadId?: string;
+  project: string;
+  steamAppId?: string;
 };
 
 export type AssistantResultGroup = {
@@ -106,7 +113,8 @@ export function buildAssistantResultGroups(result: LeadAssistantResult): Assista
     const item: AssistantResultGroupItem = {
       project,
       summary: leadResultSummary(lead),
-      suggestions: suggestions.length ? suggestions : ["已具备 Steam/联系方式，可进入 Leads Review 复核。"]
+      suggestions: suggestions.length ? suggestions : ["已具备 Steam/联系方式，可进入 Leads Review 复核。"],
+      reviewTarget: leadResultReviewTarget(lead, project)
     };
 
     if (suggestions.length) needsReview.push(item);
@@ -160,6 +168,14 @@ function leadResultSummary(lead: Partial<Lead>) {
   return `${priority} · ${bucket} · ${reason}`;
 }
 
+function leadResultReviewTarget(lead: Partial<Lead>, project: string): AssistantResultReviewTarget {
+  return {
+    leadId: cleanOptionalValue(lead.id),
+    project,
+    steamAppId: cleanOptionalValue(lead.steam_app_id)
+  };
+}
+
 function buildGroup(
   key: AssistantResultGroupKey,
   title: AssistantResultGroup["title"],
@@ -167,6 +183,11 @@ function buildGroup(
   items: AssistantResultGroupItem[]
 ): AssistantResultGroup {
   return { key, title, tone, items };
+}
+
+function cleanOptionalValue(value: string | null | undefined) {
+  const clean = value?.trim();
+  return clean || undefined;
 }
 
 function extractSteamAppIds(text: string, links: string[]) {

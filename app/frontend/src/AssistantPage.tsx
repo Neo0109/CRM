@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ChangeEvent, ClipboardEvent } from "react";
 import { runLeadAssistant } from "./api";
 import { analyzeAssistantDraft, buildAssistantResultGroups, buildAssistantResultHints, readinessLabel } from "./assistantQuality";
-import type { AssistantResultGroup } from "./assistantQuality";
+import type { AssistantResultGroup, AssistantResultReviewTarget } from "./assistantQuality";
 import type { LeadAssistantAttachment, LeadAssistantResult } from "./types";
 import "./assistant.css";
 
@@ -13,6 +13,7 @@ type AssistantAttachment = Required<Pick<LeadAssistantAttachment, "name" | "type
 
 type AssistantPageProps = {
   onImported: () => Promise<void>;
+  onReviewLead: (target: AssistantResultReviewTarget) => void;
   onStatus: (message: string) => void;
 };
 
@@ -27,7 +28,7 @@ const resultGroupDescriptions: Record<AssistantResultGroup["key"], string> = {
   skipped: "跳过项：未写入 CRM，适合先排除非游戏主体或无效 App。"
 };
 
-export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
+export function AssistantPage({ onImported, onReviewLead, onStatus }: AssistantPageProps) {
   const [text, setText] = useState("");
   const [attachments, setAttachments] = useState<AssistantAttachment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -181,7 +182,7 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
           </div>
           {resultGroups.length > 0 ? <div className="assistant-result-groups">
             <strong>补充建议</strong>
-            {resultGroups.map((group) => <AssistantResultGroupCard group={group} key={group.key} />)}
+            {resultGroups.map((group) => <AssistantResultGroupCard group={group} key={group.key} onReviewLead={onReviewLead} />)}
           </div> : resultHints.length > 0 && <div className="assistant-result-hints">
             <strong>补充建议</strong>
             <ul>{resultHints.map((hint) => <li key={hint}>{hint}</li>)}</ul>
@@ -192,7 +193,7 @@ export function AssistantPage({ onImported, onStatus }: AssistantPageProps) {
   </section>;
 }
 
-function AssistantResultGroupCard({ group }: { group: AssistantResultGroup }) {
+function AssistantResultGroupCard({ group, onReviewLead }: { group: AssistantResultGroup; onReviewLead: (target: AssistantResultReviewTarget) => void }) {
   return <section className={`assistant-result-group assistant-result-group-${group.tone}`}>
     <div className="assistant-result-group-head">
       <span>{group.title}</span>
@@ -204,6 +205,7 @@ function AssistantResultGroupCard({ group }: { group: AssistantResultGroup }) {
         <strong>{group.key === "skipped" && <XCircle size={13} />}{item.project}</strong>
         <small>{item.summary}</small>
         <ul>{item.suggestions.map((suggestion) => <li key={suggestion}>{suggestion}</li>)}</ul>
+        {item.reviewTarget && <button className="ghost-button assistant-review-button" type="button" onClick={() => onReviewLead(item.reviewTarget!)}>去 Leads Review 复核</button>}
       </article>)}
     </div>
   </section>;
