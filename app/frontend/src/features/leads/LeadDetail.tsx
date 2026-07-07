@@ -15,7 +15,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
     if (lead) setDraft({ ...lead, contact_methods: [...lead.contact_methods], links: [...lead.links] });
   }, [lead]);
 
-  if (!lead || !draft) return <aside className="detail-panel"><div className="empty-cell">暂无 lead</div></aside>;
+  if (!lead || !draft) return <aside className="detail-panel" data-detail-layout="pc-review-polish"><div className="empty-cell">暂无 lead</div></aside>;
   const activeLead = lead;
   const activeDraft = draft;
 
@@ -63,7 +63,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
   const reviewChecklist = buildLeadReviewChecklist(draft);
   const showReviewActionPanel = reviewChecklist.some((item) => item.key !== "ready");
 
-  return <aside className="detail-panel">
+  return <aside className="detail-panel" data-detail-layout="pc-review-polish">
     <div className="detail-head">
       <div><p className="eyebrow">{draft.bucket} · {draft.priority} · {draft.review_status}</p><h2>{isTestingOverdue(draft) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={16} /></span>}{draft.project}</h2></div>
       <button className="primary-button save-icon-button" type="button" onClick={save} aria-label="保存" title="保存"><Save size={18} /></button>
@@ -104,8 +104,8 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
 
     <SteamLinkEditor lead={draft} onApply={applySteamLink} />
 
-    <div className="form-section">
-      <h3>基础信息</h3>
+    <div className="form-section detail-section detail-section-core">
+      <h3>核心复核</h3>
       <div className="form-grid two">
         <TextField label="项目名" value={draft.project} onChange={(value) => setField("project", value)} />
         <TextField label="团队" value={draft.team} onChange={(value) => setField("team", value)} />
@@ -118,8 +118,8 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       </div>
     </div>
 
-    <div className="form-section">
-      <h3>人工决策</h3>
+    <div className="form-section detail-section detail-section-followup">
+      <h3>商务跟进</h3>
       <div className="form-grid two">
         <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value), ...reviewPatchForBucket(value) } : current))} />
         <Select label="阶段" value={draft.stage} options={stageValues} onChange={(value) => setField("stage", value)} />
@@ -137,7 +137,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       <TextareaField label="备注" value={draft.notes} onChange={(value) => setField("notes", value)} />
     </div>
 
-    <div className="form-section">
+    <div className="form-section detail-section detail-section-contacts">
       <h3>联系方式</h3>
       <div className="contact-editor">
         {draft.contact_methods.map((method, index) => <div className="contact-row" key={`${method.type}-${index}`}>
@@ -150,7 +150,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       </div>
     </div>
 
-    <div className="form-section">
+    <div className="form-section detail-section detail-section-product">
       <h3>产品与发行</h3>
       <div className="form-grid two">
         <TextField label="类型" value={draft.genre} onChange={(value) => setField("genre", value)} />
@@ -162,6 +162,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       <TextareaField label="B站适配度" value={draft.bilibili_fit} onChange={(value) => setField("bilibili_fit", value || "待评估")} />
       <TextareaField label="风险" value={draft.risks} onChange={(value) => setField("risks", value)} />
     </div>
+    <div className="detail-floating-safe-zone" aria-hidden="true" />
   </aside>;
 }
 
