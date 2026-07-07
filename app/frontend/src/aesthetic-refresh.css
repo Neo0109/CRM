@@ -216,6 +216,60 @@ button:hover {
   padding: 7px 10px;
 }
 
+.assistant-review-focus {
+  align-items: start;
+  background: var(--surface-info);
+  border: 1px solid var(--border-info);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1fr) auto;
+  margin-bottom: 14px;
+  padding: 16px;
+}
+
+.assistant-review-focus h3 {
+  color: var(--text-primary);
+  font-size: 20px;
+  line-height: 1.25;
+  margin-top: 4px;
+}
+
+.assistant-review-focus p {
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 6px 0 0;
+}
+
+.assistant-review-checklist {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assistant-review-checklist li {
+  background: rgba(255, 253, 250, 0.74);
+  border: 1px solid var(--border-info-muted);
+  border-radius: var(--radius-control);
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+}
+
+.assistant-review-checklist strong {
+  color: var(--text-info);
+  font-size: 13px;
+}
+
+.assistant-review-checklist span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .metric-strip {
   display: grid;
   gap: 12px;
