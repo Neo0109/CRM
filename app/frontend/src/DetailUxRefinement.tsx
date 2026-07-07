@@ -18,7 +18,6 @@ export function DetailUxRefinement() {
       frame = 0;
       syncVersionLabel();
       relabelStageOptions();
-      foldRawDueDateField();
     };
 
     const scheduleRefinements = () => {
@@ -58,28 +57,4 @@ function relabelStageOptions() {
     const label = stageLabels[raw];
     if (label && option.textContent !== label) option.textContent = label;
   }
-}
-
-function foldRawDueDateField() {
-  const detailPanel = document.querySelector<HTMLElement>(".detail-panel");
-  if (!detailPanel) return;
-
-  const labels = Array.from(detailPanel.querySelectorAll<HTMLLabelElement>("label.field"));
-  for (const label of labels) {
-    const title = label.querySelector("span")?.textContent?.trim();
-    if (title !== "Due Date") continue;
-
-    label.dataset.rawDueDateField = "hidden";
-    const section = label.closest(".form-section") as HTMLElement | null;
-    addFollowUpReminderNote(section ?? label.parentElement);
-  }
-}
-
-function addFollowUpReminderNote(container: Element | null) {
-  if (!container || container.querySelector(".followup-reminder-note")) return;
-
-  const note = document.createElement("div");
-  note.className = "followup-reminder-note";
-  note.innerHTML = "<strong>跟进提醒</strong><span>下次跟进日统一在“日历”里设置；只有主动加入日历的 Lead 才会显示提醒。</span>";
-  container.appendChild(note);
 }

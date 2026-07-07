@@ -46,4 +46,25 @@ describe("Lead detail panel contract", () => {
     assert.equal(detailUxSource.includes("排除 / 降权规则"), false);
     assert.equal(detailUxSource.includes("clarifyRuleFlags"), false);
   });
+
+  it("renders native review quick-fill actions for assistant checklist gaps", () => {
+    const detail = leadDetailSource();
+    assert.match(detailSource, /buildLeadReviewChecklist/);
+    assert.match(detailSource, /function ReviewActionPanel/);
+    assert.match(detail, /复核快填/);
+    assert.match(detail, /保存复核字段/);
+    assert.match(detail, /添加联系方式行/);
+    assert.match(detail, /reviewChecklist\.some\(\(item\) => item\.key !== "ready"\)/);
+    assert.match(detail, /SteamLinkEditor/);
+    assert.match(detail, /label="Owner"/);
+    assert.match(detail, /label="Due Date"/);
+    assert.match(detail, /label="下一步动作"/);
+    assert.match(detail, /label="发行结构"/);
+  });
+
+  it("does not hide the native due-date editor through DOM mutation", () => {
+    assert.equal(detailUxSource.includes("foldRawDueDateField"), false);
+    assert.equal(detailUxSource.includes("data-raw-due-date-field"), false);
+    assert.equal(detailUxSource.includes("下次跟进日统一在“日历”里设置"), false);
+  });
 });
