@@ -8,6 +8,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const detailSource = readFileSync(resolve(__dirname, "../src/features/leads/LeadDetail.tsx"), "utf8");
 const workflowSource = readFileSync(resolve(__dirname, "../src/features/leads/leadWorkflow.ts"), "utf8");
 const detailUxSource = readFileSync(resolve(__dirname, "../src/DetailUxRefinement.tsx"), "utf8");
+const aestheticSource = readFileSync(resolve(__dirname, "../src/aesthetic-refresh.css"), "utf8");
+const manualSource = readFileSync(resolve(__dirname, "../src/manual.css"), "utf8");
 
 function leadDetailSource() {
   const start = detailSource.indexOf("export function LeadDetail");
@@ -66,5 +68,21 @@ describe("Lead detail panel contract", () => {
     assert.equal(detailUxSource.includes("foldRawDueDateField"), false);
     assert.equal(detailUxSource.includes("data-raw-due-date-field"), false);
     assert.equal(detailUxSource.includes("下次跟进日统一在“日历”里设置"), false);
+  });
+
+  it("keeps desktop review detail layout scannable and protected from the floating add action", () => {
+    const detail = leadDetailSource();
+    assert.match(detail, /data-detail-layout="pc-review-polish"/);
+    assert.match(detail, /className="form-section detail-section detail-section-core"/);
+    assert.match(detail, /className="form-section detail-section detail-section-followup"/);
+    assert.match(detail, /className="form-section detail-section detail-section-contacts"/);
+    assert.match(detail, /className="form-section detail-section detail-section-product"/);
+    for (const label of ["核心复核", "商务跟进", "联系方式", "产品与发行"]) {
+      assert.match(detail, new RegExp(label), `${label} should be a first-class detail section`);
+    }
+    assert.match(detail, /detail-floating-safe-zone/);
+    assert.match(aestheticSource, /\.detail-panel\[data-detail-layout="pc-review-polish"\]/);
+    assert.match(aestheticSource, /\.detail-section/);
+    assert.match(manualSource, /\.app-shell\.has-manual-floating-action[\s\S]*\.detail-panel\[data-detail-layout="pc-review-polish"\]/);
   });
 });
