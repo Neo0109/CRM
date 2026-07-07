@@ -5,7 +5,7 @@ import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } fro
 import type { Lead } from "../../types";
 import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions, stageLabel, stageOptions } from "./leadConstants";
 import { Select } from "./leadControls";
-import { buildDashboardStats, emptyLeadFilters, filterLeads, type LeadFilters } from "./leadFilters";
+import { buildDashboardStats, emptyLeadFilters, filterLeadsForView, type LeadFilters } from "./leadFilters";
 import { ContactChips, LeadDetail, QuickActions } from "./LeadDetail";
 import { buildLeadReviewChecklist } from "./leadReviewChecklist";
 import { resolveLeadReviewTarget, type LeadReviewTarget } from "./leadReviewTarget";
@@ -32,7 +32,7 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
   const [assistantReviewFocus, setAssistantReviewFocus] = useState<AssistantReviewFocus | null>(null);
   const [dismissedAssistantRequestId, setDismissedAssistantRequestId] = useState<number | null>(null);
   const stats = useMemo(() => buildDashboardStats(leads), [leads]);
-  const filteredLeads = useMemo(() => filterLeads(leads, filters), [filters, leads]);
+  const filteredLeads = useMemo(() => filterLeadsForView(leads, filters), [filters, leads]);
   const selectedLead = useMemo(() => filteredLeads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? null, [filteredLeads, selectedId]);
   const triage = useMemo(() => buildDecisionTriage(leads), [leads]);
   const followUpQueue = useMemo(() => buildFollowUpQueue(leads), [leads]);
@@ -43,7 +43,9 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
     count: followUpQueue.count,
     leads: followUpTopItems.map((item) => item.lead)
   } : lane), [followUpQueue.count, followUpTopItems, triage.lanes]);
-  const bucketNavigation = useMemo(() => buildBucketNavigation(leads), [leads]);
+  const bucketNavigation = useMemo(() => buildBucketNavigation(leads).map((item) => (
+    item.key === "缺链接" && filters.missingLinks ? { ...item, count: filteredLeads.length } : item
+  )), [filteredLeads.length, filters.missingLinks, leads]);
   const greeting = getDashboardGreeting(displayName);
   const todayLabel = formatShanghaiLongDate();
   const focusLabel = activeFilterLabel(filters);
@@ -82,6 +84,11 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
       }
     }
   }, [dismissedAssistantRequestId, leads, reviewTarget]);
+
+  useEffect(() => {
+    if (selectedId && filteredLeads.some((lead) => lead.id === selectedId)) return;
+    setSelectedId(filteredLeads[0]?.id ?? null);
+  }, [filteredLeads, selectedId]);
 
   function applyTriageFilter(patch: Partial<LeadFilters> | TriageFilter) {
     setFilters({ ...emptyLeadFilters, ...patch });
@@ -200,7 +207,7 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
                 <td className="lead-action-cell"><QuickActions lead={lead} onPatch={onLeadPatch} compact missingLinksMode={filters.missingLinks} /></td>
               </tr>
             ))}
-            {!loading && !filteredLeads.length && <tr><td colSpan={5} className="empty-cell">无匹配 leads</td></tr>}
+            {!loading && !filteredLeads.length && <tr><td colSpan={5} className="empty-cell">{filters.missingLinks ? "暂无缺链接 lead" : "无匹配 leads"}</td></tr>}
           </tbody>
         </table>
       </div>

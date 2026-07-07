@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { CalendarLauncher } from "./CalendarLauncher";
-import { ReviewQueueBehavior } from "./ReviewQueueBehavior";
 import { SteamStoreLinkBehavior } from "./SteamStoreLinkBehavior";
 import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
 import "./design-tokens.css";
@@ -23,7 +22,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <App />
     <CalendarLauncher />
     <WeeklyReportLauncher />
-    <ReviewQueueBehavior />
     <SteamStoreLinkBehavior />
   </React.StrictMode>
 );

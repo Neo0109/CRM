@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
-import { buildDashboardStats, emptyLeadFilters, filterLeads } from "../src/features/leads/leadFilters.ts";
+import { buildDashboardStats, emptyLeadFilters, filterLeads, hasExplicitLeadFilters, shouldUseDefaultReviewQueue } from "../src/features/leads/leadFilters.ts";
 
 function lead(overrides = {}) {
   return {
@@ -101,6 +101,32 @@ describe("lead filters", () => {
     assert.deepEqual(filterLeads(leads, filters({ evidenceIssues: true }), now).map((item) => item.id), ["needs-evidence", "needs-action"]);
     assert.deepEqual(filterLeads(leads, filters({ missingLinks: true }), now).map((item) => item.id), ["needs-evidence"]);
     assert.deepEqual(filterLeads(leads, filters({ needsAction: true }), now).map((item) => item.id), ["needs-action"]);
+  });
+
+  it("uses a default review queue only when no explicit filters are active", () => {
+    const leads = [
+      lead({ id: "bucket-unhandled", bucket: "未处理", review_status: "已查看" }),
+      lead({ id: "review-unhandled", bucket: "待评测", review_status: "未处理" }),
+      lead({ id: "active", bucket: "测试中", review_status: "跟进中" })
+    ];
+
+    assert.equal(hasExplicitLeadFilters(filters()), false);
+    assert.equal(shouldUseDefaultReviewQueue(leads, filters()), true);
+    assert.deepEqual(filterLeads(leads, filters(), now).map((item) => item.id), ["bucket-unhandled", "review-unhandled"]);
+
+    assert.equal(hasExplicitLeadFilters(filters({ query: "demo" })), true);
+    assert.equal(shouldUseDefaultReviewQueue(leads, filters({ query: "demo" })), false);
+    assert.deepEqual(filterLeads(leads, filters({ query: "demo" }), now).map((item) => item.id), ["bucket-unhandled", "review-unhandled", "active"]);
+  });
+
+  it("shows all matching leads when the default queue has no unhandled items", () => {
+    const leads = [
+      lead({ id: "testing", bucket: "测试中", review_status: "跟进中" }),
+      lead({ id: "push", bucket: "推进池", review_status: "跟进中" })
+    ];
+
+    assert.equal(shouldUseDefaultReviewQueue(leads, filters()), false);
+    assert.deepEqual(filterLeads(leads, filters(), now).map((item) => item.id), ["testing", "push"]);
   });
 
   it("builds dashboard stats from the same lead model as the view", () => {
