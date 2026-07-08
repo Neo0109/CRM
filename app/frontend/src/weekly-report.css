@@ -1,5 +1,6 @@
 .weekly-overlay {
-  background: var(--overlay-backdrop);
+  background: rgba(24, 26, 31, 0.22);
+  backdrop-filter: blur(8px);
   inset: 0;
   overflow: auto;
   padding: 20px;
@@ -8,10 +9,14 @@
 }
 
 .weekly-workspace {
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 253, 250, 0.95), rgba(248, 246, 242, 0.95)),
+    url("./assets/crm-paper-texture.png");
+  background-size: cover;
   border: 1px solid var(--border-cool);
-  border-radius: 10px;
-  box-shadow: 0 26px 80px rgba(15, 23, 42, 0.26);
+  border-color: rgba(216, 209, 197, 0.86);
+  border-radius: 18px;
+  box-shadow: 0 24px 90px rgba(24, 26, 31, 0.18);
   margin: 0 auto;
   max-width: 1480px;
   min-height: calc(100vh - 40px);
@@ -21,6 +26,7 @@
 .weekly-head {
   align-items: end;
   border-bottom: 1px solid #e5edf6;
+  border-bottom-color: rgba(230, 225, 216, 0.92);
   display: flex;
   gap: 16px;
   justify-content: space-between;
@@ -49,26 +55,33 @@
 }
 
 .weekly-date-picker span {
-  color: #657489;
+  color: #69717f;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 820;
 }
 
 .weekly-date-picker input {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.72);
   border: 1px solid #c4d2e2;
-  border-radius: 8px;
+  border-color: rgba(216, 209, 197, 0.9);
+  border-radius: 11px;
   color: var(--text-navy-soft);
   min-height: 36px;
   padding: 0 10px;
 }
 
+.weekly-date-picker input:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
 .weekly-summary-band,
 .weekly-section {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 253, 250, 0.82);
   border: 1px solid var(--border-cool);
+  border-color: rgba(216, 209, 197, 0.86);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(20, 32, 51, 0.06);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 14px;
   padding: 14px;
 }
@@ -92,25 +105,29 @@
 }
 
 .weekly-metric {
-  background: #fff;
+  background: rgba(255, 253, 250, 0.82);
   border: 1px solid var(--border-cool);
   border-left: 5px solid var(--metric-neutral);
+  border-color: rgba(216, 209, 197, 0.86);
+  border-left-width: 0;
   border-radius: 8px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
-  min-height: 64px;
+  min-height: 72px;
   padding: 12px;
 }
 
 .weekly-metric span {
-  color: #657489;
+  color: #69717f;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 820;
 }
 
 .weekly-metric strong {
   color: var(--text-navy-soft);
   font-size: 24px;
+  font-weight: 760;
 }
 
 .weekly-metric-blue { border-left-color: var(--metric-blue); }
@@ -143,17 +160,19 @@
 }
 
 .weekly-lead-card {
-  background: #fff;
+  background: rgba(255, 253, 250, 0.82);
   border: 1px solid var(--border-cool);
+  border-color: rgba(216, 209, 197, 0.86);
   border-radius: 8px;
+  box-shadow: var(--shadow-sm);
   display: grid;
   gap: 12px;
   padding: 14px;
 }
 
 .weekly-lead-card:hover {
-  border-color: var(--border-info);
-  box-shadow: 0 12px 28px rgba(var(--metric-blue-rgb), 0.12);
+  border-color: rgba(37, 99, 235, 0.22);
+  box-shadow: var(--shadow-sm);
 }
 
 .weekly-lead-head {
@@ -164,7 +183,9 @@
 }
 
 .weekly-lead-head h3 {
+  color: #16181d;
   font-size: 18px;
+  font-weight: 780;
   line-height: 1.35;
   margin-top: 2px;
 }
@@ -242,18 +263,21 @@
 
 .weekly-link-row a {
   align-items: center;
+  background: #f7faf8;
   border: 1px solid var(--border-info);
+  border-color: #d9e2da;
   border-radius: 999px;
-  color: #087ea8;
+  color: #27576a;
   display: inline-flex;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 760;
   gap: 4px;
   padding: 4px 8px;
 }
 
 .weekly-link-row a:hover {
-  background: var(--surface-info);
+  background: #eef5ff;
+  border-color: #c5d7ff;
 }
 
 .weekly-missing-link {

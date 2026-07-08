@@ -283,10 +283,6 @@ button:hover {
 .detail-panel,
 .radar-shell,
 .token-panel,
-.weekly-summary-band,
-.weekly-section,
-.weekly-lead-card,
-.weekly-metric,
 .sourcing-brief article {
   background: rgba(255, 253, 250, 0.82);
   border-color: rgba(216, 209, 197, 0.86);
@@ -617,8 +613,6 @@ button:hover {
 .field span,
 .edit-stack label,
 .checkbox-field span,
-.weekly-metric span,
-.weekly-date-picker span,
 .signal small,
 .radar-card dt {
   color: #69717f;
@@ -633,8 +627,7 @@ button:hover {
 .contact-row input,
 .contact-row select,
 .search-box,
-.steam-link-input-row input,
-.weekly-date-picker input {
+.steam-link-input-row input {
   background: rgba(255, 255, 255, 0.72);
   border-color: rgba(216, 209, 197, 0.9);
   border-radius: 11px;
@@ -648,8 +641,7 @@ button:hover {
 .contact-row input:focus,
 .contact-row select:focus,
 .search-box:focus-within,
-.steam-link-input-row input:focus,
-.weekly-date-picker input:focus {
+.steam-link-input-row input:focus {
   border-color: rgba(37, 99, 235, 0.55);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
@@ -744,8 +736,7 @@ button:hover {
 }
 
 .project-cell strong,
-.detail-head h2,
-.weekly-lead-head h3 {
+.detail-head h2 {
   color: #16181d;
   font-weight: 780;
 }
@@ -766,7 +757,6 @@ button:hover {
 
 .chip,
 .link-list a,
-.weekly-link-row a,
 .contact-chip-link {
   background: #f7faf8;
   border-color: #d9e2da;
@@ -783,7 +773,6 @@ button:hover {
 
 .chip:hover,
 .link-list a:hover,
-.weekly-link-row a:hover,
 .contact-chip-link:hover {
   background: #eef5ff;
   border-color: #c5d7ff;
@@ -903,39 +892,6 @@ button:hover {
 
 .heat {
   font-weight: 820;
-}
-
-.weekly-overlay {
-  background: rgba(24, 26, 31, 0.22);
-  backdrop-filter: blur(8px);
-}
-
-.weekly-workspace {
-  background:
-    linear-gradient(180deg, rgba(255, 253, 250, 0.95), rgba(248, 246, 242, 0.95)),
-    url("./assets/crm-paper-texture.png");
-  background-size: cover;
-  border-color: rgba(216, 209, 197, 0.86);
-  border-radius: 18px;
-  box-shadow: 0 24px 90px rgba(24, 26, 31, 0.18);
-}
-
-.weekly-head {
-  border-bottom-color: rgba(230, 225, 216, 0.92);
-}
-
-.weekly-metric {
-  border-left-width: 0;
-  min-height: 72px;
-}
-
-.weekly-metric strong {
-  font-weight: 760;
-}
-
-.weekly-lead-card:hover {
-  border-color: rgba(37, 99, 235, 0.22);
-  box-shadow: var(--shadow-sm);
 }
 
 @media (min-width: 1181px) {

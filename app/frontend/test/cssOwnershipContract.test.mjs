@@ -75,4 +75,24 @@ describe("frontend CSS ownership contract", () => {
       assert.match(leadDetailSource, new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `${selector} should live in lead-detail.css`);
     }
   });
+
+  it("keeps Weekly Report-specific styles in weekly-report.css", () => {
+    const aestheticSource = source("aesthetic-refresh.css");
+    const weeklySource = source("weekly-report.css");
+
+    for (const selector of [
+      ".weekly-overlay",
+      ".weekly-workspace",
+      ".weekly-summary-band",
+      ".weekly-section",
+      ".weekly-metric",
+      ".weekly-date-picker",
+      ".weekly-lead-card",
+      ".weekly-link-row"
+    ]) {
+      const pattern = new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+      assert.match(weeklySource, pattern, `${selector} should live in weekly-report.css`);
+      assert.doesNotMatch(aestheticSource, pattern, `${selector} should not be overridden from aesthetic-refresh.css`);
+    }
+  });
 });
