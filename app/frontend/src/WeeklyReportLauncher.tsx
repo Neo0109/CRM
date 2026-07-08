@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { fetchLeads, fetchWeeklyReport } from "./api";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueue, type FollowUpQueueItem } from "./followUpQueue";
+import { linkLabel, normalizedLinkHref } from "./linkPresentation";
 import type { WeeklyLeadSummary, WeeklyReport } from "./types";
 
 export function WeeklyReportLauncher() {
@@ -151,7 +152,7 @@ function WeeklyLeadCard({ lead }: { lead: WeeklyLeadSummary }) {
         <h3>{lead.project}</h3>
       </div>
       {lead.evaluation_grade && <span className={`weekly-grade grade-${lead.evaluation_grade.replace("+", "plus").replace("-", "minus")}`}>{lead.evaluation_grade}</span>}
-      {lead.steam_store_url ? <a className="ghost-button" href={lead.steam_store_url} target="_blank" rel="noreferrer"><ExternalLink size={14} />Steam</a> : <span className="weekly-missing-link">缺 Steam 链接</span>}
+      {lead.steam_store_url ? <a className="ghost-button" href={normalizedLinkHref(lead.steam_store_url)} target="_blank" rel="noreferrer"><ExternalLink size={14} />Steam</a> : <span className="weekly-missing-link">缺 Steam 链接</span>}
     </div>
     <dl className="weekly-lead-facts">
       <div><dt>跟进总结</dt><dd>{lead.follow_summary}</dd></div>
@@ -159,8 +160,8 @@ function WeeklyLeadCard({ lead }: { lead: WeeklyLeadSummary }) {
       <div><dt>推荐理由</dt><dd>{lead.recommendation_summary}</dd></div>
     </dl>
     <div className="weekly-link-row">
-      {lead.steamdb_url && <a href={lead.steamdb_url} target="_blank" rel="noreferrer"><ExternalLink size={13} />SteamDB</a>}
-      {lead.links.filter((link) => link !== lead.steam_store_url && link !== lead.steamdb_url).slice(0, 3).map((link) => <a href={link} target="_blank" rel="noreferrer" key={link}><ExternalLink size={13} />{linkLabel(link)}</a>)}
+      {lead.steamdb_url && <a href={normalizedLinkHref(lead.steamdb_url)} target="_blank" rel="noreferrer"><ExternalLink size={13} />SteamDB</a>}
+      {lead.links.filter((link) => link !== lead.steam_store_url && link !== lead.steamdb_url).slice(0, 3).map((link) => <a href={normalizedLinkHref(link)} target="_blank" rel="noreferrer" key={link}><ExternalLink size={13} />{linkLabel(link)}</a>)}
     </div>
   </article>;
 }
@@ -170,11 +171,4 @@ function todayKey() {
   const offset = date.getTimezoneOffset();
   const local = new Date(date.getTime() - offset * 60_000);
   return local.toISOString().slice(0, 10);
-}
-
-function linkLabel(link: string) {
-  if (link.includes("store.steampowered.com")) return "Steam";
-  if (link.includes("steamdb.info")) return "SteamDB";
-  if (link.includes("bilibili.com")) return "B站";
-  try { return new URL(link).hostname.replace("www.", ""); } catch { return "链接"; }
 }

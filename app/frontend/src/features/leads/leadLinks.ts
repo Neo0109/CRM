@@ -1,4 +1,7 @@
 import type { ContactMethod, Lead } from "../../types";
+import { linkLabel } from "../../linkPresentation";
+
+export { linkLabel, normalizedLinkHref } from "../../linkPresentation";
 
 export type NormalizedSteamLink = {
   appId: string;
@@ -53,14 +56,6 @@ export function contactLabel(method: ContactMethod) {
   if (/bilibili/i.test(value) || method.type === "B站") return "B站";
   if (method.type === "官网") return "官网";
   return linkLabel(value);
-}
-
-export function linkLabel(link: string) {
-  if (link.includes("store.steampowered.com")) return "Steam";
-  if (link.includes("steamdb.info")) return "SteamDB";
-  if (link.includes("steamcommunity.com")) return "Steam 社区";
-  if (link.includes("bilibili.com")) return "B站";
-  try { return new URL(link).hostname.replace("www.", ""); } catch { return "链接"; }
 }
 
 function steamAppIdFromText(value: string) {
