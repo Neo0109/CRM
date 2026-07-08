@@ -287,6 +287,44 @@
   background: #fff;
 }
 
+.follow-reminder-card.enabled {
+  border-color: var(--bucket-follow-border);
+  box-shadow: 0 10px 24px rgba(32, 199, 222, 0.12);
+}
+
+.follow-reminder-controls {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(140px, 1fr);
+}
+
+.follow-reminder-controls select,
+.follow-reminder-controls input {
+  background: var(--surface-card-strong);
+  border: 1px solid var(--border-cool);
+  border-radius: 8px;
+  color: var(--text-navy-soft);
+  min-height: 34px;
+  outline: 0;
+  padding: 0 9px;
+  width: 100%;
+}
+
+.follow-reminder-controls select:focus,
+.follow-reminder-controls input:focus {
+  border-color: var(--metric-blue);
+  box-shadow: 0 0 0 3px var(--focus-ring-strong);
+}
+
+.follow-reminder-card:not(.enabled) {
+  background: linear-gradient(180deg, var(--surface-card-strong) 0%, var(--surface-cool) 100%);
+}
+
+.follow-reminder-card:not(.enabled) small {
+  color: var(--text-tertiary);
+}
+
 .follow-reminder-actions button {
   align-items: center;
   background: #fff;
@@ -334,4 +372,5 @@
   .calendar-metrics { grid-template-columns: 1fr; }
   .calendar-day { min-height: 104px; padding: 6px; }
   .calendar-event-dot { font-size: 10px; padding: 2px 5px; }
+  .follow-reminder-controls { grid-template-columns: 1fr; }
 }

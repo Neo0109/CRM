@@ -1,9 +1,9 @@
 .rule-flag-explainer {
   align-items: center;
-  background: #f8fbff;
-  border: 1px solid #dbeafe;
+  background: var(--surface-cool);
+  border: 1px solid var(--border-info);
   border-radius: 8px;
-  color: #334155;
+  color: var(--text-slate);
   display: flex;
   gap: 8px;
   justify-content: space-between;
@@ -12,19 +12,19 @@
 }
 
 .rule-flag-explainer strong {
-  color: #0f172a;
+  color: var(--text-primary);
   font-size: 13px;
 }
 
 .rule-flag-explainer span {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 12px;
   text-align: right;
 }
 
 .steam-link-editor {
-  background: linear-gradient(135deg, #f0f9ff, #fff);
-  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, var(--surface-info), var(--surface-card-strong));
+  border: 1px solid var(--border-info);
   border-radius: 8px;
   display: grid;
   gap: 10px;
@@ -38,12 +38,12 @@
 }
 
 .steam-link-copy strong {
-  color: #0f172a;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .steam-link-copy span {
-  color: #526175;
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.55;
 }
