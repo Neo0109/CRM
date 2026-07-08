@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6.4-bili-probe",
-  "updated_at": "2026-07-05",
+  "rule_version": "sourcing-rules-v6.5-window-hygiene",
+  "updated_at": "2026-07-08",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
@@ -27,10 +27,10 @@
   ],
   "push_pool_guardrails": [
     "Domestic products are the sourcing default because cooperation, efficiency, visual/cultural fit, and signing probability are materially better.",
-    "Domestic developer Demo/test signals must be promoted in priority and can override the old 60-day-only launch-window heuristic.",
-    "The launch window can be earlier and longer than 60 days; do not discard early domestic products merely because the release date is far away or imprecise.",
+    "Domestic developer Demo/test signals are useful testability signals, but they cannot override a closed or near-closed cooperation window.",
+    "New candidates launching in fewer than 60 days must not enter push or watch review candidates; route them to drop_pool or market background unless they are already in a human-owned workflow.",
     "Domestic unreleased products should follow a testing-first workflow: test or inspect the game before asking BD to complete contacts or long-form evidence.",
-    "Domestic near-window products should not be hard-dropped only because they are within 60 days when they are still unreleased and testable.",
+    "Domestic near-window products should not be backfilled into the unprocessed inbox merely because they are unreleased and testable.",
     "Overseas projects must not consume review slots unless they have clear PC data validation and a credible mobile-adaptation angle.",
     "Already released projects must not enter push or watch candidates; they can only be dropped or used as market background.",
     "PC Early Access projects must not enter push pool.",
@@ -59,7 +59,7 @@
     "Bilibili probe should fetch video details for title, owner, publish time, description, tags, and public engagement before lead scoring.",
     "Bilibili recommendation videos are discovery signals only. Before creating a lead, search for and prefer official, developer, studio, or publisher Bilibili sources when they match the concrete project.",
     "Steam, TapTap, official-site, and community links found in Bilibili descriptions, media bodies, gameplay text, or summaries must be extracted into structured links before validation and CRM sync.",
-    "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Already released products must not enter push/watch review candidates.",
+    "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Already released products and products launching in fewer than 60 days must not enter push/watch review candidates.",
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
     "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
     "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",

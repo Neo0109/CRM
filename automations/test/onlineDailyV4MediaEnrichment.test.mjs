@@ -121,13 +121,48 @@ describe("online daily v4 media enrichment", () => {
     assert.equal(enriched.bucket, "淘汰池");
     assert.equal(enriched.stage, "rejected");
     assert.equal(enriched.priority, "P3");
-    assert.match(enriched.priority_reason, /已发售约34天/);
+    assert.equal(enriched.priority_reason, null);
+    assert.match(enriched.risks, /已发售约34天/);
     assert.equal(localDiagnostics.media_released_routed_to_drop, 1);
+  });
+
+  it("routes near-launch Steam-enriched media leads to drop semantics", async () => {
+    const localDiagnostics = diagnostics();
+    const lead = {
+      ...baseLead({ diagnostics: localDiagnostics }),
+      steam_app_id: "123456"
+    };
+
+    const enriched = await enrichMediaLeadWithSteamContext(lead, {
+      reportDate: "2026-07-05",
+      diagnostics: localDiagnostics,
+      maxOfficialLookups: 0,
+      fetchAppDetailsImpl: async () => ({
+        name: "星环工坊",
+        developers: ["Shanghai Studio"],
+        publishers: [],
+        genres: [{ description: "Simulation" }],
+        categories: [],
+        release_date: { coming_soon: false, date: "2026 年 7 月 20 日" },
+        website: "https://star.example.com",
+        support_info: {}
+      }),
+      collectContactMethodsImpl: async () => []
+    });
+
+    assert.equal(enriched.bucket, "淘汰池");
+    assert.equal(enriched.stage, "rejected");
+    assert.equal(enriched.priority, "P3");
+    assert.equal(enriched.drop_reason, "窗口不合适");
+    assert.equal(enriched.priority_reason, null);
+    assert.match(enriched.risks, /不足60天|窗口不合适/);
   });
 
   it("keeps decision field finalization in the enrichment module", () => {
     const finalized = finalizeMediaLeadDecisionFields(baseLead(), null, { reportDate: "2026-07-05" });
-    assert.match(finalized.priority_reason, /试玩 Demo|待确认|即将发售/);
+    assert.equal(finalized.priority_reason, null);
+    assert.equal(finalized.next_action, null);
+    assert.equal(finalized.notes, null);
 
     const source = readFileSync(new URL("../jobs/online_daily_v4_media_leads.mjs", import.meta.url), "utf8");
     assert.match(source, /online_daily_v4_media_enrichment\.mjs/);

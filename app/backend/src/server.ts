@@ -1,4 +1,4 @@
-import * as AjvModule from "ajv";
+import * as Ajv2020Module from "ajv/dist/2020.js";
 import * as addFormatsModule from "ajv-formats";
 import cors from "cors";
 import express from "express";
@@ -50,9 +50,9 @@ const [leadSchema, dailyReportSchema] = await Promise.all([
   readJson(dailyReportSchemaPath)
 ]);
 
-const Ajv = (AjvModule as { default: any }).default;
+const Ajv2020 = (Ajv2020Module as { default: any }).default;
 const addFormats = (addFormatsModule as { default: any }).default;
-const ajv = new Ajv({ allErrors: true, strict: false });
+const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);
 type ValidatorFn = ((data: unknown) => boolean) & { errors?: unknown };
 const validateLead = ajv.compile(leadSchema) as ValidatorFn;
@@ -83,7 +83,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.4-automation-diagnostics-center",
+    version: "v2.6-lead-detail-noise-window-fix",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,

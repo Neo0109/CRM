@@ -43,7 +43,7 @@ export function buildVerificationTasks({ tempRoot = defaultTempRoot } = {}) {
     task("functions-typecheck", "pnpm", ["--package=typescript@5.5.3", "dlx", "tsc", "-p", "functions/tsconfig.json", "--noEmit"]),
     task("sourcing-v6-4", "sh", ["-lc", "node scripts/test-sourcing-v6-3.mjs && node scripts/test-bilibili-probe.mjs"]),
     task("daily-contract", "node", ["scripts/validate-daily-contract.mjs", "--allowLowVolume"]),
-    task("frontend-build-temp", "pnpm", ["exec", "vite", "build", "--outDir", frontendDist, "--emptyOutDir"], { cwd: "app/frontend" }),
+    task("frontend-build-temp", "npm", ["exec", "--", "vite", "build", "--outDir", frontendDist, "--emptyOutDir"], { cwd: "app/frontend" }),
     task("diff-check", "git", ["diff", "--check"]),
   ];
 }

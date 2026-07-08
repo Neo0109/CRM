@@ -5,6 +5,7 @@ import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead } from "
 import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityValues, regionPriorityValues, regionValues, stageLabel, stageValues } from "./leadConstants";
 import { Select, TextareaField, TextField } from "./leadControls";
 import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, normalizedLinkHref, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
+import { cleanHumanLeadText } from "./leadHumanFields";
 import { buildLeadReviewChecklist, type LeadReviewChecklistItem } from "./leadReviewChecklist";
 import { buildQuickActionSpecs, isTestingOverdue, reviewPatchForBucket, stageFromBucket, type QuickActionSpec } from "./leadWorkflow";
 
@@ -12,7 +13,14 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
   const [draft, setDraft] = useState<Lead | null>(null);
 
   useEffect(() => {
-    if (lead) setDraft({ ...lead, contact_methods: [...lead.contact_methods], links: [...lead.links] });
+    if (lead) setDraft({
+      ...lead,
+      contact_methods: [...lead.contact_methods],
+      links: [...lead.links],
+      priority_reason: cleanHumanLeadText(lead.priority_reason),
+      next_action: cleanHumanLeadText(lead.next_action),
+      notes: cleanHumanLeadText(lead.notes)
+    });
   }, [lead]);
 
   if (!lead || !draft) return <aside className="detail-panel" data-detail-layout="pc-review-polish"><div className="empty-cell">{missingLinksMode ? "暂无缺链接 lead" : "暂无 lead"}</div></aside>;
@@ -59,7 +67,6 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
     if (nextDraft !== draft) setDraft(nextDraft);
     return onPatch(lead.id, nextDraft);
   };
-  const reviewEvidence = buildReviewEvidence(draft);
   const reviewChecklist = buildLeadReviewChecklist(draft);
   const showReviewActionPanel = reviewChecklist.some((item) => item.key !== "ready");
 
@@ -71,15 +78,6 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
 
     <QuickActions lead={draft} onPatch={onPatch} missingLinksMode={missingLinksMode} />
     <BucketButtons lead={draft} onMove={moveDraft} />
-
-    {showReviewActionPanel && <ReviewActionPanel
-      lead={draft}
-      checklist={reviewChecklist}
-      onAddContactRow={ensureContactDraft}
-      onApplySteamLink={applySteamLink}
-      onFieldChange={setField}
-      onSave={save}
-    />}
 
     <section className="review-command-card">
       <div className="review-command-summary">
@@ -93,16 +91,23 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       <div className="review-command-form">
         <Select label="评级" value={draft.evaluation_grade ?? "未评级"} options={evaluationGradeOptions} onChange={(value) => setField("evaluation_grade", value === "未评级" ? null : value)} />
         <label className="field"><span>一句话评测结论</span><textarea value={draft.evaluation_result ?? ""} onChange={(event) => setField("evaluation_result", event.target.value || null)} /></label>
-        <label className="field"><span>下一步动作</span><textarea value={draft.next_action ?? ""} onChange={(event) => setField("next_action", event.target.value || null)} /></label>
       </div>
       <div className="review-evidence-grid">
-        {reviewEvidence.map((item) => <div key={item.label}><small>{item.label}</small><strong>{item.value}</strong></div>)}
+        {buildReviewEvidence(draft).map((item) => <div key={item.label}><small>{item.label}</small><strong>{item.value}</strong></div>)}
       </div>
     </section>
 
-    <LeadEvidencePanel lead={draft} />
+    <FollowUpActionPanel
+      lead={draft}
+      checklist={reviewChecklist}
+      showChecklist={showReviewActionPanel}
+      onAddContactRow={ensureContactDraft}
+      onConfirmCalendarReminder={confirmCalendarReminder}
+      onFieldChange={setField}
+      onSave={save}
+    />
 
-    <SteamLinkEditor lead={draft} onApply={applySteamLink} />
+    <EvidenceAndLinksPanel lead={draft} onApplySteamLink={applySteamLink} />
 
     <div className="form-section detail-section detail-section-core">
       <h3>核心复核</h3>
@@ -119,19 +124,13 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
     </div>
 
     <div className="form-section detail-section detail-section-followup">
-      <h3>商务跟进</h3>
+      <h3>商务状态</h3>
       <div className="form-grid two">
         <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value), ...reviewPatchForBucket(value) } : current))} />
         <Select label="阶段" value={draft.stage} options={stageValues} getOptionLabel={stageLabel} onChange={(value) => setField("stage", value)} />
         <Select label="优先级" value={draft.priority} options={priorityValues} onChange={(value) => setField("priority", value)} />
-        <TextField label="Owner" value={draft.owner} onChange={(value) => setField("owner", value)} />
-        <TextField label="Due Date" type="date" value={draft.due_date} onChange={(value) => setField("due_date", value || null)} />
         <TextField label="发售窗口" value={draft.release_window} onChange={(value) => setField("release_window", value)} />
         {(draft.bucket === "未处理" || draft.bucket === "淘汰池" || draft.drop_reason) ? <Select label="淘汰原因（若淘汰）" value={draft.drop_reason ?? "未选择"} options={dropReasonOptions} onChange={(value) => setField("drop_reason", value === "未选择" ? null : value)} /> : null}
-        <div className="due-date-actions span-2">
-          <button className="ghost-button" onClick={confirmCalendarReminder}><CalendarCheck size={16} />确认放入日历</button>
-          {draft.calendar_enabled && draft.due_date ? <span>已在日历显示：{draft.due_date}</span> : <span>只有点确认后才会进入日历，避免页面被系统自动塞满。</span>}
-        </div>
       </div>
       <TextareaField label="优先级高/低的原因" value={draft.priority_reason} onChange={(value) => setField("priority_reason", value)} />
       <TextareaField label="备注" value={draft.notes} onChange={(value) => setField("notes", value)} />
@@ -168,54 +167,52 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
 
 type LeadFieldSetter = <K extends keyof Lead>(key: K, value: Lead[K]) => void;
 
-function ReviewActionPanel({
+function FollowUpActionPanel({
   lead,
   checklist,
+  showChecklist,
   onAddContactRow,
-  onApplySteamLink,
+  onConfirmCalendarReminder,
   onFieldChange,
   onSave
 }: {
   lead: Lead;
   checklist: LeadReviewChecklistItem[];
+  showChecklist: boolean;
   onAddContactRow: () => void;
-  onApplySteamLink: (link: NormalizedSteamLink) => Promise<void>;
+  onConfirmCalendarReminder: () => Promise<void>;
   onFieldChange: LeadFieldSetter;
   onSave: () => Promise<void>;
 }) {
-  const needsGameLink = hasChecklistItem(checklist, "missing-game-link");
   const needsContact = hasChecklistItem(checklist, "missing-contact");
-  const needsPublisherReview = hasChecklistItem(checklist, "publisher-review");
-  const needsOwner = hasChecklistItem(checklist, "missing-owner");
-  const needsNextAction = hasChecklistItem(checklist, "missing-next-action");
   const needsDueDate = hasChecklistItem(checklist, "missing-due-date");
 
-  return <section className="review-action-panel" aria-label="复核快填">
+  return <section className="review-action-panel followup-action-panel" aria-label="跟进动作">
     <div className="review-action-head">
       <div>
-        <p className="eyebrow">复核快填</p>
-        <h3>把助手提示的缺口直接补在这里</h3>
+        <p className="eyebrow">跟进动作</p>
+        <h3>只保留一个下一步，给 BD 明确落点</h3>
       </div>
-      <button className="primary-button" type="button" onClick={() => void onSave()}><Save size={16} />保存复核字段</button>
+      <button className="primary-button" type="button" onClick={() => void onSave()}><Save size={16} />保存跟进动作</button>
     </div>
-    <ul className="review-action-checklist">
+    {showChecklist && <ul className="review-action-checklist">
       {checklist.map((item) => <li key={item.key}>
         <strong>{item.label}</strong>
         <span>{item.detail}</span>
       </li>)}
-    </ul>
+    </ul>}
     <div className="review-action-form">
-      {needsGameLink && <div className="review-action-field span-2">
-        <SteamLinkEditor lead={lead} onApply={onApplySteamLink} />
-      </div>}
+      <TextField label="Owner" value={lead.owner} onChange={(value) => onFieldChange("owner", value || null)} />
+      <TextField label="Due Date" type="date" value={lead.due_date} onChange={(value) => onFieldChange("due_date", value || null)} />
+      <TextareaField label="下一步动作" value={lead.next_action} onChange={(value) => onFieldChange("next_action", value)} />
       {needsContact && <div className="review-action-field span-2">
         <button className="ghost-button" type="button" onClick={onAddContactRow}><Plus size={16} />添加联系方式行</button>
         <span>添加后可在下方“联系方式”区域填写微信、QQ、Email、官网或 Steam 社区入口。</span>
       </div>}
-      {needsPublisherReview && <TextareaField label="发行结构" value={lead.publisher_status} onChange={(value) => onFieldChange("publisher_status", value || "待确认")} />}
-      {needsOwner && <TextField label="Owner" value={lead.owner} onChange={(value) => onFieldChange("owner", value || null)} />}
-      {needsDueDate && <TextField label="Due Date" type="date" value={lead.due_date} onChange={(value) => onFieldChange("due_date", value || null)} />}
-      {needsNextAction && <TextareaField label="下一步动作" value={lead.next_action} onChange={(value) => onFieldChange("next_action", value)} />}
+      <div className="due-date-actions span-2">
+        <button className="ghost-button" type="button" onClick={() => void onConfirmCalendarReminder()}><CalendarCheck size={16} />确认放入日历</button>
+        {lead.calendar_enabled && lead.due_date ? <span>已在日历显示：{lead.due_date}</span> : <span>只有点确认后才会进入日历，避免页面被系统自动塞满。</span>}
+      </div>
     </div>
     {needsDueDate && <p className="review-action-note">Due Date 可以先在详情里设置；是否进入日历仍由“确认放入日历”手动控制。</p>}
   </section>;
@@ -223,6 +220,14 @@ function ReviewActionPanel({
 
 function hasChecklistItem(checklist: LeadReviewChecklistItem[], key: LeadReviewChecklistItem["key"]) {
   return checklist.some((item) => item.key === key);
+}
+
+function EvidenceAndLinksPanel({ lead, onApplySteamLink }: { lead: Lead; onApplySteamLink: (link: NormalizedSteamLink) => Promise<void> }) {
+  return <section className="form-section detail-section detail-section-evidence-links">
+    <h3>证据与链接</h3>
+    <LeadEvidencePanel lead={lead} />
+    <SteamLinkEditor lead={lead} onApply={onApplySteamLink} />
+  </section>;
 }
 
 export function QuickActions({ lead, onPatch, compact = false, missingLinksMode = false }: { lead: Lead; onPatch: (id: string, patch: Partial<Lead>) => Promise<void>; compact?: boolean; missingLinksMode?: boolean }) {

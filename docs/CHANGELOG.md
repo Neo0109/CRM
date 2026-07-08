@@ -4,6 +4,8 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.6`（`v2.6-lead-detail-noise-window-fix`）：Lead Detail 右侧详情降噪，人工字段默认留空，并恢复临近上线线索过滤口径
+- 日报规则升级到 `sourcing-rules-v6.5-window-hygiene`：保留 V6.4 B站探头，同时恢复 60 天上线窗口硬过滤；Demo/试玩只作为可测试信号，不再覆盖近上线合作窗口；自动化默认不再写 `priority_reason`、`next_action`、`notes`。
 - 设置边界收敛：CRM 设置页继续作为 Cloudflare Variables/Secrets 管理说明与 Excel 导出入口，不再提供在线修改绑定邮箱、登录密码或导出密码；旧 settings 写接口返回明确禁用提示，避免敏感配置继续通过 CRM UI/API 写入 Supabase。
 - 产品可见版本升级为 `v2.5`（`v2.5-version-governance-catchup`）：补齐近期已进入主线的用户可见能力版本记录，并明确产品功能版本、sourcing 规则版本和日报自动化补丁记录分开治理；后续用户可见产品功能必须通过 `npm run version:product` 同步更新，不再用日报规则版本替代产品版本。
 - 日报规则升级到 `sourcing-rules-v6.4-bili-probe`：新增 configurable 的 B站 sourcing probe，支持官方/开发者/发行商/媒体/可信UP/关键词源、视频详情富化、黑名单、旧视频和泛合集过滤、Steam/SteamDB 链接抽取和 probe 诊断计数。本次只改 sourcing 自动化层，不修改登录、UI、schema、人工分池流程或产品版本号。

@@ -2,7 +2,7 @@
 
 Date: 2026-07-05
 
-Active supplement: `sourcing-rules-v6.4-bili-probe`, updated 2026-07-05.
+Active supplement: `sourcing-rules-v6.5-window-hygiene`, updated 2026-07-08.
 
 ## One-Line Standard
 
@@ -59,6 +59,7 @@ Before creating a CRM candidate from a Bilibili/media signal, the automation mus
 - Enrich the Bilibili video metadata and description when possible.
 - Extract Steam store links, Steam AppIDs, official sites, TapTap/indienova pages, Discord, email, Bilibili, or other real contact clues from the description.
 - Cross-check Steam release state when a Steam URL/AppID is present. Fully released products must not enter `push_pool` or `watch_pool`; route them to `drop_pool` or keep them as market background.
+- Cross-check Steam launch window when a Steam URL/AppID is present. Fresh candidates launching in fewer than 60 days must not enter `push_pool` or `watch_pool`; route them to `drop_pool` with `drop_reason = 窗口不合适` or keep them as market background.
 - Treat `Demo 已上线`, `试玩上线`, `测试开启`, or `商店页已上线` as review/test signals, not full release signals.
 - Deduplicate against existing CRM project names, loose Chinese project keys, Steam AppIDs, source URLs, and backend dedupe keys.
 - Apply timeliness. Old videos or old news should not create fresh leads unless they contain a current playable build, new demo, update, publishing window, or business-relevant event.
@@ -102,6 +103,15 @@ V6.4 adds a configurable Bilibili sourcing probe while preserving the existing d
 - When duplicate Bilibili signals point to the same BVID, source link, or Steam AppID, official/developer/publisher signals beat trusted creator or keyword signals.
 - Probe diagnostics belong in automation summaries and health checks, not in user-facing lead fields.
 
+### V6.5 Window Hygiene
+
+V6.5 keeps V6.4's Bilibili probe, then tightens the review gate around BD usefulness:
+
+- Demo, playtest, and store-page-live signals prove that a product can be inspected; they do not prove there is still a useful cooperation window.
+- New automation-sourced candidates with confirmed launch dates fewer than 60 days away must not enter `push_pool` or `watch_pool`.
+- Near-launch candidates should be dropped with `drop_reason = 窗口不合适` or kept as market background unless a human-owned CRM workflow already exists.
+- Human-owned fields stay empty by default: `priority_reason`, `next_action`, and `notes` should not carry automation bookkeeping.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -139,5 +149,5 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4/V6.5 verification gate before becoming fresh `未处理` leads.
 - Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.

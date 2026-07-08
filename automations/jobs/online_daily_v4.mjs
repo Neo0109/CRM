@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.4.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.5.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,8 +20,8 @@ import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
 const rootDir = process.cwd();
-const sourcingRuleVersion = "sourcing-rules-v6.4-bili-probe";
-const generatorName = "online_daily_v4_sourcing_rules_v6_4_bili_probe";
+const sourcingRuleVersion = "sourcing-rules-v6.5-window-hygiene";
+const generatorName = "online_daily_v4_sourcing_rules_v6_5_window_hygiene";
 const args = parseArgs(process.argv.slice(2));
 const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
 validateDailyRules(dailyRules);

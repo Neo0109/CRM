@@ -54,16 +54,22 @@ describe("Lead detail panel contract", () => {
   it("renders native review quick-fill actions for assistant checklist gaps", () => {
     const detail = leadDetailSource();
     assert.match(detailSource, /buildLeadReviewChecklist/);
-    assert.match(detailSource, /function ReviewActionPanel/);
-    assert.match(detail, /复核快填/);
-    assert.match(detail, /保存复核字段/);
+    assert.match(detailSource, /function FollowUpActionPanel/);
+    assert.match(detailSource, /function EvidenceAndLinksPanel/);
+    assert.doesNotMatch(detailSource, /function ReviewActionPanel/);
+    assert.match(detail, /跟进动作/);
+    assert.match(detail, /保存跟进动作/);
     assert.match(detail, /添加联系方式行/);
     assert.match(detail, /reviewChecklist\.some\(\(item\) => item\.key !== "ready"\)/);
-    assert.match(detail, /SteamLinkEditor/);
-    assert.match(detail, /label="Owner"/);
-    assert.match(detail, /label="Due Date"/);
-    assert.match(detail, /label="下一步动作"/);
+    assert.match(detail, /<EvidenceAndLinksPanel/);
     assert.match(detail, /label="发行结构"/);
+  });
+
+  it("renders owner, due date, and next action only once in the detail source", () => {
+    assert.equal((detailSource.match(/label="Owner"/g) ?? []).length, 1);
+    assert.equal((detailSource.match(/label="Due Date"/g) ?? []).length, 1);
+    assert.equal((detailSource.match(/label="下一步动作"/g) ?? []).length, 1);
+    assert.match(detailSource, /cleanHumanLeadText/);
   });
 
   it("does not hide the native due-date editor through DOM mutation", () => {
@@ -79,7 +85,7 @@ describe("Lead detail panel contract", () => {
     assert.match(detail, /className="form-section detail-section detail-section-followup"/);
     assert.match(detail, /className="form-section detail-section detail-section-contacts"/);
     assert.match(detail, /className="form-section detail-section detail-section-product"/);
-    for (const label of ["核心复核", "商务跟进", "联系方式", "产品与发行"]) {
+    for (const label of ["跟进动作", "证据与链接", "核心复核", "商务状态", "联系方式", "产品与发行"]) {
       assert.match(detail, new RegExp(label), `${label} should be a first-class detail section`);
     }
     assert.match(detail, /detail-floating-safe-zone/);
@@ -107,7 +113,7 @@ describe("Lead detail panel contract", () => {
     assert.match(
       leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.review-action-form[\s\S]*grid-template-columns:\s*var\(--detail-review-columns\)/,
-      "review quick-fill form should consume the detail panel column contract"
+      "follow-up action form should consume the detail panel column contract"
     );
     assert.match(
       leadDetailStyleSource,
@@ -117,7 +123,7 @@ describe("Lead detail panel contract", () => {
     assert.match(
       leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.review-action-head[\s\S]*flex-direction:\s*column/,
-      "review quick-fill header should not force a wide two-sided row"
+      "follow-up action header should not force a wide two-sided row"
     );
     assert.match(
       manualSource,

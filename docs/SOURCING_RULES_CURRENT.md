@@ -1,8 +1,8 @@
 # Current Daily Report Rules
 
-Date: 2026-07-05
+Date: 2026-07-08
 
-The current daily report rule version is `sourcing-rules-v6.4-bili-probe`.
+The current daily report rule version is `sourcing-rules-v6.5-window-hygiene`.
 
 Canonical human-readable rule document:
 
@@ -54,22 +54,24 @@ Bilibili search results must still be concrete games. Steam Next Fest signup tut
 
 Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
 
+New candidates launching in fewer than 60 days must not enter push/watch candidates. Demo, playtest, or store-page-live signals only prove testability; they do not restore a meaningful BD cooperation window. Route near-launch items to `drop_pool` with `drop_reason = 窗口不合适` or keep them as market background unless the project is already in a human-owned CRM workflow.
+
 For Bilibili video leads, the automation must do one more verification pass before creating a CRM candidate:
 
 - Open/enrich the Bilibili video metadata and description when possible, because the description often contains Steam store links, official sites, Discord, email, TapTap/indienova, or other contact clues.
 - Treat recommendation-UP videos as discovery signals only. Search for matching official, developer, studio, or publisher Bilibili videos/posts and prefer those when they match the concrete project.
 - Extract Steam AppID, Steam store URL, official links, and real contact methods from the video description before writing the lead.
 - Extract Steam/TapTap/official/community links from any Bilibili description, media body, gameplay text, or source summary into structured `links`. Do not leave Steam store links buried inside long text fields.
-- Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released, it must not enter `push_pool` or `watch_pool`; route it to `drop_pool` or keep it as market background.
+- Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released or launching in fewer than 60 days, it must not enter `push_pool` or `watch_pool`; route it to `drop_pool` or keep it as market background.
 - Do not treat `Demo 已上线`, `试玩上线`, `测试开启`, or `商店页已上线` as full release. Those are still valid review/test signals.
 - Deduplicate against existing CRM projects, Steam AppIDs, source URLs, and backend dedupe keys before creating a new lead. A slightly different Bilibili title for a previously sourced Steam product should enrich or be ignored, not create a duplicate.
 - Bilibili video signals must be timely. Old videos or old news should not create new leads unless they contain a current playable build, new demo, update, publishing window, or business-relevant event.
 
-Domestic products are the default sourcing priority. Domestic developer Demo/test signals should be promoted because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better.
+Domestic products are the default sourcing priority. Domestic developer Demo/test signals are useful only while there is still a real cooperation window, because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better before the launch window closes.
 
 Overseas products should only consume review slots when they have PC data validation and a credible mobile-adaptation angle. Creative novelty alone is not enough.
 
-The old 60-day window is no longer the only useful window. Domestic early-stage projects can be reviewed earlier and over a longer horizon, especially when there is a Demo, Bilibili signal, domestic media signal, or clear developer contact path.
+The 60-day window is a hard filter for fresh automation-sourced leads. Domestic products can be discovered earlier or over a longer horizon, but if the confirmed release date is fewer than 60 days away, the lead is no longer a fresh BD opportunity and should not consume review slots.
 
 ## Update Protocol
 
@@ -97,7 +99,7 @@ The online generator must preserve the product intent of these rules:
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
 - Bilibili candidates must be enriched from video descriptions before candidate creation, then checked for Steam release status, duplicate CRM history, and stale source age.
 - Bilibili probe candidates from configured official, developer, publisher, media, trusted creator, and keyword sources must prefer official/developer/publisher evidence when the same Steam AppID or video/link appears more than once.
-- Candidate fields must stay useful for decision work: `priority_reason` only explains priority, `rule_fit` gives the rule judgment and insight, `gameplay` is compact genre/tag text, `progress` is a short status such as `试玩 Demo` / `EA` / `正式上线` / `即将发售`, and `next_action` / `notes` default empty for human BD input.
+- Candidate fields must stay useful for decision work: `priority_reason` is empty unless there is a concise human-useful priority reason, `rule_fit` gives the rule judgment and insight, `gameplay` is compact genre/tag text, `progress` is a short status such as `试玩 Demo` / `EA` / `正式上线` / `即将发售`, and `next_action` / `notes` default empty for human BD input.
 - Industry Radar is a compact China + overseas news board. `行业新闻` is reserved for macro market/platform/regulatory/company-level news. Concrete game recommendations, fun products, IP moments, legal/company gossip, and former `发行八卦` items belong in `今日亮点`.
 - Radar output should be broad enough to show trends, not just a few similar cards. When sources are available, include both domestic and global signals across macro news, product highlights, AI/tooling, memes/community, and Bilibili trends.
 - Steam Trends is a Steam market board, not a sourcing-rule mirror. It must cover category risers, Steam official/community windows such as Demo/Next Fest, publisher/developer slate signals, public data quality, and concrete BD implications.
@@ -155,3 +157,11 @@ V6.4 adds a configurable Bilibili sourcing probe without changing CRM UI, schema
 - Blacklisted UID/BVID/keywords, stale videos, generic recommendation collections, and non-official videos without required product-window keywords are filtered before lead creation.
 - When multiple Bilibili signals point to the same Steam AppID, BVID, or source link, official/developer/publisher sources must beat recommendation or keyword sources.
 - Probe diagnostics must be visible in automation summary fields, but probe counts and rule labels must not be written into user-facing lead fields.
+
+## V6.5 Window Hygiene
+
+V6.5 keeps the V6.4 Bilibili probe and restores the BD window gate:
+
+- Fresh Steam or Bilibili/media candidates with confirmed launch dates fewer than 60 days away must be routed to `drop_pool` or market background.
+- Demo/试玩/测试 signals still matter for product inspection, but they no longer override a near-launch cooperation window.
+- `priority_reason`, `next_action`, and `notes` are human-owned fields. Automation should keep them empty by default and put rule judgments in `rule_fit`, `risks`, `drop_reason`, `progress`, and `release_window`.
