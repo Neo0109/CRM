@@ -10,7 +10,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
 
   return json({
     ok: true,
-    version: "v2.5-version-governance-catchup",
+    version: "v2.6-lead-detail-noise-window-fix",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,

@@ -59,44 +59,18 @@ export function buildPools(candidates, mediaLeads = [], options = {}) {
 }
 
 function toBackfillReviewLead(lead) {
-  const progress = shortProgressLabel(lead.progress);
-  const gameplay = shortGameplayLabel(lead.gameplay);
   return {
     ...lead,
     _class: "watch",
     bucket: "未处理",
     stage: "new",
     priority: lead.priority === "P3" ? "P2" : lead.priority,
-    priority_reason: `${gameplay} + ${progress}；国内/中文语境信号仍有首轮判断价值，优先看玩法强度、内容传播点、收入 upside 和签约窗口。`,
     rule_fit: "国内候选信号具体，但证据强度不足；只进入未处理 inbox，由人工首轮判断是否提测、观察或淘汰。",
     verdict: "",
+    priority_reason: null,
     next_action: null,
     notes: null
   };
-}
-
-function shortProgressLabel(value) {
-  const text = String(value ?? "");
-  if (/正式上线|released/i.test(text)) return "正式上线";
-  if (/demo|试玩/i.test(text)) return "试玩 Demo";
-  if (/early access|EA\b|抢先体验/i.test(text)) return "EA";
-  if (/即将发售|coming soon|商店页/i.test(text)) return "即将发售";
-  return "进度待确认";
-}
-
-function shortGameplayLabel(value) {
-  const text = String(value ?? "").replace(/https?:\/\/\S+/gi, " ");
-  const tags = [];
-  const add = (tag) => {
-    if (!tags.includes(tag)) tags.push(tag);
-  };
-  if (/card|deck|卡牌|构筑/i.test(text)) add("Card/Deckbuilder");
-  if (/rogue|肉鸽/i.test(text)) add("Roguelike");
-  if (/strategy|策略|战棋/i.test(text)) add("Strategy");
-  if (/simulation|management|模拟|经营/i.test(text)) add("Simulation");
-  if (/rpg|角色扮演/i.test(text)) add("RPG");
-  if (/action|动作|ACT/i.test(text)) add("ACT");
-  return tags.slice(0, 3).join(" / ") || "玩法待确认";
 }
 
 function interleaveLeads(primary, secondary) {
@@ -140,7 +114,6 @@ function toLead(candidate, context) {
   const bucket = className === "drop" ? "淘汰池" : "未处理";
   const priority = className === "push" ? "P1" : className === "drop" ? "P3" : candidate.score >= 34 ? "P2" : "P3";
   const genre = candidate.genres.join(" / ") || null;
-  const priorityReason = buildPriorityReason(candidate, className, dropReason);
   return {
     _class: className,
     _reviewBackfill: isReviewBackfillEligible(candidate, dropReason, context.minReviewBackfillScore),
@@ -157,7 +130,8 @@ function toLead(candidate, context) {
     bucket,
     stage: className === "drop" ? "rejected" : "new",
     priority,
-    priority_reason: priorityReason,
+    drop_reason: dropReasonLabel(candidate, dropReason),
+    priority_reason: null,
     rule_fit: buildRuleFit(candidate, dropReason, className),
     genre,
     gameplay: candidate.shortDescription || `${genre ?? "玩法待复核"}。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。`,
@@ -179,11 +153,11 @@ function toLead(candidate, context) {
     amplification: buildAmplification(candidate),
     risks: buildRisks(candidate, dropReason),
     verdict: buildVerdict(className, dropReason),
-    next_action: buildNextAction(className),
+    next_action: null,
     owner: null,
     due_date: null,
     first_seen: context.reportDate,
-    notes: buildLeadNote(candidate, className, dropReason)
+    notes: null
   };
 }
 
@@ -193,16 +167,16 @@ export function hardDropReason(candidate) {
   if (candidate.indiaTeam) return "命中排除项：印度团队/印度开发主体";
   if (candidate.publisherOccupied) return "成熟发行商占位，BD切入价值低";
   if (candidate.alreadyReleased) return "Steam 页面显示已发售，不符合前置BD窗口";
+  if (candidate.releaseTooSoon) return "发售窗口不足60天，合作窗口不合适";
   if (candidate.region === "海外" && !candidate.validatedPcHit) return "海外项目缺少PC大数据验证，不符合当前国内BD优先策略";
   if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) return "海外项目缺少明确手游化/移动端改编角度";
-  if (candidate.releaseTooSoon && candidate.region !== "中国") return "海外项目发售窗口不足60天，默认不进正式推进";
   return null;
 }
 
 function isReviewBackfillEligible(candidate, dropReason, minReviewBackfillScore) {
   if (!dropReason) return false;
   if (candidate.region !== "中国") return false;
-  if (candidate.alreadyReleased || candidate.publisherOccupied || candidate.narrativeHeavy || candidate.indiaTeam) return false;
+  if (candidate.alreadyReleased || candidate.releaseTooSoon || candidate.publisherOccupied || candidate.narrativeHeavy || candidate.indiaTeam) return false;
   if (!candidate.hasDetails && !candidate.hasDemoSignal && !candidate.domesticQuery) return false;
   if (candidate.score >= minReviewBackfillScore) return true;
   return Boolean(candidate.hasDemoSignal || candidate.domesticQuery || (candidate.strongGameplay && candidate.highVisual));
@@ -213,19 +187,10 @@ function isPushEligible(candidate, dropReason) {
   if (!candidate.strongGameplay) return false;
   if (candidate.region === "中国") {
     if (!candidate.hasDetails && !candidate.hasDemoSignal) return false;
-    if (candidate.releaseTooSoon && !candidate.hasDemoSignal) return false;
     return candidate.score >= 54;
   }
   if (typeof candidate.daysToRelease === "number" && candidate.daysToRelease < 60) return false;
   return candidate.score >= 72 && candidate.validatedPcHit && candidate.mobileAdaptationPotential;
-}
-
-function buildPriorityReason(candidate, className, dropReason) {
-  if (className === "drop") return dropReason;
-  const windowText = releaseWindowText(candidate);
-  if (className === "push") return `${candidate.source} 前置信号 + ${candidate.region === "中国" ? "国内优先" : "海外PC验证/手游化角度"} + 系统型玩法，${windowText}，先提测验证再决定商务深聊`;
-  if (candidate.region === "中国") return `${candidate.source} 有国内前置信号，${windowText}；先进入未处理 inbox，由人工决定是否提测或观察`;
-  return `${candidate.source} 有前置信号，${windowText}；海外项目只在PC数据/手游化角度成立时继续占用复核名额`;
 }
 
 function releaseWindowText(candidate) {
@@ -283,16 +248,11 @@ function buildVerdict(className, dropReason) {
   return "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰";
 }
 
-function buildNextAction(className) {
-  if (className === "drop") return "归档原因，避免重复讨论";
-  if (className === "push") return "先安排实机/运营测试；通过后再确认团队地区、商务邮箱/Discord、中文计划和发行占位";
-  return "人工 review 后决定提测、观察或淘汰；不要因为缺联系方式阻塞首轮测试";
-}
-
-function buildLeadNote(candidate, className, dropReason) {
-  if (className === "drop") return `V6判断：${dropReason}。`;
-  if (className === "push") return "V6判断：国内优先或海外PC验证/手游化角度成立；下一步先测游戏，测试成立再推进商务。";
-  return "V6判断：前置信号成立但还不够商务推进；先放入未处理 inbox，人工决定提测、观察或淘汰。";
+function dropReasonLabel(candidate, dropReason) {
+  if (!dropReason) return null;
+  if (candidate.releaseTooSoon) return "窗口不合适";
+  if (candidate.alreadyReleased) return "已上线";
+  return null;
 }
 
 export function buildBilibiliFit(candidate) {

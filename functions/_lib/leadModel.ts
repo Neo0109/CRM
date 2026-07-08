@@ -127,7 +127,7 @@ export function normalizeLead(raw: Partial<Lead>, options: NormalizeLeadOptions 
     review_status: normalizeReviewStatus(raw.review_status, bucket),
     reviewed_at: valueOrNull(raw.reviewed_at),
     drop_reason: valueOrNull(raw.drop_reason),
-    priority_reason: valueOrNull(raw.priority_reason) ?? inferPriorityReason(raw),
+    priority_reason: valueOrNull(raw.priority_reason),
     rule_fit: valueOrNull(raw.rule_fit) ?? inferRuleFit(raw, country, links),
     genre: valueOrNull(raw.genre),
     gameplay: valueOrNull(raw.gameplay),
@@ -312,8 +312,7 @@ export function leadsFromReport(report: DailyReport): Partial<Lead>[] {
     ...report.drop_pool.map((lead) => ({ ...lead, bucket: "淘汰池" as const, stage: lead.stage ?? "rejected", review_status: "已淘汰" as const }))
   ].map((lead) => ({
     ...lead,
-    first_seen: lead.first_seen ?? report.report_date,
-    notes: appendText(lead.notes, `导入日报 ${report.report_date}：${report.summary}`)
+    first_seen: lead.first_seen ?? report.report_date
   }));
 }
 
@@ -343,14 +342,6 @@ function inferRegionPriority(country: string | undefined, signals: string | null
 
 function inferRegion(country: string | undefined): Region {
   return isDomestic(country) ? "中国" : "海外";
-}
-
-function inferPriorityReason(raw: Partial<Lead>) {
-  if (raw.priority_reason) return raw.priority_reason;
-  if (raw.bucket === "推进池" || raw.bucket === "跟进中" || raw.bucket === "测试中") return raw.traction_summary ?? raw.verdict ?? "进入重点处理队列，需要优先 review";
-  if (raw.bucket === "待评测") return raw.traction_summary ?? raw.verdict ?? "已进入提测队列，等待产品验证";
-  if (raw.bucket === "淘汰池") return raw.risks ?? raw.verdict ?? "触发淘汰规则";
-  return raw.traction_summary ?? raw.public_signals ?? "等待更强公开信号";
 }
 
 function inferRuleFit(raw: Partial<Lead>, country: string, links: string[]) {
@@ -467,10 +458,6 @@ function mergeNotes(current: string | null, incoming: string | null) {
   if (!current) return incoming;
   if (!incoming || current.includes(incoming)) return current;
   return `${current}\n${incoming}`;
-}
-
-function appendText(current: string | null | undefined, next: string) {
-  return current ? `${current}\n${next}` : next;
 }
 
 function mergeStringArrays(current: string[], incoming: string[]) {

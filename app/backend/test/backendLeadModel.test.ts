@@ -121,7 +121,7 @@ describe("backend lead model helpers", () => {
       ["Watch Game", "未处理", "new", "未处理"],
       ["Drop Game", "淘汰池", "rejected", "已淘汰"]
     ]);
-    assert.ok(String(leads[0].notes).includes("导入日报 2026-07-04"));
+    assert.equal(leads[0].notes ?? null, null);
 
     const csv = backendToCsv([
       normalizeBackendLead({

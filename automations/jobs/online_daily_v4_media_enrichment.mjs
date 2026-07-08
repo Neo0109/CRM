@@ -36,6 +36,7 @@ export async function enrichMediaLeadWithSteamContext(lead, context = {}) {
   const releaseDate = normalizeReleaseDate(details?.release_date?.date ?? officialLead.release_window);
   const daysToRelease = daysUntil(releaseDate, context.reportDate);
   const alreadyReleased = typeof daysToRelease === "number" && daysToRelease < 0 && !details?.release_date?.coming_soon;
+  const releaseTooSoon = typeof daysToRelease === "number" && daysToRelease >= 0 && daysToRelease < 60;
   const steamLinks = [
     `https://store.steampowered.com/app/${officialLead.steam_app_id}/`,
     `https://steamdb.info/app/${officialLead.steam_app_id}/`,
@@ -61,6 +62,10 @@ export async function enrichMediaLeadWithSteamContext(lead, context = {}) {
   if (alreadyReleased) {
     diagnostics.media_released_routed_to_drop = (diagnostics.media_released_routed_to_drop ?? 0) + 1;
     return mediaLeadToDrop(finalizeMediaLeadDecisionFields(nextLead, details, context), `B站/媒体线索补到 Steam AppID ${officialLead.steam_app_id} 后交叉验证：Steam 页面显示已发售约${Math.abs(daysToRelease)}天，不符合前置BD窗口`);
+  }
+
+  if (releaseTooSoon) {
+    return mediaLeadToDrop(finalizeMediaLeadDecisionFields(nextLead, details, context), `B站/媒体线索补到 Steam AppID ${officialLead.steam_app_id} 后交叉验证：距发售不足60天，合作窗口不合适`);
   }
 
   return finalizeMediaLeadDecisionFields(nextLead, details, context);
@@ -135,7 +140,7 @@ export function finalizeMediaLeadDecisionFields(lead, details, context = {}) {
     gameplay,
     progress,
     release_window: releaseDate ?? lead.release_window,
-    priority_reason: fields.priority_reason,
+    priority_reason: null,
     rule_fit: fields.rule_fit,
     bilibili_fit: fields.bilibili_fit,
     amplification: fields.amplification,
@@ -153,11 +158,18 @@ export function mediaLeadToDrop(lead, reason) {
     bucket: "淘汰池",
     stage: "rejected",
     priority: "P3",
-    priority_reason: reason,
+    drop_reason: dropReasonLabel(reason),
+    priority_reason: null,
     rule_fit: `${lead.rule_fit ?? ""}；${reason}`.replace(/^；/, ""),
     risks: reason,
     verdict: `${reason}。不进入未处理 review，除非后续明确要求做上线后复盘。`,
     next_action: null,
     notes: null
   };
+}
+
+function dropReasonLabel(reason) {
+  if (/不足60天|窗口不合适/.test(reason)) return "窗口不合适";
+  if (/已发售|正式上线|已上线/.test(reason)) return "已上线";
+  return null;
 }

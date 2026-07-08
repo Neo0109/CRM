@@ -125,6 +125,26 @@ describe("online daily v4 decision helpers", () => {
     assert.equal(pools.push[1].id, "lead_steam_100_2026-07-04");
     assert.equal(pools.push[1].first_seen, "2026-07-04");
   });
+
+  it("routes domestic demo candidates launching within 60 days to drop instead of review", () => {
+    const pools = buildPools([
+      candidate({
+        appId: "300",
+        title: "Near Launch Domestic Demo",
+        releaseTooSoon: true,
+        releaseDate: "2026-07-20",
+        daysToRelease: 16,
+        score: 140
+      })
+    ], [], { reportDate: "2026-07-04", minReviewLeads: 1, minReviewBackfillScore: 8 });
+
+    assert.equal(pools.push.some((lead) => lead.project === "Near Launch Domestic Demo"), false);
+    assert.equal(pools.watch.some((lead) => lead.project === "Near Launch Domestic Demo"), false);
+    assert.equal(pools.drop[0].project, "Near Launch Domestic Demo");
+    assert.equal(pools.drop[0].drop_reason, "窗口不合适");
+    assert.equal(pools.drop[0].priority_reason, null);
+    assert.match(`${pools.drop[0].rule_fit} ${pools.drop[0].risks}`, /不足60天|窗口不合适/);
+  });
 });
 
 describe("online daily v4 volume and dedupe helpers", () => {

@@ -85,7 +85,7 @@ export function deriveMediaDecisionFields({
   const sourceSignal = officialSourceMatched ? "官方源已确认" : /b站|bilibili/i.test(source) ? "B站来源待复核" : "媒体来源待复核";
   if (alreadyReleased || progress === "正式上线") {
     return {
-      priority_reason: `《${title}》已正式上线，前置发行窗口偏弱；除非已有热度数据或可争取中国区权益，否则签约 upside 有限。`,
+      priority_reason: null,
       rule_fit: "正式上线；不进入新线索队列，保留为市场复盘或竞品观察。",
       bilibili_fit: "可看上线后内容热度和用户反馈，但不作为新签约优先线索。",
       amplification: "",
@@ -96,9 +96,8 @@ export function deriveMediaDecisionFields({
     };
   }
 
-  const priorityHint = confidence === "strict" || score >= 52 ? "优先看" : "先核验";
   return {
-    priority_reason: `${gameplay} + ${progress}；${priorityHint}玩法循环、收入 upside、B站内容放大和团队签约窗口。`,
+    priority_reason: null,
     rule_fit: `${progress}；${steamAppId ? "Steam 交叉验证已建立" : sourceSignal}；适合由 BD 先判断产品质量、B站适配和签约概率。`,
     bilibili_fit: "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
     amplification: "",

@@ -168,7 +168,7 @@ export function mediaSignalToLead(item, confidence = "strict", context = {}) {
     bucket: className === "drop" ? "淘汰池" : "未处理",
     stage: className === "drop" ? "rejected" : "new",
     priority: className === "push" ? "P1" : className === "drop" ? "P3" : "P2",
-    priority_reason: dropReason ?? decisionFields.priority_reason,
+    priority_reason: null,
     rule_fit: dropReason
       ? `国内媒体/B站产品发现源；${dropReason}；只做淘汰/市场背景，不进入未处理首轮 review。`
       : decisionFields.rule_fit,
@@ -192,11 +192,11 @@ export function mediaSignalToLead(item, confidence = "strict", context = {}) {
     amplification: decisionFields.amplification,
     risks: dropReason ?? decisionFields.risks,
     verdict: dropReason ? `${dropReason}，不占用未处理 review 名额。` : decisionFields.verdict,
-    next_action: decisionFields.next_action,
+    next_action: null,
     owner: null,
     due_date: null,
     first_seen: reportDate,
-    notes: decisionFields.notes
+    notes: null
   };
 }
 

@@ -15,7 +15,7 @@ This document is a handoff note for future CRM optimization conversations. It pr
 - Human current rules: `docs/SOURCING_RULES_CURRENT.md`
 - Canonical V6/V6.1 rules: `docs/SOURCING_RULES_V6.md`
 - Machine-readable rules: `automations/rules/daily-report.json`
-- Current product version after the latest product iteration: `v2.5`
+- Current product version after the latest product iteration: `v2.6`
 
 ## Automation Status On 2026-05-28
 
@@ -54,9 +54,20 @@ Version records:
 
 - `docs/releases/v1.8.2-automation-sync-receipts.md`
 
+## Sourcing Rules V6.5 Iteration
+
+The latest sourcing-logic iteration is `sourcing-rules-v6.5-window-hygiene`, focused on restoring the 60-day launch-window hard gate, keeping near-launch products out of fresh review queues, and preserving human-owned fields (`priority_reason`, `next_action`, `notes`) as empty by default.
+
+V6.5 intent:
+
+- Keep the V6.4 Bilibili probe and official-source preference.
+- Route new candidates launching in fewer than 60 days to `drop_pool` or market background.
+- Treat Demo/试玩/测试 as testability signals only, not as a reason to override a closed cooperation window.
+- Put rule judgments in `rule_fit`, `risks`, `drop_reason`, `progress`, and `release_window`; leave BD-owned notes and next actions empty.
+
 ## Sourcing Rules V6.4 Iteration
 
-The latest sourcing-logic iteration is `sourcing-rules-v6.4-bili-probe`, focused on configurable Bilibili probe intake, official/developer/publisher source preference, structured link extraction, probe diagnostics, and preserving the V6.3 field-hygiene and low-volume stability fixes.
+The previous sourcing-logic iteration was `sourcing-rules-v6.4-bili-probe`, focused on configurable Bilibili probe intake, official/developer/publisher source preference, structured link extraction, probe diagnostics, and preserving the V6.3 field-hygiene and low-volume stability fixes.
 
 V6.4 intent:
 
@@ -95,7 +106,7 @@ V6 intent:
 - Domestic products are the sourcing default because cooperation, efficiency, visual/cultural fit, and signing probability are materially better.
 - Domestic developer Demo/test signals are promoted.
 - Overseas products only consume review slots when there is PC hit validation and a credible mobile-adaptation angle.
-- The old 60-day window is not the only useful window; domestic early-stage projects can be reviewed over a longer horizon.
+- Domestic early-stage projects can be reviewed over a longer horizon, but later V6.5 restores a hard filter for fresh candidates launching in fewer than 60 days.
 - Domestic source coverage expands through Chinese game media, Bilibili video/search signals, indienova, developer communities, and official studio posts.
 - Steam Trends must cover category risers, Demo/Next Fest or other Steam windows, publisher/developer slate signals, public data quality, and BD actions. It must not display internal sourcing-rule notes as market insights.
 - A daily report with one or two usable non-dropped leads is considered a failed automation run when Steam/media/Bilibili sources are healthy.

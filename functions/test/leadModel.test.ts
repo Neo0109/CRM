@@ -32,6 +32,7 @@ describe("lead model helpers", () => {
     assert.equal(lead.region_priority, "国内优先");
     assert.equal(lead.stage, "watch");
     assert.equal(lead.priority, "P2");
+    assert.equal(lead.priority_reason, null);
     assert.equal(lead.review_status, "已查看");
     assert.deepEqual(lead.links, [
       "https://store.steampowered.com/app/123/",
@@ -127,7 +128,9 @@ describe("lead model helpers", () => {
       ["Watch Game", "未处理", "new", "未处理"],
       ["Drop Game", "淘汰池", "rejected", "已淘汰"]
     ]);
-    assert.ok(String(leads[0].notes).includes("导入日报 2026-07-04"));
+    assert.equal(leads[0].notes, undefined);
+    assert.equal(leads[1].notes, undefined);
+    assert.equal(leads[2].notes, "quote \"inside\"");
 
     const csv = toCsv([
       normalizeLead({

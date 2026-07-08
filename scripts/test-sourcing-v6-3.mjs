@@ -60,14 +60,14 @@ const fields = deriveMediaDecisionFields({
   alreadyReleased: false,
   officialSourceMatched: true
 });
-assert.match(fields.priority_reason, /玩法|商业|收入|B站|签约|热度/, "priority reason should be BD-decision oriented");
-assert.doesNotMatch(fields.priority_reason, /媒体\/B站产品信号|官方\/开发者源复核命中|已补 Steam AppID|先进未处理|先做产品判断|流水|扫描|候选/, "priority reason should not contain automation bookkeeping");
+assert.equal(fields.priority_reason, null, "priority_reason is a human-owned field and should stay empty by default");
+assert.match(`${fields.rule_fit} ${fields.risks} ${fields.bilibili_fit}`, /玩法|B站|签约|官方|Steam|权益空间/, "rule fields should keep BD-decision evidence without filling human notes");
 assert.equal(fields.verdict, "", "verdict should stay empty by default; human evaluation_result owns the conclusion");
 assert.equal(fields.next_action, null, "next_action should default empty for human BD input");
 assert.equal(fields.notes, null, "notes should default empty unless there is important extra evidence");
 
 const onlineDailySource = readFileSync(new URL("../automations/jobs/online_daily_v4.mjs", import.meta.url), "utf8");
 assert.doesNotMatch(onlineDailySource, /V6保底|低置信度国内保底|打开 Steam\/原始链接快速判断|补入未处理首轮 review/, "review backfill must not write automation bookkeeping into lead fields");
-assert.match(onlineDailySource, /sourcing-rules-v6\.4-bili-probe/, "online generator should publish V6.4 Bilibili probe rule diagnostics");
+assert.match(onlineDailySource, /sourcing-rules-v6\.5-window-hygiene/, "online generator should publish V6.5 window hygiene rule diagnostics");
 
-console.log(JSON.stringify({ ok: true, checked: "sourcing-v6.4-quality" }, null, 2));
+console.log(JSON.stringify({ ok: true, checked: "sourcing-v6.5-quality" }, null, 2));
