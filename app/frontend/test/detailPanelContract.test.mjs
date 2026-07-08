@@ -10,6 +10,7 @@ const workflowSource = readFileSync(resolve(__dirname, "../src/features/leads/le
 const detailUxPath = resolve(__dirname, "../src/DetailUxRefinement.tsx");
 const detailUxSource = existsSync(detailUxPath) ? readFileSync(detailUxPath, "utf8") : "";
 const aestheticSource = readFileSync(resolve(__dirname, "../src/aesthetic-refresh.css"), "utf8");
+const leadDetailStyleSource = readFileSync(resolve(__dirname, "../src/lead-detail.css"), "utf8");
 const manualSource = readFileSync(resolve(__dirname, "../src/manual.css"), "utf8");
 
 function leadDetailSource() {
@@ -82,34 +83,39 @@ describe("Lead detail panel contract", () => {
       assert.match(detail, new RegExp(label), `${label} should be a first-class detail section`);
     }
     assert.match(detail, /detail-floating-safe-zone/);
-    assert.match(aestheticSource, /\.detail-panel\[data-detail-layout="pc-review-polish"\]/);
-    assert.match(aestheticSource, /\.detail-section/);
+    assert.match(leadDetailStyleSource, /\.detail-panel\[data-detail-layout="pc-review-polish"\]/);
+    assert.match(leadDetailStyleSource, /\.detail-section/);
+    assert.doesNotMatch(
+      aestheticSource,
+      /\.detail-panel\[data-detail-layout="pc-review-polish"\]/,
+      "PC Lead Detail layout should live in lead-detail.css, not the global aesthetic override"
+    );
     assert.match(manualSource, /\.app-shell\.has-manual-floating-action[\s\S]*\.detail-panel\[data-detail-layout="pc-review-polish"\]/);
   });
 
   it("prevents the desktop detail rail from becoming a sideways scrolling form", () => {
     assert.match(
-      aestheticSource,
+      leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\][\s\S]*overflow-x:\s*hidden/,
       "pc review detail panel should clip horizontal overflow instead of exposing a sideways scrollbar"
     );
     assert.match(
-      aestheticSource,
+      leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\][\s\S]*--detail-review-columns:\s*minmax\(0,\s*1fr\)/,
       "pc review detail panel should default to a single shrink-safe review column"
     );
     assert.match(
-      aestheticSource,
+      leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.review-action-form[\s\S]*grid-template-columns:\s*var\(--detail-review-columns\)/,
       "review quick-fill form should consume the detail panel column contract"
     );
     assert.match(
-      aestheticSource,
+      leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.contact-row[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/,
       "contact editor rows should collapse inside the narrow detail rail"
     );
     assert.match(
-      aestheticSource,
+      leadDetailStyleSource,
       /\.detail-panel\[data-detail-layout="pc-review-polish"\]\s+\.review-action-head[\s\S]*flex-direction:\s*column/,
       "review quick-fill header should not force a wide two-sided row"
     );
