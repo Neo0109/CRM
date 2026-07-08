@@ -6,21 +6,12 @@ import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueue, type Fol
 import type { WeeklyLeadSummary, WeeklyReport } from "./types";
 
 export function WeeklyReportLauncher() {
-  const [host, setHost] = useState<Element | null>(null);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const updateHost = () => setHost(document.querySelector(".nav-extension-host") ?? document.querySelector(".actions"));
-    updateHost();
-    const observer = new MutationObserver(updateHost);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
 
   const button = <button className={`tab-button ${open ? "active" : ""}`} onClick={() => setOpen(true)} type="button"><BarChart3 size={16} />周报</button>;
 
   return <>
-    {host ? createPortal(button, host) : <div className="weekly-fallback-entry">{button}</div>}
+    {button}
     {open && createPortal(<WeeklyReportWorkspace onClose={() => setOpen(false)} />, document.body)}
   </>;
 }

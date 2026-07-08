@@ -4,6 +4,7 @@ import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLead
 import { AssistantPage } from "./AssistantPage";
 import type { AssistantResultReviewTarget } from "./assistantQuality";
 import { AutomationDiagnosticsPage } from "./AutomationDiagnosticsPage";
+import { CalendarLauncher } from "./CalendarLauncher";
 import { LeadsView } from "./features/leads";
 import type { LeadReviewTarget } from "./features/leads/leadReviewTarget";
 import { RadarPage } from "./features/radar";
@@ -11,6 +12,7 @@ import { LoginPage } from "./LoginPage";
 import { ManualLeadLauncher } from "./ManualLeadLauncher";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
+import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
 import bilibiliLogo from "./assets/bilibili-game-logo.png";
 import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
 import { productVersionLabel } from "./productVersion";
@@ -248,7 +250,10 @@ export default function App() {
             <a className="ghost-button" href="/api/export/json"><FileJson size={16} />JSON</a>
             <a className="ghost-button" href="/api/export/csv"><ArrowDownToLine size={16} />CSV</a>
           </div>
-          <div className="nav-group nav-extension-host" />
+          <div className="nav-group nav-extension-host">
+            <CalendarLauncher />
+            <WeeklyReportLauncher />
+          </div>
           <div className="nav-spacer" aria-hidden="true" />
           <button className="ghost-button logout-button" type="button" onClick={logout}><LogOut size={16} />退出登录</button>
         </div>
