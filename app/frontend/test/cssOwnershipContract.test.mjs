@@ -42,12 +42,12 @@ describe("frontend CSS ownership contract", () => {
       "design tokens should still load before base styles"
     );
     assert.ok(
-      importOffset(mainSource, "./calendar.css") < importOffset(mainSource, "./lead-detail.css"),
-      "calendar styles should keep their existing slot before lead detail styles"
+      importOffset(mainSource, "./calendar.css") < importOffset(mainSource, "./aesthetic-refresh.css"),
+      "calendar styles should keep their feature slot before the global aesthetic layer"
     );
     assert.ok(
-      importOffset(mainSource, "./lead-detail.css") < importOffset(mainSource, "./lead-evidence.css"),
-      "lead-detail.css should replace the previous detail refinement import slot"
+      importOffset(mainSource, "./aesthetic-refresh.css") < importOffset(mainSource, "./lead-detail.css"),
+      "Lead Detail owner styles should load after aesthetic-refresh.css so responsive detail overrides keep priority"
     );
   });
 
