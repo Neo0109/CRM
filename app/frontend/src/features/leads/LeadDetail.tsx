@@ -15,7 +15,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
     if (lead) setDraft({ ...lead, contact_methods: [...lead.contact_methods], links: [...lead.links] });
   }, [lead]);
 
-  if (!lead || !draft) return <aside className="detail-panel" data-detail-layout="pc-review-polish"><div className="empty-cell">暂无 lead</div></aside>;
+  if (!lead || !draft) return <aside className="detail-panel" data-detail-layout="pc-review-polish"><div className="empty-cell">{missingLinksMode ? "暂无缺链接 lead" : "暂无 lead"}</div></aside>;
   const activeLead = lead;
   const activeDraft = draft;
 

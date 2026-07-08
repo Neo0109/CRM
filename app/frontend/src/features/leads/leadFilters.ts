@@ -43,7 +43,7 @@ export const emptyLeadFilters: LeadFilters = {
 };
 
 export function filterLeads(leads: Lead[], filters: LeadFilters, now = new Date()) {
-  return leads.filter((lead) => {
+  const matchingLeads = leads.filter((lead) => {
     const contacts = lead.contact_methods.map((method) => `${method.type} ${method.value} ${method.note ?? ""}`).join(" ");
     const haystack = [
       lead.project,
@@ -75,6 +75,40 @@ export function filterLeads(leads: Lead[], filters: LeadFilters, now = new Date(
     const actionMatch = !filters.needsAction || needsActionAttention(lead, now);
     return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && evidenceMatch && missingLinkMatch && actionMatch;
   });
+
+  if (shouldUseDefaultReviewQueue(matchingLeads, filters)) {
+    return matchingLeads.filter(isDefaultReviewQueueLead);
+  }
+
+  return matchingLeads;
+}
+
+export function filterLeadsForView(leads: Lead[], filters: LeadFilters, now = new Date()) {
+  return filterLeads(leads, filters, now);
+}
+
+export function hasExplicitLeadFilters(filters: LeadFilters) {
+  return Boolean(
+    filters.query.trim() ||
+    filters.bucket !== "全部" ||
+    filters.region !== "全部" ||
+    filters.stage !== "全部" ||
+    filters.owner.trim() ||
+    filters.city.trim() ||
+    filters.releaseWindow.trim() ||
+    filters.reviewStatus !== "全部" ||
+    filters.evidenceIssues ||
+    filters.missingLinks ||
+    filters.needsAction
+  );
+}
+
+export function shouldUseDefaultReviewQueue(leads: Lead[], filters: LeadFilters) {
+  return !hasExplicitLeadFilters(filters) && leads.some(isDefaultReviewQueueLead);
+}
+
+function isDefaultReviewQueueLead(lead: Lead) {
+  return lead.bucket === "未处理" || lead.review_status === "未处理";
 }
 
 export function buildDashboardStats(leads: Lead[]): DashboardStats {
