@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { linkLabel as defaultLinkLabel, normalizedLinkHref } from "./linkPresentation";
 import { ReportHistoryControls } from "./ReportHistoryControls";
 import type { SteamTrendReport } from "./types";
 
@@ -32,7 +33,7 @@ export function SteamTrendsPage({ report, loading, error, onDateChange }: { repo
         <div className="radar-card-head"><span className={`heat heat-${insight.signal_level}`}>{insight.signal_level}</span><strong>{insight.title}</strong></div>
         <p>{insight.summary}</p>
         <dl><div><dt>来源</dt><dd>{insight.source}</dd></div><div><dt>BD 动作</dt><dd>{insight.suggested_action}</dd></div></dl>
-        <div className="link-list"><a href={insight.link} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(insight.link)}</a></div>
+        <div className="link-list"><a href={normalizedLinkHref(insight.link)} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(insight.link)}</a></div>
       </article>)}</div>
     </div>}
 
@@ -42,7 +43,7 @@ export function SteamTrendsPage({ report, loading, error, onDateChange }: { repo
         <div className="radar-card-head"><span className="heat heat-中">品类</span><strong>{signal.genre}</strong></div>
         <p>{signal.signal}</p>
         <dl><div><dt>为什么重要</dt><dd>{signal.why_it_matters}</dd></div><div><dt>筛选动作</dt><dd>{signal.bd_action}</dd></div></dl>
-        <div className="link-list">{visibleLinks(signal.links).map((link) => <a key={link} href={link} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(link)}</a>)}</div>
+        <div className="link-list">{visibleLinks(signal.links).map((link) => <a key={link} href={normalizedLinkHref(link)} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(link)}</a>)}</div>
       </article>)}</div>
     </div>}
 
@@ -52,7 +53,7 @@ export function SteamTrendsPage({ report, loading, error, onDateChange }: { repo
         <div className="radar-card-head"><span className={`heat ${item.auto_import ? "heat-高" : "heat-中"}`}>{item.auto_import ? "入库" : "观察"}</span><strong>{item.title}</strong></div>
         <p>{item.signal}</p>
         <dl><div><dt>趋势来源</dt><dd>{[item.rank_bucket, item.source].filter(Boolean).join(" · ")}</dd></div><div><dt>B站适配</dt><dd>{item.bilibili_fit}</dd></div><div><dt>判断</dt><dd>{item.reason ?? "待复核"}</dd></div></dl>
-        <div className="link-list">{visibleLinks(item.links).map((link) => <a key={link} href={link} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(link)}</a>)}</div>
+        <div className="link-list">{visibleLinks(item.links).map((link) => <a key={link} href={normalizedLinkHref(link)} target="_blank" rel="noreferrer"><ExternalLink size={14} />{linkLabel(link)}</a>)}</div>
       </article>)}</div>
     </div>}
 
@@ -72,9 +73,7 @@ function linkLabel(link: string) {
   if (link.includes("filter=popularnew")) return "热门新品";
   if (link.includes("filter=topsellers")) return "热销榜";
   if (link.includes("store.steampowered.com/tags")) return tagLabel(link);
-  if (link.includes("store.steampowered.com/app/")) return "Steam";
-  if (link.includes("steamdb.info/app/")) return "SteamDB";
-  return "来源";
+  return defaultLinkLabel(link);
 }
 
 function tagLabel(link: string) {

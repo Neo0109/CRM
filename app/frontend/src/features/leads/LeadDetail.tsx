@@ -4,7 +4,7 @@ import { LeadEvidencePanel } from "../../LeadEvidencePanel";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead } from "../../types";
 import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityValues, regionPriorityValues, regionValues, stageLabel, stageValues } from "./leadConstants";
 import { Select, TextareaField, TextField } from "./leadControls";
-import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
+import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, normalizedLinkHref, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
 import { buildLeadReviewChecklist, type LeadReviewChecklistItem } from "./leadReviewChecklist";
 import { buildQuickActionSpecs, isTestingOverdue, reviewPatchForBucket, stageFromBucket, type QuickActionSpec } from "./leadWorkflow";
 
@@ -239,14 +239,14 @@ export function QuickActions({ lead, onPatch, compact = false, missingLinksMode 
 
 export function ContactChips({ contacts, links }: { contacts: ContactMethod[]; links: string[] }) {
   const contactChips = visibleContacts(contacts).slice(0, 3).map((method, index) => ({
-    href: isHttpUrl(method.value) ? method.value : null,
+    href: isHttpUrl(method.value) ? normalizedLinkHref(method.value) : null,
     key: `contact-${method.value}-${index}`,
     label: contactLabel(method),
     title: `${method.type}: ${method.value}`
   }));
   const usedLabels = new Set(contactChips.map((chip) => chip.label));
   const linkChips = gameLinks(links).map((link, index) => ({
-    href: link,
+    href: normalizedLinkHref(link),
     key: `link-${link}-${index}`,
     label: linkLabel(link),
     title: link
@@ -302,7 +302,7 @@ function SteamLinkEditor({ lead, onApply }: { lead: Lead; onApply: (link: Normal
       <input value={value} onChange={(event) => setValue(event.target.value)} placeholder="https://store.steampowered.com/app/... 或 AppID" />
       <button className="ghost-button" onClick={handleApply} disabled={saving}>{saving ? "保存中" : "补录并保存"}</button>
     </div>
-    {links.length > 0 && <div className="chip-list current-steam-links">{links.map((link) => <a className="chip contact-chip-link" key={link} href={link} target="_blank" rel="noreferrer"><ExternalLink size={12} /><span className="chip-label">{linkLabel(link)}</span></a>)}</div>}
+    {links.length > 0 && <div className="chip-list current-steam-links">{links.map((link) => <a className="chip contact-chip-link" key={link} href={normalizedLinkHref(link)} target="_blank" rel="noreferrer"><ExternalLink size={12} /><span className="chip-label">{linkLabel(link)}</span></a>)}</div>}
   </div>;
 }
 
