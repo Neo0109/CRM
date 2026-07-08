@@ -4,7 +4,6 @@ import { createPortal } from "react-dom";
 import { fetchLeads, updateLead } from "./api";
 import { buildCalendarReminderPatch, canQuickAddFollowUpToCalendar } from "./calendarFollowUpActions";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "./followUpQueue";
-import { productVersion } from "./productVersion";
 import { officialSteamEvents, steamEventsSource, type SteamEventKind } from "./steamEvents";
 import type { Lead } from "./types";
 
@@ -40,28 +39,12 @@ const reminderOptions: ReminderOption[] = [
 ];
 
 export function CalendarLauncher() {
-  const [host, setHost] = useState<Element | null>(null);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const updateHost = () => setHost(document.querySelector(".nav-extension-host") ?? document.querySelector(".actions"));
-    updateHost();
-    const observer = new MutationObserver(updateHost);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const versionLabel = document.querySelector<HTMLElement>(".hero-copy .eyebrow");
-    if (versionLabel && /v\d+\.\d+(?:\.\d+)?/.test(versionLabel.textContent ?? "")) {
-      versionLabel.textContent = (versionLabel.textContent ?? "").replace(/v\d+\.\d+(?:\.\d+)?/, productVersion);
-    }
-  }, []);
 
   const button = <button className={`tab-button ${open ? "active" : ""}`} onClick={() => setOpen(true)} type="button"><CalendarDays size={16} />日历</button>;
 
   return <>
-    {host ? createPortal(button, host) : <div className="calendar-fallback-entry">{button}</div>}
+    {button}
     {open && createPortal(<CalendarWorkspace onClose={() => setOpen(false)} />, document.body)}
   </>;
 }
