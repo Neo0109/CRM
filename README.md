@@ -52,7 +52,7 @@ docs/
 
 ## 每日流程
 
-1. GitHub Actions 通过 `.github/workflows/sync-daily-report.yml` 定时或手动触发日报。
+1. GitHub Actions 通过 `.github/workflows/sync-daily-report.yml` 定时或手动触发日报；`cloudflare/daily-report-heartbeat/worker.mjs` 在 GitHub schedule 延迟/丢弃时负责外部心跳补触发 watchdog。
 2. 云端 workflow 运行 `automations/jobs/online_daily_runner.mjs -> online_daily_v4.mjs`，先校验 `automations/rules/daily-report.json`，再生成日报、行业雷达和 Steam 趋势，并同步到 CRM。
 3. 打开 CRM 进入 review 工作台；自动化非淘汰线索先进入 `未处理` inbox，人工再决定观察、待评测、跟进、推进或淘汰。
 

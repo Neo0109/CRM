@@ -15,6 +15,7 @@ const expectedTaskIds = [
   "automation-diagnostics-test",
   "lead-assistant-test",
   "sourcing-learning-test",
+  "daily-heartbeat-test",
   "frontend-typecheck",
   "backend-typecheck",
   "functions-typecheck",
@@ -40,6 +41,7 @@ test("keeps scattered diagnostics and assistant checks in the default suite", ()
   assert.match(commandText, /scripts\/test-automation-diagnostics\.ts/);
   assert.match(commandText, /scripts\/test-lead-assistant-model\.ts/);
   assert.match(commandText, /scripts\/test-sourcing-learning\.mjs/);
+  assert.match(commandText, /scripts\/test-daily-report-heartbeat\.mjs/);
 });
 
 test("does not include live generators, watchdogs, or manual import commands", () => {

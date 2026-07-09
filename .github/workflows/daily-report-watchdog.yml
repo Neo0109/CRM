@@ -13,11 +13,11 @@ on:
         default: false
         type: boolean
   schedule:
-    # 10:15-16:15 Asia/Shanghai: repeatedly catch missing, delayed, or failed cloud runs.
+    # 10:23-16:23 Asia/Shanghai: repeatedly catch missing, delayed, or failed cloud runs.
     # GitHub scheduled workflows are not guaranteed to fire exactly on the minute, so the
     # watchdog is intentionally separate from the primary report workflow and self-heals
     # throughout the working day.
-    - cron: "15 2-8 * * *"
+    - cron: "23 2-8 * * *"
 
 permissions:
   contents: write
