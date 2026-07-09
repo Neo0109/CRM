@@ -1,0 +1,49 @@
+{
+  "report_date": "2026-07-09",
+  "slot": "afternoon",
+  "status": "generation_failed",
+  "attempts": 0,
+  "generated_changed": false,
+  "generation_status": "failed",
+  "generation_exit_code": 1,
+  "validation_status": "unknown",
+  "validation_exit_code": 0,
+  "failure_stage": "volume_validation",
+  "failure_reason": "Daily sourcing volume below production thresholds: Daily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure.",
+  "volume_diagnostics": {
+    "ok": false,
+    "issues": [
+      {
+        "code": "review_leads_low",
+        "message": "Daily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure."
+      }
+    ],
+    "warnings": [],
+    "reviewCount": 11,
+    "minReviewLeads": 18,
+    "domesticSignalCount": 134,
+    "mediaLeadCount": 10,
+    "minMediaLeadsWhenHealthy": 10,
+    "rawCandidateCount": 188,
+    "enrichedCandidateCount": 90,
+    "mediaSignalsRaw": 633,
+    "mediaStaleFiltered": 31,
+    "mediaBannedFiltered": 5,
+    "mediaLowScoreFiltered": 239,
+    "mediaNonProductFiltered": 276,
+    "mediaDuplicateFiltered": 37,
+    "bilibiliOfficialSourceHits": 0,
+    "mediaExpandedProductCandidates": 12,
+    "mediaRescueProductCandidates": 2,
+    "mediaReleasedRoutedToDrop": 2
+  },
+  "generation_log_tail": "{\n  \"ok\": true,\n  \"stage\": \"daily_report_rules_loaded\",\n  \"rule_version\": \"sourcing-rules-v6.5-window-hygiene\",\n  \"schema_version\": 1,\n  \"active_rules_doc\": \"docs/SOURCING_RULES_CURRENT.md\",\n  \"canonical_rules_doc\": \"docs/SOURCING_RULES_V6.md\",\n  \"generator\": \"automations/jobs/online_daily_v4.mjs\"\n}\nMedia source failed for 手游那点事: fetch failed\nMedia source failed for 澎湃新闻: 403 Forbidden\nMedia source failed for GamesBeat: 403 Forbidden\nMedia source failed for 游戏茶馆: 403 Forbidden\nDaily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure.\n{\n  \"ok\": false,\n  \"failure_stage\": \"volume_validation\",\n  \"failure_reason\": \"Daily sourcing volume below production thresholds: Daily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure.\",\n  \"report_date\": \"2026-07-09\",\n  \"generator\": \"online_daily_v4_sourcing_rules_v6_5_window_hygiene\",\n  \"rule_version\": \"sourcing-rules-v6.5-window-hygiene\",\n  \"captured_at\": \"2026-07-09T18:04:59+08:00\",\n  \"candidates_seen\": 188,\n  \"candidates_enriched\": 90,\n  \"industry_signals\": 15,\n  \"media_signals_seen\": 323,\n  \"media_lead_candidates\": 10,\n  \"min_review_leads\": 18,\n  \"min_media_leads_when_healthy\": 10,\n  \"min_review_backfill_score\": 18,\n  \"push_pool\": 5,\n  \"watch_pool\": 6,\n  \"drop_pool\": 12,\n  \"final_import_candidates\": 11,\n  \"volume_diagnostics\": {\n    \"ok\": false,\n    \"issues\": [\n      {\n        \"code\": \"review_leads_low\",\n        \"message\": \"Daily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure.\"\n      }\n    ],\n    \"warnings\": [],\n    \"reviewCount\": 11,\n    \"minReviewLeads\": 18,\n    \"domesticSignalCount\": 134,\n    \"mediaLeadCount\": 10,\n    \"minMediaLeadsWhenHealthy\": 10,\n    \"rawCandidateCount\": 188,\n    \"enrichedCandidateCount\": 90,\n    \"mediaSignalsRaw\": 633,\n    \"mediaStaleFiltered\": 31,\n    \"mediaBannedFiltered\": 5,\n    \"mediaLowScoreFiltered\": 239,\n    \"mediaNonProductFiltered\": 276,\n    \"mediaDuplicateFiltered\": 37,\n    \"bilibiliOfficialSourceHits\": 0,\n    \"mediaExpandedProductCandidates\": 12,\n    \"mediaRescueProductCandidates\": 2,\n    \"mediaReleasedRoutedToDrop\": 2\n  },\n  \"diagnostics\": {\n    \"rule_version\": \"sourcing-rules-v6.5-window-hygiene\",\n    \"source_failures\": 10,\n    \"media_signals_raw\": 633,\n    \"media_stale_filtered\": 31,\n    \"media_banned_filtered\": 5,\n    \"media_low_score_filtered\": 239,\n    \"media_non_product_filtered\": 276,\n    \"media_expanded_product_candidates\": 12,\n    \"media_rescue_product_candidates\": 2,\n    \"media_duplicate_filtered\": 37,\n    \"media_steam_appids_extracted\": 26,\n    \"media_released_routed_to_drop\": 2,\n    \"bilibili_official_source_lookups\": 9,\n    \"bilibili_official_source_hits\": 0,\n    \"bilibili_probe\": {\n      \"raw_candidates\": 46,\n      \"keyword_candidates\": 46,\n      \"up_candidates\": 0,\n      \"detail_success\": 41,\n      \"detail_failed\": 0,\n      \"source_failures\": 6,\n      \"official_source_hits\": 0,\n      \"developer_source_hits\": 0,\n      \"publisher_source_hits\": 0,\n      \"media_source_hits\": 0,\n      \"trusted_creator_hits\": 0,\n      \"links_extracted\": 55,\n      \"steam_links_extracted\": 10,\n      \"blacklist_filtered\": 4,\n      \"old_video_filtered\": 14,\n      \"generic_collection_filtered\": 2,\n      \"required_keyword_filtered\": 0,\n      \"duplicate_filtered\": 0,\n      \"final_candidates\": 26,\n      \"last_error\": \"keyword 国风 修仙 游戏 试玩: Bilibili request failed: 412 Precondition Failed\"\n    },\n    \"low_volume_warnings\": []\n  }\n}\nfile:///home/runner/work/CRM/CRM/automations/jobs/online_daily_v4_volume.mjs:65\n    throw new DailyVolumeError(`Daily sourcing volume below production thresholds: ${message}`, volumeDiagnostics);\n          ^\n\nDailyVolumeError: Daily sourcing volume below production thresholds: Daily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure.\n    at validateDailyVolume (file:///home/runner/work/CRM/CRM/automations/jobs/online_daily_v4_volume.mjs:65:11)\n    at file:///home/runner/work/CRM/CRM/automations/jobs/online_daily_v4.mjs:91:23\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\n  volumeDiagnostics: {\n    ok: false,\n    issues: [\n      {\n        code: 'review_leads_low',\n        message: 'Daily review candidate count low: push+watch=11, expected >= 18. Steam raw=188, enriched=90, media_leads=10, media_raw=633, stale_filtered=31, banned_filtered=5, low_score_filtered=239, non_product_filtered=276, duplicate_filtered=37. Treating low volume as a sourcing/rule/upstream failure.'\n      }\n    ],\n    warnings: [],\n    reviewCount: 11,\n    minReviewLeads: 18,\n    domesticSignalCount: 134,\n    mediaLeadCount: 10,\n    minMediaLeadsWhenHealthy: 10,\n    rawCandidateCount: 188,\n    enrichedCandidateCount: 90,\n    mediaSignalsRaw: 633,\n    mediaStaleFiltered: 31,\n    mediaBannedFiltered: 5,\n    mediaLowScoreFiltered: 239,\n    mediaNonProductFiltered: 276,\n    mediaDuplicateFiltered: 37,\n    bilibiliOfficialSourceHits: 0,\n    mediaExpandedProductCandidates: 12,\n    mediaRescueProductCandidates: 2,\n    mediaReleasedRoutedToDrop: 2\n  }\n}\n\nNode.js v22.23.1\n",
+  "validation_log_tail": "",
+  "event_name": "schedule",
+  "event_schedule": "17 6 * * *",
+  "run_id": "29010074886",
+  "run_number": "132",
+  "run_url": "https://github.com/Neo0109/CRM/actions/runs/29010074886",
+  "captured_at": "2026-07-09T10:08:21.819Z",
+  "sync_response": ""
+}
