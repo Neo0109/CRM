@@ -173,6 +173,40 @@ export async function enrichSteamCandidates(candidates, context = {}) {
   return enriched;
 }
 
+export function prioritizeSteamCandidatesForReview(candidates, context = {}) {
+  return [...candidates].sort((a, b) => {
+    const diff = steamCandidateReviewWindowScore(b, context) - steamCandidateReviewWindowScore(a, context);
+    if (diff) return diff;
+    return (a.sourceIndex ?? 999) - (b.sourceIndex ?? 999);
+  });
+}
+
+export function steamCandidateReviewWindowScore(candidate, context = {}) {
+  const reportDate = context.reportDate ?? new Date().toISOString().slice(0, 10);
+  const releaseDate = normalizeReleaseDate(candidate.release);
+  const daysToRelease = daysUntil(releaseDate, reportDate);
+  let score = 0;
+
+  if (candidate.domesticQuery) score += 100;
+  if (candidate.domesticLens) score += 35;
+  if (/Demo|Next Fest|试玩|新品节/i.test(candidate.source ?? "")) score += 18;
+  if (/Keyword|国产|中国|国风|修仙|武侠|肉鸽|卡牌|模拟经营/i.test(`${candidate.source ?? ""} ${candidate.title ?? ""}`)) score += 12;
+  if (/CN/.test(candidate.source ?? "")) score += 5;
+
+  if (typeof daysToRelease === "number") {
+    if (daysToRelease < 0) score -= 220;
+    else if (daysToRelease < 60) score -= 170;
+    else if (daysToRelease <= 365) score += 140;
+    else score += 80;
+  } else if (/coming soon|tba|to be announced|待定|即将/i.test(`${candidate.release ?? ""}`)) {
+    score += 90;
+  } else {
+    score += 30;
+  }
+
+  return score;
+}
+
 export async function enrichSteamCandidate(candidate, details, context = {}) {
   const reportDate = context.reportDate ?? new Date().toISOString().slice(0, 10);
   const scoreCandidateImpl = context.scoreCandidateImpl ?? scoreCandidate;
