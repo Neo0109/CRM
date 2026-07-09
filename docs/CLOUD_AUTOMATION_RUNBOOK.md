@@ -23,7 +23,8 @@ The primary daily report workflow must be independent from product/UI iteration:
 
 - `.github/workflows/sync-daily-report.yml` may only use `schedule` and `workflow_dispatch`.
 - Product feature, auth, UI, or documentation pushes must not trigger production daily report generation.
-- `.github/workflows/daily-report-watchdog.yml` is the cloud self-healing layer and may run repeatedly during the workday; it should do nothing when the day is already healthy.
+- `.github/workflows/daily-report-watchdog.yml` is the GitHub-hosted self-healing layer and may run repeatedly during the workday; it should do nothing when the day is already healthy.
+- `cloudflare/daily-report-heartbeat/worker.mjs` is the non-GitHub-schedule heartbeat. It checks GitHub `main` at 11:00 Asia/Shanghai and dispatches the watchdog if the day is missing or has no synced receipt.
 - A successful CRM sync is proven by a `data/automation_runs/YYYY-MM-DD-*.json` receipt whose response contains `synced=true`.
 
 ## Production Deduplication
@@ -89,7 +90,26 @@ Production dedupe can turn many daily candidates into updates instead of newly c
 
 If unhealthy, it returns `needs_run = true` with reasons.
 
-The intended cloud workflow is `.github/workflows/daily-report-watchdog.yml`, which checks repeatedly after the morning report window and regenerates/syncs if the day is missing or too weak.
+The intended GitHub workflow is `.github/workflows/daily-report-watchdog.yml`, which checks repeatedly after the morning report window and regenerates/syncs if the day is missing or too weak.
+
+## External Heartbeat
+
+GitHub scheduled workflows can be delayed or dropped during Actions incidents. The Cloudflare heartbeat in `cloudflare/daily-report-heartbeat/` provides an independent trigger path without generating data locally or calling CRM sync directly.
+
+Deploy it as a Worker with its `wrangler.toml` cron (`0 3 * * *`, 11:00 Asia/Shanghai). Configure one secret:
+
+```bash
+GITHUB_TOKEN=<fine-grained token with Actions write access to Neo0109/CRM>
+```
+
+Optional environment overrides:
+
+- `GITHUB_OWNER` defaults to `Neo0109`.
+- `GITHUB_REPO` defaults to `CRM`.
+- `GITHUB_BRANCH` defaults to `main`.
+- `GITHUB_WORKFLOW_FILE` defaults to `daily-report-watchdog.yml`.
+
+The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. If any required file is missing or no receipt has `status=success` and `sync_response.synced=true`, it calls GitHub `workflow_dispatch` for `daily-report-watchdog.yml` with `date=YYYY-MM-DD` and `force=true`.
 
 ## Codex Task Policy
 

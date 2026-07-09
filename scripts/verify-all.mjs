@@ -38,6 +38,7 @@ export function buildVerificationTasks({ tempRoot = defaultTempRoot } = {}) {
     task("automation-diagnostics-test", "pnpm", ["dlx", "tsx@4.16.2", "scripts/test-automation-diagnostics.ts"]),
     task("lead-assistant-test", "pnpm", ["dlx", "tsx@4.16.2", "scripts/test-lead-assistant-model.ts"]),
     task("sourcing-learning-test", "node", ["--test", "scripts/test-sourcing-learning.mjs"]),
+    task("daily-heartbeat-test", "node", ["--test", "scripts/test-daily-report-heartbeat.mjs"]),
     task("frontend-typecheck", "pnpm", ["--package=typescript@5.5.3", "dlx", "tsc", "-p", "app/frontend/tsconfig.json", "--noEmit"]),
     task("backend-typecheck", "pnpm", ["--package=typescript@5.5.3", "dlx", "tsc", "-p", "app/backend/tsconfig.json", "--noEmit"]),
     task("functions-typecheck", "pnpm", ["--package=typescript@5.5.3", "dlx", "tsc", "-p", "functions/tsconfig.json", "--noEmit"]),
