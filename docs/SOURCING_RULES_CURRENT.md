@@ -136,14 +136,14 @@ V6.2 keeps the first-version sourcing ambition but adds guardrails so sourcing q
 - Official source first: Bilibili recommendation videos can reveal a product, but official/developer/studio/publisher Bilibili sources are preferred for final evidence when available.
 - Link hygiene: Steam, SteamDB, TapTap, official-site, Discord, email, and other useful links must be structured into `links` or `contact_methods` instead of staying buried in `gameplay`, `progress`, or notes.
 - Field hygiene: generated media leads should keep `priority_reason`, `rule_fit`, `gameplay`, `progress`, `bilibili_fit`, `amplification`, `risks`, and `verdict` concise. `next_action` and `notes` are for human BD work and should stay empty by default.
-- Stability: low volume, Steam 429, a single Bilibili source failure, or media parsing failure should not fail the scheduled job by itself. The generator must publish a low-volume but valid report when it has effective candidates and must log candidate totals, duplicate filters, released filters, official-source hits, and final import candidates.
+- Stability: low review volume is a sourcing/rule/upstream failure, not an acceptable daily report. The generator must fail before writing and syncing a low-volume report, while logging candidate totals, duplicate filters, released filters, official-source hits, final import candidates, and source diagnostics into the online run receipt. Steam 429, a single Bilibili source failure, or media parsing failure may only be tolerated when the final review queue still meets the production volume thresholds.
 - Hard failures remain hard: schema breakage, generated file write failure, or CRM sync authentication/write failure must still fail the workflow.
 
 ## V6.3 Backfill Hygiene And Token Guard
 
 V6.3 keeps the V6.2 sourcing behavior and tightens two operational edges:
 
-- Low-volume review backfill is allowed only as a clean first-pass `未处理` candidate. It must not write rule-version labels, fallback diagnostics, or automation receipts into user-facing fields such as `notes`, `next_action`, `verdict`, `priority_reason`, or `rule_fit`.
+- Review backfill is allowed only as a clean first-pass `未处理` candidate before the hard volume gate. It must not write rule-version labels, fallback diagnostics, or automation receipts into user-facing fields such as `notes`, `next_action`, `verdict`, `priority_reason`, or `rule_fit`.
 - Backfilled leads should still explain BD value through gameplay strength, income upside, market heat, Bilibili amplification, team/region fit, and signing probability.
 - GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`; `CRM_ACCESS_TOKEN` remains only a backwards-compatible fallback where explicitly wired.
 - Product version, daily-report rule version, and GitHub workflow health are separate concerns. A sourcing-rule update must not bump the product UI version or change unrelated product features.

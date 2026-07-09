@@ -85,16 +85,38 @@ if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
 const pools = buildPools(enrichedCandidates, mediaLeadCandidates, { reportDate, minReviewLeads, minReviewBackfillScore });
-const volumeDiagnostics = validateDailyVolume({
-  pools,
-  mediaSignals,
-  mediaLeadCandidates,
-  rawCandidateCount: rawCandidates.length,
-  enrichedCandidateCount: enrichedCandidates.length,
-  diagnostics: sourcingDiagnostics,
-  minReviewLeads,
-  minMediaLeadsWhenHealthy
-});
+let volumeDiagnostics;
+try {
+  volumeDiagnostics = validateDailyVolume({
+    pools,
+    mediaSignals,
+    mediaLeadCandidates,
+    rawCandidateCount: rawCandidates.length,
+    enrichedCandidateCount: enrichedCandidates.length,
+    diagnostics: sourcingDiagnostics,
+    minReviewLeads,
+    minMediaLeadsWhenHealthy
+  });
+} catch (error) {
+  const failurePayload = generationFailurePayload({
+    error,
+    reportDate,
+    capturedAt,
+    rawCandidates,
+    enrichedCandidates,
+    industrySignals,
+    mediaSignals,
+    mediaLeadCandidates,
+    pools,
+    minReviewLeads,
+    minMediaLeadsWhenHealthy,
+    minReviewBackfillScore,
+    sourcingDiagnostics
+  });
+  await writeJson(`data/runtime/${reportDate}-generation-failure.json`, failurePayload);
+  console.error(JSON.stringify(failurePayload, null, 2));
+  throw error;
+}
 sourcingDiagnostics.low_volume_warnings.push(...volumeDiagnostics.warnings);
 
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport({
@@ -271,4 +293,44 @@ async function writeJson(relativePath, payload) {
   const absolutePath = path.join(rootDir, relativePath);
   await mkdir(path.dirname(absolutePath), { recursive: true });
   await writeFile(absolutePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
+
+function generationFailurePayload({
+  error,
+  reportDate,
+  capturedAt,
+  rawCandidates,
+  enrichedCandidates,
+  industrySignals,
+  mediaSignals,
+  mediaLeadCandidates,
+  pools,
+  minReviewLeads,
+  minMediaLeadsWhenHealthy,
+  minReviewBackfillScore,
+  sourcingDiagnostics
+}) {
+  return {
+    ok: false,
+    failure_stage: "volume_validation",
+    failure_reason: error instanceof Error ? error.message : String(error),
+    report_date: reportDate,
+    generator: generatorName,
+    rule_version: sourcingRuleVersion,
+    captured_at: capturedAt,
+    candidates_seen: rawCandidates.length,
+    candidates_enriched: enrichedCandidates.length,
+    industry_signals: industrySignals.length,
+    media_signals_seen: mediaSignals.length,
+    media_lead_candidates: mediaLeadCandidates.length,
+    min_review_leads: minReviewLeads,
+    min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
+    min_review_backfill_score: minReviewBackfillScore,
+    push_pool: pools.push.length,
+    watch_pool: pools.watch.length,
+    drop_pool: pools.drop.length,
+    final_import_candidates: pools.push.length + pools.watch.length,
+    volume_diagnostics: error?.volumeDiagnostics ?? null,
+    diagnostics: sourcingDiagnostics
+  };
 }

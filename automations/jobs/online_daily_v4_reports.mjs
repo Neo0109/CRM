@@ -26,7 +26,7 @@ export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCoun
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
       "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。",
-      "低量、Steam 429、B站单源异常不会让定时日报整体断档；系统会发布低量但有效的日报并输出诊断。"
+      "低量日报不是正常产物；push+watch 或国内媒体/B站转换未达阈值时，线上生成必须失败并在 receipt 中暴露 sourcing/规则/上游诊断。"
     ],
     push_pool: pools.push,
     watch_pool: pools.watch,
@@ -201,7 +201,7 @@ function buildSteamDiagnosticTrendItems({ existingCount, marketInsights, genreSi
     })),
     {
       title: "Steam 样本质量诊断",
-      signal: `本次 Steam 候选 ${candidates.length} 个，去重、已上线和低质量过滤后可入 review 的数量偏低。低量应被展示为诊断，而不是让日报自动化断档。`,
+      signal: `本次 Steam 候选 ${candidates.length} 个；如果去重、已上线和低质量过滤后无法支撑足够 review 队列，线上日报应失败并记录诊断，而不是发布低量日报。`,
       source: "CRM automation diagnostics",
       links: ["https://steamdb.info/charts/"],
       bilibili_fit: "用诊断判断是否需要扩展国内媒体/B站官方源，不直接占用人工 lead 队列。",
@@ -225,11 +225,11 @@ function buildSteamDiagnosticTrendItems({ existingCount, marketInsights, genreSi
     },
     {
       title: "BD 可执行样本优先",
-      signal: "日报可以低量，但必须解释为什么低量，并把非淘汰有效项目统一进入未处理 inbox，人工 review 后再决定待评测、测试中或淘汰。",
+      signal: "日报不能低量发布；只有达到 review 阈值的非淘汰有效项目才进入未处理 inbox，人工 review 后再决定待评测、测试中或淘汰。",
       source: "CRM automation diagnostics",
       links: ["https://github.com/Neo0109/CRM/actions"],
       bilibili_fit: "不要让诊断卡片进入 CRM lead；它只解释自动化状态，帮助决定是否补跑或扩源。",
-      reason: "自动化稳定护栏：质量不足时透明提示，而不是让 workflow 整体失败。"
+      reason: "自动化稳定护栏：质量不足时让 workflow 失败并记录诊断，而不是同步低量日报。"
     }
   ];
 

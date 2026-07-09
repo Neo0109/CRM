@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = parseArgs(process.argv.slice(2));
 const reportDate = args.date ?? todayInShanghai();
-const minCandidates = numberArg(args.minCandidates, 8);
-const minReviewCandidates = numberArg(args.minReviewCandidates, 3);
+const minCandidates = numberArg(args.minCandidates, 18);
+const minReviewCandidates = numberArg(args.minReviewCandidates, 18);
 const minRadarItems = numberArg(args.minRadarItems, 8);
 const minSteamTrendItems = numberArg(args.minSteamTrendItems, 8);
 const minSteamMarketInsights = numberArg(args.minSteamMarketInsights, 3);
@@ -66,7 +66,10 @@ function inspectDailyReport(date, thresholds) {
   if (steamTrends && counts.steam_genre_signals < thresholds.minSteamGenreSignals) reasons.push(`steam genre signal count ${counts.steam_genre_signals} below threshold ${thresholds.minSteamGenreSignals}`);
 
   const receipts = readReceipts(date);
-  const successfulReceipt = receipts.find((receipt) => receipt.status === "success" || /"synced"\s*:\s*true/.test(String(receipt.sync_response ?? "")));
+  const successfulReceipt = receipts.find((receipt) => {
+    const syncPayload = parseSyncResponse(receipt.sync_response);
+    return receipt.status === "success" && syncPayload?.synced === true;
+  });
   if (!successfulReceipt) reasons.push("no successful sync receipt");
   const syncPayload = successfulReceipt ? parseSyncResponse(successfulReceipt.sync_response) : null;
   const importStats = syncPayload?.import_stats ?? null;

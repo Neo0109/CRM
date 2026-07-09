@@ -25,7 +25,7 @@ The primary daily report workflow must be independent from product/UI iteration:
 - Product feature, auth, UI, or documentation pushes must not trigger production daily report generation.
 - `.github/workflows/daily-report-watchdog.yml` is the GitHub-hosted self-healing layer and may run repeatedly during the workday; it should do nothing when the day is already healthy.
 - `cloudflare/daily-report-heartbeat/worker.mjs` is the non-GitHub-schedule heartbeat. It checks GitHub `main` at 11:00 Asia/Shanghai and dispatches the watchdog if the day is missing or has no synced receipt.
-- A successful CRM sync is proven by a `data/automation_runs/YYYY-MM-DD-*.json` receipt whose response contains `synced=true`.
+- A successful CRM sync is proven only by a `data/automation_runs/YYYY-MM-DD-*.json` receipt with `status=success` and a parseable `sync_response.synced=true`.
 
 ## Production Deduplication
 
@@ -84,9 +84,10 @@ The watchdog checks:
 - Required files exist.
 - A successful sync receipt exists.
 - Candidate counts are above the minimum useful threshold.
+- Non-dropped review candidates (`push_pool + watch_pool`) meet the production threshold of 18.
 - Radar, Steam Trends, Steam market insights, and Steam genre signals are above the minimum useful thresholds.
 
-Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis, but it must not fail a synced report only because newly created count is low.
+Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis, but the decisive report-volume gate is the generated daily report's `push_pool + watch_pool`, not newly-created CRM rows.
 
 If unhealthy, it returns `needs_run = true` with reasons.
 
@@ -108,8 +109,9 @@ Optional environment overrides:
 - `GITHUB_REPO` defaults to `CRM`.
 - `GITHUB_BRANCH` defaults to `main`.
 - `GITHUB_WORKFLOW_FILE` defaults to `daily-report-watchdog.yml`.
+- `MIN_REVIEW_CANDIDATES` defaults to `18`.
 
-The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. If any required file is missing or no receipt has `status=success` and `sync_response.synced=true`, it calls GitHub `workflow_dispatch` for `daily-report-watchdog.yml` with `date=YYYY-MM-DD` and `force=true`.
+The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. It also reads the report and requires `push_pool + watch_pool >= 18`. If any required file is missing, the report is low-volume, or no receipt has `status=success` and `sync_response.synced=true`, it calls GitHub `workflow_dispatch` for `daily-report-watchdog.yml` with `date=YYYY-MM-DD` and `force=true`.
 
 ## Codex Task Policy
 
