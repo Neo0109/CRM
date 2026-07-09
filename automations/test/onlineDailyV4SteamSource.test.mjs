@@ -6,7 +6,8 @@ import {
   fetchAppDetails,
   fetchSteamSearch,
   parseMaybeJsonHtml,
-  parseSteamSearchHtml
+  parseSteamSearchHtml,
+  prioritizeSteamCandidatesForReview
 } from "../jobs/online_daily_v4_steam_source.mjs";
 
 describe("online daily v4 Steam source pipeline", () => {
@@ -132,5 +133,46 @@ describe("online daily v4 Steam source pipeline", () => {
 
     assert.equal(tasks.length, 20);
     assert.equal(typeof tasks[0], "function");
+  });
+
+  it("prioritizes Steam candidates with usable review windows before enrichment", () => {
+    const prioritized = prioritizeSteamCandidatesForReview([
+      {
+        appId: "1",
+        title: "Near Window",
+        source: "Steam CN Domestic Demo Keyword",
+        release: "2026 年 7 月 20 日",
+        sourceIndex: 0,
+        domesticLens: true,
+        domesticQuery: true
+      },
+      {
+        appId: "2",
+        title: "Healthy Domestic Window",
+        source: "Steam CN Domestic Demo Keyword",
+        release: "2026 年 10 月 20 日",
+        sourceIndex: 1,
+        domesticLens: true,
+        domesticQuery: true
+      },
+      {
+        appId: "3",
+        title: "Already Released",
+        source: "Steam Popular Upcoming",
+        release: "2026 年 6 月 1 日",
+        sourceIndex: 2
+      },
+      {
+        appId: "4",
+        title: "Unknown Coming Soon",
+        source: "Steam CN Indie Keyword Upcoming",
+        release: "Coming soon",
+        sourceIndex: 3,
+        domesticLens: true,
+        domesticQuery: true
+      }
+    ], { reportDate: "2026-07-09" });
+
+    assert.deepEqual(prioritized.map((candidate) => candidate.appId), ["2", "4", "1", "3"]);
   });
 });

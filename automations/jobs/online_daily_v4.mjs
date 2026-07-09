@@ -15,7 +15,7 @@ import { buildMediaLeadCandidates } from "./online_daily_v4_media_leads.mjs";
 import { fetchMediaSignals } from "./online_daily_v4_media_sources.mjs";
 import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalToRadarItem } from "./online_daily_v4_reports.mjs";
 import { buildDailyRuleConfig, loadDailyRules, validateDailyRules } from "./online_daily_v4_rules.mjs";
-import { buildSteamCandidateTasks, enrichSteamCandidates } from "./online_daily_v4_steam_source.mjs";
+import { buildSteamCandidateTasks, enrichSteamCandidates, prioritizeSteamCandidatesForReview } from "./online_daily_v4_steam_source.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
@@ -73,7 +73,8 @@ const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).f
 const mediaSignals = await fetchMediaSignals(sourceContext);
 const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), ruleConfig.radarDiversity.limit, ruleConfig.radarDiversity);
 const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, sourceContext);
-const enrichedCandidates = await enrichSteamCandidates(rawCandidates.slice(0, maxSteamDetails), sourceContext);
+const steamCandidatesForReview = prioritizeSteamCandidatesForReview(rawCandidates, sourceContext);
+const enrichedCandidates = await enrichSteamCandidates(steamCandidatesForReview.slice(0, maxSteamDetails), sourceContext);
 
 if (!rawCandidates.length && !mediaLeadCandidates.length) {
   throw new Error("No Steam candidates or domestic media/Bilibili product leads were fetched; refusing to overwrite daily reports with an empty run.");
