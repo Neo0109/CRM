@@ -80,8 +80,8 @@ V6.4 intent:
 - Existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys must be used for dedupe, so a Bilibili video does not recreate a product already sourced from Steam.
 - Bilibili video leads must be timely. Old videos/news only become leads when they contain a current playable build, demo, update, publishing window, or business event.
 - `priority_reason`, `rule_fit`, `gameplay`, and `progress` must stay concise and decision-grade; `next_action` and `notes` stay empty by default for human BD input.
-- Low volume, Steam 429, or a single media/Bilibili source failure should produce diagnostics and a low-volume valid report when effective candidates still exist; only schema, file write, or CRM sync authentication/write errors should fail the workflow.
-- Low-volume backfill must not write automation bookkeeping, rule labels, candidate counts, or fallback diagnostics into visible lead fields.
+- Low volume should produce diagnostics and fail the online workflow before publishing or syncing an unusable report; Steam 429 or a single media/Bilibili source failure is tolerable only when the final review queue still meets production thresholds.
+- Review backfill must not write automation bookkeeping, rule labels, candidate counts, or fallback diagnostics into visible lead fields.
 - GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`, with `CRM_ACCESS_TOKEN` only as a compatibility fallback where supported.
 - Rules, automation, and product features remain separate modules; a sourcing-rule iteration must not change login, UI, schema, or other product behavior.
 

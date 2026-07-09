@@ -27,7 +27,7 @@ console.log(JSON.stringify({
 }, null, 2));
 
 await import(pathToFileURL(generatorPath).href);
-runDailyContractValidation(reportDate, { allowLowVolume: booleanArg(args.allowLowVolume) });
+runDailyContractValidation(reportDate);
 
 async function loadRules(filePath) {
   try {
@@ -49,9 +49,8 @@ function validateRules(value) {
   }
 }
 
-function runDailyContractValidation(date, options = {}) {
+function runDailyContractValidation(date) {
   const validateArgs = ["scripts/validate-daily-contract.mjs", `--date=${date}`];
-  if (options.allowLowVolume) validateArgs.push("--allowLowVolume=true");
   const result = spawnSync(process.execPath, validateArgs, {
     cwd: rootDir,
     stdio: "inherit"
@@ -74,8 +73,4 @@ function todayInShanghai() {
   const parts = new Intl.DateTimeFormat("en", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
   const value = (type) => parts.find((part) => part.type === type)?.value ?? "00";
   return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
-function booleanArg(value) {
-  return value === true || value === "true" || value === "1" || value === "yes";
 }

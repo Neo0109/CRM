@@ -17,7 +17,7 @@ V6 keeps the domestic-first, testing-first workflow from V5, and fixes the low-v
 - Expanded candidates may enter `未处理` when they clearly point to a concrete game/product moment, even if the project name still needs manual cleanup.
 - If Steam search or AppDetails is unavailable, the report must transparently fall back to domestic media/Bilibili review candidates instead of collapsing to one or two leads.
 - If Steam and media sources are healthy but the strong/normal review pool is just below the floor, domestic candidates with concrete playable/product signals may be backfilled into `未处理` as low-confidence first-pass review items.
-- Low review volume must trigger fallback and diagnostics rather than killing the scheduled job by itself.
+- Low review volume must trigger fallback attempts and diagnostics, then fail the scheduled job if the final review queue still misses the production threshold.
 - Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to Steam-only output.
 
 ## Lead Volume Standard
@@ -34,7 +34,7 @@ Default cloud thresholds:
 - Steam AppDetails enrichment budget: `90` candidates
 - Low-confidence domestic review backfill score: `18`
 
-If these thresholds cannot be met, the workflow should publish a low-volume but valid report with explicit diagnostics when effective candidates still exist. It should fail only on hard errors such as schema damage, file write failure, or CRM sync authentication/write failure.
+If these thresholds cannot be met after fallback/backfill, the workflow must fail before publishing or syncing the report. The online receipt should record whether the root cause appears to be sourcing rules, upstream source failures, over-deduplication, media/Bilibili conversion, schema damage, file write failure, or CRM sync authentication/write failure.
 
 Backfill is not permission to pad the report. It can only use domestic or Chinese-context candidates that still have a concrete source, playable/product signal, or domestic discovery query. Backfilled leads still enter `未处理`, never `观察池`/`待评测`/`跟进中`, and the first action is quick product judgment: inspect/test, then either promote manually or淘汰.
 

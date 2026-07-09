@@ -101,17 +101,53 @@ jobs:
           echo "index_args=--existingIndex=data/runtime/crm-dedupe-index.json" >> "$GITHUB_OUTPUT"
 
       - name: Generate daily report, radar, and Steam trends
+        id: generate
         shell: bash
         run: |
-          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 --allowLowVolume=true ${{ steps.dedupe.outputs.index_args }}
+          set +e
+          log_file="$(mktemp)"
+          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 ${{ steps.dedupe.outputs.index_args }} 2>&1 | tee "$log_file"
+          status="${PIPESTATUS[0]}"
+          set -e
+
+          echo "generation_exit_code=$status" >> "$GITHUB_OUTPUT"
+          echo "generation_log_b64=$(tail -c 20000 "$log_file" | base64 -w 0)" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then
+            echo "generation_status=success" >> "$GITHUB_OUTPUT"
+            echo "failure_stage=" >> "$GITHUB_OUTPUT"
+            echo "failure_reason=" >> "$GITHUB_OUTPUT"
+          else
+            reason="$(tail -n 1 "$log_file" | tr '\n' ' ' | cut -c1-500)"
+            echo "generation_status=failed" >> "$GITHUB_OUTPUT"
+            echo "failure_stage=generation" >> "$GITHUB_OUTPUT"
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Validate daily report contract
+        id: validate
+        if: steps.generate.outputs.generation_status == 'success'
         shell: bash
         run: |
-          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE" --allowLowVolume=true
+          set +e
+          log_file="$(mktemp)"
+          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE" 2>&1 | tee "$log_file"
+          status="${PIPESTATUS[0]}"
+          set -e
+
+          echo "validation_exit_code=$status" >> "$GITHUB_OUTPUT"
+          echo "validation_log_b64=$(tail -c 20000 "$log_file" | base64 -w 0)" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then
+            echo "validation_status=success" >> "$GITHUB_OUTPUT"
+          else
+            reason="$(tail -n 1 "$log_file" | tr '\n' ' ' | cut -c1-500)"
+            echo "validation_status=failed" >> "$GITHUB_OUTPUT"
+            echo "failure_stage=validation" >> "$GITHUB_OUTPUT"
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Commit generated data
         id: commit
+        if: steps.generate.outputs.generation_status == 'success' && steps.validate.outputs.validation_status == 'success'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -130,6 +166,7 @@ jobs:
 
       - name: Sync daily report into CRM
         id: sync
+        if: steps.generate.outputs.generation_status == 'success' && steps.validate.outputs.validation_status == 'success'
         shell: bash
         env:
           CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN || secrets.CRM_ACCESS_TOKEN }}
@@ -178,9 +215,17 @@ jobs:
         shell: bash
         env:
           GENERATED_CHANGED: ${{ steps.commit.outputs.changed }}
+          GENERATION_STATUS: ${{ steps.generate.outputs.generation_status }}
+          GENERATION_EXIT_CODE: ${{ steps.generate.outputs.generation_exit_code }}
+          GENERATION_LOG_B64: ${{ steps.generate.outputs.generation_log_b64 }}
+          VALIDATION_STATUS: ${{ steps.validate.outputs.validation_status }}
+          VALIDATION_EXIT_CODE: ${{ steps.validate.outputs.validation_exit_code }}
+          VALIDATION_LOG_B64: ${{ steps.validate.outputs.validation_log_b64 }}
           SYNC_STATUS: ${{ steps.sync.outputs.sync_status }}
           SYNC_ATTEMPTS: ${{ steps.sync.outputs.sync_attempts }}
           SYNC_RESPONSE_B64: ${{ steps.sync.outputs.sync_response_b64 }}
+          FAILURE_STAGE: ${{ steps.generate.outputs.failure_stage || steps.validate.outputs.failure_stage }}
+          FAILURE_REASON: ${{ steps.generate.outputs.failure_reason || steps.validate.outputs.failure_reason }}
           GITHUB_EVENT_NAME_VALUE: ${{ github.event_name }}
           GITHUB_EVENT_SCHEDULE_VALUE: ${{ github.event.schedule }}
           GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
@@ -193,14 +238,43 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const response = Buffer.from(process.env.SYNC_RESPONSE_B64 || '', 'base64').toString('utf8');
+          const generationLogTail = Buffer.from(process.env.GENERATION_LOG_B64 || '', 'base64').toString('utf8');
+          const validationLogTail = Buffer.from(process.env.VALIDATION_LOG_B64 || '', 'base64').toString('utf8');
           const reportDate = process.env.REPORT_DATE;
           const runSlot = process.env.RUN_SLOT;
+          const generationStatus = process.env.GENERATION_STATUS || 'unknown';
+          const validationStatus = process.env.VALIDATION_STATUS || 'unknown';
+          const failurePayloadPath = `data/runtime/${reportDate}-generation-failure.json`;
+          const failurePayload = fs.existsSync(failurePayloadPath)
+            ? JSON.parse(fs.readFileSync(failurePayloadPath, 'utf8'))
+            : null;
+          let status = process.env.SYNC_STATUS || 'unknown';
+          let failureStage = failurePayload?.failure_stage || process.env.FAILURE_STAGE || null;
+          let failureReason = failurePayload?.failure_reason || process.env.FAILURE_REASON || null;
+          if (generationStatus !== 'success') {
+            status = 'generation_failed';
+            failureStage ||= 'generation';
+            failureReason ||= 'daily report generation failed';
+          } else if (validationStatus !== 'success') {
+            status = 'generation_failed';
+            failureStage ||= 'validation';
+            failureReason ||= 'daily report contract validation failed';
+          }
           const payload = {
             report_date: reportDate,
             slot: runSlot,
-            status: process.env.SYNC_STATUS || 'unknown',
+            status,
             attempts: Number(process.env.SYNC_ATTEMPTS || 0),
             generated_changed: process.env.GENERATED_CHANGED === 'true',
+            generation_status: generationStatus,
+            generation_exit_code: Number(process.env.GENERATION_EXIT_CODE || 0),
+            validation_status: validationStatus,
+            validation_exit_code: Number(process.env.VALIDATION_EXIT_CODE || 0),
+            failure_stage: failureStage,
+            failure_reason: failureReason,
+            volume_diagnostics: failurePayload?.volume_diagnostics ?? null,
+            generation_log_tail: generationLogTail,
+            validation_log_tail: validationLogTail,
             event_name: process.env.GITHUB_EVENT_NAME_VALUE,
             event_schedule: process.env.GITHUB_EVENT_SCHEDULE_VALUE || null,
             run_id: process.env.GITHUB_RUN_ID_VALUE,
@@ -226,7 +300,7 @@ jobs:
           fi
 
       - name: Record CRM import quality
-        if: steps.sync.outputs.sync_status == 'success'
+        if: steps.generate.outputs.generation_status == 'success' && steps.validate.outputs.validation_status == 'success' && steps.sync.outputs.sync_status == 'success'
         shell: bash
         env:
           SYNC_RESPONSE_B64: ${{ steps.sync.outputs.sync_response_b64 }}
@@ -260,11 +334,11 @@ jobs:
           console.log(`CRM import quality ok: created_unprocessed=${created}, useful_inbox=${usefulInbox}.`);
           NODE
 
-      - name: Fail if CRM sync did not succeed
-        if: steps.sync.outputs.sync_status != 'success'
+      - name: Fail if online daily automation did not succeed
+        if: steps.generate.outputs.generation_status != 'success' || steps.validate.outputs.validation_status != 'success' || steps.sync.outputs.sync_status != 'success'
         shell: bash
         run: |
-          echo "CRM sync did not confirm synced=true" >&2
+          echo "Online daily automation did not reach generation+validation+sync success." >&2
           exit 1
 
       - name: Summary

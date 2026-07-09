@@ -6,6 +6,7 @@ const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = parseArgs(process.argv.slice(2));
 const dates = args.all ? availableReportDates() : [args.date ?? latestReportDate()];
 const thresholds = {
+  minReviewCandidates: numberArg(args.minReviewCandidates, 18),
   minRadarItems: numberArg(args.minRadarItems, 8),
   minSteamTrendItems: numberArg(args.minSteamTrendItems, 8),
   minSteamMarketInsights: numberArg(args.minSteamMarketInsights, 3),
@@ -85,7 +86,9 @@ function validateDate(date, thresholds) {
     ...poolLeads(report, "drop_pool")
   ];
   const totalLeads = poolEntries.length;
+  const reviewLeads = poolLeads(report, "push_pool").length + poolLeads(report, "watch_pool").length;
   if (!totalLeads) errors.push("report has no leads across push_pool/watch_pool/drop_pool");
+  addVolumeIssue(warnings, errors, allowLowVolume, reviewLeads < thresholds.minReviewCandidates, `report has fewer than ${thresholds.minReviewCandidates} review candidates`);
 
   const seen = new Set();
   for (const { pool, lead } of poolEntries) {
@@ -260,7 +263,11 @@ function parseArgs(argv) {
   for (const item of argv) {
     if (item === "--all") parsed.all = true;
     const match = item.match(/^--([^=]+)=(.*)$/);
-    if (match) parsed[match[1]] = match[2];
+    if (match) {
+      parsed[match[1]] = match[2];
+    } else if (item.startsWith("--")) {
+      parsed[item.slice(2)] = true;
+    }
   }
   return parsed;
 }

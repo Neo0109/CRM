@@ -2,6 +2,7 @@ const DEFAULT_OWNER = "Neo0109";
 const DEFAULT_REPO = "CRM";
 const DEFAULT_BRANCH = "main";
 const DEFAULT_WORKFLOW_FILE = "daily-report-watchdog.yml";
+const DEFAULT_MIN_REVIEW_CANDIDATES = 18;
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -52,6 +53,9 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     fileResults[key] = await rawFileExists({ config, repoPath, fetchFn });
   }
 
+  const reportHealth = fileResults.report
+    ? await inspectReportVolume({ config, repoPath: files.report, fetchFn })
+    : null;
   const receipts = await listReceipts({ config, date, fetchFn });
   const successfulReceipt = receipts.find((receipt) => receipt.status === "success" && receipt.synced === true);
   const missingFiles = Object.entries(fileResults)
@@ -59,6 +63,7 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     .map(([key]) => key);
   const reasons = [];
   if (missingFiles.length) reasons.push(`missing files: ${missingFiles.join(", ")}`);
+  if (reportHealth && !reportHealth.ok) reasons.push(...reportHealth.reasons);
   if (!successfulReceipt) reasons.push("no successful synced receipt");
 
   return {
@@ -67,6 +72,7 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     date,
     branch: config.branch,
     files: fileResults,
+    report: reportHealth,
     receipts,
     reasons,
   };
@@ -114,6 +120,7 @@ export function githubConfig(env = {}) {
     repo: env.GITHUB_REPO ?? DEFAULT_REPO,
     branch: env.GITHUB_BRANCH ?? DEFAULT_BRANCH,
     workflowFile: env.GITHUB_WORKFLOW_FILE ?? DEFAULT_WORKFLOW_FILE,
+    minReviewCandidates: numericEnv(env.MIN_REVIEW_CANDIDATES, DEFAULT_MIN_REVIEW_CANDIDATES),
     token,
   };
 }
@@ -146,6 +153,47 @@ async function listReceipts({ config, date, fetchFn }) {
   return receipts;
 }
 
+async function inspectReportVolume({ config, repoPath, fetchFn }) {
+  const response = await fetchFn(rawUrl(config, repoPath), {
+    headers: githubHeaders(config.token),
+  });
+  if (!response.ok) {
+    return {
+      ok: false,
+      reasons: [`report fetch failed: HTTP ${response.status}`],
+      review: 0,
+      threshold: config.minReviewCandidates,
+    };
+  }
+
+  const payload = await response.json().catch(() => null);
+  if (!payload) {
+    return {
+      ok: false,
+      reasons: ["report JSON is invalid"],
+      review: 0,
+      threshold: config.minReviewCandidates,
+    };
+  }
+
+  const push = Array.isArray(payload.push_pool) ? payload.push_pool.length : 0;
+  const watch = Array.isArray(payload.watch_pool) ? payload.watch_pool.length : 0;
+  const review = push + watch;
+  const reasons = [];
+  if (review < config.minReviewCandidates) {
+    reasons.push(`review candidate count ${review} below threshold ${config.minReviewCandidates}`);
+  }
+
+  return {
+    ok: reasons.length === 0,
+    reasons,
+    push,
+    watch,
+    review,
+    threshold: config.minReviewCandidates,
+  };
+}
+
 function normalizeReceipt(name, payload) {
   const syncPayload = parseSyncResponse(payload.sync_response);
   return {
@@ -165,6 +213,11 @@ function parseSyncResponse(value) {
   } catch {
     return null;
   }
+}
+
+function numericEnv(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
 }
 
 function rawUrl(config, repoPath) {
