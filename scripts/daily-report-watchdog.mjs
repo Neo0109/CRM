@@ -1,47 +1,53 @@
 import { existsSync, readFileSync, readdirSync, appendFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const args = parseArgs(process.argv.slice(2));
-const reportDate = args.date ?? todayInShanghai();
-const minCandidates = numberArg(args.minCandidates, 18);
-const minReviewCandidates = numberArg(args.minReviewCandidates, 18);
-const minRadarItems = numberArg(args.minRadarItems, 8);
-const minSteamTrendItems = numberArg(args.minSteamTrendItems, 8);
-const minSteamMarketInsights = numberArg(args.minSteamMarketInsights, 3);
-const minSteamGenreSignals = numberArg(args.minSteamGenreSignals, 3);
+const defaultRootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-const state = inspectDailyReport(reportDate, { minCandidates, minReviewCandidates, minRadarItems, minSteamTrendItems, minSteamMarketInsights, minSteamGenreSignals });
+function main(argv) {
+  const args = parseArgs(argv);
+  const reportDate = args.date ?? todayInShanghai();
+  const thresholds = {
+    minCandidates: numberArg(args.minCandidates, 18),
+    minReviewCandidates: numberArg(args.minReviewCandidates, 18),
+    minRadarItems: numberArg(args.minRadarItems, 8),
+    minSteamTrendItems: numberArg(args.minSteamTrendItems, 8),
+    minSteamMarketInsights: numberArg(args.minSteamMarketInsights, 3),
+    minSteamGenreSignals: numberArg(args.minSteamGenreSignals, 3)
+  };
+  const state = inspectDailyReport(reportDate, thresholds);
 
-if (args.githubOutput) {
-  appendGithubOutput(args.githubOutput, {
-    date: reportDate,
-    needs_run: String(state.needs_run),
-    reasons: state.reasons.join("; ")
-  });
+  if (args.githubOutput) {
+    appendGithubOutput(args.githubOutput, {
+      date: reportDate,
+      needs_run: String(state.needs_run),
+      reasons: state.reasons.join("; "),
+      warnings: state.warnings.join("; ")
+    });
+  }
+
+  console.log(JSON.stringify(state, null, 2));
+  if (args.fail && state.needs_run) process.exitCode = 1;
 }
 
-console.log(JSON.stringify(state, null, 2));
-
-if (args.fail && state.needs_run) process.exit(1);
-
-function inspectDailyReport(date, thresholds) {
+export function inspectDailyReport(date, thresholds, options = {}) {
+  const rootDir = options.rootDir ?? defaultRootDir;
   const files = {
     report: `data/reports/${date}.json`,
     radar: `data/radar/${date}.json`,
     steam_trends: `data/steam_trends/${date}.json`
   };
   const reasons = [];
+  const warnings = [];
   const missing = Object.entries(files).filter(([, repoPath]) => !existsSync(path.join(rootDir, repoPath))).map(([label]) => label);
   if (missing.length) reasons.push(`missing files: ${missing.join(", ")}`);
 
   let report = null;
   let radar = null;
   let steamTrends = null;
-  if (!missing.includes("report")) report = readJson(files.report, reasons);
-  if (!missing.includes("radar")) radar = readJson(files.radar, reasons);
-  if (!missing.includes("steam_trends")) steamTrends = readJson(files.steam_trends, reasons);
+  if (!missing.includes("report")) report = readJson(files.report, reasons, rootDir);
+  if (!missing.includes("radar")) radar = readJson(files.radar, reasons, rootDir);
+  if (!missing.includes("steam_trends")) steamTrends = readJson(files.steam_trends, reasons, rootDir);
 
   const counts = {
     push: report?.push_pool?.length ?? 0,
@@ -58,14 +64,14 @@ function inspectDailyReport(date, thresholds) {
   if (report && report.report_date !== date) reasons.push(`report date mismatch: ${report.report_date}`);
   if (radar && radar.report_date !== date) reasons.push(`radar date mismatch: ${radar.report_date}`);
   if (steamTrends && steamTrends.report_date !== date) reasons.push(`steam trends date mismatch: ${steamTrends.report_date}`);
-  if (report && counts.total < thresholds.minCandidates) reasons.push(`candidate count ${counts.total} below threshold ${thresholds.minCandidates}`);
-  if (report && counts.review < thresholds.minReviewCandidates) reasons.push(`review candidate count ${counts.review} below threshold ${thresholds.minReviewCandidates}`);
-  if (radar && counts.radar_items < thresholds.minRadarItems) reasons.push(`radar item count ${counts.radar_items} below threshold ${thresholds.minRadarItems}`);
-  if (steamTrends && counts.steam_trend_items < thresholds.minSteamTrendItems) reasons.push(`steam trend item count ${counts.steam_trend_items} below threshold ${thresholds.minSteamTrendItems}`);
-  if (steamTrends && counts.steam_market_insights < thresholds.minSteamMarketInsights) reasons.push(`steam market insight count ${counts.steam_market_insights} below threshold ${thresholds.minSteamMarketInsights}`);
-  if (steamTrends && counts.steam_genre_signals < thresholds.minSteamGenreSignals) reasons.push(`steam genre signal count ${counts.steam_genre_signals} below threshold ${thresholds.minSteamGenreSignals}`);
+  if (report && counts.total < thresholds.minCandidates) warnings.push(`candidate count ${counts.total} below target ${thresholds.minCandidates}`);
+  if (report && counts.review < thresholds.minReviewCandidates) warnings.push(`review candidate count ${counts.review} below target ${thresholds.minReviewCandidates}`);
+  if (radar && counts.radar_items < thresholds.minRadarItems) warnings.push(`radar item count ${counts.radar_items} below target ${thresholds.minRadarItems}`);
+  if (steamTrends && counts.steam_trend_items < thresholds.minSteamTrendItems) warnings.push(`steam trend item count ${counts.steam_trend_items} below target ${thresholds.minSteamTrendItems}`);
+  if (steamTrends && counts.steam_market_insights < thresholds.minSteamMarketInsights) warnings.push(`steam market insight count ${counts.steam_market_insights} below target ${thresholds.minSteamMarketInsights}`);
+  if (steamTrends && counts.steam_genre_signals < thresholds.minSteamGenreSignals) warnings.push(`steam genre signal count ${counts.steam_genre_signals} below target ${thresholds.minSteamGenreSignals}`);
 
-  const receipts = readReceipts(date);
+  const receipts = readReceipts(date, rootDir);
   const successfulReceipt = receipts.find((receipt) => {
     const syncPayload = parseSyncResponse(receipt.sync_response);
     return receipt.status === "success" && syncPayload?.synced === true;
@@ -83,6 +89,7 @@ function inspectDailyReport(date, thresholds) {
 
   return {
     ok: reasons.length === 0,
+    degraded: warnings.length > 0,
     needs_run: reasons.length > 0,
     report_date: date,
     thresholds,
@@ -96,7 +103,8 @@ function inspectDailyReport(date, thresholds) {
       captured_at: receipt.captured_at ?? null,
       run_url: receipt.run_url ?? null
     })),
-    reasons
+    reasons,
+    warnings
   };
 }
 
@@ -109,7 +117,7 @@ function parseSyncResponse(value) {
   }
 }
 
-function readReceipts(date) {
+function readReceipts(date, rootDir) {
   const dir = path.join(rootDir, "data/automation_runs");
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
@@ -124,7 +132,7 @@ function readReceipts(date) {
     .sort((a, b) => String(b.captured_at ?? "").localeCompare(String(a.captured_at ?? "")));
 }
 
-function readJson(repoPath, reasons) {
+function readJson(repoPath, reasons, rootDir) {
   try {
     return JSON.parse(readFileSync(path.join(rootDir, repoPath), "utf8"));
   } catch (error) {
@@ -162,4 +170,8 @@ function todayInShanghai() {
   const parts = new Intl.DateTimeFormat("en", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
   const value = (type) => parts.find((part) => part.type === type)?.value ?? "00";
   return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main(process.argv.slice(2));
 }

@@ -18,6 +18,15 @@ export function isNonLeadMediaTopicText(text) {
   return /gdc|趋势报告|行业报告|市场报告|白皮书|财报|主线|版本更新|大版本|赛季|联动|周年|资料片|dlc|第二章|第三章|黑神话|游科|诡秘之主|人间地狱|锐评|逐帧|reaction|反应/i.test(text);
 }
 
+export function isSteamStoreOperationsTopic(item) {
+  const text = `${item.title ?? ""} ${item.summary ?? ""} ${item.source ?? ""}`;
+  const hasConcreteProject = /《[^》]{2,48}》/.test(text);
+  const hasNormalizedAppLink = /(?:store\.steampowered\.com|steamdb\.info)\/app\/\d+/i.test(text);
+  if (hasConcreteProject || hasNormalizedAppLink) return false;
+  return /(?:steam\s*)?(?:商店页|商店页面|steam页面)/i.test(text)
+    && /装修|装饰|过审|审核|优化|制作|运营|入门|指南|教程|经验|愿望单增长|终于上线/i.test(text);
+}
+
 export function isBannedMediaLeadText(text) {
   const bannedPatterns = [
     /招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|如何报名|报名steam新品节|愿望单经验|曝光量|经验分享|开发经验|开发教程/i,

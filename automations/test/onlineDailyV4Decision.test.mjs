@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { dedupeByAppId, dedupeMediaSignals, selectDiverseMediaSignals } from "../jobs/online_daily_v4_dedupe.mjs";
 import { buildPools, scoreCandidate } from "../jobs/online_daily_v4_decision.mjs";
-import { DailyVolumeError, validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
+import { validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
 
 function candidate(overrides = {}) {
   return {
@@ -164,44 +164,40 @@ describe("online daily v4 volume and dedupe helpers", () => {
     };
   }
 
-  it("throws with diagnostics when review volume is below the production threshold", () => {
-    const errors = [];
-
-    assert.throws(() => validateDailyVolume({
-      pools: { push: [], watch: [], drop: [] },
+  it("publishes degraded diagnostics when review volume is below the quality target", () => {
+    const warnings = [];
+    const result = validateDailyVolume({
+      pools: {
+        push: Array.from({ length: 8 }, (_, index) => mediaLead({ project: `Push ${index}` })),
+        watch: Array.from({ length: 5 }, (_, index) => mediaLead({ project: `Watch ${index}` })),
+        drop: []
+      },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
         title: `domestic ${index}`,
         source_focus: ["domestic_sourcing"]
       })),
-      mediaLeadCandidates: [mediaLead()],
-      rawCandidateCount: 2,
-      enrichedCandidateCount: 1,
-      diagnostics: baseDiagnostics(),
+      mediaLeadCandidates: Array.from({ length: 11 }, (_, index) => mediaLead({ project: `Media ${index}` })),
+      rawCandidateCount: 202,
+      enrichedCandidateCount: 90,
+      diagnostics: baseDiagnostics({ media_signals_raw: 624 }),
       minReviewLeads: 18,
       minMediaLeadsWhenHealthy: 10,
-      logger: { error: (message) => errors.push(message) }
-    }), (error) => {
-      assert.ok(error instanceof DailyVolumeError);
-      assert.match(error.message, /push\+watch=0, expected >= 18/);
-      assert.match(error.message, /media_leads=1, expected >= 10/);
-      assert.equal(error.volumeDiagnostics.reviewCount, 0);
-      assert.equal(error.volumeDiagnostics.domesticSignalCount, 18);
-      assert.equal(error.volumeDiagnostics.mediaLeadCount, 1);
-      assert.equal(error.volumeDiagnostics.rawCandidateCount, 2);
-      assert.equal(error.volumeDiagnostics.enrichedCandidateCount, 1);
-      assert.equal(error.volumeDiagnostics.mediaLowScoreFiltered, 3);
-      assert.deepEqual(error.volumeDiagnostics.issues.map((issue) => issue.code), [
-        "review_leads_low",
-        "domestic_media_leads_low"
-      ]);
-      return true;
+      logger: { warn: (message) => warnings.push(message) }
     });
 
-    assert.equal(errors.length, 1);
+    assert.equal(result.ok, false);
+    assert.equal(result.degraded, true);
+    assert.equal(result.reviewCount, 13);
+    assert.equal(result.rawCandidateCount, 202);
+    assert.equal(result.enrichedCandidateCount, 90);
+    assert.equal(result.mediaLeadCount, 11);
+    assert.deepEqual(result.issues.map((issue) => issue.code), ["review_leads_low"]);
+    assert.match(result.warnings[0], /push\+watch=13, expected >= 18/);
+    assert.deepEqual(warnings, result.warnings);
   });
 
-  it("throws when healthy domestic media/Bilibili signals under-convert into leads", () => {
-    assert.throws(() => validateDailyVolume({
+  it("reports domestic media under-conversion without blocking publication", () => {
+    const result = validateDailyVolume({
       pools: { push: Array.from({ length: 18 }, (_, index) => mediaLead({ project: `Push ${index}` })), watch: [], drop: [] },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
         title: `domestic ${index}`,
@@ -213,13 +209,13 @@ describe("online daily v4 volume and dedupe helpers", () => {
       diagnostics: baseDiagnostics({ media_signals_raw: 18 }),
       minReviewLeads: 18,
       minMediaLeadsWhenHealthy: 10,
-      logger: { error: () => {} }
-    }), (error) => {
-      assert.ok(error instanceof DailyVolumeError);
-      assert.match(error.message, /Domestic media\/Bilibili lead extraction low/);
-      assert.deepEqual(error.volumeDiagnostics.issues.map((issue) => issue.code), ["domestic_media_leads_low"]);
-      return true;
+      logger: { warn: () => {} }
     });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.degraded, true);
+    assert.deepEqual(result.issues.map((issue) => issue.code), ["domestic_media_leads_low"]);
+    assert.match(result.warnings[0], /Domestic media\/Bilibili lead extraction low/);
   });
 
   it("passes when review and media conversion volume meet production thresholds", () => {
@@ -239,10 +235,11 @@ describe("online daily v4 volume and dedupe helpers", () => {
       diagnostics: baseDiagnostics({ media_signals_raw: 18 }),
       minReviewLeads: 18,
       minMediaLeadsWhenHealthy: 10,
-      logger: { error: () => { throw new Error("unexpected low-volume error log"); } }
+      logger: { warn: () => { throw new Error("unexpected low-volume warning"); } }
     });
 
     assert.equal(result.ok, true);
+    assert.equal(result.degraded, false);
     assert.deepEqual(result.issues, []);
     assert.deepEqual(result.warnings, []);
     assert.equal(result.reviewCount, 18);

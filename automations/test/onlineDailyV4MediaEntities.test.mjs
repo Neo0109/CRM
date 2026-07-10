@@ -78,6 +78,33 @@ describe("online daily v4 media entity extraction", () => {
     assert.equal(isDomesticMediaRescueSignal(rescue), true);
   });
 
+  it("rejects Steam store operations content without a concrete project or normalized app link", () => {
+    const operationsItems = [
+      {
+        title: "Steam商店页装修和过审：从入门到入土",
+        summary: "独立游戏开发经验和商店页面优化教程",
+        source: "B站视频-国产商店页愿望单",
+        link: "https://www.bilibili.com/video/BVSTOREOPS/",
+        source_focus: ["china", "bilibili", "domestic_sourcing"],
+        score: 90
+      },
+      {
+        title: "关于解谜独立游戏Steam商店页终于上线",
+        summary: "分享商店页过审和愿望单运营经验",
+        source: "B站视频-国产商店页愿望单",
+        link: "https://www.bilibili.com/video/BVSTORELIVE/",
+        source_focus: ["china", "bilibili", "domestic_sourcing"],
+        score: 90
+      }
+    ];
+
+    for (const item of operationsItems) {
+      assert.equal(isProductSourcingSignal(item), false);
+      assert.equal(isExpandedDomesticProductSignal(item), false);
+      assert.equal(isDomesticMediaRescueSignal(item), false);
+    }
+  });
+
   it("normalizes verification links and contact methods without turning Steam app pages into contacts", () => {
     const item = {
       title: "《星环工坊》官方PV Steam Demo",
