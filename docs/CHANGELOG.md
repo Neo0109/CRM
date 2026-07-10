@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.7.1`（`v2.7.1-monthly-vision-export-fix`）：修复月度视野表 Excel 导出未携带当前登录认证导致的失败；导出改为认证下载，并支持在密码框按回车提交。
 - 产品可见版本升级为 `v2.7`（`v2.7-monthly-vision-sheet`）：新增按月整理、确认留档并导出三列 Excel 的视野表工作流
 - 产品可见版本升级为 `v2.6`（`v2.6-lead-detail-noise-window-fix`）：Lead Detail 右侧详情降噪，人工字段默认留空，并恢复临近上线线索过滤口径
 - 日报规则升级到 `sourcing-rules-v6.5-window-hygiene`：保留 V6.4 B站探头，同时恢复 60 天上线窗口硬过滤；Demo/试玩只作为可测试信号，不再覆盖近上线合作窗口；自动化默认不再写 `priority_reason`、`next_action`、`notes`。

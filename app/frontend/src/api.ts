@@ -135,8 +135,42 @@ export function saveMonthlyVision(month: string, status: MonthlyVisionStatus, it
   });
 }
 
-export function monthlyVisionExportUrl(month: string, password: string) {
-  return `/api/export/monthly-vision?month=${encodeURIComponent(month)}&password=${encodeURIComponent(password)}`;
+export async function downloadMonthlyVisionExcel(month: string, password: string) {
+  const token = getAccessToken();
+  const username = getAccessUsername();
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
+  const response = await fetch(`/api/export/monthly-vision?month=${encodeURIComponent(month)}`, {
+    signal: controller.signal,
+    headers: {
+      ...(username ? { "x-crm-username": username } : {}),
+      ...(token ? { "x-crm-token": token } : {}),
+      "x-export-password": password
+    }
+  }).catch((error) => {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("Excel 导出请求超时，请稍后重试");
+    }
+    throw error;
+  }).finally(() => {
+    window.clearTimeout(timeout);
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({ error: response.statusText }));
+    throw new Error(payload.error ?? response.statusText);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = `monthly-vision-${month}.xls`;
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
 }
 
 export function runLeadAssistant(payload: LeadAssistantPayload) {
