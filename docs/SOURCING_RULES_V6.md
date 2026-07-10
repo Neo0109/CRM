@@ -136,6 +136,13 @@ Steam fetch reliability requirements:
 - If Node fetch fails on Steam with DNS/TLS/network errors, use the curl fallback before treating Steam as unavailable.
 - Do not retry curl fallback for Steam `403`/`429`; those are access/rate-limit signals and should be handled by lower request volume and backoff.
 
+Media and Bilibili source-health requirements:
+
+- Record per-source fetch success, retained-signal rate, and final Lead conversion so a large raw funnel cannot hide a broken source mix.
+- Retry Bilibili `412`/`429` with capped backoff and lower concurrency; use only configured fallback queries after the primary query exhausts retries.
+- Disable or replace persistently blocked sources explicitly in the machine-readable rule file instead of accepting repeated daily failures as normal noise.
+- Record near-launch samples by region before changing the 60-day rule. Candidate targets and window policy must be calibrated from successful cloud runs, not promoted into hard publication gates without a historical baseline.
+
 ## Industry Radar
 
 Industry Radar remains a compact China + overseas news board.

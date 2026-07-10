@@ -186,14 +186,19 @@ assert.deepEqual(defaultBilibiliProbeDiagnostics(), {
   generic_collection_filtered: 0,
   required_keyword_filtered: 0,
   duplicate_filtered: 0,
-  final_candidates: 0
+  final_candidates: 0,
+  request_retries: 0,
+  rate_limit_retries: 0,
+  fallback_queries: 0,
+  source_health: {}
 });
 
 {
   const { signals, diagnostics } = await collectBilibiliProbeSignals({
     reportDate: "2026-06-29",
     config,
-    fetchImpl: makeFakeFetch()
+    fetchImpl: makeFakeFetch(),
+    sleepImpl: async () => {}
   });
   assert.ok(signals.length >= 2, "probe should keep valid official and developer signals");
   const official = signals.find((signal) => signal.bvid === "BVOFFICIAL");
@@ -226,7 +231,8 @@ assert.deepEqual(defaultBilibiliProbeDiagnostics(), {
   const { signals, diagnostics } = await collectBilibiliProbeSignals({
     reportDate: "2026-06-29",
     config,
-    fetchImpl: makeFakeFetch({ failKeyword: true })
+    fetchImpl: makeFakeFetch({ failKeyword: true }),
+    sleepImpl: async () => {}
   });
   assert.ok(signals.some((signal) => signal.bvid === "BVOFFICIAL"), "UP-list probe should still work when keyword source fails");
   assert.ok(diagnostics.source_failures >= 1, "keyword failure should be recorded as diagnostics");

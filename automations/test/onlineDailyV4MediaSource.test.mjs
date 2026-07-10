@@ -210,6 +210,7 @@ describe("online daily v4 media source parsing", () => {
     const sources = mediaSources("2026-07-05", {
       mediaSources: [
         { name: "Expired", url: "https://expired.example.com", type: "page", quality: 1, focus: [], activeUntil: "2026-07-01" },
+        { name: "Disabled", url: "https://disabled.example.com", type: "page", quality: 1, focus: [], active: false },
         { name: "B站视频-配置测试", type: "bilibili_video_search", url: "https://api.example.test/search", fallbackUrl: "https://search.example.test/all", quality: 15, focus: ["china", "bilibili"] }
       ]
     });

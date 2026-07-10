@@ -46,6 +46,11 @@ describe("online daily v4 rule config", () => {
     assert.match(bilibiliSource.url, /keyword=.*%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F/);
     assert.ok(bilibiliSource.fallbackUrl.startsWith("https://search.bilibili.com/all?"));
 
+    assert.equal(config.mediaSources.find((source) => source.name === "手游那点事").active, false);
+    assert.equal(config.mediaSources.find((source) => source.name === "GamesBeat").active, false);
+    assert.equal(config.mediaSources.find((source) => source.name === "澎湃新闻").active, false);
+    assert.equal(config.mediaSources.find((source) => source.name === "游戏茶馆").url, "https://www.youxichaguan.com/");
+
     assert.equal(config.mediaQualityGates.maxBilibiliLeadAgeDays, 120);
     assert.equal(config.mediaQualityGates.lowScoreThreshold, 12);
     assert.equal(config.radarDiversity.limit, 14);
@@ -80,6 +85,8 @@ describe("online daily v4 rule config", () => {
           type: "feed",
           quality: 9,
           focus: ["global"],
+          active: false,
+          disabled_reason: "persistent 403",
           active_until: "2026-07-31"
         },
         {
@@ -114,6 +121,8 @@ describe("online daily v4 rule config", () => {
       type: "feed",
       quality: 9,
       focus: ["global"],
+      active: false,
+      disabledReason: "persistent 403",
       activeUntil: "2026-07-31"
     });
     assert.match(mediaSourceConfigFromRules(customRules)[1].url, /keyword=.*%E5%9B%BD%E4%BA%A7/);

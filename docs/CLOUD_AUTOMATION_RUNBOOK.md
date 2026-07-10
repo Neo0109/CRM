@@ -89,6 +89,8 @@ The watchdog checks:
 
 Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis. Report volume remains a quality signal, while missing/invalid files and missing successful sync receipts decide whether recovery is needed.
 
+For source-quality diagnosis, inspect the generator's `diagnostics.media_source_health`, nested `diagnostics.bilibili_probe.source_health`, retry counters, and `release_window_health`. These distinguish an upstream fetch failure from aggressive filtering, duplicate removal, weak product conversion, and near-launch routing. A source with repeated cloud failures should be disabled or replaced in the rule file; do not raise a global publication threshold to compensate for one unhealthy source.
+
 If unhealthy, it returns `needs_run = true` with reasons.
 
 The intended GitHub workflow is `.github/workflows/daily-report-watchdog.yml`, which checks repeatedly after the morning report window and regenerates/syncs when required files or a successful sync receipt are missing.

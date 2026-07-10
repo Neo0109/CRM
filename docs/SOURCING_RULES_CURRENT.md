@@ -165,3 +165,12 @@ V6.5 keeps the V6.4 Bilibili probe and restores the BD window gate:
 - Fresh Steam or Bilibili/media candidates with confirmed launch dates fewer than 60 days away must be routed to `drop_pool` or market background.
 - Demo/试玩/测试 signals still matter for product inspection, but they no longer override a near-launch cooperation window.
 - `priority_reason`, `next_action`, and `notes` are human-owned fields. Automation should keep them empty by default and put rule judgments in `rule_fit`, `risks`, `drop_reason`, `progress`, and `release_window`.
+
+## Source Health And Calibration
+
+Each cloud run records fetch attempts, successes, failures, raw signals, retained signals, final Lead candidates, fallback use, and conversion rates per media source. Bilibili probe diagnostics separately record logical UP/keyword source health, request retries, rate-limit retries, and fallback-query use.
+
+- Bilibili `412`/`429` and transient server responses use capped backoff instead of immediate source loss. Keyword sources may use an explicit configured fallback query after retries are exhausted.
+- Request concurrency and inter-batch delay are configured in `automations/rules/bilibili-probe.json`; they must remain capped so one run does not amplify rate limiting.
+- Sources that repeatedly fail from GitHub Actions are disabled explicitly with a reason instead of producing the same warning every day. `游戏茶馆` uses its reachable homepage; the unreachable `手游那点事`, legacy GamesBeat feed, and GitHub-egress-blocked `澎湃新闻` source stay disabled until a verified replacement exists.
+- The 18-candidate target remains a quality target, not a publication gate. The 60-day rule remains unchanged for now, while `release_window_health` records domestic, overseas, and media near-launch samples for later calibration from real runs.

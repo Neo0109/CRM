@@ -28,7 +28,11 @@ export function defaultBilibiliProbeDiagnostics() {
     generic_collection_filtered: 0,
     required_keyword_filtered: 0,
     duplicate_filtered: 0,
-    final_candidates: 0
+    final_candidates: 0,
+    request_retries: 0,
+    rate_limit_retries: 0,
+    fallback_queries: 0,
+    source_health: {}
   };
 }
 
@@ -45,7 +49,8 @@ export async function collectBilibiliProbeSignals({
   config = null,
   fetchImpl = globalThis.fetch,
   maxVideoAgeDays = null,
-  maxDetailFetches = null
+  maxDetailFetches = null,
+  sleepImpl = sleep
 } = {}) {
   if (typeof fetchImpl !== "function") throw new Error("Bilibili probe requires a fetch implementation.");
 
@@ -55,34 +60,55 @@ export async function collectBilibiliProbeSignals({
 
   const diagnostics = defaultBilibiliProbeDiagnostics();
   const candidates = [];
+  const requestOptions = {
+    diagnostics,
+    retryDelaysMs: probeConfig.retry_delays_ms,
+    sleepImpl
+  };
 
   const tasks = [
     ...uidSourceDescriptors(probeConfig).map((source) => async () => {
+      const sourceKey = `up:${source.uid}`;
       try {
-        const items = await fetchBilibiliUpVideos(source, fetchImpl);
+        const items = await fetchBilibiliUpVideos(source, fetchImpl, requestOptions);
         diagnostics.up_candidates += items.length;
         candidates.push(...items);
+        recordProbeSourceResult(diagnostics, sourceKey, { ok: true, candidates: items.length });
       } catch (error) {
         diagnostics.source_failures += 1;
         diagnostics.last_error = `UP ${source.uid}: ${error.message}`;
+        recordProbeSourceResult(diagnostics, sourceKey, { ok: false, error: error.message });
       }
     }),
     ...probeConfig.keywords.map((keyword) => async () => {
+      const sourceKey = `keyword:${keyword}`;
       try {
-        const items = await searchBilibiliKeyword(keyword, fetchImpl);
+        let items;
+        let fallbackUsed = false;
+        try {
+          items = await searchBilibiliKeyword(keyword, fetchImpl, requestOptions);
+        } catch (primaryError) {
+          const fallbackKeyword = probeConfig.keyword_fallbacks[keyword];
+          if (!fallbackKeyword) throw primaryError;
+          diagnostics.fallback_queries += 1;
+          fallbackUsed = true;
+          items = await searchBilibiliKeyword(fallbackKeyword, fetchImpl, requestOptions);
+        }
         diagnostics.keyword_candidates += items.length;
         candidates.push(...items.map((item) => ({
           ...item,
           matched_keywords: uniqueValues([...(item.matched_keywords ?? []), keyword])
         })));
+        recordProbeSourceResult(diagnostics, sourceKey, { ok: true, candidates: items.length, fallbackUsed });
       } catch (error) {
         diagnostics.source_failures += 1;
         diagnostics.last_error = `keyword ${keyword}: ${error.message}`;
+        recordProbeSourceResult(diagnostics, sourceKey, { ok: false, error: error.message });
       }
     })
   ];
 
-  await runLimited(tasks, 3);
+  await runLimited(tasks, probeConfig.request_concurrency, probeConfig.request_batch_delay_ms, sleepImpl);
   diagnostics.raw_candidates = candidates.length;
 
   const prefiltered = [];
@@ -101,10 +127,10 @@ export async function collectBilibiliProbeSignals({
   const detailTargets = dedupeCandidates(prefiltered, diagnostics)
     .slice(0, Math.max(0, probeConfig.max_detail_fetches));
   const enriched = [];
-  for (let index = 0; index < detailTargets.length; index += 4) {
-    const chunk = detailTargets.slice(index, index + 4);
-    enriched.push(...await Promise.all(chunk.map((item) => enrichProbeCandidate(item, fetchImpl, diagnostics))));
-    if (index + 4 < detailTargets.length) await sleep(250);
+  for (let index = 0; index < detailTargets.length; index += probeConfig.request_concurrency) {
+    const chunk = detailTargets.slice(index, index + probeConfig.request_concurrency);
+    enriched.push(...await Promise.all(chunk.map((item) => enrichProbeCandidate(item, fetchImpl, diagnostics, requestOptions))));
+    if (index + probeConfig.request_concurrency < detailTargets.length) await sleepImpl(probeConfig.request_batch_delay_ms);
   }
 
   const signals = [];
@@ -150,12 +176,16 @@ function normalizeProbeConfig(value) {
     rule_version: String(config.rule_version ?? "sourcing-rules-v6.4-bili-probe"),
     max_video_age_days: Number(config.max_video_age_days ?? 120),
     max_detail_fetches: Number(config.max_detail_fetches ?? 80),
+    request_concurrency: boundedInteger(config.request_concurrency, 2, 1, 4),
+    request_batch_delay_ms: boundedInteger(config.request_batch_delay_ms, 350, 0, 5000),
+    retry_delays_ms: normalizeNumberArray(config.retry_delays_ms, [400, 1000]),
     official_uids: normalizeStringArray(config.official_uids),
     developer_uids: normalizeStringArray(config.developer_uids),
     publisher_uids: normalizeStringArray(config.publisher_uids),
     media_uids: normalizeStringArray(config.media_uids),
     trusted_creator_uids: normalizeStringArray(config.trusted_creator_uids),
     keywords: normalizeStringArray(config.keywords),
+    keyword_fallbacks: normalizeStringMap(config.keyword_fallbacks),
     required_keywords: normalizeStringArray(config.required_keywords),
     blacklist_uids: normalizeStringArray(config.blacklist_uids),
     blacklist_bvids: normalizeStringArray(config.blacklist_bvids).map((item) => item.toLowerCase()),
@@ -174,25 +204,25 @@ function uidSourceDescriptors(config) {
   ];
 }
 
-async function searchBilibiliKeyword(keyword, fetchImpl) {
+async function searchBilibiliKeyword(keyword, fetchImpl, requestOptions) {
   const url = new URL("https://api.bilibili.com/x/web-interface/search/type");
   url.searchParams.set("search_type", "video");
   url.searchParams.set("keyword", keyword);
   url.searchParams.set("page", "1");
   url.searchParams.set("page_size", "20");
   url.searchParams.set("order", "pubdate");
-  const payload = await fetchJson(url.toString(), fetchImpl);
+  const payload = await fetchJson(url.toString(), fetchImpl, requestOptions);
   const result = Array.isArray(payload?.data?.result) ? payload.data.result : [];
   return result.slice(0, 20).map((item) => normalizeSearchItem(item, keyword)).filter(Boolean);
 }
 
-async function fetchBilibiliUpVideos(source, fetchImpl) {
+async function fetchBilibiliUpVideos(source, fetchImpl, requestOptions) {
   const url = new URL("https://api.bilibili.com/x/space/arc/search");
   url.searchParams.set("mid", source.uid);
   url.searchParams.set("ps", "20");
   url.searchParams.set("pn", "1");
   url.searchParams.set("order", "pubdate");
-  const payload = await fetchJson(url.toString(), fetchImpl);
+  const payload = await fetchJson(url.toString(), fetchImpl, requestOptions);
   const list = payload?.data?.list?.vlist;
   if (!Array.isArray(list)) return [];
   return list.slice(0, 20).map((item) => normalizeUpItem(item, source)).filter(Boolean);
@@ -236,9 +266,9 @@ function normalizeUpItem(item, source) {
   };
 }
 
-async function enrichProbeCandidate(item, fetchImpl, diagnostics) {
+async function enrichProbeCandidate(item, fetchImpl, diagnostics, requestOptions) {
   try {
-    const detail = await fetchBilibiliDetail(item.bvid, fetchImpl);
+    const detail = await fetchBilibiliDetail(item.bvid, fetchImpl, requestOptions);
     diagnostics.detail_success += 1;
     return {
       ...item,
@@ -259,8 +289,8 @@ async function enrichProbeCandidate(item, fetchImpl, diagnostics) {
   }
 }
 
-async function fetchBilibiliDetail(bvid, fetchImpl) {
-  const payload = await fetchJson(`https://api.bilibili.com/x/web-interface/view?bvid=${encodeURIComponent(bvid)}`, fetchImpl);
+async function fetchBilibiliDetail(bvid, fetchImpl, requestOptions) {
+  const payload = await fetchJson(`https://api.bilibili.com/x/web-interface/view?bvid=${encodeURIComponent(bvid)}`, fetchImpl, requestOptions);
   const data = payload?.data;
   if (!data) return {};
   return {
@@ -392,10 +422,58 @@ function toMediaSignal(item, sourceKind, links, steamAppId) {
   };
 }
 
-async function fetchJson(url, fetchImpl) {
-  const response = await fetchImpl(url, { headers: defaultHeaders });
-  if (!response?.ok) throw new Error(`Bilibili request failed: ${response?.status ?? "unknown"} ${response?.statusText ?? ""}`.trim());
-  return response.json();
+async function fetchJson(url, fetchImpl, options = {}) {
+  const retryDelaysMs = Array.isArray(options.retryDelaysMs) ? options.retryDelaysMs : [];
+  const sleepImpl = options.sleepImpl ?? sleep;
+  for (let attempt = 0; ; attempt += 1) {
+    let response;
+    try {
+      response = await fetchImpl(url, { headers: defaultHeaders });
+    } catch (error) {
+      if (attempt >= retryDelaysMs.length) throw error;
+      bumpDiagnostic(options.diagnostics, "request_retries");
+      await sleepImpl(retryDelaysMs[attempt]);
+      continue;
+    }
+    if (response?.ok) return response.json();
+    const status = Number(response?.status ?? 0);
+    const retryable = status === 412 || status === 429 || status >= 500;
+    if (retryable && attempt < retryDelaysMs.length) {
+      bumpDiagnostic(options.diagnostics, "request_retries");
+      if (status === 412 || status === 429) bumpDiagnostic(options.diagnostics, "rate_limit_retries");
+      await sleepImpl(retryDelaysMs[attempt]);
+      continue;
+    }
+    throw new Error(`Bilibili request failed: ${response?.status ?? "unknown"} ${response?.statusText ?? ""}`.trim());
+  }
+}
+
+function recordProbeSourceResult(diagnostics, source, result) {
+  diagnostics.source_health ??= {};
+  diagnostics.source_health[source] ??= {
+    attempts: 0,
+    successes: 0,
+    failures: 0,
+    candidates: 0,
+    fallback_uses: 0,
+    last_error: null
+  };
+  const entry = diagnostics.source_health[source];
+  entry.attempts += 1;
+  entry.candidates += Math.max(0, Number(result.candidates ?? 0) || 0);
+  if (result.ok) {
+    entry.successes += 1;
+    entry.last_error = null;
+  } else {
+    entry.failures += 1;
+    entry.last_error = String(result.error ?? "unknown source failure");
+  }
+  if (result.fallbackUsed) entry.fallback_uses += 1;
+}
+
+function bumpDiagnostic(diagnostics, key) {
+  if (!diagnostics) return;
+  diagnostics[key] = (diagnostics[key] ?? 0) + 1;
 }
 
 function normalizeStats(item) {
@@ -409,10 +487,11 @@ function normalizeStats(item) {
   };
 }
 
-async function runLimited(tasks, limit) {
+async function runLimited(tasks, limit, delayMs = 0, sleepImpl = sleep) {
   const out = [];
   for (let index = 0; index < tasks.length; index += limit) {
     out.push(...await Promise.all(tasks.slice(index, index + limit).map((task) => task())));
+    if (index + limit < tasks.length && delayMs > 0) await sleepImpl(delayMs);
   }
   return out;
 }
@@ -451,6 +530,26 @@ function toIsoFromSeconds(value) {
 
 function normalizeStringArray(value) {
   return Array.isArray(value) ? uniqueValues(value.map((item) => String(item ?? "").trim()).filter(Boolean)) : [];
+}
+
+function normalizeStringMap(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value)
+    .map(([key, item]) => [String(key).trim(), String(item ?? "").trim()])
+    .filter(([key, item]) => key && item));
+}
+
+function normalizeNumberArray(value, fallback) {
+  const values = Array.isArray(value) ? value : fallback;
+  return values
+    .map((item) => Math.round(Number(item)))
+    .filter((item) => Number.isFinite(item) && item >= 0 && item <= 5000)
+    .slice(0, 4);
+}
+
+function boundedInteger(value, fallback, min, max) {
+  const number = Math.round(Number(value));
+  return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
 }
 
 function normalizeText(value) {

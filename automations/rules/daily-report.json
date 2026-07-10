@@ -70,8 +70,8 @@
     { "name": "游戏葡萄", "url": "https://youxiputao.com/", "type": "page", "quality": 14, "focus": ["china", "business", "domestic_sourcing"] },
     { "name": "GameRes游资网", "url": "https://www.gameres.com/", "type": "page", "quality": 13, "focus": ["china", "development", "domestic_sourcing"] },
     { "name": "游戏陀螺", "url": "https://www.youxituoluo.com/", "type": "page", "quality": 13, "focus": ["china", "business", "mobile", "domestic_sourcing"] },
-    { "name": "手游那点事", "url": "https://www.nadianshi.com/", "type": "page", "quality": 12, "focus": ["china", "mobile", "domestic_sourcing"] },
-    { "name": "游戏茶馆", "url": "https://www.youxichaguan.com/news", "type": "page", "quality": 12, "focus": ["china", "business", "domestic_sourcing"] },
+    { "name": "手游那点事", "url": "https://www.nadianshi.com/", "type": "page", "quality": 12, "focus": ["china", "mobile", "domestic_sourcing"], "active": false, "disabled_reason": "repeated fetch failures in cloud runs" },
+    { "name": "游戏茶馆", "url": "https://www.youxichaguan.com/", "type": "page", "quality": 12, "focus": ["china", "business", "domestic_sourcing"] },
     { "name": "indienova", "url": "https://indienova.com/groups", "type": "page", "quality": 12, "focus": ["china", "indie", "domestic_sourcing"] },
     { "name": "游研社", "url": "https://www.yystv.cn/", "type": "page", "quality": 12, "focus": ["china", "product", "creator", "domestic_sourcing"] },
     { "name": "机核", "url": "https://www.gcores.com/", "type": "page", "quality": 11, "focus": ["china", "product", "creator", "domestic_sourcing"] },
@@ -109,14 +109,14 @@
     { "name": "Polygon", "url": "https://www.polygon.com/rss/index.xml", "type": "feed", "quality": 10, "focus": ["mainstream", "product", "culture"] },
     { "name": "Rock Paper Shotgun", "url": "https://www.rockpapershotgun.com/feed", "type": "feed", "quality": 9, "focus": ["pc", "product", "culture"] },
     { "name": "PocketGamer.biz", "url": "https://www.pocketgamer.biz/rss/", "type": "feed", "quality": 10, "focus": ["business", "mobile"] },
-    { "name": "GamesBeat", "url": "https://venturebeat.com/category/games/feed/", "type": "feed", "quality": 9, "focus": ["business", "technology"] },
+    { "name": "GamesBeat", "url": "https://venturebeat.com/category/games/feed/", "type": "feed", "quality": 9, "focus": ["business", "technology"], "active": false, "disabled_reason": "legacy feed returns persistent 403/429 in cloud runs" },
     { "name": "Siliconera", "url": "https://www.siliconera.com/feed/", "type": "feed", "quality": 8, "focus": ["product", "asia"] },
     { "name": "触乐", "url": "https://www.chuapp.com/?feed=rss2", "type": "feed", "quality": 11, "focus": ["china", "culture"] },
     { "name": "IT之家", "url": "https://www.ithome.com/rss/", "type": "feed", "quality": 7, "focus": ["china", "technology"] },
     { "name": "3DM", "url": "https://www.3dmgame.com/news/", "type": "page", "quality": 6, "focus": ["china", "product"] },
     { "name": "游民星空", "url": "https://www.gamersky.com/news/", "type": "page", "quality": 6, "focus": ["china", "product"] },
     { "name": "证券时报", "url": "https://www.stcn.com/", "type": "page", "quality": 10, "focus": ["china", "capital", "legal"] },
-    { "name": "澎湃新闻", "url": "https://m.thepaper.cn/", "type": "page", "quality": 9, "focus": ["china", "legal", "society"] }
+    { "name": "澎湃新闻", "url": "https://m.thepaper.cn/", "type": "page", "quality": 9, "focus": ["china", "legal", "society"], "active": false, "disabled_reason": "persistent 403 from GitHub Actions egress" }
   ],
   "media_quality_gates": {
     "max_bilibili_lead_age_days": 120,
