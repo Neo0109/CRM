@@ -13,6 +13,7 @@ import {
   isBannedMediaLeadText,
   isNonLeadMediaTopicText,
   isOfficialOrDeveloperBilibiliSignal,
+  isSteamStoreOperationsTopic,
   looksLikeCommentaryVideoTitle
 } from "./online_daily_v4_media_rules.mjs";
 import { extractEmails, hashText, mergeContactMethods, mergeLinks } from "./online_daily_v4_source_utils.mjs";
@@ -51,6 +52,7 @@ export function isProductSourcingSignal(item) {
   const isBilibili = isBilibiliSignal(item);
   const hasUsefulSource = focus.has("domestic_sourcing") || focus.has("bilibili") || (focus.has("china") && (focus.has("product") || focus.has("indie") || focus.has("mobile")));
   if (!hasUsefulSource) return false;
+  if (isSteamStoreOperationsTopic(item)) return false;
   if (/招聘|岗位|财报|收入|销量榜|折扣|促销|史低|攻略|教程|如何报名|报名steam新品节|愿望单经验|曝光量|经验分享|开发经验|开发教程|cosplay|壁纸|周边|赛事战报|补丁说明|停服|维护|安卓|android|pixel|iphone|手机也能升|主机情报|次世代|硬件|显卡|处理器|大会|峰会|获奖名单|招聘|财报|流水|营收/i.test(text)) return false;
   if (isNonLeadMediaTopicText(text)) return false;
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
@@ -80,6 +82,7 @@ export function isExpandedDomesticProductSignal(item) {
   const title = normalizeDisplayText(item.title);
   const domesticSource = focus.has("domestic_sourcing") || focus.has("bilibili") || focus.has("china");
   if (!domesticSource) return false;
+  if (isSteamStoreOperationsTopic(item)) return false;
   if (isLowInformationMediaTitle(item.title)) return false;
   if (isBannedMediaLeadText(text)) return false;
   if (isNonLeadMediaTopicText(text)) return false;
@@ -104,6 +107,7 @@ export function isDomesticMediaRescueSignal(item) {
   const title = normalizeDisplayText(item.title);
   const domesticSource = focus.has("domestic_sourcing") || focus.has("bilibili") || focus.has("china");
   if (!domesticSource) return false;
+  if (isSteamStoreOperationsTopic(item)) return false;
   if (isLowInformationMediaTitle(item.title)) return false;
   if (isBannedMediaLeadText(text) && !isOfficialOrDeveloperBilibiliSignal(item)) return false;
   if (isNonLeadMediaTopicText(text)) return false;

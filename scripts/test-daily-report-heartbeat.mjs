@@ -55,7 +55,7 @@ test("missing files and receipt request watchdog dispatch", async () => {
   assert.deepEqual(result.reasons, ["missing files: report, radar, steam_trends", "no successful synced receipt"]);
 });
 
-test("low-volume report requests watchdog dispatch even with a synced receipt", async () => {
+test("low-volume report is degraded but does not dispatch after a successful sync", async () => {
   const fetchFn = async (url, init = {}) => {
     if (init.method === "HEAD") return new Response(null, { status: 200 });
     if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 1, watch: 0 });
@@ -72,10 +72,12 @@ test("low-volume report requests watchdog dispatch even with a synced receipt", 
 
   const result = await inspectDailyArtifacts({ env, date: "2026-07-09", fetchFn });
 
-  assert.equal(result.ok, false);
-  assert.equal(result.needsDispatch, true);
+  assert.equal(result.ok, true);
+  assert.equal(result.degraded, true);
+  assert.equal(result.needsDispatch, false);
   assert.equal(result.report.review, 1);
-  assert.deepEqual(result.reasons, ["review candidate count 1 below threshold 18"]);
+  assert.deepEqual(result.reasons, []);
+  assert.deepEqual(result.warnings, ["review candidate count 1 below target 18"]);
 });
 
 test("status unknown receipt is not success evidence", async () => {

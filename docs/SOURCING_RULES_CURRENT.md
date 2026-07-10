@@ -113,12 +113,12 @@ Domestic media and Bilibili sources now feed both the radar and the lead generat
 
 ## V6 Low-Volume Fix
 
-V6 treats a tiny daily queue as an automation failure. When sources are healthy, the report should not collapse to one or two non-dropped leads.
+V6 treats a tiny daily queue as a degraded quality signal. When sources are healthy, the report should not collapse to one or two non-dropped leads, but valid Radar, Steam Trends, and daily output must remain available.
 
 The cloud workflow now passes stricter generation thresholds:
 
 - Steam scan budget: `260`
-- Minimum `push_pool + watch_pool`: `18`
+- Target `push_pool + watch_pool`: `18`（低于目标标记 degraded，不阻断结构有效的日报、Radar、Steam Trends 与 CRM 同步）
 - Minimum media/Bilibili leads when domestic signals are healthy: `10`
 
 The generator now uses both strict and expanded domestic media/Bilibili extraction. Expanded candidates may enter `未处理` when they point to a concrete product moment, even if the project name later needs manual cleanup. Obvious non-products such as tutorials, wishlist-growth lessons, recruitment, financial reports, discounts, hardware posts, and generic ranking filler remain excluded.
@@ -136,14 +136,14 @@ V6.2 keeps the first-version sourcing ambition but adds guardrails so sourcing q
 - Official source first: Bilibili recommendation videos can reveal a product, but official/developer/studio/publisher Bilibili sources are preferred for final evidence when available.
 - Link hygiene: Steam, SteamDB, TapTap, official-site, Discord, email, and other useful links must be structured into `links` or `contact_methods` instead of staying buried in `gameplay`, `progress`, or notes.
 - Field hygiene: generated media leads should keep `priority_reason`, `rule_fit`, `gameplay`, `progress`, `bilibili_fit`, `amplification`, `risks`, and `verdict` concise. `next_action` and `notes` are for human BD work and should stay empty by default.
-- Stability: low review volume is a sourcing/rule/upstream failure, not an acceptable daily report. The generator must fail before writing and syncing a low-volume report, while logging candidate totals, duplicate filters, released filters, official-source hits, final import candidates, and source diagnostics into the online run receipt. Steam 429, a single Bilibili source failure, or media parsing failure may only be tolerated when the final review queue still meets the production volume thresholds.
+- Stability: low review volume is a sourcing/rule/upstream degradation signal, not a reason to suppress otherwise valid outputs. The generator must publish with visible diagnostics while logging candidate totals, duplicate filters, released filters, official-source hits, final import candidates, and source diagnostics. Empty source output, schema damage, write failure, and CRM sync failure remain blocking.
 - Hard failures remain hard: schema breakage, generated file write failure, or CRM sync authentication/write failure must still fail the workflow.
 
 ## V6.3 Backfill Hygiene And Token Guard
 
 V6.3 keeps the V6.2 sourcing behavior and tightens two operational edges:
 
-- Review backfill is allowed only as a clean first-pass `未处理` candidate before the hard volume gate. It must not write rule-version labels, fallback diagnostics, or automation receipts into user-facing fields such as `notes`, `next_action`, `verdict`, `priority_reason`, or `rule_fit`.
+- Review backfill is allowed only as a clean first-pass `未处理` candidate before volume diagnostics. It must not write rule-version labels, fallback diagnostics, or automation receipts into user-facing fields such as `notes`, `next_action`, `verdict`, `priority_reason`, or `rule_fit`.
 - Backfilled leads should still explain BD value through gameplay strength, income upside, market heat, Bilibili amplification, team/region fit, and signing probability.
 - GitHub Actions and Cloudflare sync paths should prefer `CRM_AUTOMATION_TOKEN`; `CRM_ACCESS_TOKEN` remains only a backwards-compatible fallback where explicitly wired.
 - Product version, daily-report rule version, and GitHub workflow health are separate concerns. A sourcing-rule update must not bump the product UI version or change unrelated product features.

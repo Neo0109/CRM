@@ -63,7 +63,7 @@
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
     "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
     "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",
-    "Review backfill must happen before the hard volume gate and must never write automation bookkeeping, rule-version labels, or fallback diagnostics into user-facing lead fields such as notes, next_action, verdict, priority_reason, or rule_fit."
+    "Review backfill must happen before volume diagnostics and must never write automation bookkeeping, rule-version labels, or fallback diagnostics into user-facing lead fields such as notes, next_action, verdict, priority_reason, or rule_fit."
   ],
   "media_sources": [
     { "name": "GameLook", "url": "http://www.gamelook.com.cn/feed", "type": "feed", "quality": 16, "focus": ["china", "business", "domestic_sourcing"] },
@@ -155,13 +155,13 @@
     "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
     "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources.",
     "The generator must report both Steam candidate counts and media/Bilibili product-lead counts so low daily volume is diagnosable.",
-    "Low review volume must trigger fallback attempts and diagnostics, then fail scheduled automation if push_pool plus watch_pool still misses the production threshold.",
+    "Low review volume must trigger fallback attempts and degraded diagnostics, but it must not block otherwise valid daily report, radar, Steam trends, or CRM sync output.",
     "Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to a Steam-only report.",
     "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries.",
     "The generator must inspect Bilibili video descriptions for Steam/contact links before deciding whether a Bilibili item is a new lead.",
     "The generator must route Bilibili/media items with confirmed already-released Steam status to drop_pool or market background, not push/watch.",
     "The generator log must include candidate total, duplicate filtered count, released filtered count, Bilibili official-source hits, and final non-dropped import candidates.",
-    "Low review volume, schema damage, generated file write failure, and CRM sync authentication/write failure must fail scheduled automation rather than publishing an unusable daily report.",
+    "Schema damage, empty source output, generated file write failure, and CRM sync authentication/write failure must fail scheduled automation; low review volume remains a visible quality warning.",
     "GitHub Actions and Cloudflare sync paths must prefer CRM_AUTOMATION_TOKEN, with CRM_ACCESS_TOKEN only as a backwards-compatible fallback where explicitly supported.",
     "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
     "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source."

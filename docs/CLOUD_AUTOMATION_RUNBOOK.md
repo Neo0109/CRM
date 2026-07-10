@@ -83,15 +83,15 @@ The watchdog checks:
 
 - Required files exist.
 - A successful sync receipt exists.
-- Candidate counts are above the minimum useful threshold.
-- Non-dropped review candidates (`push_pool + watch_pool`) meet the production threshold of 18.
-- Radar, Steam Trends, Steam market insights, and Steam genre signals are above the minimum useful thresholds.
+- Candidate counts are measured against their quality targets.
+- Non-dropped review candidates (`push_pool + watch_pool`) are measured against the target of 18; lower volume is degraded, not blocking.
+- Radar, Steam Trends, Steam market insights, and Steam genre signals report degraded warnings when below their targets.
 
-Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis, but the decisive report-volume gate is the generated daily report's `push_pool + watch_pool`, not newly-created CRM rows.
+Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis. Report volume remains a quality signal, while missing/invalid files and missing successful sync receipts decide whether recovery is needed.
 
 If unhealthy, it returns `needs_run = true` with reasons.
 
-The intended GitHub workflow is `.github/workflows/daily-report-watchdog.yml`, which checks repeatedly after the morning report window and regenerates/syncs if the day is missing or too weak.
+The intended GitHub workflow is `.github/workflows/daily-report-watchdog.yml`, which checks repeatedly after the morning report window and regenerates/syncs when required files or a successful sync receipt are missing.
 
 ## External Heartbeat
 
@@ -111,7 +111,7 @@ Optional environment overrides:
 - `GITHUB_WORKFLOW_FILE` defaults to `daily-report-watchdog.yml`.
 - `MIN_REVIEW_CANDIDATES` defaults to `18`.
 
-The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. It also reads the report and requires `push_pool + watch_pool >= 18`. If any required file is missing, the report is low-volume, or no receipt has `status=success` and `sync_response.synced=true`, it calls GitHub `workflow_dispatch` for `daily-report-watchdog.yml` with `date=YYYY-MM-DD` and `force=true`.
+The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. It reads `push_pool + watch_pool` against the target of 18 and reports lower volume as degraded. It dispatches `daily-report-watchdog.yml` only when required files are missing, report JSON is invalid, or no receipt has `status=success` and `sync_response.synced=true`.
 
 ## Codex Task Policy
 

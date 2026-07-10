@@ -62,12 +62,15 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     .filter(([, exists]) => !exists)
     .map(([key]) => key);
   const reasons = [];
+  const warnings = [];
   if (missingFiles.length) reasons.push(`missing files: ${missingFiles.join(", ")}`);
   if (reportHealth && !reportHealth.ok) reasons.push(...reportHealth.reasons);
+  if (reportHealth?.warnings?.length) warnings.push(...reportHealth.warnings);
   if (!successfulReceipt) reasons.push("no successful synced receipt");
 
   return {
     ok: reasons.length === 0,
+    degraded: warnings.length > 0,
     needsDispatch: reasons.length > 0,
     date,
     branch: config.branch,
@@ -75,6 +78,7 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     report: reportHealth,
     receipts,
     reasons,
+    warnings,
   };
 }
 
@@ -161,6 +165,7 @@ async function inspectReportVolume({ config, repoPath, fetchFn }) {
     return {
       ok: false,
       reasons: [`report fetch failed: HTTP ${response.status}`],
+      warnings: [],
       review: 0,
       threshold: config.minReviewCandidates,
     };
@@ -171,6 +176,7 @@ async function inspectReportVolume({ config, repoPath, fetchFn }) {
     return {
       ok: false,
       reasons: ["report JSON is invalid"],
+      warnings: [],
       review: 0,
       threshold: config.minReviewCandidates,
     };
@@ -179,14 +185,16 @@ async function inspectReportVolume({ config, repoPath, fetchFn }) {
   const push = Array.isArray(payload.push_pool) ? payload.push_pool.length : 0;
   const watch = Array.isArray(payload.watch_pool) ? payload.watch_pool.length : 0;
   const review = push + watch;
-  const reasons = [];
+  const warnings = [];
   if (review < config.minReviewCandidates) {
-    reasons.push(`review candidate count ${review} below threshold ${config.minReviewCandidates}`);
+    warnings.push(`review candidate count ${review} below target ${config.minReviewCandidates}`);
   }
 
   return {
-    ok: reasons.length === 0,
-    reasons,
+    ok: true,
+    degraded: warnings.length > 0,
+    reasons: [],
+    warnings,
     push,
     watch,
     review,

@@ -11,18 +11,30 @@ function readRepoFile(repoPath) {
 }
 
 describe("daily automation hardening contract", () => {
-  it("keeps production workflows off low-volume soft-fail mode", () => {
+  it("keeps production volume targets diagnostic while contract and sync failures stay blocking", () => {
     const syncWorkflow = readRepoFile(".github/workflows/sync-daily-report.yml");
     const watchdogWorkflow = readRepoFile(".github/workflows/daily-report-watchdog.yml");
     const runner = readRepoFile("automations/jobs/online_daily_runner.mjs");
     const workflowText = `${syncWorkflow}\n${watchdogWorkflow}`;
 
-    assert.doesNotMatch(workflowText, /--allowLowVolume=true/);
-    assert.doesNotMatch(runner, /allowLowVolume/);
+    assert.match(syncWorkflow, /--allowLowVolume=true/);
+    assert.match(watchdogWorkflow, /--allowLowVolume=true/);
+    assert.match(runner, /allowLowVolume/);
     assert.doesNotMatch(workflowText, /--minReviewCandidates=3/);
     assert.match(syncWorkflow, /--minReviewLeads=18/);
     assert.match(syncWorkflow, /--minMediaLeads=10/);
     assert.match(watchdogWorkflow, /--minCandidates=18 --minReviewCandidates=18/);
+  });
+
+  it("allows the daily report schema to carry the canonical drop reason field", () => {
+    const schema = JSON.parse(readRepoFile("schemas/daily_report.schema.json"));
+    assert.deepEqual(schema.$defs.reportLead.properties.drop_reason, { type: ["string", "null"] });
+  });
+
+  it("keeps machine-readable sourcing rules aligned with degraded publication", () => {
+    const rules = readRepoFile("automations/rules/daily-report.json");
+    assert.match(rules, /Low review volume.*degraded diagnostics.*must not block/);
+    assert.doesNotMatch(rules, /Low review volume, schema damage.*must fail scheduled automation/);
   });
 
   it("records generation failures without treating them as successful receipts", () => {

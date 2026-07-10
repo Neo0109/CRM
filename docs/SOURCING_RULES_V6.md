@@ -17,24 +17,24 @@ V6 keeps the domestic-first, testing-first workflow from V5, and fixes the low-v
 - Expanded candidates may enter `未处理` when they clearly point to a concrete game/product moment, even if the project name still needs manual cleanup.
 - If Steam search or AppDetails is unavailable, the report must transparently fall back to domestic media/Bilibili review candidates instead of collapsing to one or two leads.
 - If Steam and media sources are healthy but the strong/normal review pool is just below the floor, domestic candidates with concrete playable/product signals may be backfilled into `未处理` as low-confidence first-pass review items.
-- Low review volume must trigger fallback attempts and diagnostics, then fail the scheduled job if the final review queue still misses the production threshold.
+- Low review volume must trigger fallback attempts and degraded diagnostics, but must not block otherwise valid report, radar, Steam trends, or CRM sync output.
 - Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to Steam-only output.
 
 ## Lead Volume Standard
 
-Small push pools are acceptable; a tiny daily review queue is not.
+Small push pools and low-volume days are acceptable when they are clearly marked degraded and the output contracts remain valid.
 
-The automation should produce enough `push_pool + watch_pool` candidates for a real BD review session when upstream sources are healthy. A day with one or two non-dropped leads is considered a bad automation run, not a useful report.
+The automation should target enough `push_pool + watch_pool` candidates for a real BD review session when upstream sources are healthy. A day with one or two non-dropped leads is degraded and should trigger diagnostics, while still preserving valid daily, radar, and Steam trend output.
 
 Default cloud thresholds:
 
-- Minimum review candidates: `18`
+- Target review candidates: `18`
 - Minimum media/Bilibili lead candidates when domestic signals are healthy: `10`
 - Steam scan budget: `260` candidates
 - Steam AppDetails enrichment budget: `90` candidates
 - Low-confidence domestic review backfill score: `18`
 
-If these thresholds cannot be met after fallback/backfill, the workflow must fail before publishing or syncing the report. The online receipt should record whether the root cause appears to be sourcing rules, upstream source failures, over-deduplication, media/Bilibili conversion, schema damage, file write failure, or CRM sync authentication/write failure.
+If these targets cannot be met after fallback/backfill, the workflow publishes with degraded diagnostics. It still fails for empty source output, schema damage, file write failure, or CRM sync authentication/write failure. The online receipt should preserve enough diagnostics to distinguish sourcing rules, upstream source failures, over-deduplication, and media/Bilibili conversion.
 
 Backfill is not permission to pad the report. It can only use domestic or Chinese-context candidates that still have a concrete source, playable/product signal, or domestic discovery query. Backfilled leads still enter `未处理`, never `观察池`/`待评测`/`跟进中`, and the first action is quick product judgment: inspect/test, then either promote manually or淘汰.
 
