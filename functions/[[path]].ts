@@ -2,7 +2,7 @@ import type { PagesContext } from "./_lib/crm";
 
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260708-lead-detail-noise-window-fix-v26";
+const assetVersion = "20260710-monthly-vision-sheet-v27";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;

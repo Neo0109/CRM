@@ -1,4 +1,4 @@
-import type { AutomationDiagnostics, CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, RadarReport, SourcingLearningReport, SteamTrendReport, WeeklyReport } from "./types";
+import type { AutomationDiagnostics, CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, MonthlyVisionItem, MonthlyVisionResponse, MonthlyVisionSheet, MonthlyVisionStatus, RadarReport, SourcingLearningReport, SteamTrendReport, WeeklyReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 const usernameKey = "sourcing-crm-username";
@@ -122,6 +122,21 @@ export function fetchSourcingLearning() {
 
 export function fetchSettings() {
   return request<CrmSettings>("/api/settings");
+}
+
+export function fetchMonthlyVision(month: string) {
+  return request<MonthlyVisionResponse>(`/api/monthly-vision?month=${encodeURIComponent(month)}`);
+}
+
+export function saveMonthlyVision(month: string, status: MonthlyVisionStatus, items: MonthlyVisionItem[]) {
+  return request<MonthlyVisionSheet>(`/api/monthly-vision?month=${encodeURIComponent(month)}`, {
+    method: "PUT",
+    body: JSON.stringify({ status, items })
+  });
+}
+
+export function monthlyVisionExportUrl(month: string, password: string) {
+  return `/api/export/monthly-vision?month=${encodeURIComponent(month)}&password=${encodeURIComponent(password)}`;
 }
 
 export function runLeadAssistant(payload: LeadAssistantPayload) {

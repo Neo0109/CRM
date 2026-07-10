@@ -99,6 +99,32 @@ export type CrmSettings = {
   updated_at: string | null;
 };
 
+export type MonthlyVisionStatus = "draft" | "finalized";
+
+export type MonthlyVisionItem = {
+  lead_id: string;
+  project: string;
+  developer: string;
+  contacts: string;
+};
+
+export type MonthlyVisionSheet = {
+  type: "monthly_vision_sheet";
+  month: string;
+  status: MonthlyVisionStatus;
+  items: MonthlyVisionItem[];
+  created_at: string;
+  updated_at: string;
+  finalized_at: string | null;
+  updated_by: string | null;
+  finalized_by: string | null;
+};
+
+export type MonthlyVisionResponse = {
+  source: "generated" | "stored";
+  sheet: MonthlyVisionSheet;
+};
+
 export type RadarCategory = "行业新闻" | "发行八卦" | "AI 游戏" | "新梗热点" | "B站趋势";
 
 export type RadarItem = {

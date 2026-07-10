@@ -6,9 +6,10 @@
 
 - Leads 列表：搜索、池子、区域、阶段、Owner、发售窗口过滤
 - Lead 详情：B站适配度、放大作用、发行结构、曝光轨迹、风险和下一步动作
+- 月度视野表：从活跃项目预填，人工整理后按月确认留档并导出三列 Excel
 - 自动同步：每日自动化报告可一键同步到 CRM（Supabase）
 - 去重合并：项目名优先，其次 Steam AppID / 链接
-- 导出：JSON / CSV
+- 导出：全量 JSON / CSV / Excel，以及已确认月份的视野表 Excel
 - 线上存储：部署后使用 Supabase 作为共享数据库
 - 本地备用：未配置 Supabase 时使用 `data/leads.json`
 
