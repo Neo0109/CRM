@@ -1,6 +1,6 @@
 import { CheckCircle2, FileSpreadsheet, LockOpen, Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { fetchMonthlyVision, monthlyVisionExportUrl, saveMonthlyVision } from "./api";
+import { downloadMonthlyVisionExcel, fetchMonthlyVision, saveMonthlyVision } from "./api";
 import {
   availableMonthlyVisionLeads,
   currentShanghaiMonth,
@@ -17,6 +17,7 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
   const [source, setSource] = useState<"generated" | "stored">("generated");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState("");
   const [downloadPassword, setDownloadPassword] = useState("");
@@ -89,19 +90,28 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
     }
   }
 
-  function exportExcel() {
+  async function exportExcel() {
     if (!locked) {
       setError("请先确认本月视野表，再导出 Excel");
       return;
     }
+    if (exporting) return;
     const password = downloadPassword.trim();
     if (!password) {
       setError("请输入 Excel 导出密码");
       return;
     }
-    setError(null);
-    window.location.assign(monthlyVisionExportUrl(month, password));
-    onStatus(`开始导出 ${monthlyVisionMonthLabel(month)}视野表`);
+
+    try {
+      setExporting(true);
+      setError(null);
+      await downloadMonthlyVisionExcel(month, password);
+      onStatus(`${monthlyVisionMonthLabel(month)}视野表 Excel 已导出`);
+    } catch (nextError) {
+      setError(errorMessage(nextError, "月度视野表 Excel 导出失败"));
+    } finally {
+      setExporting(false);
+    }
   }
 
   return <section className="monthly-vision-shell">
@@ -157,10 +167,10 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
 
       <div className="monthly-vision-export">
         <div><strong>Excel 导出</strong><p className="subline">固定导出“项目名称、研发团队、联系方式”三列；历史月份保持确认时的内容。</p></div>
-        <div className="monthly-vision-export-actions">
+        <form className="monthly-vision-export-actions" onSubmit={(event) => { event.preventDefault(); void exportExcel(); }}>
           <input type="password" value={downloadPassword} onChange={(event) => setDownloadPassword(event.target.value)} placeholder="Excel 导出密码" aria-label="Excel 导出密码" />
-          <button className="ghost-button" type="button" disabled={!locked} onClick={exportExcel}><FileSpreadsheet size={16} />导出 Excel</button>
-        </div>
+          <button className="ghost-button" type="submit" disabled={!locked || exporting}><FileSpreadsheet size={16} />{exporting ? "导出中…" : "导出 Excel"}</button>
+        </form>
       </div>
     </> : null}
   </section>;

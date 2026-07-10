@@ -14,11 +14,27 @@ describe("monthly vision feature contract", () => {
     assert.match(source("main.tsx"), /monthly-vision\.css/);
   });
 
-  it("uses dedicated monthly APIs without changing the full export endpoint", () => {
+  it("uses an authenticated download without exposing the export password in the URL", () => {
     const api = source("api.ts");
     assert.match(api, /\/api\/monthly-vision\?month=/);
     assert.match(api, /\/api\/export\/monthly-vision\?month=/);
+    assert.match(api, /"x-export-password": password/);
+    assert.match(api, /"x-crm-username"/);
+    assert.match(api, /"x-crm-token"/);
+    assert.match(api, /response\.blob\(\)/);
+    assert.match(api, /URL\.createObjectURL/);
+    assert.match(api, /anchor\.click\(\)/);
+    assert.doesNotMatch(api, /monthly-vision\?month=.*&password=/);
     assert.match(api, /\/api\/export\/excel\?password=/);
+  });
+
+  it("submits the same export action from the button or Enter key", () => {
+    const page = source("MonthlyVisionPage.tsx");
+    assert.match(page, /<form className="monthly-vision-export-actions"/);
+    assert.match(page, /onSubmit=/);
+    assert.match(page, /type="submit"/);
+    assert.match(page, /await downloadMonthlyVisionExcel\(month, password\)/);
+    assert.doesNotMatch(page, /window\.location\.assign\(monthlyVision/);
   });
 
   it("exposes the draft, finalize, unlock, and three-column workflow", () => {

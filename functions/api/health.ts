@@ -10,7 +10,7 @@ export const onRequestGet = async ({ env }: PagesContext) => {
 
   return json({
     ok: true,
-    version: "v2.7-monthly-vision-sheet",
+    version: "v2.7.1-monthly-vision-export-fix",
     storage: hasSupabaseUrl && hasSupabaseSecret ? "supabase" : "missing",
     env: {
       hasSupabaseUrl,
