@@ -1,0 +1,463 @@
+{
+  "report_date": "2026-07-10",
+  "summary": "Steam大盘V6.5：扫描 90 个候选，输出 4 条大盘观察和 5 个品类信号。今日重点看 Strategy / Tactical、Action / Visual Hook、Simulation / Management；候选入库仍只进入未处理 inbox，人工再分池。",
+  "market_insights": [
+    {
+      "id": "steam_macro_2026_07_10_category_risers",
+      "title": "近期冒头品类：Strategy / Tactical、Action / Visual Hook、Simulation / Management",
+      "summary": "样本中 Strategy / Tactical（39/90）、Action / Visual Hook（31/90）、Simulation / Management（24/90）、Roguelike / Deckbuilder（15/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "signal_level": "高",
+      "source": "Steam Store / AppDetails scan",
+      "link": "https://store.steampowered.com/search/?filter=popularcomingsoon",
+      "suggested_action": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_macro_2026_07_10_demo_window",
+      "title": "Demo/活动窗口：56 个候选带试玩或新品节信号",
+      "summary": "其中国内相关 4 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "signal_level": "高",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "link": "https://store.steampowered.com/sale/nextfest",
+      "suggested_action": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_macro_2026_07_10_publisher_slate",
+      "title": "发行商新品：Honglizi(2)、Angry Eggplant(2)、Panic Stations(2)、Dookos Games(2)",
+      "summary": "今日样本里这些发行/开发主体重复出现。重复出现不等于可签，反而要判断是否已被成熟发行商占位、是否仍有中国区权益空间。",
+      "signal_level": "中",
+      "source": "Steam publisher/developer fields",
+      "link": "https://store.steampowered.com/search/?filter=topsellers",
+      "suggested_action": "对成熟发行商占位项目降低BD优先级；对国内自研或发行结构未明项目，测试通过后再补联系方式。",
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_macro_2026_07_10_data_quality",
+      "title": "数据面：1 个样本有公开热度或强素材信号",
+      "summary": "扫描样本 90 个，国内 7 个，推荐数/口碑/强数据命中 1 个，素材充足样本 83 个。",
+      "signal_level": "中",
+      "source": "Steam recommendations / media assets / SteamDB",
+      "link": "https://steamdb.info/charts/",
+      "suggested_action": "缺数据的项目不急着商务推进；先补公开视频、试玩反馈、愿望单/评论/社区证据，再决定进入跟进。",
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    }
+  ],
+  "genre_signals": [
+    {
+      "id": "steam_genre_2026_07_10_strategy_tactical",
+      "genre": "Strategy / Tactical（39/90）",
+      "signal": "39 个候选命中；代表样本：Ace Expedition 王牌远征、Very Safe Dino Park 🦖、Wild Hive。",
+      "why_it_matters": "策略品类容易形成长线讨论、攻略内容和核心用户沉淀，但上手门槛会影响破圈。",
+      "bd_action": "看Demo是否能在前10分钟讲清核心决策；国内题材和强视觉反馈优先。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Strategy/",
+        "https://store.steampowered.com/tags/en/Turn-Based%20Tactics/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_10_action_visual_hook",
+      "genre": "Action / Visual Hook（31/90）",
+      "signal": "31 个候选命中；代表样本：Very Safe Dino Park 🦖、YuanQi : 元氣、Soulforge Lost Path。",
+      "why_it_matters": "动作和强视觉项目更容易在B站首曝/PV/实机演示里被快速理解。",
+      "bd_action": "优先看打击反馈、镜头语言、角色辨识度和Demo观感；普通动作壳不占用复核名额。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Action/",
+        "https://store.steampowered.com/tags/en/Shooter/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_10_simulation_management",
+      "genre": "Simulation / Management（24/90）",
+      "signal": "24 个候选命中；代表样本：Jiaobei: Ask the Divine、Very Safe Dino Park 🦖、The 7th Shift。",
+      "why_it_matters": "经营模拟适合系列化视频、直播养成和社群二创，若主题独特可放大B站内容价值。",
+      "bd_action": "优先筛选题材新、目标明确、可展示成长曲线的项目；纯数值堆叠谨慎。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Simulation/",
+        "https://store.steampowered.com/tags/en/Management/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_10_roguelike_deckbuilder",
+      "genre": "Roguelike / Deckbuilder（15/90）",
+      "signal": "15 个候选命中；代表样本：Ace Expedition 王牌远征、Wild Hive、天天斗地主。",
+      "why_it_matters": "机制清晰、单局反馈强，适合B站做挑战、构筑分享、直播切片和攻略复盘。",
+      "bd_action": "优先看是否有差异化机制、局外成长和可复播内容；只保留能被视频讲清楚的项目。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Roguelike/",
+        "https://store.steampowered.com/tags/en/Deckbuilding/"
+      ]
+    },
+    {
+      "id": "steam_genre_2026_07_10_co_op_multiplayer",
+      "genre": "Co-op / Multiplayer（15/90）",
+      "signal": "15 个候选命中；代表样本：Very Safe Dino Park 🦖、天天斗地主、Garisani Detective Agency。",
+      "why_it_matters": "多人协作/对抗天然适合直播和UP主联动，但服务器、匹配和运营成本要提前判断。",
+      "bd_action": "看是否能形成多人节目效果；没有稳定测试和社区节奏的项目不急着推进商务。",
+      "links": [
+        "https://store.steampowered.com/tags/en/Co-op/",
+        "https://store.steampowered.com/tags/en/Multiplayer/"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "steam_trend_2026_07_10_4150220",
+      "title": "Ace Expedition 王牌远征",
+      "steam_app_id": "4150220",
+      "rank_bucket": "Steam CN Deckbuilder Keyword Upcoming",
+      "signal": "大盘位置：Roguelike / Deckbuilder；来源 Steam CN Deckbuilder Keyword Upcoming；发售窗口 Q3 2026。\n公开数据：推荐数 无公开；素材 8图/1视频；有Demo/试玩窗口。\n产品观察：Ace Expedition is a deep deck building roguelike where you step into a realm full of unknowns and mysteries.​ Each shuffle starts a new legend. Combine cards to attack and buff, plan your best moves within a limited number of plays, and take on powerful foes.。\nBD判断：优势 玩法具备机制表达空间；截图/视频素材较完整；国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/4150220/",
+        "https://steamdb.info/app/4150220/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "B站赋能：系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_3926900",
+      "title": "保卫粮食 Grain Defense Demo",
+      "steam_app_id": "3926900",
+      "rank_bucket": "Featured Coming Soon",
+      "signal": "大盘位置：国内前置样本；来源 Featured Coming Soon；发售窗口 Coming soon。\n公开数据：推荐数 无公开；素材 0图/0视频；有Demo/试玩窗口。\n产品观察：待打开Steam页确认玩法循环。\nBD判断：优势 国内项目，沟通效率和文化适配优先；国内开发者Demo/试玩信号，适合优先提测；有可尝试联系入口；风险 发售窗口不精确；缺愿望单/口碑/社区强数据；视觉素材不足，内容转化需验证。",
+      "source": "Steam Store / AppDetails",
+      "links": [
+        "https://store.steampowered.com/app/3926900/",
+        "https://steamdb.info/app/3926900/"
+      ],
+      "bilibili_fit": "需要先看 Steam 页面素材，确认是否能被标题化、切片化和讲解化。",
+      "reason": "B站赋能：需要先看 Steam 页面素材，确认是否能被标题化、切片化和讲解化。 BD动作：先做实机/运营测试；测试不成立直接淘汰，测试成立再补联系人、官网和商务窗口。",
+      "auto_import": true,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_fallback_3",
+      "title": "无限防卫",
+      "steam_app_id": "3351980",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-国产游戏实机 / https://www.bilibili.com/video/BV1dTM361Eag/\n产品观察：媒体 / B站待确认 / ACT / RPG / Simulation",
+      "source": "B站视频-国产游戏实机",
+      "links": [
+        "https://www.bilibili.com/video/BV1dTM361Eag/",
+        "https://store.steampowered.com/app/3351980/Unlimited_Defense/",
+        "https://store.steampowered.com/app/3351980/",
+        "https://steamdb.info/app/3351980/",
+        "https://www.photonchess.com"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "Steam 不可用时的国内发现保底候选；先做人工首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_fallback_4",
+      "title": "Ace Expedition 王牌远征",
+      "steam_app_id": "4150220",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Steam CN Deckbuilder Keyword Upcoming / Steam App 4150220\n产品观察：Ace Expedition is a deep deck building roguelike where you step into a realm full of unknowns and mysteries.​ Each shuffle starts a new legend. Combine cards to attack and buff, plan your best moves within a limited number of plays, and take on powerful foes.",
+      "source": "Steam CN Deckbuilder Keyword Upcoming",
+      "links": [
+        "https://store.steampowered.com/app/4150220/",
+        "https://steamdb.info/app/4150220/"
+      ],
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "reason": "Steam 不可用时的国内发现保底候选；先做人工首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_fallback_5",
+      "title": "我在西游当妖怪",
+      "steam_app_id": "373935",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1qhNE6aESz/\n产品观察：Card/Deckbuilder / Simulation / Management / 国风题材",
+      "source": "B站视频-独立游戏开发日志",
+      "links": [
+        "https://www.bilibili.com/video/BV1qhNE6aESz/",
+        "https://store.steampowered.com/app/373935/",
+        "https://steamdb.info/app/373935/"
+      ],
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "reason": "Steam 不可用时的国内发现保底候选；先做人工首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_fallback_6",
+      "title": "保卫粮食 Grain Defense Demo",
+      "steam_app_id": "3926900",
+      "rank_bucket": "Domestic media/Bilibili fallback",
+      "signal": "Steam Store 本次抓取没有返回有效候选，日报使用国内媒体/B站产品线索保持发现不中断。\n原始信号：Featured Coming Soon / Steam App 3926900\n产品观察：玩法待复核。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。",
+      "source": "Featured Coming Soon",
+      "links": [
+        "https://store.steampowered.com/app/3926900/",
+        "https://steamdb.info/app/3926900/"
+      ],
+      "bilibili_fit": "需要先看 Steam 页面素材，确认是否能被标题化、切片化和讲解化。",
+      "reason": "Steam 不可用时的国内发现保底候选；先做人工首轮 review。",
+      "auto_import": true,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_diagnostic_1",
+      "title": "近期冒头品类：Strategy / Tactical、Action / Visual Hook、Simulation / Management",
+      "steam_app_id": null,
+      "rank_bucket": "Steam diagnostics fallback",
+      "signal": "样本中 Strategy / Tactical（39/90）、Action / Visual Hook（31/90）、Simulation / Management（24/90）、Roguelike / Deckbuilder（15/90） 最集中。重点不是标签热闹，而是这些品类是否有清晰循环、可剪视频看点和B站讨论空间。",
+      "source": "Steam Store / AppDetails scan",
+      "links": [
+        "https://store.steampowered.com/search/?filter=popularcomingsoon"
+      ],
+      "bilibili_fit": "优先打开头部样本看玩法循环和视频素材；只把能被UP主讲清楚、测得出差异的项目放进人工复核。",
+      "reason": "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。",
+      "auto_import": false,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    },
+    {
+      "id": "steam_trend_2026_07_10_diagnostic_2",
+      "title": "Demo/活动窗口：56 个候选带试玩或新品节信号",
+      "steam_app_id": null,
+      "rank_bucket": "Steam diagnostics fallback",
+      "signal": "其中国内相关 4 个。Demo、Next Fest、热门即将推出比普通标签更接近可执行窗口，适合安排运营测试和内容预判。",
+      "source": "Steam Demo / Next Fest / Upcoming",
+      "links": [
+        "https://store.steampowered.com/sale/nextfest"
+      ],
+      "bilibili_fit": "先测游戏，再决定商务；国内Demo优先排期，海外Demo必须同时看PC数据和手游化角度。",
+      "reason": "Steam 大盘观察补位卡片；用于保留趋势诊断，不作为 CRM lead 自动入库。",
+      "auto_import": false,
+      "captured_at": "2026-07-10T16:47:32+08:00"
+    }
+  ],
+  "crm_candidates": [
+    {
+      "id": "lead_media_20260710_i92n48",
+      "project": "无限防卫",
+      "steam_app_id": "3351980",
+      "team": "Marsh Of Dreamy Plasma XiaMen Culture and Arts Co., Ltd",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": null,
+      "rule_fit": "即将发售；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "媒体 / B站待确认 / ACT / RPG / Simulation",
+      "gameplay": "媒体 / B站待确认 / ACT / RPG / Simulation",
+      "progress": "即将发售",
+      "release_window": "Coming soon",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Marsh Of Dreamy Plasma XiaMen Culture and Arts Co., Ltd；B站线索已补 Steam 交叉验证",
+      "publisher_name": "Marsh Of Dreamy Plasma XiaMen Culture and Arts Co., Ltd",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏实机 分数 147；B站视频/搜索语境；已从文本补 Steam AppID 3351980。",
+      "public_signals": "B站视频-国产游戏实机 / https://www.bilibili.com/video/BV1dTM361Eag/",
+      "contact": "B站: https://www.bilibili.com/video/BV1dTM361Eag/；Email: marshdps@163.com；官网: https://www.photonchess.com；Steam: https://steamcommunity.com/app/3351980/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1dTM361Eag/",
+          "note": "B站视频-国产游戏实机 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "marshdps@163.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.photonchess.com",
+          "note": "Steam official website"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3351980/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1dTM361Eag/",
+        "https://store.steampowered.com/app/3351980/Unlimited_Defense/",
+        "https://store.steampowered.com/app/3351980/",
+        "https://steamdb.info/app/3351980/",
+        "https://www.photonchess.com"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏实机捕捉到媒体/B站线索（2026-07-10）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-10",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_4150220_2026-07-10",
+      "project": "Ace Expedition 王牌远征",
+      "steam_app_id": "4150220",
+      "team": "Angry Eggplant",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "drop_reason": null,
+      "priority_reason": null,
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权；玩法具备内容化潜力；窗口仍在，允许优先触达",
+      "genre": "Casual / Indie / Strategy",
+      "gameplay": "Ace Expedition is a deep deck building roguelike where you step into a realm full of unknowns and mysteries.​ Each shuffle starts a new legend. Combine cards to attack and buff, plan your best moves within a limited number of plays, and take on powerful foes.",
+      "progress": "Steam Steam CN Deckbuilder Keyword Upcoming；发售窗口：Q3 2026；Demo/试玩信号需优先复核",
+      "release_window": "Q3 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Angry Eggplant；未见成熟中国发行能力占位",
+      "publisher_name": "Angry Eggplant",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN Deckbuilder Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN Deckbuilder Keyword Upcoming / Steam App 4150220",
+      "contact": "Email: 490595358@qq.com；Steam: https://steamcommunity.com/app/4150220/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "490595358@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4150220/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4150220/",
+        "https://steamdb.info/app/4150220/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN Deckbuilder Keyword Upcoming（2026-07-10）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据",
+      "verdict": "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-10",
+      "notes": null
+    },
+    {
+      "id": "lead_media_20260710_tnq50r",
+      "project": "我在西游当妖怪",
+      "steam_app_id": "373935",
+      "team": null,
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P1",
+      "priority_reason": null,
+      "rule_fit": "试玩 Demo；Steam 交叉验证已建立；适合由 BD 先判断产品质量、B站适配和签约概率。",
+      "genre": "Card/Deckbuilder / Simulation / Management / 国风题材",
+      "gameplay": "Card/Deckbuilder / Simulation / Management / 国风题材",
+      "progress": "试玩 Demo",
+      "release_window": null,
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "媒体/B站信号，发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-独立游戏开发日志 分数 123；B站视频/搜索语境；已从文本补 Steam AppID 373935。",
+      "public_signals": "B站视频-独立游戏开发日志 / https://www.bilibili.com/video/BV1qhNE6aESz/",
+      "contact": "B站: https://www.bilibili.com/video/BV1qhNE6aESz/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1qhNE6aESz/",
+          "note": "B站视频-独立游戏开发日志 原始视频/搜索入口"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1qhNE6aESz/",
+        "https://store.steampowered.com/app/373935/",
+        "https://steamdb.info/app/373935/"
+      ],
+      "exposure_trail": "自动从B站视频-独立游戏开发日志捕捉到媒体/B站线索（2026-07-10）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "重点看实机/PV可剪辑点、弹幕评论反馈和UP主表达，判断是否能转化为试玩、直播或发行前种草。",
+      "amplification": "",
+      "risks": "仍需确认团队、发行占位和中国区权益空间。",
+      "verdict": "",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-10",
+      "notes": null
+    },
+    {
+      "id": "lead_steam_3926900_2026-07-10",
+      "project": "保卫粮食 Grain Defense Demo",
+      "steam_app_id": "3926900",
+      "team": null,
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": "P2",
+      "drop_reason": null,
+      "priority_reason": null,
+      "rule_fit": "国内项目优先；国内开发者Demo测试提权",
+      "genre": null,
+      "gameplay": "玩法待复核。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。",
+      "progress": "Steam Featured Coming Soon；发售窗口：Coming soon；Demo/试玩信号需优先复核",
+      "release_window": "Coming soon",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "发行结构待确认",
+      "publisher_name": null,
+      "china_capability_occupied": false,
+      "traction_summary": "Featured Coming Soon；Demo/试玩信号。",
+      "public_signals": "Featured Coming Soon / Steam App 3926900",
+      "contact": "Steam: https://steamcommunity.com/app/3926900/discussions/",
+      "contact_methods": [
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3926900/discussions/",
+          "note": "Official Steam community fallback"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/3926900/",
+        "https://steamdb.info/app/3926900/"
+      ],
+      "exposure_trail": "最早自动捕捉：Featured Coming Soon（2026-07-10）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "需要先看 Steam 页面素材，确认是否能被标题化、切片化和讲解化。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "发售窗口未精确；缺少愿望单/口碑/社区强数据；团队信息待确认",
+      "verdict": "方向可看但还不够商务推进，先进入未处理 inbox；测试/观察不成立就直接淘汰",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-07-10",
+      "notes": null
+    }
+  ]
+}
