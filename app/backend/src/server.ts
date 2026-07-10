@@ -83,7 +83,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.6-lead-detail-noise-window-fix",
+    version: "v2.7-monthly-vision-sheet",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,

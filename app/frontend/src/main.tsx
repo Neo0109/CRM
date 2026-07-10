@@ -12,6 +12,7 @@ import "./brand-overrides.css";
 import "./aesthetic-refresh.css";
 import "./lead-detail.css";
 import "./automation-diagnostics.css";
+import "./monthly-vision.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

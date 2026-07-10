@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.7`（`v2.7-monthly-vision-sheet`）：新增按月整理、确认留档并导出三列 Excel 的视野表工作流
 - 产品可见版本升级为 `v2.6`（`v2.6-lead-detail-noise-window-fix`）：Lead Detail 右侧详情降噪，人工字段默认留空，并恢复临近上线线索过滤口径
 - 日报规则升级到 `sourcing-rules-v6.5-window-hygiene`：保留 V6.4 B站探头，同时恢复 60 天上线窗口硬过滤；Demo/试玩只作为可测试信号，不再覆盖近上线合作窗口；自动化默认不再写 `priority_reason`、`next_action`、`notes`。
 - 设置边界收敛：CRM 设置页继续作为 Cloudflare Variables/Secrets 管理说明与 Excel 导出入口，不再提供在线修改绑定邮箱、登录密码或导出密码；旧 settings 写接口返回明确禁用提示，避免敏感配置继续通过 CRM UI/API 写入 Supabase。

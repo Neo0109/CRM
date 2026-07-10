@@ -1,4 +1,4 @@
-import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Menu, Newspaper, RefreshCw, TrendingUp } from "lucide-react";
+import { Activity, ArrowDownToLine, Bot, FileJson, FileSpreadsheet, ListChecks, LogOut, Menu, Newspaper, RefreshCw, TableProperties, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { clearAccessToken, excelExportUrl, fetchAutomationDiagnostics, fetchLeads, fetchRadar, fetchSourcingLearning, fetchSteamTrends, getAccessDisplayName, hasSavedCredentials, loginToCrm, syncLatestReport, updateLead } from "./api";
 import { AssistantPage } from "./AssistantPage";
@@ -10,6 +10,7 @@ import type { LeadReviewTarget } from "./features/leads/leadReviewTarget";
 import { RadarPage } from "./features/radar";
 import { LoginPage } from "./LoginPage";
 import { ManualLeadLauncher } from "./ManualLeadLauncher";
+import { MonthlyVisionPage } from "./MonthlyVisionPage";
 import { SettingsPage } from "./SettingsPage";
 import { SteamTrendsPage } from "./SteamTrendsPage";
 import { WeeklyReportLauncher } from "./WeeklyReportLauncher";
@@ -18,10 +19,11 @@ import { getDailyPhilosophyQuote } from "./dailyPhilosophyQuote";
 import { productVersionLabel } from "./productVersion";
 import type { AutomationDiagnostics, Lead, RadarReport, SourcingLearningReport, SteamTrendReport } from "./types";
 
-type View = "leads" | "assistant" | "radar" | "steam" | "diagnostics" | "settings";
+type View = "leads" | "vision" | "assistant" | "radar" | "steam" | "diagnostics" | "settings";
 
 const viewLabels: Record<View, string> = {
   leads: "Leads Review",
+  vision: "月度视野表",
   assistant: "线索助手",
   radar: "行业雷达",
   steam: "Steam 趋势",
@@ -51,6 +53,7 @@ export default function App() {
   const [sourcingLearning, setSourcingLearning] = useState<SourcingLearningReport | null>(null);
   const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
   const [leadReviewTarget, setLeadReviewTarget] = useState<LeadReviewTarget | null>(null);
+  const [visionRefreshKey, setVisionRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -182,6 +185,7 @@ export default function App() {
     if (view === "radar") void loadRadar();
     if (view === "steam") void loadSteamTrends();
     if (view === "diagnostics") void loadDiagnostics();
+    if (view === "vision") setVisionRefreshKey((current) => current + 1);
   }
 
   function downloadExcel() {
@@ -238,6 +242,7 @@ export default function App() {
         <div className="actions" id="mobile-nav-panel" data-mobile-open={mobileNavOpen}>
           <div className="nav-group">
             <button className={`tab-button ${view === "leads" ? "active" : ""}`} onClick={() => switchView("leads")}><ListChecks size={16} />Leads Review</button>
+            <button className={`tab-button ${view === "vision" ? "active" : ""}`} onClick={() => switchView("vision")}><TableProperties size={16} />月度视野表</button>
             <button className={`tab-button ${view === "assistant" ? "active" : ""}`} onClick={() => switchView("assistant")}><Bot size={16} />线索助手</button>
             <button className={`tab-button ${view === "radar" ? "active" : ""}`} onClick={() => switchView("radar")}><Newspaper size={16} />行业雷达</button>
             <button className={`tab-button ${view === "steam" ? "active" : ""}`} onClick={() => switchView("steam")}><TrendingUp size={16} />Steam 趋势</button>
@@ -268,7 +273,7 @@ export default function App() {
         displayName={displayName}
         reviewTarget={leadReviewTarget}
         onLeadPatch={handleLeadPatch}
-      /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onReviewLead={handleAssistantReviewLead} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} error={radarError} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} error={steamError} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
+      /> : view === "vision" ? <MonthlyVisionPage leads={leads} refreshKey={visionRefreshKey} onStatus={setStatus} /> : view === "assistant" ? <AssistantPage onImported={() => reload(false)} onReviewLead={handleAssistantReviewLead} onStatus={setStatus} /> : view === "radar" ? <RadarPage radar={radar} loading={radarLoading} error={radarError} onDateChange={(date) => void loadRadar(date)} /> : view === "steam" ? <SteamTrendsPage report={steamTrends} loading={steamLoading} error={steamError} onDateChange={(date) => void loadSteamTrends(date)} /> : view === "diagnostics" ? <AutomationDiagnosticsPage diagnostics={diagnostics} loading={diagnosticsLoading} onDateChange={(date) => void loadDiagnostics(date)} sourcingLearning={sourcingLearning} /> : <SettingsPage onStatus={setStatus} />}
       <ManualLeadLauncher visible={view === "leads" || view === "assistant"} />
     </main>
   );

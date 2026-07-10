@@ -1,4 +1,4 @@
-export const productVersion = "v2.6";
-export const productReleaseSlug = "lead-detail-noise-window-fix";
-export const productHealthVersion = "v2.6-lead-detail-noise-window-fix";
+export const productVersion = "v2.7";
+export const productReleaseSlug = "monthly-vision-sheet";
+export const productHealthVersion = "v2.7-monthly-vision-sheet";
 export const productVersionLabel = `Neo's BD Matrix · ${productVersion}`;
