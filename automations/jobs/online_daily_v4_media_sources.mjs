@@ -22,6 +22,7 @@ import {
   stripTags
 } from "./online_daily_v4_source_utils.mjs";
 import { defaultDailyRuleConfig } from "./online_daily_v4_rules.mjs";
+import { recordMediaSourceFetch, recordMediaSourceRetained } from "./online_daily_v4_source_health.mjs";
 
 export async function fetchMediaSignals(context = {}) {
   const diagnostics = context.diagnostics ?? {};
@@ -53,7 +54,9 @@ export async function fetchMediaSignals(context = {}) {
   }
   scored.sort((a, b) => b.score - a.score);
 
-  return dedupeMediaSignals(scored);
+  const retained = dedupeMediaSignals(scored);
+  recordMediaSourceRetained(diagnostics, retained);
+  return retained;
 }
 
 export async function fetchBilibiliProbeMediaSignals(context = {}) {
@@ -123,7 +126,7 @@ export async function enrichBilibiliVideoSignal(item, context = {}) {
 export function mediaSources(reportDate, config) {
   const configuredSources = Array.isArray(config) ? config : config?.mediaSources;
   const sources = configuredSources ?? defaultDailyRuleConfig().mediaSources;
-  return sources.filter((source) => !source.activeUntil || reportDate <= source.activeUntil);
+  return sources.filter((source) => source.active !== false && (!source.activeUntil || reportDate <= source.activeUntil));
 }
 
 export async function fetchMediaSource(source, context = {}) {
@@ -132,22 +135,29 @@ export async function fetchMediaSource(source, context = {}) {
   const logger = context.logger ?? console;
   try {
     const text = await fetchTextImpl(source.url, { timeoutMs: 12000, accept: "text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8" });
-    if (source.type === "feed") return parseFeedItems(text, source);
-    if (source.type === "bilibili_video_search") return parseBilibiliVideoSearch(text, source);
-    if (source.type === "bilibili_page_search") return parseBilibiliSearchPage(text, source);
-    if (source.type === "article") return [parseArticleItem(text, source)].filter(Boolean);
-    return parsePageItems(text, source);
+    let items;
+    if (source.type === "feed") items = parseFeedItems(text, source);
+    else if (source.type === "bilibili_video_search") items = parseBilibiliVideoSearch(text, source);
+    else if (source.type === "bilibili_page_search") items = parseBilibiliSearchPage(text, source);
+    else if (source.type === "article") items = [parseArticleItem(text, source)].filter(Boolean);
+    else items = parsePageItems(text, source);
+    recordMediaSourceFetch(diagnostics, source, { ok: true, rawCount: items.length });
+    return items;
   } catch (error) {
     if (source.type === "bilibili_video_search" && source.fallbackUrl) {
       try {
-        return parsePageItems(await fetchTextImpl(source.fallbackUrl, { timeoutMs: 12000, accept: "text/html,*/*;q=0.8" }), source);
+        const items = parsePageItems(await fetchTextImpl(source.fallbackUrl, { timeoutMs: 12000, accept: "text/html,*/*;q=0.8" }), source);
+        recordMediaSourceFetch(diagnostics, source, { ok: true, rawCount: items.length, fallbackUsed: true });
+        return items;
       } catch (fallbackError) {
         diagnostics.source_failures = (diagnostics.source_failures ?? 0) + 1;
+        recordMediaSourceFetch(diagnostics, source, { ok: false, error: `${error.message}; fallback failed: ${fallbackError.message}` });
         logger.warn?.(`Media source failed for ${source.name}: ${error.message}; fallback failed: ${fallbackError.message}`);
         return [];
       }
     }
     diagnostics.source_failures = (diagnostics.source_failures ?? 0) + 1;
+    recordMediaSourceFetch(diagnostics, source, { ok: false, error: error.message });
     logger.warn?.(`Media source failed for ${source.name}: ${error.message}`);
     return [];
   }

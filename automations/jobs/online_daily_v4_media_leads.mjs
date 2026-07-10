@@ -10,6 +10,7 @@ import {
 } from "./online_daily_v4_media_entities.mjs";
 import { enrichMediaLeadsWithSteamContext } from "./online_daily_v4_media_enrichment.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
+import { recordMediaLeadCandidates } from "./online_daily_v4_source_health.mjs";
 
 export async function buildMediaLeadCandidates(items, existingIndex, context = {}) {
   const diagnostics = context.diagnostics ?? {};
@@ -49,7 +50,9 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
   const verifiedCandidates = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads, ...rescueLeads], context);
   const verifiedLeads = verifiedCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
   diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + verifiedCandidates.length - verifiedLeads.length;
-  return selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
+  const selected = selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
+  recordMediaLeadCandidates(diagnostics, selected);
+  return selected;
 }
 
 export function selectBalancedMediaLeadCandidates(leads, sourceCount, limit) {

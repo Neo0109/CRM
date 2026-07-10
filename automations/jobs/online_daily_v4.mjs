@@ -13,6 +13,7 @@ import {
 } from "./online_daily_v4_dedupe.mjs";
 import { buildMediaLeadCandidates } from "./online_daily_v4_media_leads.mjs";
 import { fetchMediaSignals } from "./online_daily_v4_media_sources.mjs";
+import { recordReleaseWindowHealth } from "./online_daily_v4_source_health.mjs";
 import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalToRadarItem } from "./online_daily_v4_reports.mjs";
 import { buildDailyRuleConfig, loadDailyRules, validateDailyRules } from "./online_daily_v4_rules.mjs";
 import { buildSteamCandidateTasks, enrichSteamCandidates, prioritizeSteamCandidatesForReview } from "./online_daily_v4_steam_source.mjs";
@@ -75,6 +76,10 @@ const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignal
 const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, sourceContext);
 const steamCandidatesForReview = prioritizeSteamCandidatesForReview(rawCandidates, sourceContext);
 const enrichedCandidates = await enrichSteamCandidates(steamCandidatesForReview.slice(0, maxSteamDetails), sourceContext);
+recordReleaseWindowHealth(sourcingDiagnostics, {
+  steamCandidates: enrichedCandidates,
+  mediaLeads: mediaLeadCandidates
+});
 
 if (!rawCandidates.length && !mediaLeadCandidates.length) {
   throw new Error("No Steam candidates or domestic media/Bilibili product leads were fetched; refusing to overwrite daily reports with an empty run.");
