@@ -42,8 +42,7 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
 
   try {
     const envWithExportPassword = env as PagesContext["env"] & { EXCEL_EXPORT_PASSWORD?: string };
-    const settings = await readCrmSettings(env);
-    const configuredPassword = envWithExportPassword.EXCEL_EXPORT_PASSWORD ?? settings.excel_export_password ?? null;
+    const configuredPassword = envWithExportPassword.EXCEL_EXPORT_PASSWORD ?? (await readCrmSettings(env)).excel_export_password ?? null;
     if (!configuredPassword) return jsonResponse({ error: "请先在 Cloudflare Pages 的 Variables and Secrets 里配置 EXCEL_EXPORT_PASSWORD" }, 409);
 
     const url = new URL(request.url);
