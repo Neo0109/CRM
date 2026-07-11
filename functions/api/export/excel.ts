@@ -94,7 +94,7 @@ function excelResponse(html: string, filename: string) {
   });
 }
 
-function xlsxResponse(bytes: Uint8Array, filename: string) {
+function xlsxResponse(bytes: ArrayBuffer, filename: string) {
   return new Response(bytes, {
     headers: {
       "Content-Disposition": `attachment; filename=${filename}`,
