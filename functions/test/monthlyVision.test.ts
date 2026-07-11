@@ -58,6 +58,39 @@ function context(request: Request): PagesContext {
   return { request, env, params: {} };
 }
 
+const xlsxMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+async function worksheetXml(response: Response) {
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  assert.deepEqual(Array.from(bytes.slice(0, 4)), [0x50, 0x4b, 0x03, 0x04]);
+
+  const entries = new Map<string, string>();
+  const decoder = new TextDecoder();
+  let offset = 0;
+  while (offset + 30 <= bytes.length) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset + offset);
+    if (view.getUint32(0, true) !== 0x04034b50) break;
+    const method = view.getUint16(8, true);
+    const size = view.getUint32(18, true);
+    const nameLength = view.getUint16(26, true);
+    const extraLength = view.getUint16(28, true);
+    const nameStart = offset + 30;
+    const dataStart = nameStart + nameLength + extraLength;
+    assert.equal(method, 0);
+    const name = decoder.decode(bytes.slice(nameStart, nameStart + nameLength));
+    entries.set(name, decoder.decode(bytes.slice(dataStart, dataStart + size)));
+    offset = dataStart + size;
+  }
+
+  assert.ok(entries.has("[Content_Types].xml"));
+  assert.ok(entries.has("xl/workbook.xml"));
+  assert.ok(entries.has("xl/styles.xml"));
+  const worksheet = entries.get("xl/worksheets/sheet1.xml");
+  assert.ok(worksheet);
+  assert.doesNotMatch(worksheet, /<!doctype html>|<table>/i);
+  return worksheet;
+}
+
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
@@ -174,14 +207,18 @@ describe("monthly vision API", () => {
     }) as typeof fetch;
 
     const response = await exportMonthlyVision(context(authorizedRequest("https://crm.example/api/export/monthly-vision?month=2026-07&password=excel-secret")));
-    const html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
-    assert.equal((html.match(/<th>/g) ?? []).length, 3);
-    assert.match(html, /<th>项目名称<\/th><th>研发团队<\/th><th>联系方式<\/th>/);
-    assert.match(html, /A &amp; B/);
-    assert.match(html, /研发 &lt;甲&gt;/);
+    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xlsx");
+    assert.equal(response.headers.get("Content-Type"), xlsxMime);
+    const worksheet = await worksheetXml(response);
+    const developerHeader = worksheet.indexOf(">研发名字</t>");
+    const projectHeader = worksheet.indexOf(">游戏名字</t>");
+    const contactHeader = worksheet.indexOf(">联系方式</t>");
+    assert.ok(developerHeader >= 0 && developerHeader < projectHeader && projectHeader < contactHeader);
+    assert.match(worksheet, /<c r="A2"[^>]*><is><t[^>]*>研发 &lt;甲&gt;<\/t>/);
+    assert.match(worksheet, /<c r="B2"[^>]*><is><t[^>]*>A &amp; B<\/t>/);
+    assert.match(worksheet, /Email: a@example\.com/);
   });
   it("exports finalized snapshots through native form POST with cookie authentication", async () => {
     globalThis.fetch = (async (input: string | URL | Request) => {
@@ -203,11 +240,13 @@ describe("monthly vision API", () => {
     }) as typeof fetch;
 
     const response = await postMonthlyVisionExport(context(cookieAuthorizedFormRequest("2026-07", "excel-secret")));
-    const html = await response.text();
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
-    assert.equal((html.match(/<th>/g) ?? []).length, 3);
-    assert.match(html, /Native Export/);
+    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xlsx");
+    assert.equal(response.headers.get("Content-Type"), xlsxMime);
+    const worksheet = await worksheetXml(response);
+    assert.match(worksheet, /Native Export/);
+    assert.match(worksheet, /Studio/);
+    assert.match(worksheet, /native@example\.com/);
   });
 
   it("returns native form errors for a bad password, missing sheet, and draft sheet", async () => {
@@ -271,12 +310,13 @@ describe("monthly vision API", () => {
     }) as typeof fetch;
 
     const response = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=excel-secret")));
-    const html = await response.text();
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
-    assert.equal((html.match(/<th>/g) ?? []).length, 3);
-    assert.match(html, /<th>项目名称<\/th><th>研发团队<\/th><th>联系方式<\/th>/);
-    assert.match(html, /Shared Export/);
+    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xlsx");
+    assert.equal(response.headers.get("Content-Type"), xlsxMime);
+    const worksheet = await worksheetXml(response);
+    assert.match(worksheet, /<c r="A2"[^>]*><is><t[^>]*>Studio<\/t>/);
+    assert.match(worksheet, /<c r="B2"[^>]*><is><t[^>]*>Shared Export<\/t>/);
+    assert.match(worksheet, /shared@example\.com/);
   });
 
   it("returns shared endpoint errors for bad password and missing sheet, while exporting drafts", async () => {
@@ -301,10 +341,11 @@ describe("monthly vision API", () => {
       finalized_by: null
     } }])) as typeof fetch;
     const draft = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=excel-secret")));
-    const draftHtml = await draft.text();
     assert.equal(draft.status, 200);
-    assert.equal(draft.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
-    assert.equal((draftHtml.match(/<th>/g) ?? []).length, 3);
-    assert.match(draftHtml, /Draft/);
+    assert.equal(draft.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xlsx");
+    assert.equal(draft.headers.get("Content-Type"), xlsxMime);
+    const worksheet = await worksheetXml(draft);
+    assert.match(worksheet, /<c r="A2"[^>]*><is><t[^>]*>Studio<\/t>/);
+    assert.match(worksheet, /<c r="B2"[^>]*><is><t[^>]*>Draft<\/t>/);
   });
 });

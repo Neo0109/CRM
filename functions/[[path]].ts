@@ -2,7 +2,7 @@ import type { PagesContext } from "./_lib/crm";
 
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260711-monthly-vision-draft-export-v274";
+const assetVersion = "20260711-monthly-vision-real-xlsx-v275";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;

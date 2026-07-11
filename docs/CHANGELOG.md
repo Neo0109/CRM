@@ -4,6 +4,8 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.7.5`（`v2.7.5-monthly-vision-real-xlsx`）：月度视野表改为真正的 `.xlsx` 工作簿，不再把 HTML 伪装成 `.xls`；固定按“研发名字、游戏名字、联系方式”三列输出，兼容 Excel 和 Numbers。
+
 - 产品可见版本升级为 `v2.7.4`（`v2.7.4-monthly-vision-draft-export`）：修复草稿状态下导出按钮被禁用导致点击和回车完全无反应；导出时自动保存当前三列草稿、同步登录 cookie，再通过原有 `/api/export/excel` 下载。
 
 - 产品可见版本升级为 `v2.7.3`（`v2.7.3-monthly-vision-shared-excel-export`）：月度视野表统一复用原有 `/api/export/excel` 密码校验与浏览器下载路径，通过 scope 参数输出已确认月份的三列 Excel。

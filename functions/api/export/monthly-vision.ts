@@ -1,5 +1,5 @@
 import { json, requireAccess, type PagesContext } from "../../_lib/crm";
-import { assertMonthlyVisionMonth, monthlyVisionExcelHtml, readMonthlyVisionSheet } from "../../_lib/monthlyVision";
+import { assertMonthlyVisionMonth, monthlyVisionXlsx, readMonthlyVisionSheet } from "../../_lib/monthlyVision";
 import { readCrmSettings } from "../../_lib/settings";
 
 type ExportInput = {
@@ -52,10 +52,10 @@ async function exportMonthlyVisionResponse(env: PagesContext["env"], input: Expo
   if (!sheet) return json({ error: "该月份尚未保存视野表" }, 404);
   if (sheet.status !== "finalized") return json({ error: "请先确认本月视野表，再导出 Excel" }, 409);
 
-  return new Response(`\ufeff${monthlyVisionExcelHtml(sheet)}`, {
+  return new Response(monthlyVisionXlsx(sheet), {
     headers: {
-      "Content-Disposition": `attachment; filename=monthly-vision-${input.month}.xls`,
-      "Content-Type": "application/vnd.ms-excel; charset=utf-8"
+      "Content-Disposition": `attachment; filename=monthly-vision-${input.month}.xlsx`,
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     }
   });
 }
