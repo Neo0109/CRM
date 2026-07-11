@@ -1,6 +1,7 @@
 import { CheckCircle2, FileSpreadsheet, LockOpen, Plus, Save, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { downloadMonthlyVisionExcel, fetchMonthlyVision, saveMonthlyVision } from "./api";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
+import { fetchMonthlyVision, saveMonthlyVision, syncAccessCookies } from "./api";
 import {
   availableMonthlyVisionLeads,
   currentShanghaiMonth,
@@ -10,6 +11,8 @@ import {
   sortMonthlyVisionItems
 } from "./monthlyVision";
 import type { Lead, MonthlyVisionItem, MonthlyVisionSheet, MonthlyVisionStatus } from "./types";
+
+const monthlyVisionDownloadTarget = "monthly-vision-download-frame";
 
 export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead[]; refreshKey: number; onStatus: (message: string) => void }) {
   const [month, setMonth] = useState(currentShanghaiMonth());
@@ -21,6 +24,7 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
   const [error, setError] = useState<string | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState("");
   const [downloadPassword, setDownloadPassword] = useState("");
+  const exportFrameRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,25 +94,37 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
     }
   }
 
-  async function exportExcel() {
+  function exportExcel(event: FormEvent<HTMLFormElement>) {
     if (!locked) {
+      event.preventDefault();
       setError("请先确认本月视野表，再导出 Excel");
       return;
     }
-    if (exporting) return;
-    const password = downloadPassword.trim();
-    if (!password) {
+    if (exporting) {
+      event.preventDefault();
+      return;
+    }
+    if (!downloadPassword.trim()) {
+      event.preventDefault();
       setError("请输入 Excel 导出密码");
       return;
     }
 
+    syncAccessCookies();
+    setExporting(true);
+    setError(null);
+    onStatus(`开始导出 ${monthlyVisionMonthLabel(month)}视野表 Excel`);
+    window.setTimeout(() => setExporting(false), 1500);
+  }
+
+  function handleExportFrameLoad() {
+    const text = exportFrameRef.current?.contentDocument?.body.textContent?.trim();
+    if (!text) return;
     try {
-      setExporting(true);
-      setError(null);
-      await downloadMonthlyVisionExcel(month, password);
-      onStatus(`${monthlyVisionMonthLabel(month)}视野表 Excel 已导出`);
-    } catch (nextError) {
-      setError(errorMessage(nextError, "月度视野表 Excel 导出失败"));
+      const payload = JSON.parse(text) as { error?: string };
+      if (payload.error) setError(payload.error);
+    } catch {
+      // A successful attachment response does not expose a readable document body.
     } finally {
       setExporting(false);
     }
@@ -167,10 +183,12 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
 
       <div className="monthly-vision-export">
         <div><strong>Excel 导出</strong><p className="subline">固定导出“项目名称、研发团队、联系方式”三列；历史月份保持确认时的内容。</p></div>
-        <form className="monthly-vision-export-actions" onSubmit={(event) => { event.preventDefault(); void exportExcel(); }}>
-          <input type="password" value={downloadPassword} onChange={(event) => setDownloadPassword(event.target.value)} placeholder="Excel 导出密码" aria-label="Excel 导出密码" />
+        <form className="monthly-vision-export-actions" action="/api/export/monthly-vision" method="post" target={monthlyVisionDownloadTarget} onSubmit={exportExcel}>
+          <input type="hidden" name="month" value={month} />
+          <input type="password" name="password" value={downloadPassword} onChange={(event) => setDownloadPassword(event.target.value)} placeholder="Excel 导出密码" aria-label="Excel 导出密码" />
           <button className="ghost-button" type="submit" disabled={!locked || exporting}><FileSpreadsheet size={16} />{exporting ? "导出中…" : "导出 Excel"}</button>
         </form>
+        <iframe ref={exportFrameRef} name={monthlyVisionDownloadTarget} title="月度视野表 Excel 下载" hidden onLoad={handleExportFrameLoad} />
       </div>
     </> : null}
   </section>;

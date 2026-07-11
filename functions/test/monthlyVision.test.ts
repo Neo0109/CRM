@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { onRequestGet as getMonthlyVision, onRequestPut as putMonthlyVision } from "../api/monthly-vision";
-import { onRequestGet as exportMonthlyVision } from "../api/export/monthly-vision";
+import { onRequestGet as exportMonthlyVision, onRequestPost as postMonthlyVisionExport } from "../api/export/monthly-vision";
 import type { Env, PagesContext } from "../_lib/crm";
 import { normalizeLead } from "../_lib/leadModel";
 import {
@@ -39,6 +39,17 @@ function authorizedRequest(url: string, init: RequestInit = {}) {
       "x-crm-token": "secret",
       ...init.headers
     }
+  });
+}
+
+function cookieAuthorizedFormRequest(month: string, password: string) {
+  const form = new FormData();
+  form.set("month", month);
+  form.set("password", password);
+  return new Request("https://crm.example/api/export/monthly-vision", {
+    method: "POST",
+    headers: { cookie: "crm_username=neo; crm_access_token=secret" },
+    body: form
   });
 }
 
@@ -170,5 +181,57 @@ describe("monthly vision API", () => {
     assert.match(html, /<th>项目名称<\/th><th>研发团队<\/th><th>联系方式<\/th>/);
     assert.match(html, /A &amp; B/);
     assert.match(html, /研发 &lt;甲&gt;/);
+  });
+  it("exports finalized snapshots through native form POST with cookie authentication", async () => {
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes(`id=eq.${monthlyVisionRowId("2026-07")}`)) {
+        return Response.json([{ id: monthlyVisionRowId("2026-07"), data: {
+          type: "monthly_vision_sheet",
+          month: "2026-07",
+          status: "finalized",
+          items: [{ lead_id: "lead-a", project: "Native Export", developer: "Studio", contacts: "Email: native@example.com" }],
+          created_at: "2026-07-10T00:00:00.000Z",
+          updated_at: "2026-07-10T00:00:00.000Z",
+          finalized_at: "2026-07-10T00:00:00.000Z",
+          updated_by: "Neo",
+          finalized_by: "Neo"
+        } }]);
+      }
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const response = await postMonthlyVisionExport(context(cookieAuthorizedFormRequest("2026-07", "excel-secret")));
+    const html = await response.text();
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
+    assert.equal((html.match(/<th>/g) ?? []).length, 3);
+    assert.match(html, /Native Export/);
+  });
+
+  it("returns native form errors for a bad password, missing sheet, and draft sheet", async () => {
+    const badPassword = await postMonthlyVisionExport(context(cookieAuthorizedFormRequest("2026-07", "wrong")));
+    assert.equal(badPassword.status, 403);
+    assert.deepEqual(await badPassword.json(), { error: "Excel 导出密码错误" });
+
+    globalThis.fetch = (async () => Response.json([])) as typeof fetch;
+    const missing = await postMonthlyVisionExport(context(cookieAuthorizedFormRequest("2026-07", "excel-secret")));
+    assert.equal(missing.status, 404);
+    assert.deepEqual(await missing.json(), { error: "该月份尚未保存视野表" });
+
+    globalThis.fetch = (async () => Response.json([{ id: monthlyVisionRowId("2026-07"), data: {
+      type: "monthly_vision_sheet",
+      month: "2026-07",
+      status: "draft",
+      items: [{ lead_id: "lead-a", project: "Draft", developer: "Studio", contacts: "Email: draft@example.com" }],
+      created_at: "2026-07-10T00:00:00.000Z",
+      updated_at: "2026-07-10T00:00:00.000Z",
+      finalized_at: null,
+      updated_by: "Neo",
+      finalized_by: null
+    } }])) as typeof fetch;
+    const draft = await postMonthlyVisionExport(context(cookieAuthorizedFormRequest("2026-07", "excel-secret")));
+    assert.equal(draft.status, 409);
+    assert.deepEqual(await draft.json(), { error: "请先确认本月视野表，再导出 Excel" });
   });
 });

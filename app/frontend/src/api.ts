@@ -135,42 +135,12 @@ export function saveMonthlyVision(month: string, status: MonthlyVisionStatus, it
   });
 }
 
-export async function downloadMonthlyVisionExcel(month: string, password: string) {
+export function syncAccessCookies() {
+  const username = getAccessUsername().trim();
   const token = getAccessToken();
-  const username = getAccessUsername();
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
-  const response = await fetch(`/api/export/monthly-vision?month=${encodeURIComponent(month)}`, {
-    signal: controller.signal,
-    headers: {
-      ...(username ? { "x-crm-username": username } : {}),
-      ...(token ? { "x-crm-token": token } : {}),
-      "x-export-password": password
-    }
-  }).catch((error) => {
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("Excel 导出请求超时，请稍后重试");
-    }
-    throw error;
-  }).finally(() => {
-    window.clearTimeout(timeout);
-  });
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({ error: response.statusText }));
-    throw new Error(payload.error ?? response.statusText);
-  }
-
-  const blob = await response.blob();
-  const objectUrl = window.URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = objectUrl;
-  anchor.download = `monthly-vision-${month}.xls`;
-  anchor.style.display = "none";
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  if (username) document.cookie = `crm_username=${encodeURIComponent(username)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+  if (token) document.cookie = `crm_access_token=${encodeURIComponent(token)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
 }
 
 export function runLeadAssistant(payload: LeadAssistantPayload) {
@@ -230,15 +200,13 @@ export function hasSavedCredentials() {
 }
 
 export function saveAccessCredentials(username: string, token: string, displayName?: string) {
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
   const cleanUsername = username.trim();
   const cleanDisplayName = (displayName ?? "").trim() || displayNameForUsername(cleanUsername);
   window.localStorage.setItem(usernameKey, cleanUsername);
   window.localStorage.setItem(displayNameUsernameKey, cleanUsername);
   window.localStorage.setItem(displayNameKey, cleanDisplayName);
   window.localStorage.setItem(tokenKey, token);
-  document.cookie = `crm_username=${encodeURIComponent(cleanUsername)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
-  document.cookie = `crm_access_token=${encodeURIComponent(token)}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+  syncAccessCookies();
 }
 
 export function saveAccessToken(token: string) {
