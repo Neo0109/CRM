@@ -1,4 +1,5 @@
 import { readLeads, requireAccess, type Lead, type PagesContext } from "../../_lib/crm";
+import { assertMonthlyVisionMonth, monthlyVisionExcelHtml, readMonthlyVisionSheet } from "../../_lib/monthlyVision";
 import { readCrmSettings } from "../../_lib/settings";
 
 const columns: { key: keyof Lead | "contacts" | "game_links"; label: string }[] = [
@@ -41,21 +42,26 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
 
   try {
     const envWithExportPassword = env as PagesContext["env"] & { EXCEL_EXPORT_PASSWORD?: string };
-    const settings = await readCrmSettings(env);
-    const configuredPassword = envWithExportPassword.EXCEL_EXPORT_PASSWORD ?? settings.excel_export_password ?? null;
+    const configuredPassword = envWithExportPassword.EXCEL_EXPORT_PASSWORD ?? (await readCrmSettings(env)).excel_export_password ?? null;
     if (!configuredPassword) return jsonResponse({ error: "请先在 Cloudflare Pages 的 Variables and Secrets 里配置 EXCEL_EXPORT_PASSWORD" }, 409);
 
     const url = new URL(request.url);
     const submittedPassword = request.headers.get("x-export-password") ?? url.searchParams.get("password");
     if (submittedPassword !== configuredPassword) return jsonResponse({ error: "Excel 导出密码错误" }, 403);
 
-    const html = toExcelHtml(await readLeads(env));
-    return new Response(`\ufeff${html}`, {
-      headers: {
-        "Content-Disposition": `attachment; filename=sourcing-crm-leads-${new Date().toISOString().slice(0, 10)}.xls`,
-        "Content-Type": "application/vnd.ms-excel; charset=utf-8"
-      }
-    });
+    if (url.searchParams.get("scope") === "monthly-vision") {
+      const month = url.searchParams.get("month") ?? "";
+      assertMonthlyVisionMonth(month);
+      const sheet = await readMonthlyVisionSheet(env, month);
+      if (!sheet) return jsonResponse({ error: "该月份尚未保存视野表" }, 404);
+      if (sheet.status !== "finalized") return jsonResponse({ error: "请先确认本月视野表，再导出 Excel" }, 409);
+      return excelResponse(monthlyVisionExcelHtml(sheet), `monthly-vision-${month}.xls`);
+    }
+
+    return excelResponse(
+      toExcelHtml(await readLeads(env)),
+      `sourcing-crm-leads-${new Date().toISOString().slice(0, 10)}.xls`
+    );
   } catch (error) {
     return jsonResponse({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
   }
@@ -78,6 +84,15 @@ function cellValue(lead: Lead, key: keyof Lead | "contacts" | "game_links") {
 
 function escapeHtml(value: string) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+function excelResponse(html: string, filename: string) {
+  return new Response(`\ufeff${html}`, {
+    headers: {
+      "Content-Disposition": `attachment; filename=${filename}`,
+      "Content-Type": "application/vnd.ms-excel; charset=utf-8"
+    }
+  });
 }
 
 function jsonResponse(payload: unknown, status: number) {

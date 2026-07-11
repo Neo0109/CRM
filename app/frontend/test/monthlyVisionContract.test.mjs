@@ -14,29 +14,26 @@ describe("monthly vision feature contract", () => {
     assert.match(source("main.tsx"), /monthly-vision\.css/);
   });
 
-  it("uses a native authenticated form download without Blob simulation", () => {
+  it("routes monthly vision through the original full Excel API", () => {
     const api = source("api.ts");
     const page = source("MonthlyVisionPage.tsx");
-    assert.match(api, /export function syncAccessCookies/);
-    assert.match(page, /action="\/api\/export\/monthly-vision"/);
-    assert.match(page, /method="post"/);
-    assert.match(page, /target=\{monthlyVisionDownloadTarget\}/);
-    assert.match(page, /type="hidden" name="month"/);
-    assert.match(page, /type="password" name="password"/);
-    assert.match(page, /<iframe ref=\{exportFrameRef\}/);
+    assert.match(api, /export function excelExportUrl/);
+    assert.match(api, /new URLSearchParams\(\{ password \}\)/);
+    assert.match(api, /params\.set\("scope", options\.scope\)/);
+    assert.match(page, /window\.location\.assign\(excelExportUrl\(password, \{ scope: "monthly-vision", month \}\)\)/);
+    assert.doesNotMatch(page, /\/api\/export\/monthly-vision/);
+    assert.doesNotMatch(page, /<iframe/);
     assert.doesNotMatch(api, /response\.blob\(\)/);
     assert.doesNotMatch(api, /URL\.createObjectURL/);
     assert.doesNotMatch(api, /anchor\.click\(\)/);
-    assert.match(api, /\/api\/export\/excel\?password=/);
   });
 
-  it("submits the same native form from the button or Enter key", () => {
+  it("submits the same shared export action from the button or Enter key", () => {
     const page = source("MonthlyVisionPage.tsx");
     assert.match(page, /onSubmit=\{exportExcel\}/);
     assert.match(page, /type="submit"/);
-    assert.match(page, /syncAccessCookies\(\)/);
-    assert.match(page, /contentDocument/);
-    assert.match(page, /JSON\.parse\(text\)/);
+    assert.match(page, /event\.preventDefault\(\)/);
+    assert.match(page, /scope: "monthly-vision"/);
   });
 
   it("exposes the draft, finalize, unlock, and three-column workflow", () => {
