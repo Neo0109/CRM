@@ -83,7 +83,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     storage: supabase ? "supabase" : "json",
-    version: "v2.7.4-monthly-vision-draft-export",
+    version: "v2.7.5-monthly-vision-real-xlsx",
     env: {
       hasCrmUsersJson: Boolean(crmUsersJson),
       crmUserCount: configuredCrmUsers.length,

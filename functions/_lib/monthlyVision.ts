@@ -1,4 +1,5 @@
 import type { ContactMethod, Lead } from "./leadModel";
+import { buildSimpleXlsx } from "./xlsx";
 import type { Env } from "./crm";
 
 export const monthlyVisionRowPrefix = "__crm_monthly_vision__";
@@ -170,10 +171,13 @@ export async function writeMonthlyVisionSheet(env: Env, sheet: MonthlyVisionShee
   });
 }
 
-export function monthlyVisionExcelHtml(sheet: MonthlyVisionSheet) {
-  const header = ["项目名称", "研发团队", "联系方式"].map((label) => `<th>${label}</th>`).join("");
-  const rows = sheet.items.map((item) => `<tr><td>${escapeHtml(item.project)}</td><td>${escapeHtml(item.developer)}</td><td>${escapeHtml(item.contacts)}</td></tr>`).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:12px}th,td{border:1px solid #d0d7de;padding:6px 8px;vertical-align:top;white-space:pre-wrap}th{background:#f6f8fa;font-weight:700}</style></head><body><table><thead><tr>${header}</tr></thead><tbody>${rows}</tbody></table></body></html>`;
+export function monthlyVisionXlsx(sheet: MonthlyVisionSheet) {
+  return buildSimpleXlsx({
+    sheetName: "月度视野表",
+    headers: ["研发名字", "游戏名字", "联系方式"],
+    rows: sheet.items.map((item) => [item.developer, item.project, item.contacts]),
+    columnWidths: [24, 30, 60]
+  });
 }
 
 function compareMonthlyVisionItems(a: MonthlyVisionItem, b: MonthlyVisionItem) {
@@ -186,9 +190,6 @@ function cleanString(value: unknown, preserveNewlines = false) {
   return normalized.trim();
 }
 
-function escapeHtml(value: string) {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-}
 
 async function supabaseFetch(env: Env, path: string, init?: RequestInit) {
   const key = env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY;

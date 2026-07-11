@@ -1,5 +1,5 @@
 import { readLeads, requireAccess, type Lead, type PagesContext } from "../../_lib/crm";
-import { assertMonthlyVisionMonth, monthlyVisionExcelHtml, readMonthlyVisionSheet } from "../../_lib/monthlyVision";
+import { assertMonthlyVisionMonth, monthlyVisionXlsx, readMonthlyVisionSheet } from "../../_lib/monthlyVision";
 import { readCrmSettings } from "../../_lib/settings";
 
 const columns: { key: keyof Lead | "contacts" | "game_links"; label: string }[] = [
@@ -54,7 +54,7 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
       assertMonthlyVisionMonth(month);
       const sheet = await readMonthlyVisionSheet(env, month);
       if (!sheet) return jsonResponse({ error: "该月份尚未保存视野表" }, 404);
-      return excelResponse(monthlyVisionExcelHtml(sheet), `monthly-vision-${month}.xls`);
+      return xlsxResponse(monthlyVisionXlsx(sheet), `monthly-vision-${month}.xlsx`);
     }
 
     return excelResponse(
@@ -90,6 +90,15 @@ function excelResponse(html: string, filename: string) {
     headers: {
       "Content-Disposition": `attachment; filename=${filename}`,
       "Content-Type": "application/vnd.ms-excel; charset=utf-8"
+    }
+  });
+}
+
+function xlsxResponse(bytes: Uint8Array, filename: string) {
+  return new Response(bytes, {
+    headers: {
+      "Content-Disposition": `attachment; filename=${filename}`,
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     }
   });
 }

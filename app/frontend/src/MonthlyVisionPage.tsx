@@ -172,7 +172,7 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
       </div>
 
       <div className="monthly-vision-export">
-        <div><strong>Excel 导出</strong><p className="subline">固定导出“项目名称、研发团队、联系方式”三列；草稿会先保存当前内容再导出。</p></div>
+        <div><strong>Excel 导出</strong><p className="subline">导出真正的 Excel 文件，固定为“研发名字、游戏名字、联系方式”三列；草稿会先保存当前内容。</p></div>
         <form className="monthly-vision-export-actions" onSubmit={exportExcel}>
           <input type="password" value={downloadPassword} onChange={(event) => setDownloadPassword(event.target.value)} placeholder="Excel 导出密码" aria-label="Excel 导出密码" />
           <button className="ghost-button" type="submit" disabled={saving || exporting}><FileSpreadsheet size={16} />{exporting ? "导出中…" : "导出 Excel"}</button>

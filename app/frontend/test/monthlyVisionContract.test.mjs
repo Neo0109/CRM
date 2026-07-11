@@ -35,6 +35,7 @@ describe("monthly vision feature contract", () => {
     assert.match(page, /type="submit"/);
     assert.match(page, /event\.preventDefault\(\)/);
     assert.match(page, /scope: "monthly-vision"/);
+    assert.match(page, /研发名字、游戏名字、联系方式/);
     assert.match(page, /async function exportExcel/);
     assert.match(page, /await saveMonthlyVision\(month, "draft", sheet\.items\)/);
     assert.doesNotMatch(page, /disabled=\{!locked \|\| exporting\}/);
