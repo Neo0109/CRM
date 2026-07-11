@@ -1,6 +1,6 @@
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260711-monthly-vision-native-download-v272";
+const assetVersion = "20260711-monthly-vision-shared-excel-export-v273";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;

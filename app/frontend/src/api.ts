@@ -172,8 +172,13 @@ export function updateLead(id: string, patch: Partial<Lead>) {
   });
 }
 
-export function excelExportUrl(password: string) {
-  return `/api/export/excel?password=${encodeURIComponent(password)}`;
+export function excelExportUrl(password: string, options?: { scope: "monthly-vision"; month: string }) {
+  const params = new URLSearchParams({ password });
+  if (options) {
+    params.set("scope", options.scope);
+    params.set("month", options.month);
+  }
+  return `/api/export/excel?${params.toString()}`;
 }
 
 export function getAccessToken() {

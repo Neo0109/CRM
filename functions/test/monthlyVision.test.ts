@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { onRequestGet as getMonthlyVision, onRequestPut as putMonthlyVision } from "../api/monthly-vision";
+import { onRequestGet as exportExcel } from "../api/export/excel";
 import { onRequestGet as exportMonthlyVision, onRequestPost as postMonthlyVisionExport } from "../api/export/monthly-vision";
 import type { Env, PagesContext } from "../_lib/crm";
 import { normalizeLead } from "../_lib/leadModel";
@@ -231,6 +232,75 @@ describe("monthly vision API", () => {
       finalized_by: null
     } }])) as typeof fetch;
     const draft = await postMonthlyVisionExport(context(cookieAuthorizedFormRequest("2026-07", "excel-secret")));
+    assert.equal(draft.status, 409);
+    assert.deepEqual(await draft.json(), { error: "请先确认本月视野表，再导出 Excel" });
+  });
+  it("preserves the default full Excel export on the shared endpoint", async () => {
+    const activeLead = lead("Full Export", "跟进中", "Full Studio", "full@example.com");
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("select=id,data&order=updated_at.desc")) return Response.json([{ id: activeLead.id, data: activeLead }]);
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const response = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?password=excel-secret")));
+    const html = await response.text();
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("Content-Disposition") ?? "", /^attachment; filename=sourcing-crm-leads-/);
+    assert.ok((html.match(/<th>/g) ?? []).length > 3);
+    assert.match(html, /Full Export/);
+  });
+
+  it("exports the finalized three-column sheet through the shared Excel endpoint", async () => {
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes(`id=eq.${monthlyVisionRowId("2026-07")}`)) {
+        return Response.json([{ id: monthlyVisionRowId("2026-07"), data: {
+          type: "monthly_vision_sheet",
+          month: "2026-07",
+          status: "finalized",
+          items: [{ lead_id: "lead-a", project: "Shared Export", developer: "Studio", contacts: "Email: shared@example.com" }],
+          created_at: "2026-07-10T00:00:00.000Z",
+          updated_at: "2026-07-10T00:00:00.000Z",
+          finalized_at: "2026-07-10T00:00:00.000Z",
+          updated_by: "Neo",
+          finalized_by: "Neo"
+        } }]);
+      }
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const response = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=excel-secret")));
+    const html = await response.text();
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
+    assert.equal((html.match(/<th>/g) ?? []).length, 3);
+    assert.match(html, /<th>项目名称<\/th><th>研发团队<\/th><th>联系方式<\/th>/);
+    assert.match(html, /Shared Export/);
+  });
+
+  it("returns shared endpoint errors for bad password, missing sheet, and draft sheet", async () => {
+    const badPassword = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=wrong")));
+    assert.equal(badPassword.status, 403);
+    assert.deepEqual(await badPassword.json(), { error: "Excel 导出密码错误" });
+
+    globalThis.fetch = (async () => Response.json([])) as typeof fetch;
+    const missing = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=excel-secret")));
+    assert.equal(missing.status, 404);
+    assert.deepEqual(await missing.json(), { error: "该月份尚未保存视野表" });
+
+    globalThis.fetch = (async () => Response.json([{ id: monthlyVisionRowId("2026-07"), data: {
+      type: "monthly_vision_sheet",
+      month: "2026-07",
+      status: "draft",
+      items: [{ lead_id: "lead-a", project: "Draft", developer: "Studio", contacts: "Email: draft@example.com" }],
+      created_at: "2026-07-10T00:00:00.000Z",
+      updated_at: "2026-07-10T00:00:00.000Z",
+      finalized_at: null,
+      updated_by: "Neo",
+      finalized_by: null
+    } }])) as typeof fetch;
+    const draft = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=excel-secret")));
     assert.equal(draft.status, 409);
     assert.deepEqual(await draft.json(), { error: "请先确认本月视野表，再导出 Excel" });
   });
