@@ -21,6 +21,7 @@ describe("monthly vision feature contract", () => {
     assert.match(api, /new URLSearchParams\(\{ password \}\)/);
     assert.match(api, /params\.set\("scope", options\.scope\)/);
     assert.match(page, /window\.location\.assign\(excelExportUrl\(password, \{ scope: "monthly-vision", month \}\)\)/);
+    assert.match(page, /syncAccessCookies\(\)/);
     assert.doesNotMatch(page, /\/api\/export\/monthly-vision/);
     assert.doesNotMatch(page, /<iframe/);
     assert.doesNotMatch(api, /response\.blob\(\)/);
@@ -34,6 +35,10 @@ describe("monthly vision feature contract", () => {
     assert.match(page, /type="submit"/);
     assert.match(page, /event\.preventDefault\(\)/);
     assert.match(page, /scope: "monthly-vision"/);
+    assert.match(page, /async function exportExcel/);
+    assert.match(page, /await saveMonthlyVision\(month, "draft", sheet\.items\)/);
+    assert.doesNotMatch(page, /disabled=\{!locked \|\| exporting\}/);
+    assert.match(page, /disabled=\{saving \|\| exporting\}/);
   });
 
   it("exposes the draft, finalize, unlock, and three-column workflow", () => {

@@ -279,7 +279,7 @@ describe("monthly vision API", () => {
     assert.match(html, /Shared Export/);
   });
 
-  it("returns shared endpoint errors for bad password, missing sheet, and draft sheet", async () => {
+  it("returns shared endpoint errors for bad password and missing sheet, while exporting drafts", async () => {
     const badPassword = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=wrong")));
     assert.equal(badPassword.status, 403);
     assert.deepEqual(await badPassword.json(), { error: "Excel 导出密码错误" });
@@ -301,7 +301,10 @@ describe("monthly vision API", () => {
       finalized_by: null
     } }])) as typeof fetch;
     const draft = await exportExcel(context(authorizedRequest("https://crm.example/api/export/excel?scope=monthly-vision&month=2026-07&password=excel-secret")));
-    assert.equal(draft.status, 409);
-    assert.deepEqual(await draft.json(), { error: "请先确认本月视野表，再导出 Excel" });
+    const draftHtml = await draft.text();
+    assert.equal(draft.status, 200);
+    assert.equal(draft.headers.get("Content-Disposition"), "attachment; filename=monthly-vision-2026-07.xls");
+    assert.equal((draftHtml.match(/<th>/g) ?? []).length, 3);
+    assert.match(draftHtml, /Draft/);
   });
 });

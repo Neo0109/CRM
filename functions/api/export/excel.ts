@@ -54,7 +54,6 @@ export const onRequestGet = async ({ request, env }: PagesContext) => {
       assertMonthlyVisionMonth(month);
       const sheet = await readMonthlyVisionSheet(env, month);
       if (!sheet) return jsonResponse({ error: "该月份尚未保存视野表" }, 404);
-      if (sheet.status !== "finalized") return jsonResponse({ error: "请先确认本月视野表，再导出 Excel" }, 409);
       return excelResponse(monthlyVisionExcelHtml(sheet), `monthly-vision-${month}.xls`);
     }
 
