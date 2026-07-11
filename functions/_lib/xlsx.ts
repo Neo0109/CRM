@@ -30,7 +30,7 @@ export function buildSimpleXlsx(options: SimpleXlsxOptions) {
     textEntry("xl/styles.xml", stylesXml()),
     textEntry("xl/worksheets/sheet1.xml", worksheet)
   ];
-  return buildStoredZip(files);
+  return buildStoredZip(files).buffer as ArrayBuffer;
 }
 
 function buildWorksheetXml(headers: string[], rows: string[][], columnWidths?: number[]) {
