@@ -4,6 +4,8 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.7.4`（`v2.7.4-monthly-vision-draft-export`）：修复草稿状态下导出按钮被禁用导致点击和回车完全无反应；导出时自动保存当前三列草稿、同步登录 cookie，再通过原有 `/api/export/excel` 下载。
+
 - 产品可见版本升级为 `v2.7.3`（`v2.7.3-monthly-vision-shared-excel-export`）：月度视野表统一复用原有 `/api/export/excel` 密码校验与浏览器下载路径，通过 scope 参数输出已确认月份的三列 Excel。
 - 产品可见版本升级为 `v2.7.2`（`v2.7.2-monthly-vision-native-download`）：月度视野表 Excel 改用浏览器原生表单附件下载，移除可能被浏览器拦截的异步 Blob 模拟点击，并保留点击与回车两种提交方式。
 - 产品可见版本升级为 `v2.7.1`（`v2.7.1-monthly-vision-export-fix`）：修复月度视野表 Excel 导出未携带当前登录认证导致的失败；导出改为认证下载，并支持在密码框按回车提交。

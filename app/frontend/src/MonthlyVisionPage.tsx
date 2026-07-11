@@ -1,7 +1,7 @@
 import { CheckCircle2, FileSpreadsheet, LockOpen, Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { excelExportUrl, fetchMonthlyVision, saveMonthlyVision } from "./api";
+import { excelExportUrl, fetchMonthlyVision, saveMonthlyVision, syncAccessCookies } from "./api";
 import {
   availableMonthlyVisionLeads,
   currentShanghaiMonth,
@@ -91,24 +91,33 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
     }
   }
 
-  function exportExcel(event: FormEvent<HTMLFormElement>) {
+  async function exportExcel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!locked) {
-      setError("请先确认本月视野表，再导出 Excel");
-      return;
-    }
-    if (exporting) return;
+    if (exporting || !sheet) return;
     const password = downloadPassword.trim();
     if (!password) {
       setError("请输入 Excel 导出密码");
       return;
     }
 
-    setExporting(true);
-    setError(null);
-    window.location.assign(excelExportUrl(password, { scope: "monthly-vision", month }));
-    onStatus(`开始导出 ${monthlyVisionMonthLabel(month)}视野表 Excel`);
-    window.setTimeout(() => setExporting(false), 1500);
+    try {
+      setExporting(true);
+      setError(null);
+      if (!locked) {
+        const saved = await saveMonthlyVision(month, "draft", sheet.items);
+        setSheet(saved);
+        setSource("stored");
+      }
+      syncAccessCookies();
+      window.location.assign(excelExportUrl(password, { scope: "monthly-vision", month }));
+      onStatus(locked
+        ? `开始导出 ${monthlyVisionMonthLabel(month)}视野表 Excel`
+        : `已保存当前草稿并开始导出 ${monthlyVisionMonthLabel(month)}视野表 Excel`);
+    } catch (nextError) {
+      setError(errorMessage(nextError, "月度视野表导出失败"));
+    } finally {
+      setExporting(false);
+    }
   }
 
   return <section className="monthly-vision-shell">
@@ -163,10 +172,10 @@ export function MonthlyVisionPage({ leads, refreshKey, onStatus }: { leads: Lead
       </div>
 
       <div className="monthly-vision-export">
-        <div><strong>Excel 导出</strong><p className="subline">固定导出“项目名称、研发团队、联系方式”三列；历史月份保持确认时的内容。</p></div>
+        <div><strong>Excel 导出</strong><p className="subline">固定导出“项目名称、研发团队、联系方式”三列；草稿会先保存当前内容再导出。</p></div>
         <form className="monthly-vision-export-actions" onSubmit={exportExcel}>
           <input type="password" value={downloadPassword} onChange={(event) => setDownloadPassword(event.target.value)} placeholder="Excel 导出密码" aria-label="Excel 导出密码" />
-          <button className="ghost-button" type="submit" disabled={!locked || exporting}><FileSpreadsheet size={16} />{exporting ? "导出中…" : "导出 Excel"}</button>
+          <button className="ghost-button" type="submit" disabled={saving || exporting}><FileSpreadsheet size={16} />{exporting ? "导出中…" : "导出 Excel"}</button>
         </form>
       </div>
     </> : null}
