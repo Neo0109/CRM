@@ -36,66 +36,66 @@ export function buildSimpleXlsx(options: SimpleXlsxOptions) {
 function buildWorksheetXml(headers: string[], rows: string[][], columnWidths?: number[]) {
   const rowCount = rows.length + 1;
   const lastColumn = columnName(headers.length);
-  const lastCell = \`\${lastColumn}\${rowCount}\`;
+  const lastCell = `${lastColumn}${rowCount}`;
   const widths = headers.map((_, index) => {
     const width = Math.min(80, Math.max(10, columnWidths?.[index] ?? 24));
-    return \`<col min="\${index + 1}" max="\${index + 1}" width="\${width}" customWidth="1"/>\`;
+    return `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`;
   }).join("");
-  const headerRow = \`<row r="1" ht="24" customHeight="1">\${headers.map((value, index) => cellXml(index, 1, value, 1)).join("")}</row>\`;
+  const headerRow = `<row r="1" ht="24" customHeight="1">${headers.map((value, index) => cellXml(index, 1, value, 1)).join("")}</row>`;
   const dataRows = rows.map((row, rowIndex) => {
     const excelRow = rowIndex + 2;
-    return \`<row r="\${excelRow}">\${row.map((value, columnIndex) => cellXml(columnIndex, excelRow, value, 2)).join("")}</row>\`;
+    return `<row r="${excelRow}">${row.map((value, columnIndex) => cellXml(columnIndex, excelRow, value, 2)).join("")}</row>`;
   }).join("");
 
-  return xmlDocument(\`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <dimension ref="A1:\${lastCell}"/>
+  return xmlDocument(`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <dimension ref="A1:${lastCell}"/>
   <sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>
   <sheetFormatPr defaultRowHeight="18"/>
-  <cols>\${widths}</cols>
-  <sheetData>\${headerRow}\${dataRows}</sheetData>
-  <autoFilter ref="A1:\${lastCell}"/>
+  <cols>${widths}</cols>
+  <sheetData>${headerRow}${dataRows}</sheetData>
+  <autoFilter ref="A1:${lastCell}"/>
   <pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>
-</worksheet>\`);
+</worksheet>`);
 }
 
 function cellXml(columnIndex: number, rowIndex: number, value: string, style: number) {
-  const reference = \`\${columnName(columnIndex + 1)}\${rowIndex}\`;
-  return \`<c r="\${reference}" t="inlineStr" s="\${style}"><is><t xml:space="preserve">\${escapeXml(value)}</t></is></c>\`;
+  const reference = `${columnName(columnIndex + 1)}${rowIndex}`;
+  return `<c r="${reference}" t="inlineStr" s="${style}"><is><t xml:space="preserve">${escapeXml(value)}</t></is></c>`;
 }
 
 function contentTypesXml() {
-  return xmlDocument(\`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  return xmlDocument(`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
   <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
   <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
   <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
-</Types>\`);
+</Types>`);
 }
 
 function rootRelationshipsXml() {
-  return xmlDocument(\`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  return xmlDocument(`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>\`);
+</Relationships>`);
 }
 
 function workbookXml(sheetName: string) {
-  return xmlDocument(\`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  return xmlDocument(`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <workbookPr/>
   <bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="12000"/></bookViews>
-  <sheets><sheet name="\${escapeXml(sheetName)}" sheetId="1" r:id="rId1"/></sheets>
-</workbook>\`);
+  <sheets><sheet name="${escapeXml(sheetName)}" sheetId="1" r:id="rId1"/></sheets>
+</workbook>`);
 }
 
 function workbookRelationshipsXml() {
-  return xmlDocument(\`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  return xmlDocument(`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>\`);
+</Relationships>`);
 }
 
 function stylesXml() {
-  return xmlDocument(\`<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  return xmlDocument(`<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <fonts count="2">
     <font><sz val="11"/><name val="Arial"/><family val="2"/></font>
     <font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Arial"/><family val="2"/></font>
@@ -118,7 +118,7 @@ function stylesXml() {
   <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
   <dxfs count="0"/>
   <tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/>
-</styleSheet>\`);
+</styleSheet>`);
 }
 
 function buildStoredZip(entries: ZipEntry[]) {
@@ -187,7 +187,7 @@ function textEntry(name: string, value: string): ZipEntry {
 }
 
 function xmlDocument(body: string) {
-  return \`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\${body}\`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>${body}`;
 }
 
 function cleanSheetName(value: string) {
