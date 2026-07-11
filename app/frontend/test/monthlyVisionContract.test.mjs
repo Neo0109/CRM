@@ -14,27 +14,29 @@ describe("monthly vision feature contract", () => {
     assert.match(source("main.tsx"), /monthly-vision\.css/);
   });
 
-  it("uses an authenticated download without exposing the export password in the URL", () => {
+  it("uses a native authenticated form download without Blob simulation", () => {
     const api = source("api.ts");
-    assert.match(api, /\/api\/monthly-vision\?month=/);
-    assert.match(api, /\/api\/export\/monthly-vision\?month=/);
-    assert.match(api, /"x-export-password": password/);
-    assert.match(api, /"x-crm-username"/);
-    assert.match(api, /"x-crm-token"/);
-    assert.match(api, /response\.blob\(\)/);
-    assert.match(api, /URL\.createObjectURL/);
-    assert.match(api, /anchor\.click\(\)/);
-    assert.doesNotMatch(api, /monthly-vision\?month=.*&password=/);
+    const page = source("MonthlyVisionPage.tsx");
+    assert.match(api, /export function syncAccessCookies/);
+    assert.match(page, /action="\/api\/export\/monthly-vision"/);
+    assert.match(page, /method="post"/);
+    assert.match(page, /target=\{monthlyVisionDownloadTarget\}/);
+    assert.match(page, /type="hidden" name="month"/);
+    assert.match(page, /type="password" name="password"/);
+    assert.match(page, /<iframe ref=\{exportFrameRef\}/);
+    assert.doesNotMatch(api, /response\.blob\(\)/);
+    assert.doesNotMatch(api, /URL\.createObjectURL/);
+    assert.doesNotMatch(api, /anchor\.click\(\)/);
     assert.match(api, /\/api\/export\/excel\?password=/);
   });
 
-  it("submits the same export action from the button or Enter key", () => {
+  it("submits the same native form from the button or Enter key", () => {
     const page = source("MonthlyVisionPage.tsx");
-    assert.match(page, /<form className="monthly-vision-export-actions"/);
-    assert.match(page, /onSubmit=/);
+    assert.match(page, /onSubmit=\{exportExcel\}/);
     assert.match(page, /type="submit"/);
-    assert.match(page, /await downloadMonthlyVisionExcel\(month, password\)/);
-    assert.doesNotMatch(page, /window\.location\.assign\(monthlyVision/);
+    assert.match(page, /syncAccessCookies\(\)/);
+    assert.match(page, /contentDocument/);
+    assert.match(page, /JSON\.parse\(text\)/);
   });
 
   it("exposes the draft, finalize, unlock, and three-column workflow", () => {

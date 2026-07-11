@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.7.2`（`v2.7.2-monthly-vision-native-download`）：月度视野表 Excel 改用浏览器原生表单附件下载，移除可能被浏览器拦截的异步 Blob 模拟点击，并保留点击与回车两种提交方式。
 - 产品可见版本升级为 `v2.7.1`（`v2.7.1-monthly-vision-export-fix`）：修复月度视野表 Excel 导出未携带当前登录认证导致的失败；导出改为认证下载，并支持在密码框按回车提交。
 - 产品可见版本升级为 `v2.7`（`v2.7-monthly-vision-sheet`）：新增按月整理、确认留档并导出三列 Excel 的视野表工作流
 - 产品可见版本升级为 `v2.6`（`v2.6-lead-detail-noise-window-fix`）：Lead Detail 右侧详情降噪，人工字段默认留空，并恢复临近上线线索过滤口径
