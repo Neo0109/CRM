@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6.5-window-hygiene",
-  "updated_at": "2026-07-08",
+  "rule_version": "sourcing-rules-v6.6-evidence-integrity",
+  "updated_at": "2026-07-13",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
   "compatible_generators": [
@@ -63,7 +63,12 @@
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
     "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
     "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",
-    "Review backfill must happen before volume diagnostics and must never write automation bookkeeping, rule-version labels, or fallback diagnostics into user-facing lead fields such as notes, next_action, verdict, priority_reason, or rule_fit."
+    "Review backfill must happen before volume diagnostics and must never write automation bookkeeping, rule-version labels, or fallback diagnostics into user-facing lead fields such as notes, next_action, verdict, priority_reason, or rule_fit.",
+    "Full Bilibili video details must be converted into one structured BilibiliEvidence object before summary truncation or display-field formatting.",
+    "When Bilibili evidence contains a Steam Store, Steam Community app, or SteamDB app URL, the final lead must carry the resolved full-game AppID plus Store and SteamDB links; otherwise block Lead sync and record steam_evidence_lost.",
+    "Steam demo AppIDs must resolve through fullgame.appid before release-window classification; a demo release date must never be treated as the full game's release date.",
+    "Film, screenplay, actor/director, adaptation, update/DLC, promotion, guide, and review signals are radar_only unless an independent unreleased game entity is proven.",
+    "The word 过审 is a game Lead signal only when edition-number, 新闻出版署, or network-game approval context is also present."
   ],
   "media_sources": [
     { "name": "GameLook", "url": "http://www.gamelook.com.cn/feed", "type": "feed", "quality": 16, "focus": ["china", "business", "domestic_sourcing"] },
@@ -145,7 +150,11 @@
     "steam_cross_check_required_when_link_present": true,
     "dedupe_against_existing_projects_appids_links_and_keys": true,
     "already_released_text_routes_to_drop_pool": true,
-    "demo_or_store_page_live_text_does_not_count_as_full_release": true
+    "demo_or_store_page_live_text_does_not_count_as_full_release": true,
+    "structured_evidence_required": true,
+    "steam_evidence_integrity_required": true,
+    "demo_fullgame_resolution_required": true,
+    "media_disposition_required": true
   },
   "automation_guardrails": [
     "Fail fast when this rule file is missing or incompatible.",
@@ -164,6 +173,8 @@
     "Schema damage, empty source output, generated file write failure, and CRM sync authentication/write failure must fail scheduled automation; low review volume remains a visible quality warning.",
     "GitHub Actions and Cloudflare sync paths must prefer CRM_AUTOMATION_TOKEN, with CRM_ACCESS_TOKEN only as a backwards-compatible fallback where explicitly supported.",
     "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
-    "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source."
+    "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source.",
+    "Every detected Steam evidence item must be accounted for as a structured Lead, Demo-to-full-game conversion, released/radar-only filter, duplicate merge, or explicit integrity failure.",
+    "A successful sourcing run must report steam_evidence_lost = 0; candidates with unresolved lost Steam evidence must not sync into Leads."
   ]
 }

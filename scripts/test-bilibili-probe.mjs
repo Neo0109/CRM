@@ -181,6 +181,7 @@ assert.deepEqual(defaultBilibiliProbeDiagnostics(), {
   trusted_creator_hits: 0,
   links_extracted: 0,
   steam_links_extracted: 0,
+  steam_links_detected: 0,
   blacklist_filtered: 0,
   old_video_filtered: 0,
   generic_collection_filtered: 0,

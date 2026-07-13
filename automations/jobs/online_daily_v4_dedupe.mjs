@@ -1,4 +1,5 @@
 import { defaultDailyRuleConfig } from "./online_daily_v4_rules.mjs";
+import { extractBilibiliEvidence } from "./bilibili_evidence.mjs";
 
 export function dedupeByAppId(items) {
   const byAppId = new Map();
@@ -23,14 +24,21 @@ function sourcePriority(item) {
 }
 
 export function dedupeMediaSignals(items) {
-  const seen = new Set();
+  const keyToIndex = new Map();
   const out = [];
   const ranked = [...items].sort((a, b) => mediaSignalDedupeRank(b) - mediaSignalDedupeRank(a));
   for (const item of ranked) {
     const keys = mediaSignalDedupeKeys(item);
-    if (!keys.length || keys.some((key) => seen.has(key))) continue;
-    for (const key of keys) seen.add(key);
+    const existingIndex = keys.map((key) => keyToIndex.get(key)).find((index) => index !== undefined);
+    if (existingIndex !== undefined) {
+      out[existingIndex] = mergeMediaSignalEvidence(out[existingIndex], item);
+      for (const key of keys) keyToIndex.set(key, existingIndex);
+      continue;
+    }
+    if (!keys.length) continue;
+    const index = out.length;
     out.push(item);
+    for (const key of keys) keyToIndex.set(key, index);
   }
   return out;
 }
@@ -53,11 +61,30 @@ function mediaSignalDedupeKeys(item) {
   if (bvid) keys.push(`bvid:${normalizeText(bvid)}`);
   const link = normalizeUrl(item.link ?? "");
   if (link) keys.push(`link:${link}`);
-  const steamAppId = item.bilibili_probe?.steam_app_id ?? steamAppIdFromText(`${item.title ?? ""} ${item.summary ?? ""} ${item.link ?? ""}`);
+  const steamAppId = item.bilibili_evidence?.steam_app_id ?? item.bilibili_probe?.steam_app_id ?? steamAppIdFromText(`${item.title ?? ""} ${item.summary ?? ""} ${item.link ?? ""}`);
   if (steamAppId) keys.push(`steam:${steamAppId}`);
   const titleKey = normalizeText(item.title).slice(0, 80);
   if (titleKey) keys.push(`title:${titleKey}`);
   return [...new Set(keys)];
+}
+
+function mergeMediaSignalEvidence(primary, secondary) {
+  const primaryIsBilibili = primary?.bilibili_evidence || /bilibili|b站/i.test(String(primary?.source ?? "") + " " + String(primary?.link ?? ""));
+  const secondaryIsBilibili = secondary?.bilibili_evidence || /bilibili|b站/i.test(String(secondary?.source ?? "") + " " + String(secondary?.link ?? ""));
+  if (!primaryIsBilibili && !secondaryIsBilibili) return primary;
+  const primaryEvidence = extractBilibiliEvidence(primary);
+  const secondaryEvidence = extractBilibiliEvidence(secondary);
+  const mergedEvidence = extractBilibiliEvidence({
+    ...primary,
+    bilibili_evidence: {
+      ...primaryEvidence,
+      source_urls: [...(primaryEvidence.source_urls ?? []), ...(secondaryEvidence.source_urls ?? [])],
+      urls: [...(primaryEvidence.urls ?? []), ...(secondaryEvidence.urls ?? [])],
+      steam_app_ids: [...(primaryEvidence.steam_app_ids ?? []), ...(secondaryEvidence.steam_app_ids ?? [])],
+      emails: [...(primaryEvidence.emails ?? []), ...(secondaryEvidence.emails ?? [])]
+    }
+  }, [secondary.link, ...(secondaryEvidence.urls ?? [])]);
+  return { ...primary, bilibili_evidence: mergedEvidence };
 }
 
 function bvidFromUrl(value) {

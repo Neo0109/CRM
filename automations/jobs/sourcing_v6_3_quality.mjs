@@ -58,14 +58,16 @@ export function formatMediaGameplay({ title = "", summary = "", genre = "", deta
   return tags.slice(0, 5).join(" / ") || "玩法待确认";
 }
 
-export function formatMediaProgress({ details = null, sourceText = "", reportDate = todayIsoDate() } = {}) {
+export function formatMediaProgress({ details = null, sourceText = "", reportDate = todayIsoDate(), demoAvailable = false, demoParentResolved = false } = {}) {
   const text = String(sourceText ?? "");
   const comingSoon = Boolean(details?.release_date?.coming_soon);
   const releaseDate = normalizeReleaseDate(details?.release_date?.date);
   const days = daysUntil(releaseDate, reportDate);
+  if (details?.type === "demo") return "试玩 Demo";
+  if (demoParentResolved && (comingSoon || /coming soon|即将发售|愿望单|商店页/i.test(text))) return "Demo 可玩、正式版未发售";
   if (details?.release_date && !comingSoon && (typeof days !== "number" || days < 0)) return "正式上线";
   if (/early access|抢先体验|EA\b/i.test(text)) return "EA";
-  if ((details?.demos?.length ?? 0) > 0 || /demo|试玩|测试|playtest|试玩版/i.test(text)) return "试玩 Demo";
+  if (demoAvailable || (details?.demos?.length ?? 0) > 0 || /demo|试玩|测试|playtest|试玩版/i.test(text)) return "试玩 Demo";
   if (comingSoon || /coming soon|即将发售|愿望单|商店页/i.test(text)) return "即将发售";
   if (/商店页已上线|商店页面已上线|页面已上线|store page is live/i.test(text)) return "商店页已上线";
   return "待确认";
@@ -109,7 +111,8 @@ export function deriveMediaDecisionFields({
 }
 
 function officialBilibiliScore(item, project) {
-  const rawText = `${item.title ?? ""} ${item.summary ?? ""} ${item.source ?? ""}`;
+  const structuredEvidence = [item.bilibili_evidence?.source_url, ...(item.bilibili_evidence?.urls ?? [])].filter(Boolean).join(" ");
+  const rawText = `${item.title ?? ""} ${item.summary ?? ""} ${item.source ?? ""} ${structuredEvidence}`;
   const text = normalizeText(rawText);
   if (!text.includes(project)) return 0;
   const author = bilibiliAuthor(item);

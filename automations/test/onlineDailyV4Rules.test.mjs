@@ -15,7 +15,7 @@ const rootDir = new URL("../..", import.meta.url);
 const generatorPath = "automations/jobs/online_daily_v4.mjs";
 const validRuleHeader = {
   schema_version: 1,
-  rule_version: "sourcing-rules-v6.5-window-hygiene",
+  rule_version: "sourcing-rules-v6.6-evidence-integrity",
   active_rules_doc: "docs/SOURCING_RULES_CURRENT.md",
   compatible_generators: [generatorPath]
 };

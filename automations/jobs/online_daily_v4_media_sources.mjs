@@ -1,4 +1,5 @@
 import { collectBilibiliProbeSignals, defaultBilibiliProbeDiagnostics } from "./bilibili_probe.mjs";
+import { attachBilibiliEvidence } from "./bilibili_evidence.mjs";
 import {
   dedupeMediaSignals,
   isBilibiliSignal,
@@ -102,24 +103,24 @@ export async function enrichBilibiliVideoSignals(items, context = {}) {
 export async function enrichBilibiliVideoSignal(item, context = {}) {
   const fetchJsonImpl = context.fetchJsonImpl ?? fetchJson;
   const bvid = item.bvid ?? bvidFromUrl(item.link);
-  if (!bvid) return item;
+  if (!bvid) return isBilibiliSignal(item) ? attachBilibiliEvidence(item) : item;
   try {
     const payload = await fetchJsonImpl(`https://api.bilibili.com/x/web-interface/view?bvid=${encodeURIComponent(bvid)}`);
     const data = payload?.data;
-    if (!data) return item;
+    if (!data) return attachBilibiliEvidence(item);
     const desc = cleanExtractedText(data.desc ?? "");
     const owner = cleanExtractedText(data.owner?.name ?? "");
     const title = cleanExtractedText(data.title ?? item.title);
     const publishedAt = data.pubdate ? new Date(Number(data.pubdate) * 1000).toISOString() : item.published_at;
-    return {
+    return attachBilibiliEvidence({
       ...item,
       bvid,
       title: title || item.title,
-      summary: [item.summary, desc, owner ? `UP主：${owner}` : ""].filter(Boolean).join(" "),
+      summary: [item.summary, desc, owner ? "UP主：" + owner : ""].filter(Boolean).join(" "),
       published_at: publishedAt || item.published_at
-    };
+    });
   } catch {
-    return item;
+    return attachBilibiliEvidence(item);
   }
 }
 

@@ -37,6 +37,7 @@ const minReviewBackfillScore = boundedNumber(args.minReviewBackfillScore, 18, 8,
 const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
 const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, ruleConfig.mediaQualityGates.maxBilibiliLeadAgeDays, 14, 365);
 const maxOfficialLookups = boundedNumber(args.maxOfficialLookups, 12, 0, 30);
+const maxExactSteamLookups = boundedNumber(args.maxExactSteamLookups, 12, 0, 30);
 const existingIndex = await readExistingProjectIndex(reportDate, args.existingIndex);
 const sourcingDiagnostics = {
   rule_version: sourcingRuleVersion,
@@ -51,6 +52,18 @@ const sourcingDiagnostics = {
   media_duplicate_filtered: 0,
   media_steam_appids_extracted: 0,
   media_released_routed_to_drop: 0,
+  media_radar_only: 0,
+  media_rejected: 0,
+  media_exact_steam_lookup_attempts: 0,
+  media_exact_steam_lookup_hits: 0,
+  media_demo_parent_resolutions: 0,
+  media_publisher_occupied_routed_to_radar: 0,
+  steam_links_detected: 0,
+  steam_evidence_materialized: 0,
+  steam_demo_parent_converted: 0,
+  steam_evidence_released_filtered: 0,
+  steam_evidence_duplicate_merged: 0,
+  steam_evidence_lost: 0,
   bilibili_official_source_lookups: 0,
   bilibili_official_source_hits: 0,
   bilibili_probe: defaultBilibiliProbeDiagnostics(),
@@ -63,7 +76,9 @@ const sourceContext = {
   reportDate,
   diagnostics: sourcingDiagnostics,
   maxBilibiliLeadAgeDays,
-  maxOfficialLookups
+  maxOfficialLookups,
+  maxExactSteamLookups,
+  steamExactTitleCache: new Map()
 };
 
 const steamCandidateTasks = buildSteamCandidateTasks(sourceContext);

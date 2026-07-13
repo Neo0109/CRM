@@ -1,3 +1,4 @@
+import { enforceLeadSteamEvidence } from "./bilibili_evidence.mjs";
 import { dedupeMediaSignals, normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
 import {
   hasStrongMediaLeadEvidence,
@@ -11,18 +12,23 @@ import {
 import { enrichMediaLeadsWithSteamContext } from "./online_daily_v4_media_enrichment.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { recordMediaLeadCandidates } from "./online_daily_v4_source_health.mjs";
+import { classifyMediaDisposition } from "./online_daily_v4_media_rules.mjs";
 
 export async function buildMediaLeadCandidates(items, existingIndex, context = {}) {
   const diagnostics = context.diagnostics ?? {};
   const sourceCount = new Map();
   const dedupedItems = dedupeMediaSignals(items);
+  for (const item of dedupedItems) {
+    const disposition = classifyMediaDisposition(item).kind;
+    if (disposition === "radar_only") diagnostics.media_radar_only = (diagnostics.media_radar_only ?? 0) + 1;
+    if (disposition === "reject") diagnostics.media_rejected = (diagnostics.media_rejected ?? 0) + 1;
+  }
+
   const strictSourceItems = dedupedItems.filter(isProductSourcingSignal);
   const strictLeadCandidates = strictSourceItems
-    .filter(isProductSourcingSignal)
     .map((item) => mediaSignalToLead(item, "strict", context))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
-  const strictLeads = strictLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex, { beforeSteamEnrichment: true }));
-  diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + strictLeadCandidates.length - strictLeads.length;
+  const strictLeads = filterNewMediaCandidates(strictLeadCandidates, existingIndex, diagnostics, { beforeSteamEnrichment: true });
 
   const expandedSourceItems = dedupedItems
     .filter((item) => !isProductSourcingSignal(item) && isExpandedDomesticProductSignal(item))
@@ -31,8 +37,7 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
   const expandedLeadCandidates = expandedSourceItems
     .map((item) => mediaSignalToLead(item, "expanded", context))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
-  const expandedLeads = expandedLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex, { beforeSteamEnrichment: true }));
-  diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + expandedLeadCandidates.length - expandedLeads.length;
+  const expandedLeads = filterNewMediaCandidates(expandedLeadCandidates, existingIndex, diagnostics, { beforeSteamEnrichment: true });
 
   const rescueSourceItems = dedupedItems
     .filter((item) => !strictSourceItems.includes(item) && !expandedSourceItems.includes(item) && isDomesticMediaRescueSignal(item))
@@ -41,18 +46,77 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
   const rescueLeadCandidates = rescueSourceItems
     .map((item) => mediaSignalToLead(item, "rescue", context))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
-  const rescueLeads = rescueLeadCandidates.filter((lead) => isNewMediaLead(lead, existingIndex, { beforeSteamEnrichment: true }));
-  diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + rescueLeadCandidates.length - rescueLeads.length;
+  const rescueLeads = filterNewMediaCandidates(rescueLeadCandidates, existingIndex, diagnostics, { beforeSteamEnrichment: true });
 
   const sourceCandidateItems = new Set([...strictSourceItems, ...expandedSourceItems, ...rescueSourceItems]);
   diagnostics.media_non_product_filtered = (diagnostics.media_non_product_filtered ?? 0) + dedupedItems.length - sourceCandidateItems.size;
 
   const verifiedCandidates = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads, ...rescueLeads], context);
-  const verifiedLeads = verifiedCandidates.filter((lead) => isNewMediaLead(lead, existingIndex));
-  diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + verifiedCandidates.length - verifiedLeads.length;
+  const verifiedLeads = [];
+  for (const candidate of verifiedCandidates) {
+    const integrity = enforceLeadSteamEvidence(candidate, diagnostics);
+    const lead = integrity.lead;
+    if (!integrity.valid) continue;
+
+    if (lead._mediaDisposition === "radar_only" || lead._mediaDisposition === "reject") {
+      recordSteamEvidenceOutcome(lead, diagnostics, "steam_evidence_released_filtered");
+      continue;
+    }
+    if (!isNewMediaLead(lead, existingIndex)) {
+      diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + 1;
+      recordSteamEvidenceOutcome(lead, diagnostics, "steam_evidence_duplicate_merged");
+      continue;
+    }
+    recordSteamEvidenceOutcome(
+      lead,
+      diagnostics,
+      lead._steamEntityResolution?.relation === "demo_of"
+        ? "steam_demo_parent_converted"
+        : "steam_evidence_materialized"
+    );
+    verifiedLeads.push(lead);
+  }
+
+  finalizeSteamEvidenceAccounting(diagnostics);
   const selected = selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
   recordMediaLeadCandidates(diagnostics, selected);
   return selected;
+}
+
+function filterNewMediaCandidates(leads, existingIndex, diagnostics, options) {
+  const kept = [];
+  for (const lead of leads) {
+    if (isNewMediaLead(lead, existingIndex, options)) {
+      kept.push(lead);
+      continue;
+    }
+    diagnostics.media_duplicate_filtered = (diagnostics.media_duplicate_filtered ?? 0) + 1;
+    recordSteamEvidenceOutcome(lead, diagnostics, "steam_evidence_duplicate_merged");
+  }
+  return kept;
+}
+
+function recordSteamEvidenceOutcome(lead, diagnostics, key) {
+  if (!lead?._steamEvidencePrimary || lead._steamEvidenceOutcome) return;
+  diagnostics[key] = (diagnostics[key] ?? 0) + 1;
+  lead._steamEvidenceOutcome = key;
+}
+
+function finalizeSteamEvidenceAccounting(diagnostics) {
+  const detected = diagnostics.steam_links_detected ?? 0;
+  let accounted = [
+    "steam_evidence_materialized",
+    "steam_demo_parent_converted",
+    "steam_evidence_released_filtered",
+    "steam_evidence_duplicate_merged",
+    "steam_evidence_lost"
+  ].reduce((sum, key) => sum + (diagnostics[key] ?? 0), 0);
+  if (accounted < detected) {
+    diagnostics.steam_evidence_lost = (diagnostics.steam_evidence_lost ?? 0) + detected - accounted;
+    accounted = detected;
+  }
+  diagnostics.steam_evidence_accounted = accounted;
+  diagnostics.steam_evidence_accounting_ok = accounted === detected;
 }
 
 export function selectBalancedMediaLeadCandidates(leads, sourceCount, limit) {

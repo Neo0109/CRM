@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { normalizeMediaLinks, steamAppIdFromLinks } from "./sourcing_v6_3_quality.mjs";
+import { extractBilibiliEvidence } from "./bilibili_evidence.mjs";
 
 const defaultHeaders = {
   "User-Agent": "Mozilla/5.0 SourcingCRM/1.0 (+https://github.com/Neo0109/CRM)",
@@ -23,6 +23,7 @@ export function defaultBilibiliProbeDiagnostics() {
     trusted_creator_hits: 0,
     links_extracted: 0,
     steam_links_extracted: 0,
+    steam_links_detected: 0,
     blacklist_filtered: 0,
     old_video_filtered: 0,
     generic_collection_filtered: 0,
@@ -152,15 +153,18 @@ export async function collectBilibiliProbeSignals({
       continue;
     }
 
-    const text = probeText(item);
-    const links = normalizeMediaLinks([item.link, text]);
-    const steamAppId = steamAppIdFromLinks(links);
+    const evidence = extractBilibiliEvidence(item);
+    const links = evidence.urls;
+    const steamAppId = evidence.steam_app_id;
     diagnostics.links_extracted += links.length;
-    if (steamAppId) diagnostics.steam_links_extracted += 1;
+    if (steamAppId) {
+      diagnostics.steam_links_extracted += 1;
+      diagnostics.steam_links_detected += 1;
+    }
 
     const sourceKind = classifySourceKind(item, probeConfig);
     bumpSourceKindDiagnostics(sourceKind, diagnostics);
-    signals.push(toMediaSignal(item, sourceKind, links, steamAppId));
+    signals.push(toMediaSignal({ ...item, bilibili_evidence: evidence }, sourceKind, links, steamAppId));
   }
 
   signals.sort((a, b) => (b.source_quality ?? 0) - (a.source_quality ?? 0));
@@ -173,7 +177,7 @@ function normalizeProbeConfig(value) {
   const config = value && typeof value === "object" ? value : {};
   return {
     schema_version: Number(config.schema_version ?? 1),
-    rule_version: String(config.rule_version ?? "sourcing-rules-v6.4-bili-probe"),
+    rule_version: String(config.rule_version ?? "sourcing-rules-v6.6-evidence-integrity"),
     max_video_age_days: Number(config.max_video_age_days ?? 120),
     max_detail_fetches: Number(config.max_detail_fetches ?? 80),
     request_concurrency: boundedInteger(config.request_concurrency, 2, 1, 4),
@@ -323,8 +327,8 @@ function dedupeCandidates(items, diagnostics) {
 
 function dedupeKeys(item) {
   const text = probeText(item);
-  const links = normalizeMediaLinks([item.link, text]);
-  const steamAppId = steamAppIdFromLinks(links);
+  const evidence = extractBilibiliEvidence(item);
+  const steamAppId = evidence.steam_app_id;
   return uniqueValues([
     item.bvid ? `bvid:${normalizeText(item.bvid)}` : "",
     item.link ? `link:${normalizeUrl(item.link)}` : "",
@@ -410,6 +414,7 @@ function toMediaSignal(item, sourceKind, links, steamAppId) {
     published_at: item.published_at,
     source_focus: ["china", "domestic_sourcing", "bilibili"],
     source_quality: sourcePriority({ source_kind: sourceKind }),
+    bilibili_evidence: item.bilibili_evidence ?? extractBilibiliEvidence(item),
     bilibili_probe: {
       source_kind: sourceKind,
       owner_mid: item.owner_mid,

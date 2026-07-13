@@ -2,7 +2,7 @@
 
 Date: 2026-07-05
 
-Active supplement: `sourcing-rules-v6.5-window-hygiene`, updated 2026-07-08.
+Active supplement: `sourcing-rules-v6.6-evidence-integrity`, updated 2026-07-13.
 
 ## One-Line Standard
 
@@ -112,6 +112,17 @@ V6.5 keeps V6.4's Bilibili probe, then tightens the review gate around BD useful
 - Near-launch candidates should be dropped with `drop_reason = 窗口不合适` or kept as market background unless a human-owned CRM workflow already exists.
 - Human-owned fields stay empty by default: `priority_reason`, `next_action`, and `notes` should not carry automation bookkeeping.
 
+### V6.6 Steam Evidence Integrity
+
+V6.6 closes the gap between rich Bilibili details and structured CRM Leads.
+
+- Full Bilibili details are converted into one `BilibiliEvidence` object before summaries or display fields are formatted. Lead construction consumes that evidence rather than guessing URLs from `gameplay` or other presentation text.
+- Steam Store, Steam Community app, and SteamDB app URLs create a mandatory integrity contract: the candidate must carry the resolved full-game AppID plus canonical Store and SteamDB links, or it is blocked with `steam_evidence_lost` diagnostics.
+- Steam Demo entities resolve through `fullgame.appid`; only the full game's release state controls released and 60-day decisions. Demo availability remains a testability signal.
+- Duplicate BVIDs merge by resolved Steam entity and retain their Bilibili source URLs, with official/developer evidence preferred.
+- Media signals are classified as `lead_candidate`, `radar_only`, or `reject`. Film/adaptation, screenplay, actor/director, update/DLC, promotion, guide, and review items are radar-only. `过审` requires edition-number, 新闻出版署, or network-game approval context to count as a game Lead signal.
+- Every detected Steam link must be accounted for as a successful structured Lead, Demo conversion, released/radar-only filter, duplicate merge, or integrity failure. A successful run requires `steam_evidence_lost = 0`.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -156,5 +167,5 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4/V6.5 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4/V6.5/V6.6 verification gate before becoming fresh `未处理` leads.
 - Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.
