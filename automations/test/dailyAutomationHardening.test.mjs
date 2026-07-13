@@ -52,6 +52,19 @@ describe("daily automation hardening contract", () => {
     assert.match(workflowText, /generation\+validation\+sync success/);
   });
 
+  it("records Steam evidence loss as a structured receipt field", () => {
+    const syncWorkflow = readRepoFile(".github/workflows/sync-daily-report.yml");
+    const watchdogWorkflow = readRepoFile(".github/workflows/daily-report-watchdog.yml");
+
+    for (const workflow of [syncWorkflow, watchdogWorkflow]) {
+      assert.match(workflow, /const reportPayloadPath = `data\/reports\/\$\{reportDate\}\.json`;/);
+      assert.match(workflow, /generationStatus === 'success'/);
+      assert.match(workflow, /reportPayload\?\.diagnostics\?\.steam_evidence_lost/);
+      assert.match(workflow, /failurePayload\?\.diagnostics\?\.steam_evidence_lost/);
+      assert.match(workflow, /steam_evidence_lost: steamEvidenceLost/);
+    }
+  });
+
   it("requires strict synced receipts for watchdog health", () => {
     const watchdogScript = readRepoFile("scripts/daily-report-watchdog.mjs");
 
