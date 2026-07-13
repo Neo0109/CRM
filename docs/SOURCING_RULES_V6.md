@@ -2,7 +2,7 @@
 
 Date: 2026-07-05
 
-Active supplement: `sourcing-rules-v6.6-evidence-integrity`, updated 2026-07-13.
+Active supplement: `sourcing-rules-v6.7-non-game-animation-gate`, updated 2026-07-13.
 
 ## One-Line Standard
 
@@ -123,6 +123,16 @@ V6.6 closes the gap between rich Bilibili details and structured CRM Leads.
 - Media signals are classified as `lead_candidate`, `radar_only`, or `reject`. Film/adaptation, screenplay, actor/director, update/DLC, promotion, guide, and review items are radar-only. `过审` requires edition-number, 新闻出版署, or network-game approval context to count as a game Lead signal.
 - Every detected Steam link must be accounted for as a successful structured Lead, Demo conversion, released/radar-only filter, duplicate merge, or integrity failure. A successful run requires `steam_evidence_lost = 0`.
 
+### V6.7 Non-Game Animation Lead Gate
+
+V6.7 prevents standalone animation/series content from borrowing game intent from its configured search-source label.
+
+- Animation/anime/comic/series/season/broadcast/dubbing/voice-cast content without independent game-product evidence is `radar_only`, including PV and official-source posts.
+- Only semantic content fields participate in this check; the source/query label is excluded.
+- Structured Steam/AppID/SteamDB, TapTap, indienova, 好游快爆, explicit game product classes, or `游戏` paired with Demo/试玩/实机/测试/商店页/愿望单/版号/Playtest preserves Lead eligibility.
+- These cards remain in Radar with non-game animation/IP-observation wording.
+- No scoring weights, source queries, Steam enrichment, dedupe, release-window rules, existing records, schema, UI, or product version change in this supplement.
+
 ## Workflow
 
 Automatic daily reports are discovery, not final human review.
@@ -167,5 +177,5 @@ Industry Radar remains a compact China + overseas news board.
 - Rule JSON, runner version guard, generator behavior, and workflow thresholds must be updated together.
 - Low candidate volume should trigger fallback and logged diagnostics; it should not fail a scheduled run when valid candidates remain.
 - Bilibili/media expansion must increase useful discovery volume, not pad the report with stale videos, generic collections, or already-mature titles.
-- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4/V6.5/V6.6 verification gate before becoming fresh `未处理` leads.
+- Bilibili/media candidates must pass the V6.1/V6.2/V6.3/V6.4/V6.5/V6.6/V6.7 verification gate before becoming fresh `未处理` leads.
 - Hard failures remain hard: schema breakage, generated file write failure, and CRM sync authentication/write failure should fail the workflow.
