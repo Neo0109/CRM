@@ -6,7 +6,10 @@ import {
   extractBilibiliEvidence
 } from "../jobs/bilibili_evidence.mjs";
 import { dedupeMediaSignals } from "../jobs/online_daily_v4_dedupe.mjs";
-import { enrichMediaLeadWithOfficialBilibiliContext } from "../jobs/online_daily_v4_media_enrichment.mjs";
+import {
+  chooseExactSteamTitleCandidate,
+  enrichMediaLeadWithOfficialBilibiliContext
+} from "../jobs/online_daily_v4_media_enrichment.mjs";
 import { mediaSignalToLead } from "../jobs/online_daily_v4_media_entities.mjs";
 import { buildMediaLeadCandidates } from "../jobs/online_daily_v4_media_leads.mjs";
 import { classifyMediaDisposition } from "../jobs/online_daily_v4_media_rules.mjs";
@@ -286,6 +289,70 @@ describe("sourcing evidence integrity", () => {
     assert.equal(enriched._bilibiliEvidence.steam_app_id, "123456");
   });
 
+  it("merges original and official Bilibili evidence without losing either source", async () => {
+    const localDiagnostics = diagnostics();
+    const base = mediaSignalToLead({
+      title: "《星环工坊》Demo 开发日志",
+      summary: "Steam https://store.steampowered.com/app/123456/",
+      source: "B站视频-国产游戏试玩",
+      link: "https://www.bilibili.com/video/BVREC/",
+      source_focus: ["china", "bilibili", "domestic_sourcing"],
+      score: 70
+    }, "strict", { reportDate: "2026-07-13", diagnostics: localDiagnostics });
+
+    const enriched = await enrichMediaLeadWithOfficialBilibiliContext(base, {
+      diagnostics: localDiagnostics,
+      fetchOfficialBilibiliCandidatesImpl: async () => [{
+        title: "《星环工坊》官方PV",
+        summary: "Steam https://store.steampowered.com/app/123456/",
+        source: "B站视频-国产官方PV",
+        link: "https://www.bilibili.com/video/BVOFFICIAL/",
+        score: 95
+      }]
+    });
+
+    assert.deepEqual(enriched._bilibiliEvidence.source_urls, [
+      "https://www.bilibili.com/video/BVOFFICIAL/",
+      "https://www.bilibili.com/video/BVREC/"
+    ]);
+    assert.equal(enriched._bilibiliEvidence.steam_app_id, "123456");
+    assert.equal(localDiagnostics.steam_links_detected, 2);
+    assert.equal(localDiagnostics.steam_evidence_duplicate_merged, 1);
+  });
+
+  it("keeps merged Bilibili evidence when a non-Bilibili article is the primary signal", () => {
+    const bili = {
+      title: "《星环工坊》Demo 首曝",
+      summary: "Steam https://store.steampowered.com/app/123456/",
+      source: "B站视频-国产游戏试玩",
+      link: "https://www.bilibili.com/video/BVKEEP/",
+      source_quality: 50,
+      bilibili_evidence: extractBilibiliEvidence({
+        link: "https://www.bilibili.com/video/BVKEEP/",
+        summary: "Steam https://store.steampowered.com/app/123456/"
+      })
+    };
+    const article = {
+      title: "《星环工坊》Demo 首曝",
+      summary: "国内团队公布试玩。",
+      source: "国内游戏媒体",
+      link: "https://example.test/starloop",
+      source_quality: 100,
+      source_focus: ["china", "domestic_sourcing"],
+      score: 80
+    };
+
+    const [merged] = dedupeMediaSignals([bili, article]);
+    const lead = mediaSignalToLead(merged, "strict", {
+      reportDate: "2026-07-13",
+      diagnostics: diagnostics()
+    });
+
+    assert.equal(lead.steam_app_id, "123456");
+    assert.ok(lead.links.includes("https://www.bilibili.com/video/BVKEEP/"));
+    assert.ok(lead.links.includes("https://steamdb.info/app/123456/"));
+  });
+
   it("self-heals a missing Lead link and rejects unresolved ambiguous Steam evidence", () => {
     const localDiagnostics = diagnostics();
     const evidence = extractBilibiliEvidence({
@@ -366,7 +433,7 @@ describe("sourcing evidence integrity", () => {
       sleepImpl: async () => {},
       fetchSteamExactTitleCandidatesImpl: async () => [{
         appId: "3167020",
-        title: "Escape From Duckov",
+        title: "逃离鸭科夫",
         release: "Oct 16, 2025"
       }],
       fetchAppDetailsImpl: async () => ({
@@ -385,6 +452,13 @@ describe("sourcing evidence integrity", () => {
     assert.equal(localDiagnostics.media_exact_steam_lookup_hits, 1);
     assert.equal(localDiagnostics.steam_evidence_lost, 0);
     assert.ok(localDiagnostics.media_released_routed_to_drop >= 1);
+  });
+
+  it("does not bind a single inexact Steam search result", () => {
+    assert.equal(
+      chooseExactSteamTitleCandidate("逃离鸭科夫", [{ appId: "3167020", title: "Duck Escape" }]),
+      null
+    );
   });
 
   it("does not bind an ambiguous exact-title Steam search", async () => {
