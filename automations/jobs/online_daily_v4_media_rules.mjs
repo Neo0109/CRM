@@ -14,10 +14,53 @@ export function isOfficialOrDeveloperBilibiliSignal(item) {
   return false;
 }
 
+function semanticMediaContentText(item) {
+  const tags = Array.isArray(item?.tags)
+    ? item.tags.map((tag) => typeof tag === "string" ? tag : tag?.tag_name ?? tag?.name ?? "").join(" ")
+    : String(item?.tags ?? "");
+  return [
+    item?.title,
+    item?.summary,
+    item?.description,
+    item?.desc,
+    item?.dynamic,
+    item?.owner_name,
+    tags
+  ].filter(Boolean).join(" ");
+}
+
+function hasStandaloneAnimationSeriesMarker(item) {
+  const text = semanticMediaContentText(item);
+  return /动画|动漫|国漫|番剧|漫画|剧集|第\s*(?:[一二三四五六七八九十百]+|\d+)\s*季|开播|播出|粤语版|配音|声优/i.test(text);
+}
+
+function hasIndependentGameProductEvidence(item) {
+  const text = semanticMediaContentText(item);
+  const evidence = item?.bilibili_evidence ?? {};
+  const structuredUrls = [
+    ...(Array.isArray(item?.links) ? item.links : []),
+    ...(Array.isArray(evidence?.urls) ? evidence.urls : []),
+    ...(Array.isArray(evidence?.website_urls) ? evidence.website_urls : [])
+  ].join(" ");
+  const hasStructuredSteamId = Boolean(
+    item?.steam_app_id
+    || evidence?.steam_app_id
+    || (Array.isArray(evidence?.steam_app_ids) && evidence.steam_app_ids.length)
+  );
+
+  if (hasStructuredSteamId) return true;
+  if (/store\.steampowered\.com\/app\/\d+|steamdb\.info\/app\/\d+|\bapp\s*id\s*[:：#]?\s*\d+|taptap|indienova|好游快爆/i.test(`${text} ${structuredUrls}`)) return true;
+  if (/独立游戏|手游|端游|主机游戏|网络游戏/i.test(text)) return true;
+  return /游戏/i.test(text) && /\bdemo\b|试玩|实机|测试|商店页|愿望单|版号|\bplaytest\b/i.test(text);
+}
+
 export function classifyMediaDisposition(item) {
   const text = String(item?.title ?? "") + " " + String(item?.summary ?? "") + " " + String(item?.source ?? "");
   if (/电影|影片|剧本|编剧|演员|导演|制片人|选角|影视改编|影视化|动画改编|真人改编|adaptation|screenplay|film\b|movie\b/i.test(text)) {
     return { kind: "radar_only", reason: "cross_media_or_film" };
+  }
+  if (hasStandaloneAnimationSeriesMarker(item) && !hasIndependentGameProductEvidence(item)) {
+    return { kind: "radar_only", reason: "non_game_animation_series" };
   }
   if (/版本更新|大版本|赛季|联动|周年|资料片|\bdlc\b|补丁|更新公告|促销|折扣|史低|攻略|评测|测评|教程|指南|walkthrough|review\b|sale\b|discount/i.test(text)) {
     return { kind: "radar_only", reason: "released_product_content" };

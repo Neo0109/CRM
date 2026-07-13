@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v6.6-evidence-integrity",
+  "rule_version": "sourcing-rules-v6.7-non-game-animation-gate",
   "updated_at": "2026-07-13",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
   "canonical_rules_doc": "docs/SOURCING_RULES_V6.md",
@@ -44,6 +44,7 @@
     "Concrete product leads found through domestic media or Bilibili must enter the daily lead candidate pools with their original URLs, not only the industry radar.",
     "Domestic media items containing a named game plus signals such as edition approval, first reveal, playtest, demo, trailer, store page, reservation, or domestic studio/publisher context should be treated as sourcing leads even when Steam data is missing.",
     "Bilibili search results must point to a concrete game/project. Tutorial, wishlist-growth, Steam Next Fest signup, course, or generic developer-experience videos are research material, not CRM leads.",
+    "Standalone animation, anime, comic, series, season, broadcast, dubbing, or voice-cast signals must remain radar_only unless independent game-product evidence exists. A sourcing-source label, quoted title, PV/trailer, new-work, launch, reservation, or official-source status alone is not game evidence.",
     "A valid first-pass lead does not require a Steam AppID. Bilibili videos, media articles, official sites, TapTap, indienova, or developer posts can be the first verification link.",
     "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
     "Daily sourcing volume must not depend on Steam alone. When domestic media/Bilibili signals are healthy, the automation should produce a practical unprocessed review queue rather than one or two leads.",
@@ -154,7 +155,8 @@
     "structured_evidence_required": true,
     "steam_evidence_integrity_required": true,
     "demo_fullgame_resolution_required": true,
-    "media_disposition_required": true
+    "media_disposition_required": true,
+    "non_game_animation_radar_only_required": true
   },
   "automation_guardrails": [
     "Fail fast when this rule file is missing or incompatible.",

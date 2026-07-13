@@ -1,4 +1,5 @@
 import { buildBilibiliFit, hardDropReason } from "./online_daily_v4_decision.mjs";
+import { classifyMediaDisposition } from "./online_daily_v4_media_rules.mjs";
 import {
   categoryForMediaSignal,
   isBilibiliSignal,
@@ -319,12 +320,28 @@ function ensureMinimumSteamGenreSignals(signals, context) {
 }
 
 export function mediaSignalToRadarItem(item, index, context) {
-  const category = categoryForMediaSignal(item);
   const title = normalizeDisplayText(item.title);
+  const id = `media_${index}_${normalizeText(title).replace(/[^a-z0-9]+/g, "_").slice(0, 36)}`;
+  if (classifyMediaDisposition(item).reason === "non_game_animation_series") {
+    const cleaned = normalizeDisplayText([item.summary, item.title].filter(Boolean).join(" "));
+    return radarItem(
+      context,
+      id,
+      "B站趋势",
+      title,
+      `非游戏动画/IP观察：${cleaned.slice(0, 90)}。这是动画内容节点，不作为游戏产品线索。`,
+      item.score >= 25 ? "高" : "中",
+      item.source,
+      item.link,
+      "非游戏动画/IP观察只用于关注内容热度和IP节点，不进入游戏Lead。",
+      "观察播出节奏、角色/IP热度与B站讨论；只有后续出现独立游戏商店页等可验证游戏证据时再评估。"
+    );
+  }
+
   return radarItem(
     context,
-    `media_${index}_${normalizeText(title).replace(/[^a-z0-9]+/g, "_").slice(0, 36)}`,
-    category,
+    id,
+    categoryForMediaSignal(item),
     title,
     conciseMediaSummary(item),
     item.score >= 25 ? "高" : "中",

@@ -8,6 +8,7 @@ import {
   mediaSourceConfigFromRules,
   qualityGateConfigFromRules,
   radarDiversityConfigFromRules,
+  RULE_VERSION,
   validateDailyRules
 } from "../jobs/online_daily_v4_rules.mjs";
 
@@ -15,7 +16,7 @@ const rootDir = new URL("../..", import.meta.url);
 const generatorPath = "automations/jobs/online_daily_v4.mjs";
 const validRuleHeader = {
   schema_version: 1,
-  rule_version: "sourcing-rules-v6.6-evidence-integrity",
+  rule_version: RULE_VERSION,
   active_rules_doc: "docs/SOURCING_RULES_CURRENT.md",
   compatible_generators: [generatorPath]
 };
@@ -27,6 +28,7 @@ describe("online daily v4 rule config", () => {
     assert.ok(Array.isArray(rules.media_sources));
     assert.ok(rules.media_quality_gates);
     assert.ok(rules.radar_diversity);
+    assert.equal(rules.rule_version, RULE_VERSION);
 
     const config = buildDailyRuleConfig(rules);
     assert.ok(config.mediaSources.length > 30);
@@ -142,6 +144,17 @@ describe("online daily v4 rule config", () => {
         { categories: ["B站趋势", "新梗热点"], count: 1 }
       ]
     });
+  });
+
+  it("uses one exported rule version in both the loader and runner", () => {
+    const runnerSource = readFileSync(new URL("../jobs/online_daily_runner.mjs", import.meta.url), "utf8");
+
+    assert.match(
+      runnerSource,
+      /import\s+\{\s*RULE_VERSION\s*\}\s+from\s+"\.\/online_daily_v4_rules\.mjs"/
+    );
+    assert.match(runnerSource, /value\.rule_version\s*!==\s*RULE_VERSION/);
+    assert.doesNotMatch(runnerSource, /sourcing-rules-v\d/);
   });
 
   it("keeps the daily orchestrator wired to the validated rule config", () => {

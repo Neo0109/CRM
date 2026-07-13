@@ -2,7 +2,7 @@
 
 Date: 2026-07-13
 
-The current daily report rule version is `sourcing-rules-v6.6-evidence-integrity`.
+The current daily report rule version is `sourcing-rules-v6.7-non-game-animation-gate`.
 
 Canonical human-readable rule document:
 
@@ -176,6 +176,18 @@ V6.6 makes the full Bilibili detail the authoritative evidence input instead of 
 - Deduplicate repeated BVIDs by resolved Steam entity while retaining all useful Bilibili source URLs and preferring official/developer evidence.
 - Route film, screenplay, actor/director, adaptation, update/DLC, promotion, guide, and review items to `radar_only`. Treat `过审` as a game Lead signal only with edition-number, 新闻出版署, or network-game approval context.
 - Account for every detected Steam link as a structured Lead, Demo conversion, released/radar-only filter, duplicate merge, or integrity failure. Successful receipts must report `steam_evidence_lost = 0`.
+
+## V6.7 Non-Game Animation Lead Gate
+
+V6.7 adds one narrow semantic gate for standalone animation/series signals without changing the existing sourcing funnel.
+
+- Animation, anime, comic, series/season, broadcast, dubbing, and voice-cast signals are `radar_only` when no independent game-product evidence exists.
+- The gate reads the content itself: title, summary, description/detail, dynamic text, owner name, and tags. A configured source label such as a Bilibili game-search query is not game evidence.
+- Quoted titles, PV/trailer, new-work, launch, reservation, and official-source status alone do not prove that the item is a game.
+- Steam/AppID/SteamDB, TapTap, indienova, 好游快爆, an explicit game product class, or `游戏` combined with Demo/试玩/实机/测试/商店页/愿望单/版号/Playtest is independent game evidence and keeps the item eligible for the existing Lead paths.
+- Filtered animation signals stay visible in Radar as non-game animation/IP observation cards; their copy must not ask BD to inspect gameplay or试玩.
+- Existing scoring, source queries, Steam resolution, dedupe, release-window logic, CRM schema/UI, product version, and existing Lead records remain unchanged.
+- The runner imports the exported rule version used by the loader so a rule bump cannot leave the cloud wrapper on a stale hard-coded version.
 
 ## Source Health And Calibration
 

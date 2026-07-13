@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { RULE_VERSION } from "./online_daily_v4_rules.mjs";
 
 const rootDir = process.cwd();
 const args = parseArgs(process.argv.slice(2));
@@ -40,7 +41,7 @@ async function loadRules(filePath) {
 function validateRules(value) {
   if (!value || typeof value !== "object") throw new Error("Daily report rules must be a JSON object.");
   if (value.schema_version !== 1) throw new Error(`Unsupported daily report rule schema: ${value.schema_version}`);
-  if (value.rule_version !== "sourcing-rules-v6.5-window-hygiene") throw new Error(`Unsupported daily report rule version: ${value.rule_version}`);
+  if (value.rule_version !== RULE_VERSION) throw new Error(`Unsupported daily report rule version: ${value.rule_version}`);
   if (!Array.isArray(value.compatible_generators) || !value.compatible_generators.includes(generatorRepoPath)) {
     throw new Error(`Daily report rules are not marked compatible with ${generatorRepoPath}.`);
   }
