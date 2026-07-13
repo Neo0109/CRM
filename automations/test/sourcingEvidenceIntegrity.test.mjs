@@ -10,9 +10,15 @@ import {
   chooseExactSteamTitleCandidate,
   enrichMediaLeadWithOfficialBilibiliContext
 } from "../jobs/online_daily_v4_media_enrichment.mjs";
-import { mediaSignalToLead } from "../jobs/online_daily_v4_media_entities.mjs";
+import {
+  isDomesticMediaRescueSignal,
+  isExpandedDomesticProductSignal,
+  isProductSourcingSignal,
+  mediaSignalToLead
+} from "../jobs/online_daily_v4_media_entities.mjs";
 import { buildMediaLeadCandidates } from "../jobs/online_daily_v4_media_leads.mjs";
 import { classifyMediaDisposition } from "../jobs/online_daily_v4_media_rules.mjs";
+import { mediaSignalToRadarItem } from "../jobs/online_daily_v4_reports.mjs";
 import {
   enrichBilibiliVideoSignal,
   parseBilibiliSearchPage,
@@ -60,6 +66,35 @@ function diagnostics() {
     steam_evidence_duplicate_merged: 0,
     steam_evidence_lost: 0
   };
+}
+
+function nonGameAnimationSignals() {
+  return [
+    {
+      title: "高影胤霆携手对抗佛爷！《谷围南亭 第二季》粤语版概念PV公开",
+      summary: "《谷围南亭第二季》动画粤语版概念PV公开，第二季角色与配音阵容亮相。",
+      description: "国产动画第二季宣传片。",
+      owner_name: "wuhu动画人空间",
+      tags: ["动画", "国漫", "第二季"],
+      source: "B站视频-国产二游新作",
+      link: "https://www.bilibili.com/video/BV15v7K6sE93/",
+      source_quality: 12,
+      source_focus: ["china", "bilibili", "creator", "domestic_sourcing"],
+      score: 68
+    },
+    {
+      title: "《谷围南亭第二季》粤语版PV同步上线",
+      summary: "国漫剧集第二季粤语版PV上线，介绍声优和播出信息。",
+      dynamic: "动画第二季即将开播。",
+      owner_name: "国漫爆料官",
+      tags: ["动漫", "番剧", "粤语版"],
+      source: "B站视频-国产二游新作",
+      link: "https://www.bilibili.com/video/BV1fs7P6WEei/",
+      source_quality: 12,
+      source_focus: ["china", "bilibili", "creator", "domestic_sourcing"],
+      score: 68
+    }
+  ];
 }
 
 function probeConfig() {
@@ -393,6 +428,73 @@ describe("sourcing evidence integrity", () => {
 
     assert.equal(ambiguous.valid, false);
     assert.equal(localDiagnostics.steam_evidence_lost, 1);
+  });
+
+  it("keeps the exact non-game animation season signals in Radar and out of every Lead path", async () => {
+    const localDiagnostics = diagnostics();
+    let officialLookups = 0;
+    let exactSteamLookups = 0;
+
+    for (const [index, item] of nonGameAnimationSignals().entries()) {
+      assert.deepEqual(classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_animation_series"
+      });
+      assert.equal(isProductSourcingSignal(item), false);
+      assert.equal(isExpandedDomesticProductSignal(item), false);
+      assert.equal(isDomesticMediaRescueSignal(item), false);
+
+      const radarItem = mediaSignalToRadarItem(item, index, {
+        reportDate: "2026-07-13",
+        capturedAt: "2026-07-13T10:00:00+08:00"
+      });
+      assert.equal(radarItem.category, "B站趋势");
+      assert.match(`${radarItem.summary} ${radarItem.relevance} ${radarItem.suggested_action}`, /非游戏动画|IP观察/);
+      assert.doesNotMatch(`${radarItem.summary} ${radarItem.relevance} ${radarItem.suggested_action}`, /试玩/);
+    }
+
+    const leads = await buildMediaLeadCandidates(nonGameAnimationSignals(), emptyIndex(), {
+      reportDate: "2026-07-13",
+      diagnostics: localDiagnostics,
+      maxOfficialLookups: 4,
+      maxExactSteamLookups: 4,
+      sleepImpl: async () => {},
+      fetchOfficialBilibiliCandidatesImpl: async () => {
+        officialLookups += 1;
+        return [];
+      },
+      fetchSteamExactTitleCandidatesImpl: async () => {
+        exactSteamLookups += 1;
+        return [];
+      },
+      collectContactMethodsImpl: async () => []
+    });
+
+    assert.deepEqual(leads, []);
+    assert.equal(officialLookups, 0);
+    assert.equal(exactSteamLookups, 0);
+    assert.equal(localDiagnostics.media_radar_only, 2);
+  });
+
+  it("keeps an animation-styled indie game with independent Steam evidence eligible", () => {
+    const item = {
+      title: "《南亭异闻》国漫风独立游戏官方PV",
+      summary: "国产独立游戏 Steam Demo 已上线：https://store.steampowered.com/app/4567890/",
+      description: "开发团队展示实机玩法和测试计划。",
+      owner_name: "南亭异闻开发组",
+      tags: ["国产独立游戏", "Steam", "Demo", "国漫风"],
+      source: "B站视频-国产二游新作",
+      link: "https://www.bilibili.com/video/BVGAMECONTROL/",
+      source_quality: 12,
+      source_focus: ["china", "bilibili", "creator", "domestic_sourcing"],
+      score: 68
+    };
+
+    assert.deepEqual(classifyMediaDisposition(item), {
+      kind: "lead_candidate",
+      reason: "actionable_product_signal"
+    });
+    assert.equal(isProductSourcingSignal(item), true);
   });
 
   it("routes film-script approval to radar but keeps qualified game licence approval actionable", () => {
