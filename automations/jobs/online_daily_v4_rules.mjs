@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const GENERATOR_REPO_PATH = "automations/jobs/online_daily_v4.mjs";
-const RULE_VERSION = "sourcing-rules-v6.5-window-hygiene";
+const RULE_VERSION = "sourcing-rules-v6.6-evidence-integrity";
 const ACTIVE_RULES_DOC = "docs/SOURCING_RULES_CURRENT.md";
 
 const DEFAULT_MEDIA_SOURCES = [
