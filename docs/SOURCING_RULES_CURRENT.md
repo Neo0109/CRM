@@ -1,8 +1,8 @@
 # Current Daily Report Rules
 
-Date: 2026-07-08
+Date: 2026-07-13
 
-The current daily report rule version is `sourcing-rules-v6.5-window-hygiene`.
+The current daily report rule version is `sourcing-rules-v6.6-evidence-integrity`.
 
 Canonical human-readable rule document:
 
@@ -109,7 +109,7 @@ The online generator must preserve the product intent of these rules:
 
 `automations/jobs/online_daily_runner.mjs` is the active cloud entrypoint and `online_daily_v4.mjs` is the active generator. The rule JSON is the online source and run guard; future cleanup should keep configurable thresholds, category definitions, media-source weights, source expansion, and exclusion rules in the rule file where practical.
 
-Domestic media and Bilibili sources now feed both the radar and the lead generator. The remaining cleanup is to make product-entity extraction more structured over time, so article/video titles become cleaner project records with fewer manual edits.
+Domestic media and Bilibili sources now feed both the radar and the lead generator through structured evidence. The next calibration task is production monitoring: confirm successful receipts keep `steam_evidence_lost = 0` and review any exact-title lookup misses without weakening the integrity gate.
 
 ## V6 Low-Volume Fix
 
@@ -165,6 +165,17 @@ V6.5 keeps the V6.4 Bilibili probe and restores the BD window gate:
 - Fresh Steam or Bilibili/media candidates with confirmed launch dates fewer than 60 days away must be routed to `drop_pool` or market background.
 - Demo/试玩/测试 signals still matter for product inspection, but they no longer override a near-launch cooperation window.
 - `priority_reason`, `next_action`, and `notes` are human-owned fields. Automation should keep them empty by default and put rule judgments in `rule_fit`, `risks`, `drop_reason`, `progress`, and `release_window`.
+
+## V6.6 Steam Evidence Integrity
+
+V6.6 makes the full Bilibili detail the authoritative evidence input instead of asking Lead construction to rediscover links from display text.
+
+- Extract one structured `BilibiliEvidence` object immediately after detail enrichment and before any summary truncation or field formatting. Preserve source URLs, extracted URLs, Steam AppID, official site, email, and contact clues.
+- If evidence contains a Steam Store, Steam Community app, or SteamDB app URL, the final Lead must contain a resolved `steam_app_id` plus canonical Store and SteamDB links. Auto-repair missing structured fields; if consistency still cannot be established, block the candidate and increment `steam_evidence_lost`.
+- Resolve Demo AppIDs through Steam `fullgame.appid` before release checks. The Demo date is evidence that a build is playable, not the full game's release date. The `404幸存者 Demo` regression resolves `4039970` to full game `4038790`.
+- Deduplicate repeated BVIDs by resolved Steam entity while retaining all useful Bilibili source URLs and preferring official/developer evidence.
+- Route film, screenplay, actor/director, adaptation, update/DLC, promotion, guide, and review items to `radar_only`. Treat `过审` as a game Lead signal only with edition-number, 新闻出版署, or network-game approval context.
+- Account for every detected Steam link as a structured Lead, Demo conversion, released/radar-only filter, duplicate merge, or integrity failure. Successful receipts must report `steam_evidence_lost = 0`.
 
 ## Source Health And Calibration
 
