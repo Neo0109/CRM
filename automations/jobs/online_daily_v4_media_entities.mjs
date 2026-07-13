@@ -5,9 +5,11 @@ import {
   normalizeMediaLinks as normalizeMediaLinksV63,
   steamAppIdFromLinks as steamAppIdFromLinksV63
 } from "./sourcing_v6_3_quality.mjs";
+import { extractBilibiliEvidence } from "./bilibili_evidence.mjs";
 import { isBilibiliSignal, normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mjs";
 import { isLowInformationMediaTitle } from "./online_daily_v4_media_sources.mjs";
 import {
+  classifyMediaDisposition,
   hasAlreadyReleasedMediaText,
   hasConcreteMediaProductMarker,
   isBannedMediaLeadText,
@@ -50,6 +52,7 @@ export function isProductSourcingSignal(item) {
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
   const title = normalizeDisplayText(item.title);
   const isBilibili = isBilibiliSignal(item);
+  if (classifyMediaDisposition(item).kind !== "lead_candidate") return false;
   const hasUsefulSource = focus.has("domestic_sourcing") || focus.has("bilibili") || (focus.has("china") && (focus.has("product") || focus.has("indie") || focus.has("mobile")));
   if (!hasUsefulSource) return false;
   if (isSteamStoreOperationsTopic(item)) return false;
@@ -66,7 +69,11 @@ export function isProductSourcingSignal(item) {
     && title.length <= 34
     && /^[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff:'’&.\-\s]+$/.test(title)
     && !/steam|demo|新品节|愿望单|曝光|免费|分享|数据|教程|报名|开发日志|制作人|开发者|自学|课程|指南|经验/i.test(title);
-  const hasProductName = hasQuotedName || hasBilibiliProjectShape;
+  const evidenceProject = extractMediaProjectName(item.title);
+  const hasStructuredSteamProject = Boolean(extractBilibiliEvidence(item).steam_app_id)
+    && !isGenericMediaProjectName(evidenceProject)
+    && !isUnusableMediaProjectName(evidenceProject);
+  const hasProductName = hasQuotedName || hasStructuredSteamProject || hasBilibiliProjectShape;
   const domesticCompanySignal = /网易|腾讯|字节|朝夕光年|巨人|西山居|莉莉丝|心动|鹰角|米哈游|散爆|库洛|叠纸|沐瞳|灵犀|祖龙|完美世界|中手游|B站游戏|哔哩哔哩游戏/i.test(text);
   const domesticTextSignal = /国产|国人|华人|中国团队|国内团队|国内开发|版号|过审|获批|独立游戏|开发日志|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
   const domesticSourceSignal = focus.has("domestic_sourcing") && /版号|过审|获批|首曝|国产|国内|中国|中式|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
@@ -81,6 +88,7 @@ export function isExpandedDomesticProductSignal(item) {
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
   const title = normalizeDisplayText(item.title);
   const domesticSource = focus.has("domestic_sourcing") || focus.has("bilibili") || focus.has("china");
+  if (classifyMediaDisposition(item).kind !== "lead_candidate") return false;
   if (!domesticSource) return false;
   if (isSteamStoreOperationsTopic(item)) return false;
   if (isLowInformationMediaTitle(item.title)) return false;
@@ -106,6 +114,7 @@ export function isDomesticMediaRescueSignal(item) {
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
   const title = normalizeDisplayText(item.title);
   const domesticSource = focus.has("domestic_sourcing") || focus.has("bilibili") || focus.has("china");
+  if (classifyMediaDisposition(item).kind !== "lead_candidate") return false;
   if (!domesticSource) return false;
   if (isSteamStoreOperationsTopic(item)) return false;
   if (isLowInformationMediaTitle(item.title)) return false;
@@ -129,9 +138,17 @@ export function mediaSignalToLead(item, confidence = "strict", context = {}) {
   const confidencePenalty = confidence === "expanded" ? 6 : confidence === "rescue" ? 10 : 0;
   const isBilibili = isBilibiliSignal(item);
   const mediaText = `${item.title} ${item.summary} ${item.source} ${item.link}`;
-  const extractedLinks = normalizeMediaLinksV63([item.link, mediaText]);
-  const steamAppId = steamAppIdFromLinksV63(extractedLinks);
-  if (steamAppId) diagnostics.media_steam_appids_extracted = (diagnostics.media_steam_appids_extracted ?? 0) + 1;
+  const bilibiliEvidence = isBilibili ? extractBilibiliEvidence(item) : null;
+  const extractedLinks = bilibiliEvidence?.urls ?? normalizeMediaLinksV63([item.link, mediaText]);
+  const steamAppId = bilibiliEvidence?.steam_app_id ?? steamAppIdFromLinksV63(extractedLinks);
+  if (steamAppId) {
+    diagnostics.media_steam_appids_extracted = (diagnostics.media_steam_appids_extracted ?? 0) + 1;
+    if (bilibiliEvidence) {
+      const evidenceCount = Math.max(1, bilibiliEvidence.source_urls?.length ?? 0);
+      diagnostics.steam_links_detected = (diagnostics.steam_links_detected ?? 0) + evidenceCount;
+      diagnostics.steam_evidence_duplicate_merged = (diagnostics.steam_evidence_duplicate_merged ?? 0) + Math.max(0, evidenceCount - 1);
+    }
+  }
   const releasedByText = hasAlreadyReleasedMediaText(mediaText);
   const isPush = !releasedByText && confidence === "strict" && score >= 52 && /国产|国人|华人|国内团队|中国团队|b站|bilibili|taptap|好游快爆|indienova|开发日志/i.test(mediaText);
   const className = releasedByText ? "drop" : isPush ? "push" : "watch";
@@ -159,6 +176,9 @@ export function mediaSignalToLead(item, confidence = "strict", context = {}) {
     _mediaItem: item,
     _confidence: confidence,
     _officialSourceMatched: false,
+    _bilibiliEvidence: bilibiliEvidence,
+    _steamEvidencePrimary: bilibiliEvidence?.steam_app_id ? 1 : 0,
+    _mediaDisposition: classifyMediaDisposition(item).kind,
     media_score: score - confidencePenalty,
     id: `lead_media_${reportDate.replaceAll("-", "")}_${hashText(`${item.source}:${sourceLink}:${project}`)}`,
     project,
@@ -262,6 +282,10 @@ export function inferContactTypeFromLink(value) {
 export function extractMediaProjectName(title) {
   const quoted = String(title).match(/《([^》]{2,48})》/)?.[1];
   if (quoted) return quoted.trim();
+  const bracketed = String(title).match(/【([^】]{2,64})】/)?.[1]
+    ?.replace(/\s*(?:开发日志|制作日志|devlog|development log)\s*\d*.*$/i, "")
+    .trim();
+  if (bracketed && bracketed.length >= 2 && bracketed.length <= 48) return bracketed;
   const cleaned = normalizeDisplayText(title)
     .replace(/^【[^】]{1,20}】/g, "")
     .replace(/^(国产|独立游戏|游戏|试玩|实机|PV|Demo|开发者|制作人)[：:\s-]+/i, "")

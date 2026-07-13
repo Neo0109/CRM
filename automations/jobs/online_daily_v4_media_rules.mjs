@@ -14,6 +14,28 @@ export function isOfficialOrDeveloperBilibiliSignal(item) {
   return false;
 }
 
+export function classifyMediaDisposition(item) {
+  const text = String(item?.title ?? "") + " " + String(item?.summary ?? "") + " " + String(item?.source ?? "");
+  if (/电影|影片|剧本|编剧|演员|导演|制片人|选角|影视改编|影视化|动画改编|真人改编|adaptation|screenplay|film\b|movie\b/i.test(text)) {
+    return { kind: "radar_only", reason: "cross_media_or_film" };
+  }
+  if (/版本更新|大版本|赛季|联动|周年|资料片|\bdlc\b|补丁|更新公告|促销|折扣|史低|攻略|评测|测评|教程|指南|walkthrough|review\b|sale\b|discount/i.test(text)) {
+    return { kind: "radar_only", reason: "released_product_content" };
+  }
+  if (/过审/.test(text) && !hasQualifiedGameApprovalSignal(text)) {
+    return { kind: "radar_only", reason: "non_game_approval_context" };
+  }
+  if (isBannedMediaLeadText(text.toLowerCase())) {
+    return { kind: "reject", reason: "non_actionable_or_banned" };
+  }
+  return { kind: "lead_candidate", reason: null };
+}
+
+export function hasQualifiedGameApprovalSignal(value) {
+  const text = String(value ?? "");
+  return /版号|新闻出版署|国家新闻出版署|网络游戏审批|国产网络游戏审批|进口网络游戏审批/i.test(text);
+}
+
 export function isNonLeadMediaTopicText(text) {
   return /gdc|趋势报告|行业报告|市场报告|白皮书|财报|主线|版本更新|大版本|赛季|联动|周年|资料片|dlc|第二章|第三章|黑神话|游科|诡秘之主|人间地狱|锐评|逐帧|reaction|反应/i.test(text);
 }

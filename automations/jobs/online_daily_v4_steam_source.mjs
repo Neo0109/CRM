@@ -143,7 +143,10 @@ export async function fetchAppDetails(appId, context = {}) {
     try {
       const payload = await fetchJsonImpl(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=us&l=english`);
       const entry = payload[String(appId)];
-      return entry?.success && entry.data?.type === "game" ? entry.data : null;
+      const acceptedAppTypes = Array.isArray(context.acceptedAppTypes) && context.acceptedAppTypes.length
+        ? context.acceptedAppTypes
+        : ["game"];
+      return entry?.success && acceptedAppTypes.includes(entry.data?.type) ? entry.data : null;
     } catch (error) {
       if (attempt < 3 && /429|too many requests/i.test(error.message)) {
         await sleepImpl(2500 * attempt);
