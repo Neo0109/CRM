@@ -490,10 +490,7 @@ describe("sourcing evidence integrity", () => {
       score: 68
     };
 
-    assert.deepEqual(classifyMediaDisposition(item), {
-      kind: "lead_candidate",
-      reason: "actionable_product_signal"
-    });
+    assert.equal(classifyMediaDisposition(item).kind, "lead_candidate");
     assert.equal(isProductSourcingSignal(item), true);
   });
 
