@@ -248,6 +248,13 @@ jobs:
           const failurePayload = fs.existsSync(failurePayloadPath)
             ? JSON.parse(fs.readFileSync(failurePayloadPath, 'utf8'))
             : null;
+          const reportPayloadPath = `data/reports/${reportDate}.json`;
+          const reportPayload = generationStatus === 'success' && fs.existsSync(reportPayloadPath)
+            ? JSON.parse(fs.readFileSync(reportPayloadPath, 'utf8'))
+            : null;
+          const steamEvidenceLost = generationStatus === 'success'
+            ? reportPayload?.diagnostics?.steam_evidence_lost ?? null
+            : failurePayload?.diagnostics?.steam_evidence_lost ?? null;
           let status = process.env.SYNC_STATUS || 'unknown';
           let failureStage = failurePayload?.failure_stage || process.env.FAILURE_STAGE || null;
           let failureReason = failurePayload?.failure_reason || process.env.FAILURE_REASON || null;
@@ -273,6 +280,7 @@ jobs:
             failure_stage: failureStage,
             failure_reason: failureReason,
             volume_diagnostics: failurePayload?.volume_diagnostics ?? null,
+            steam_evidence_lost: steamEvidenceLost,
             generation_log_tail: generationLogTail,
             validation_log_tail: validationLogTail,
             event_name: process.env.GITHUB_EVENT_NAME_VALUE,
