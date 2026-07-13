@@ -138,7 +138,9 @@ export function mediaSignalToLead(item, confidence = "strict", context = {}) {
   const confidencePenalty = confidence === "expanded" ? 6 : confidence === "rescue" ? 10 : 0;
   const isBilibili = isBilibiliSignal(item);
   const mediaText = `${item.title} ${item.summary} ${item.source} ${item.link}`;
-  const bilibiliEvidence = isBilibili ? extractBilibiliEvidence(item) : null;
+  const bilibiliEvidence = isBilibili || item.bilibili_evidence
+    ? extractBilibiliEvidence(item)
+    : null;
   const extractedLinks = bilibiliEvidence?.urls ?? normalizeMediaLinksV63([item.link, mediaText]);
   const steamAppId = bilibiliEvidence?.steam_app_id ?? steamAppIdFromLinksV63(extractedLinks);
   if (steamAppId) {
