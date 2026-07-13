@@ -307,7 +307,12 @@ describe("online daily v4 volume and dedupe helpers", () => {
       }
     };
 
-    assert.deepEqual(dedupeMediaSignals([creatorDuplicate, linkDuplicate, other, official]), [official, other]);
+    const deduped = dedupeMediaSignals([creatorDuplicate, linkDuplicate, other, official]);
+    assert.deepEqual(deduped.map(({ bilibili_evidence, ...item }) => item), [official, other]);
+    assert.deepEqual(deduped[0].bilibili_evidence.source_urls, [
+      "https://www.bilibili.com/video/BVOFFICIAL/",
+      "https://www.bilibili.com/video/BVREC/"
+    ]);
   });
 
   it("selects radar signals with configured diversity caps and limit", () => {
