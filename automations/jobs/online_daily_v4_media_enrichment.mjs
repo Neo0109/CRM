@@ -195,9 +195,7 @@ export function chooseExactSteamTitleCandidate(project, candidates = []) {
   if (!projectKey) return null;
   const valid = candidates.filter((candidate) => /^\d+$/.test(String(candidate?.appId ?? "")));
   const exact = valid.filter((candidate) => normalizeExactTitle(candidate.title) === projectKey);
-  if (exact.length === 1) return exact[0];
-  if (valid.length === 1 && /[\u4e00-\u9fff]/.test(String(project))) return valid[0];
-  return null;
+  return exact.length === 1 ? exact[0] : null;
 }
 
 export function shouldLookupSteamExactTitle(lead) {
@@ -229,12 +227,34 @@ export async function enrichMediaLeadWithOfficialBilibiliContext(lead, context =
   if (!preferred || preferred.link === lead._mediaItem.link) return lead;
 
   diagnostics.bilibili_official_source_hits = (diagnostics.bilibili_official_source_hits ?? 0) + 1;
-  const evidence = extractBilibiliEvidence(preferred);
-  const officialSteamAppId = evidence.steam_app_id;
-  if (officialSteamAppId && officialSteamAppId !== lead.steam_app_id) {
-    diagnostics.media_steam_appids_extracted = (diagnostics.media_steam_appids_extracted ?? 0) + 1;
-    if (!lead._bilibiliEvidence?.steam_app_id) {
-      diagnostics.steam_links_detected = (diagnostics.steam_links_detected ?? 0) + Math.max(1, evidence.source_urls?.length ?? 0);
+  const officialEvidence = extractBilibiliEvidence(preferred);
+  const priorEvidence = lead._bilibiliEvidence ?? extractBilibiliEvidence(lead._mediaItem ?? {});
+  const evidence = extractBilibiliEvidence({
+    ...preferred,
+    bilibili_evidence: {
+      ...officialEvidence,
+      source_urls: [...(officialEvidence.source_urls ?? []), ...(priorEvidence.source_urls ?? [])],
+      urls: [...(officialEvidence.urls ?? []), ...(priorEvidence.urls ?? [])],
+      steam_app_ids: [...(officialEvidence.steam_app_ids ?? []), ...(priorEvidence.steam_app_ids ?? [])],
+      emails: [...(officialEvidence.emails ?? []), ...(priorEvidence.emails ?? [])]
+    }
+  }, [
+    ...(priorEvidence.website_urls ?? []),
+    ...(priorEvidence.contact_urls ?? [])
+  ]);
+  const officialSteamAppId = officialEvidence.steam_app_id;
+  const priorSteamAppId = priorEvidence.steam_app_id;
+  if (officialSteamAppId) {
+    if (officialSteamAppId !== lead.steam_app_id) {
+      diagnostics.media_steam_appids_extracted = (diagnostics.media_steam_appids_extracted ?? 0) + 1;
+    }
+    const newEvidenceSourceCount = Math.max(
+      1,
+      (officialEvidence.source_urls ?? []).filter((url) => !(priorEvidence.source_urls ?? []).includes(url)).length
+    );
+    diagnostics.steam_links_detected = (diagnostics.steam_links_detected ?? 0) + newEvidenceSourceCount;
+    if (priorSteamAppId === officialSteamAppId) {
+      diagnostics.steam_evidence_duplicate_merged = (diagnostics.steam_evidence_duplicate_merged ?? 0) + newEvidenceSourceCount;
     }
   }
 
@@ -244,8 +264,8 @@ export async function enrichMediaLeadWithOfficialBilibiliContext(lead, context =
     _originalMediaItem: lead._mediaItem,
     _officialSourceMatched: true,
     _bilibiliEvidence: evidence,
-    _steamEvidencePrimary: officialSteamAppId ? 1 : lead._steamEvidencePrimary,
-    steam_app_id: officialSteamAppId ?? lead.steam_app_id,
+    _steamEvidencePrimary: evidence.steam_app_id ? 1 : lead._steamEvidencePrimary,
+    steam_app_id: evidence.steam_app_id ?? lead.steam_app_id,
     links: mergeLinks([...(lead.links ?? []), ...(evidence.urls ?? []), ...(evidence.source_urls ?? [])]),
     public_signals: String(preferred.source) + " / " + String(preferred.link),
     contact_methods: mergeContactMethods([
