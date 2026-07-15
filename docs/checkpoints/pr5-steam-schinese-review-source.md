@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:49 CST
+Last updated: 2026-07-16 00:52 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation is in progress; the fixed-fixture source and pure-decision contract is green, while the standalone artifact/schema/writer contract remains.
+Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation is in progress; the fixed-fixture source and pure-decision contract is green, and the standalone artifact/schema/writer contract is red for the expected missing artifact module only.
 
 ## Current Goal
 
@@ -94,10 +94,12 @@ Explicitly out of scope:
 - Added the pure EA/high-traction and China-heat evaluator with two-fact current-EA confirmation, exact locked thresholds, both-rule preservation, and `china_heat_ops` primary-lane precedence.
 - Added fixed-fixture orchestration that retains every prefilter hit without caps, records missing official evidence instead of promoting it, and makes overall scan completeness false on any catalog/review/AppDetails failure.
 - Focused source contract is green: 7/7. Combined new source, existing Steam source, and existing sourcing-candidate audit regression set is green: 21/21; standalone `git diff --check` is also green.
+- Added the focused artifact red contract for exact scan/decision counts, deterministic snake-case evidence shape, AppID uniqueness, raw-review/count integrity, false-complete rejection, sanitized dedicated-path writing, JSON-schema validation, the fixed-fixture Build entrypoint, and static proof that Daily/workflow/import/CRM paths do not consume this artifact.
+- Captured the artifact red run: `node --test automations/test/steamReviewOpportunityArtifact.test.mjs` fails only with `ERR_MODULE_NOT_FOUND` for the planned `steam_review_opportunity_artifact.mjs`.
 
 ## Remaining
 
-- Add fixed-fixture red tests for the audit artifact schema/contract, writer/CLI boundary, and no-sync/no-Lead guard.
+- Implement the dedicated artifact builder/integrity validator/writer, JSON schema and CLI validator, standalone audit runner, package entrypoint, and fixed-fixture Build check until the artifact contract is green.
 - Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
 - Audit the full diff against PLAN.md PR 5, push, open a ready PR to `main`, wait for all checks, resolve only in-scope failures, and verify clean mergeability plus zero unresolved review threads.
@@ -106,12 +108,12 @@ Explicitly out of scope:
 
 ## Next Action
 
-Commit the green source step, then add a focused red contract for the dedicated audit schema, deterministic artifact builder/validator/writer, CLI entrypoint, and static proof that no Daily/workflow/import/CRM path consumes the artifact.
+Implement only the approved dedicated artifact/schema/validator/writer/runner and fixed-fixture CI entrypoint against the captured red contract, run source plus artifact tests to green, update this checkpoint, and commit the artifact step.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main [ahead 3]
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 4]
  M docs/checkpoints/pr5-steam-schinese-review-source.md
-?? automations/jobs/steam_review_opportunity_source.mjs
+?? automations/test/steamReviewOpportunityArtifact.test.mjs
 ```
