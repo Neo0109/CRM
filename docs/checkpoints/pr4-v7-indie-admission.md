@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:52 CST
+Last updated: 2026-07-15 23:57 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is in progress. The V7.0 admission, publication, source projection, active rule chain, health contract, documentation, and complete Daily V4 regression alignment are implemented and green. Final verification and delivery remain.
+Phase status: Phase 4 implementation and final local verification are complete. The V7.0 admission, publication, source projection, active rule chain, health contract, documentation, complete Daily V4 regression alignment, typechecks, repository verification, and diff checks are green. GitHub delivery and online acceptance remain.
 
 ## Current Goal
 
@@ -116,25 +116,26 @@ Explicitly out of scope:
 - Ran the complete Daily V4 suite; the first pass was 106/114 with exactly eight stale V6.8/current-version or formal-count-degraded assertions and no new implementation failures.
 - Updated only those stale assertions, retained explicit historical V6.8 quarantine compatibility tests, and corrected the remaining active-rule wording that still pointed failed candidates toward `watch_pool` / `drop_pool` instead of the candidate audit.
 - Complete Daily V4 is green: 114/114.
+- Final focused V7/source/decision/candidate-audit/heartbeat set is green: 46/46.
+- Existing dated Daily/Radar/Steam Trends contract is green for `2026-07-15`; the repository has no tracked production candidate artifact for that date, so the V7 four-artifact zero-Lead schema/contract is additionally proven by the focused temporary fixture: 5/5. No production artifact was generated or modified locally.
+- Restored the independent worktree's untracked dependencies through the documented root `npm@10.8.2` / no-lockfile install entrypoint after the first typecheck reported `tsc: command not found`; frontend, backend, and Functions typechecks then passed without tracked dependency changes.
+- The first `npm run verify:all` reached the legacy `scripts/test-sourcing-v6-3.mjs` guard and failed only because it still required the V6.8 generator identity/quarantine diagnostic. Updated that assertion to require the V7 generator identity, qualified/push invariant, and absence of formal-count targets.
+- Final `npm run verify:all` passed, including frontend/backend/functions tests and typechecks, Daily V4 114/114, automation diagnostics, Lead Assistant, Sourcing Learning, Daily heartbeat, V7 rule guards, Daily contract validation, temporary frontend production build, and internal `git diff --check`.
+- Standalone `git diff --check` is green and dependency installation left the tracked worktree unchanged.
 
 ## Remaining
 
-- Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
 - Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
 
 ## Next Action
 
-Run the full PLAN.md final verification matrix: focused V7 tests, Daily V4, schema/contract fixtures, all typechecks, `npm run verify:all`, and `git diff --check`; resolve only PR 4 failures.
+Commit the final stale guard alignment, verify a clean PR 4-only diff against current `origin/main`, push the branch, and create a ready PR to `main`.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 8]
- M automations/test/onlineDailyV4Decision.test.mjs
- M automations/test/onlineDailyV4QualityQuarantine.test.mjs
- M automations/test/onlineDailyV4Reports.test.mjs
- M automations/test/onlineDailyV4Rules.test.mjs
- M docs/SOURCING_RULES_CURRENT.md
+## codex/pr4-v7-indie-admission...origin/main [ahead 9]
  M docs/checkpoints/pr4-v7-indie-admission.md
+ M scripts/test-sourcing-v6-3.mjs
 ```
