@@ -30,6 +30,12 @@
     "crm_import_mode": "create-only",
     "existing_leads_may_be_updated": false,
     "scheduled_delivery": ["new_discovery", "first_threshold_crossing"],
+    "suppression_history_requires_matching_success_receipt": true,
+    "suppression_history_artifact_identity": "sha256",
+    "failed_delivery_remains_retryable": true,
+    "bearer_secret": "CRM_AUTOMATION_TOKEN",
+    "crm_access_token_bearer_fallback": false,
+    "missing_bearer_secret_status": "sync_failed",
     "success_receipt_requires": [
       "scan_complete=true",
       "status=success",

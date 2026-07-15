@@ -34,6 +34,10 @@ describe("Steam review opportunity workflow contract", () => {
     assert.match(workflow, /scan_complete/);
     assert.match(workflow, /import-daily-report\?mode=create-only/);
     assert.match(workflow, /Authorization: Bearer \$CRM_AUTOMATION_TOKEN/);
+    assert.match(workflow, /CRM_AUTOMATION_TOKEN: \$\{\{ secrets\.CRM_AUTOMATION_TOKEN \}\}/);
+    assert.doesNotMatch(workflow, /CRM_ACCESS_TOKEN/);
+    assert.match(workflow, /CRM_AUTOMATION_TOKEN is not configured/);
+    assert.match(workflow, /sync_status=failed/);
     assert.doesNotMatch(workflow, /api\/reports\/sync/);
   });
 
@@ -60,10 +64,18 @@ describe("Steam review opportunity workflow contract", () => {
     assert.equal(machineRule.workflow, ".github/workflows/steam-review-opportunities.yml");
     assert.equal(machineRule.admission.formal_lead_maximum, null);
     assert.equal(machineRule.delivery_guardrails.crm_import_mode, "create-only");
+    assert.equal(machineRule.delivery_guardrails.suppression_history_requires_matching_success_receipt, true);
+    assert.equal(machineRule.delivery_guardrails.suppression_history_artifact_identity, "sha256");
+    assert.equal(machineRule.delivery_guardrails.failed_delivery_remains_retryable, true);
+    assert.equal(machineRule.delivery_guardrails.bearer_secret, "CRM_AUTOMATION_TOKEN");
+    assert.equal(machineRule.delivery_guardrails.crm_access_token_bearer_fallback, false);
+    assert.equal(machineRule.delivery_guardrails.missing_bearer_secret_status, "sync_failed");
     assert.match(currentRules, /STEAM_REVIEW_OPPORTUNITY_DELIVERY\.md/);
     assert.match(currentRules, /automations\/rules\/steam-review-opportunities\.json/);
     assert.match(deliveryDoc, /scan_complete=true/);
     assert.match(deliveryDoc, /sync_response\.synced=true/);
+    assert.match(deliveryDoc, /artifact_sha256/);
+    assert.match(deliveryDoc, /CRM_ACCESS_TOKEN.*not.*fallback/i);
   });
 });
 

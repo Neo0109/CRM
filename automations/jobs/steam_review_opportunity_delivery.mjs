@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -20,7 +21,7 @@ export function resolveSteamReviewRunMode(requestedMode = "auto", receipts = [])
   return receipts.some(isStrictSuccessfulBackfillReceipt) ? "scheduled" : "backfill";
 }
 
-export function selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts = [], mode }) {
+export function selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts = [], priorReceipts = [], mode }) {
   validateSteamReviewOpportunityArtifact(artifact);
   if (artifact.scan_summary.scan_complete !== true) {
     throw new Error("Steam review opportunity CRM delivery requires scan_complete=true");
@@ -28,7 +29,7 @@ export function selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts =
   const resolvedMode = resolveSteamReviewRunMode(mode, []);
   const qualified = artifact.opportunities.filter((item) => item.decision === "qualified");
   const previouslyQualifiedAppIds = resolvedMode === "scheduled"
-    ? priorQualifiedAppIds(priorArtifacts)
+    ? priorQualifiedAppIds(priorArtifacts, priorReceipts)
     : new Set();
   const candidates = qualified.filter((item) => !previouslyQualifiedAppIds.has(item.steam_app_id));
 
@@ -40,9 +41,9 @@ export function selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts =
   };
 }
 
-export function buildSteamReviewImportReport({ artifact, priorArtifacts = [], mode }) {
+export function buildSteamReviewImportReport({ artifact, priorArtifacts = [], priorReceipts = [], mode }) {
   const resolvedMode = resolveSteamReviewRunMode(mode, []);
-  const selection = selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts, mode: resolvedMode });
+  const selection = selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts, priorReceipts, mode: resolvedMode });
   const sourcingRunType = runTypeForMode(resolvedMode);
   return {
     report_date: artifact.report_date,
@@ -89,14 +90,15 @@ export async function prepareSteamReviewOpportunityDelivery(options = {}) {
   validateSteamReviewOpportunityArtifact(audit.artifact);
 
   const artifactPath = relativeRepoPath(rootDir, audit.outputPath);
+  const artifactSha256 = steamReviewOpportunityArtifactSha256(audit.artifact);
   const importPayloadFile = path.join(runtimeDir, `${reportDate}-${runSlot}-steam-review-import.json`);
   const preparationFile = path.join(runtimeDir, `${reportDate}-${runSlot}-steam-review-preparation.json`);
   let importPayloadPath = null;
   let selection = { qualifiedCount: audit.artifact.scan_summary.qualified, previouslyQualifiedCount: 0, importCandidateCount: 0 };
 
   if (audit.artifact.scan_summary.scan_complete === true) {
-    selection = selectSteamReviewDeliveryCandidates({ artifact: audit.artifact, priorArtifacts, mode });
-    const report = buildSteamReviewImportReport({ artifact: audit.artifact, priorArtifacts, mode });
+    selection = selectSteamReviewDeliveryCandidates({ artifact: audit.artifact, priorArtifacts, priorReceipts, mode });
+    const report = buildSteamReviewImportReport({ artifact: audit.artifact, priorArtifacts, priorReceipts, mode });
     await writeFile(importPayloadFile, serializeArtifact(report), "utf8");
     importPayloadPath = relativeRepoPath(rootDir, importPayloadFile);
   }
@@ -112,6 +114,7 @@ export async function prepareSteamReviewOpportunityDelivery(options = {}) {
     scan_complete: audit.artifact.scan_summary.scan_complete === true,
     ready_for_sync: audit.artifact.scan_summary.scan_complete === true,
     artifact_path: artifactPath,
+    artifact_sha256: artifactSha256,
     import_payload_path: importPayloadPath,
     catalog_scan_count: audit.artifact.scan_summary.unique_apps_seen,
     catalog_entries_seen: audit.artifact.scan_summary.catalog_entries_seen,
@@ -165,6 +168,7 @@ export function buildSteamReviewOpportunityReceipt({
     status,
     scan_complete: preparation.scan_complete === true,
     artifact_path: preparation.artifact_path,
+    artifact_sha256: preparation.artifact_sha256,
     catalog_scan_count: integerOrZero(preparation.catalog_scan_count),
     catalog_entries_seen: integerOrZero(preparation.catalog_entries_seen),
     qualified_count: integerOrZero(preparation.qualified_count),
@@ -193,6 +197,12 @@ export function validateSteamReviewOpportunityReceipt(receipt) {
   if (!["backfill", "scheduled"].includes(receipt?.mode)) errors.push("mode must be backfill or scheduled");
   if (!["initial_backfill", "scheduled"].includes(receipt?.sourcing_run_type)) errors.push("sourcing_run_type is invalid");
   if (!["success", "scan_incomplete", "sync_failed"].includes(receipt?.status)) errors.push("status is invalid");
+  if (receipt?.artifact_path !== artifactPathFor({ report_date: receipt?.report_date })) {
+    errors.push("artifact_path must match report_date");
+  }
+  if (!/^[a-f0-9]{64}$/.test(String(receipt?.artifact_sha256 ?? ""))) {
+    errors.push("artifact_sha256 must be a lowercase SHA-256 digest");
+  }
   for (const key of [
     "catalog_scan_count",
     "catalog_entries_seen",
@@ -259,11 +269,17 @@ function opportunityToLead(opportunity, { reportDate, sourcingRunType, artifactP
   };
 }
 
-function priorQualifiedAppIds(priorArtifacts) {
+function priorQualifiedAppIds(priorArtifacts, priorReceipts) {
+  const successfullyDeliveredArtifacts = new Set(
+    priorReceipts
+      .filter(isStrictSuccessfulDeliveryReceipt)
+      .map(artifactIdentityForReceipt)
+  );
   const result = new Set();
   for (const artifact of priorArtifacts) {
     validateSteamReviewOpportunityArtifact(artifact);
     if (artifact.scan_summary.scan_complete !== true) continue;
+    if (!successfullyDeliveredArtifacts.has(artifactIdentityForArtifact(artifact))) continue;
     for (const opportunity of artifact.opportunities) {
       if (opportunity.decision === "qualified") result.add(opportunity.steam_app_id);
     }
@@ -271,12 +287,41 @@ function priorQualifiedAppIds(priorArtifacts) {
   return result;
 }
 
+function artifactPathFor(artifact) {
+  return `data/steam_review_opportunities/${artifact?.report_date}.json`;
+}
+
+function artifactIdentityForArtifact(artifact) {
+  return `${artifactPathFor(artifact)}#${steamReviewOpportunityArtifactSha256(artifact)}`;
+}
+
+function artifactIdentityForReceipt(receipt) {
+  return `${receipt.artifact_path}#${receipt.artifact_sha256}`;
+}
+
+function steamReviewOpportunityArtifactSha256(artifact) {
+  return createHash("sha256").update(serializeArtifact(artifact)).digest("hex");
+}
+
+function isStrictSuccessfulDeliveryReceipt(receipt) {
+  return receipt?.schema_version === STEAM_REVIEW_DELIVERY_SCHEMA_VERSION
+    && receipt?.scan_complete === true
+    && receipt?.status === "success"
+    && receipt?.sync_response?.synced === true
+    && receipt?.updated_count === 0
+    && receipt?.failure_reason === null
+    && nonNegativeInteger(receipt?.created_count) !== null
+    && nonNegativeInteger(receipt?.deduplicated_count) !== null
+    && nonNegativeInteger(receipt?.import_candidate_count) !== null
+    && receipt.created_count + receipt.deduplicated_count === receipt.import_candidate_count
+    && receipt?.artifact_path === artifactPathFor({ report_date: receipt?.report_date })
+    && /^[a-f0-9]{64}$/.test(String(receipt?.artifact_sha256 ?? ""));
+}
+
 function isStrictSuccessfulBackfillReceipt(receipt) {
   return receipt?.mode === "backfill"
     && receipt?.sourcing_run_type === "initial_backfill"
-    && receipt?.scan_complete === true
-    && receipt?.status === "success"
-    && receipt?.sync_response?.synced === true;
+    && isStrictSuccessfulDeliveryReceipt(receipt);
 }
 
 function runTypeForMode(mode) {
@@ -329,6 +374,12 @@ function loadRuleConfig() {
   if (config.delivery_guardrails?.scan_complete_required_before_sync !== true) throw new Error("scan_complete must remain required before sync");
   if (config.delivery_guardrails?.crm_import_mode !== "create-only") throw new Error("CRM import mode must remain create-only");
   if (config.delivery_guardrails?.existing_leads_may_be_updated !== false) throw new Error("Existing Leads must remain immutable");
+  if (config.delivery_guardrails?.suppression_history_requires_matching_success_receipt !== true) throw new Error("Suppression history must require a matching success receipt");
+  if (config.delivery_guardrails?.suppression_history_artifact_identity !== "sha256") throw new Error("Suppression history must bind exact artifact content");
+  if (config.delivery_guardrails?.failed_delivery_remains_retryable !== true) throw new Error("Failed deliveries must remain retryable");
+  if (config.delivery_guardrails?.bearer_secret !== "CRM_AUTOMATION_TOKEN") throw new Error("Steam review delivery must use CRM_AUTOMATION_TOKEN");
+  if (config.delivery_guardrails?.crm_access_token_bearer_fallback !== false) throw new Error("CRM_ACCESS_TOKEN Bearer fallback must remain disabled");
+  if (config.delivery_guardrails?.missing_bearer_secret_status !== "sync_failed") throw new Error("Missing automation token must produce sync_failed");
   if (config.admission?.formal_lead_maximum !== null) throw new Error("V7.1 formal Lead count must remain unlimited");
   return config;
 }

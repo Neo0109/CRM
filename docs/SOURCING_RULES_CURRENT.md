@@ -233,8 +233,9 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - `.github/workflows/steam-review-opportunities.yml` contains only `schedule` and `workflow_dispatch`. The Daily workflow triggers and execution chain remain unchanged.
 - Production collection is always an unbounded full-catalog scan. `scan_complete=false` prevents creation of any CRM import payload and prevents any CRM request.
 - The first `backfill` run delivers every qualified AppID with `sourcing_run_type=initial_backfill`; no count limit or ranking cutoff exists.
-- Later scheduled runs retain only new discoveries and AppIDs crossing a threshold for the first time, based on prior complete audit artifacts.
+- Later scheduled runs retain only new discoveries and AppIDs crossing a threshold for the first time. Suppression history advances only for a prior complete artifact whose path and `artifact_sha256` match a strict receipt with `status=success` and `sync_response.synced=true`; failed or unmatched artifacts remain eligible for retry.
 - The final API boundary is `POST /api/leads/import-daily-report?mode=create-only`; existing Lead matches are skipped and must never be updated.
+- This workflow sends Bearer authentication only from `CRM_AUTOMATION_TOKEN`; it never falls back to `CRM_ACCESS_TOKEN`. A missing automation token produces an explicit failed sync response and `status=sync_failed` receipt, then fails the run.
 - Independent receipts under `data/steam_review_opportunity_runs/` record scan, qualification, prior-qualified suppression, import, dedupe, creation, update, and structured sync metrics.
 - Success requires `scan_complete=true`, `status=success`, `sync_response.synced=true`, `updated_count=0`, and created-plus-deduplicated parity with the import candidate count.
 

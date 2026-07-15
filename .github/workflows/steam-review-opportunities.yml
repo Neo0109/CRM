@@ -164,7 +164,7 @@ jobs:
         if: steps.gate.outputs.ready_for_sync == 'true'
         shell: bash
         env:
-          CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN || secrets.CRM_ACCESS_TOKEN }}
+          CRM_AUTOMATION_TOKEN: ${{ secrets.CRM_AUTOMATION_TOKEN }}
         run: |
           mkdir -p data/runtime
           if [ -z "$CRM_AUTOMATION_TOKEN" ]; then

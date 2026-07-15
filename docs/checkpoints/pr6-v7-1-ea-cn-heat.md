@@ -20,7 +20,7 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - The accepted PR 5 layer ends at `steam_review_opportunity_audit.mjs` and a schema-validated audit artifact; it intentionally has no workflow, run mode, historical threshold-crossing state, Lead payload, CRM import, or sync receipt.
   - Putting the full-catalog scan into either existing Daily workflow would widen the regular automation failure surface and violate the locked PR 6 boundary.
   - The existing create-only API already provides the required safety invariant: Steam AppID/dedupe matches are skipped, `updated=0`, and existing records are not rewritten.
-  - Scheduled delivery needs prior complete audit artifacts to suppress already-qualified AppIDs while still allowing newly discovered or first-crossing AppIDs.
+  - Scheduled delivery needs prior complete audit artifacts paired with matching strict successful receipts to suppress already-qualified AppIDs while still allowing newly discovered, first-crossing, or failed-delivery AppIDs.
 - Implementation design fixed from the approved PLAN (no business re-planning):
   - Add a separate V7.1 machine-readable rule source and a pure delivery module that maps every eligible qualified opportunity to one create-only Lead payload with no cap; `china_heat_ops` remains primary when both rules match and all matched rules remain in audit/Lead rule text.
   - Map workflow `mode=backfill` to Lead `sourcing_run_type=initial_backfill`; auto mode remains backfill until a strict successful backfill receipt exists, then resolves to `scheduled`.
@@ -29,8 +29,8 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Keep `.github/workflows/sync-daily-report.yml` and `.github/workflows/daily-report-watchdog.yml` unchanged.
 - Pure V7.1 delivery step completed:
   - Added `automations/rules/steam-review-opportunities.json` as the separate machine-readable PR 6 rule and safety source; it preserves the accepted PR 5 source contract, null min/max Lead limits, lane precedence, create-only mode, and strict success invariants.
-  - Added `steam_review_opportunity_delivery.mjs` with strict auto/backfill/scheduled mode resolution, prior-complete-artifact threshold history, unbounded production collect options, one-Lead-per-AppID mapping, and no ranking/truncation.
-  - Scheduled selection suppresses only AppIDs already qualified by a prior complete artifact; a previously unqualified AppID that now qualifies is retained as a first threshold crossing.
+  - Added `steam_review_opportunity_delivery.mjs` with strict auto/backfill/scheduled mode resolution, receipt-backed prior-artifact threshold history, unbounded production collect options, one-Lead-per-AppID mapping, and no ranking/truncation.
+  - Scheduled selection suppresses only AppIDs already qualified by an exact prior complete artifact with a matching strict success receipt; a previously unqualified AppID that now qualifies and any failed/unmatched delivery remain eligible.
   - `mode=backfill` maps to `sourcing_run_type=initial_backfill`; dual matches use `china_heat_ops` as the Lead lane while all rules remain in the audit and `rule_fit`.
   - Incomplete scans write preparation state but no CRM import payload.
   - Added the independent run-receipt schema and validator; strict success requires the complete scan, structured `synced=true`, zero updates, and exact created-plus-deduplicated parity with import candidates.
@@ -55,7 +55,7 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
 - Pre-publish authentication integration correction completed:
   - Self-review found that the independent workflow must use the existing automation Bearer path rather than assume a human `CRM_ACCESS_TOKEN` session can authenticate without a username in every production configuration.
   - The create-only Functions route now accepts a valid configured `CRM_AUTOMATION_TOKEN` Bearer request and falls back to its original user/session access path; the default merge mode remains user-authenticated and unchanged.
-  - The workflow reuses `CRM_AUTOMATION_TOKEN` (with the repository's existing backwards-compatible secret fallback) and neither creates nor rotates any secret.
+  - The workflow uses only `CRM_AUTOMATION_TOKEN` for Bearer automation access; it does not use `CRM_ACCESS_TOKEN` as a fallback and neither creates nor rotates any secret.
   - Added a red-then-green API test for automation Bearer create-only import. CRM core now passes 31/31, PR 6 focused tests pass 11/11, Functions typecheck passes, and the complete post-fix `npm run verify:all` passes again.
 - Published PR 6 delivery branch and opened the ready PR:
   - Branch `codex/pr6-v7-1-ea-cn-heat` was pushed at `dff8a7f`.
@@ -65,20 +65,38 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - `Build / frontend` succeeded for Actions runs `29439073307` and `29439076628`.
   - Cloudflare Pages PR preview check succeeded.
   - GitHub reports `mergeable=MERGEABLE` and `mergeStateStatus=CLEAN` against `origin/main=d98009bc5b8dad3ae81e304839fdc950a200248b`.
-  - No reviews, review threads, or unresolved comments exist.
+  - At that earlier checkpoint, no reviews, review threads, or unresolved comments existed; the two later Codex review threads are recorded below.
   - The remote PR file list contains only the 13 PR 6 workflow, delivery, rule, schema, validator, tests, docs/checkpoint, package-script, and create-only automation-auth files; both existing Daily workflow files remain absent from the diff.
+- PR `#92` review-closure diagnosis completed at remote head `9a2964ceb157c37b12e4ebaae45f4693a1a7ff00`:
+  - Review thread `PRRT_kwDOSiiYJ86RMteA` correctly identified that committing a complete scan before a failed CRM import must not advance scheduled suppression history.
+  - The interrupted local fix already required a strict successful delivery receipt, but matched it to an artifact path only. Because a manual same-date retry can overwrite that path, an older success receipt could incorrectly authenticate a newer failed artifact. The final fix must bind the exact artifact content to its receipt and leave every artifact without a matching strict success receipt eligible for retry.
+  - Review thread `PRRT_kwDOSiiYJ86RMteH` correctly identified that `CRM_ACCESS_TOKEN` cannot be reused as a Bearer automation token. The local workflow now references only `CRM_AUTOMATION_TOKEN`; missing configuration must create an explicit failed sync response/receipt and the final workflow gate must fail.
+  - Both review threads remain unresolved until the corrected code, tests, rule contract, delivery documentation, and checkpoint are pushed and the resulting PR checks pass.
+  - All work remains confined to `/Users/neo/Documents/GitHub/CRM-pr6-v7-1-ea-cn-heat`; the separate `/Users/neo/Documents/GitHub/CRM` worktree and its user changes are out of scope and untouched.
+- PR `#92` review-closure implementation completed locally:
+  - Preparation and every receipt now record `artifact_sha256`; scheduled suppression requires a strict successful receipt whose `artifact_path` and SHA-256 identify the exact canonical artifact content.
+  - A failed receipt, missing receipt, malformed receipt, or stale success receipt for an overwritten same-date path cannot advance suppression history. Newly qualified items in those artifacts remain eligible on the next scan, with create-only import providing final existing-Lead dedupe.
+  - Auto mode advances from initial backfill only from the same strict receipt predicate, including zero updates and created-plus-deduplicated parity.
+  - The independent workflow exposes only `secrets.CRM_AUTOMATION_TOKEN`; missing configuration writes an explicit `synced=false` response, produces `status=sync_failed`, and is rejected by the final blocking gate.
+  - The machine rule, receipt schema, delivery documentation, current-rule documentation, and static workflow contract now encode these invariants.
+  - TDD regression first failed on a same-path replacement being incorrectly suppressed and missing hash propagation, then the focused PR 6 delivery/workflow suite passed 12/12 after implementation.
+  - Relevant create-only/API tests pass 31/31, including automation Bearer authorization and the invariant that an existing Steam AppID/dedupe match is skipped without field mutation. Functions typecheck, workflow YAML parsing, rule/receipt JSON parsing, and `git diff --check` pass.
+  - The complete `npm run verify:all` passes: frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 140/140, diagnostics, sourcing learning, heartbeat, all three typechecks, sourcing/daily contracts, temporary production build, and final diff check.
+  - Both existing Daily workflow files remain byte-unchanged from `origin/main`.
+  - `PLAN.md` remains byte-identical to `/Users/neo/Downloads/PLAN.md`; both SHA-256 values remain `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
 
 ## Remaining
 
-- Push this CI checkpoint and reconfirm the resulting head checks, then squash merge PR `#92`.
-- Verify build, Cloudflare deployment, production `/api/health`, and PR 6 online acceptance.
+- Commit and push the fully verified review closure as one coherent change.
+- Wait for the new PR `#92` checks and resolve only the two addressed review threads after all checks pass. Do not merge or squash in this task.
 
 ## Next Action
 
-Commit and push this CI checkpoint update, wait for every resulting PR `#92` check, then squash merge without further approval.
+Commit the nine-file review closure and push `codex/pr6-v7-1-ea-cn-heat`, then wait for every new PR `#92` check before resolving the two addressed threads.
 
 ## Git Status
 
 - Branch: `codex/pr6-v7-1-ea-cn-heat`
 - Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Worktree: only this CI checkpoint update is uncommitted; the remote PR branch otherwise matches local `2f96d78`, all local and remote checks are green, and `PLAN.md` remains unchanged.
+- Remote PR head: `9a2964ceb157c37b12e4ebaae45f4693a1a7ff00`.
+- Worktree: nine PR 6 implementation, rule, schema, test, workflow, documentation, and checkpoint files are uncommitted and ready to commit; no file outside the dedicated PR 6 worktree is in scope. Focused tests and two complete `verify:all` runs pass, while existing remote checks still cover only the prior head. `PLAN.md` remains unchanged.

@@ -36,11 +36,14 @@ The production workflow never passes `maxPages`. Every production mode therefore
 
 Every current artifact record with `decision=qualified` is eligible in initial backfill. There is no minimum, maximum, ranking cutoff, quota, or truncation.
 
-For a scheduled run, the delivery layer reads prior complete audit artifacts:
+For a scheduled run, the delivery layer reads only prior complete audit artifacts whose exact content is paired with a strict successful delivery receipt. The receipt records `artifact_sha256`, and suppression history requires both the repository artifact path and SHA-256 digest to match:
 
-- An AppID absent from prior complete artifacts is a new discovery and remains eligible.
+- An AppID absent from successfully delivered artifacts is a new discovery and remains eligible.
 - An AppID previously present but not qualified is eligible the first time it crosses either threshold.
-- An AppID already qualified in a prior complete artifact is suppressed from the scheduled import payload.
+- An AppID already qualified in an exact artifact with a matching strict success receipt is suppressed from the scheduled import payload.
+- A failed, incomplete, or otherwise unmatched receipt never authenticates an artifact for suppression. Its newly qualified AppIDs remain eligible on the next scan and are retried through create-only import.
+
+The digest binding matters for manual same-date reruns: an older success receipt for the same repository path cannot authenticate newer artifact content written by a later failed run.
 
 Every eligible AppID maps to one Lead. If both rules match, `sourcing_lane=china_heat_ops`, while both rule names remain in the immutable audit and the Lead `rule_fit` text.
 
@@ -52,13 +55,13 @@ POST /api/leads/import-daily-report?mode=create-only
 
 Create-only is the final dedupe and immutability boundary. Existing Steam AppIDs or dedupe keys contribute to `skipped_existing`; they are not merged or updated. A valid response must report `updated=0`.
 
-The independent workflow authenticates this create-only call through the existing Bearer `CRM_AUTOMATION_TOKEN` path. The original human/session access path remains compatible; PR 6 does not create or rotate any secret.
+The independent workflow authenticates this create-only call only through the Bearer `CRM_AUTOMATION_TOKEN` path. `CRM_ACCESS_TOKEN` is not a Bearer fallback for this workflow. If `CRM_AUTOMATION_TOKEN` is missing, the workflow writes an explicit `synced=false` response, produces a `status=sync_failed` receipt, and fails the final delivery gate. The original human/session access path remains compatible outside this automation call; PR 6 does not create or rotate any secret.
 
 ## Scan Failure Boundary
 
 The preparation layer writes an import payload only when the validated audit has `scan_complete=true`. Any catalog, official-review, or AppDetails failure makes the audit incomplete and prevents the CRM request entirely.
 
-The audit artifact may still be committed for diagnosis. The independent workflow then records a non-success receipt and fails without changing CRM data. Daily generation and Daily sync remain unaffected.
+The audit artifact may still be committed for diagnosis. A committed artifact alone never enters suppression history: only an exact SHA-256 match in a strict successful receipt can do so. The independent workflow records a non-success receipt and fails without changing CRM data; unmatched qualified items remain retryable. Daily generation and Daily sync remain unaffected.
 
 ## Receipt Contract
 
@@ -72,6 +75,7 @@ Each run records these independent metrics:
 - `deduplicated_count`
 - `created_count`
 - `updated_count`
+- `artifact_sha256`
 - structured `sync_response`
 
 A successful run is valid only when all of the following are true:
@@ -84,7 +88,7 @@ updated_count=0
 created_count + deduplicated_count = import_candidate_count
 ```
 
-The workflow validates this receipt before committing it and repeats the same strict checks in its final blocking step.
+The workflow validates this receipt before committing it and repeats the same strict checks in its final blocking step. Scheduled suppression additionally requires that the receipt's `artifact_path` and `artifact_sha256` identify the exact stored artifact.
 
 ## Fixed Verification
 

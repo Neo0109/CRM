@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -20,23 +21,21 @@ const generatedAt = "2026-07-16T02:00:00+08:00";
 
 describe("Steam review opportunity V7.1 delivery", () => {
   it("keeps auto mode in backfill until a strict successful backfill receipt exists", () => {
+    const initialArtifact = artifact([
+      opportunity("9001", { decision: "qualified", matchedRules: ["china_heat_ops"] })
+    ], { reportDate: "2026-07-01" });
+    const successfulBackfill = successfulReceipt(initialArtifact, { mode: "backfill" });
     assert.equal(resolveSteamReviewRunMode("auto", []), "backfill");
     assert.equal(resolveSteamReviewRunMode("backfill", []), "backfill");
     assert.equal(resolveSteamReviewRunMode("scheduled", []), "scheduled");
     assert.equal(resolveSteamReviewRunMode("auto", [{
-      mode: "backfill",
-      sourcing_run_type: "initial_backfill",
-      status: "success",
-      scan_complete: true,
-      sync_response: { synced: false }
+      ...successfulBackfill,
+      status: "sync_failed",
+      sync_response: { synced: false },
+      created_count: 0,
+      failure_reason: "fixture failure"
     }]), "backfill");
-    assert.equal(resolveSteamReviewRunMode("auto", [{
-      mode: "backfill",
-      sourcing_run_type: "initial_backfill",
-      status: "success",
-      scan_complete: true,
-      sync_response: { synced: true }
-    }]), "scheduled");
+    assert.equal(resolveSteamReviewRunMode("auto", [successfulBackfill]), "scheduled");
   });
 
   it("delivers only new discoveries and first threshold crossings on scheduled rescans", () => {
@@ -53,6 +52,7 @@ describe("Steam review opportunity V7.1 delivery", () => {
     const scheduled = selectSteamReviewDeliveryCandidates({
       artifact: current,
       priorArtifacts: [prior],
+      priorReceipts: [successfulReceipt(prior)],
       mode: "scheduled"
     });
     assert.deepEqual(scheduled.candidates.map((item) => item.steam_app_id), ["1002", "1003"]);
@@ -63,10 +63,54 @@ describe("Steam review opportunity V7.1 delivery", () => {
     const backfill = selectSteamReviewDeliveryCandidates({
       artifact: current,
       priorArtifacts: [prior],
+      priorReceipts: [],
       mode: "backfill"
     });
     assert.deepEqual(backfill.candidates.map((item) => item.steam_app_id), ["1001", "1002", "1003"]);
     assert.equal(backfill.previouslyQualifiedCount, 0);
+  });
+
+  it("does not advance scheduled suppression history until delivery has a strict success receipt", () => {
+    const current = artifact([
+      opportunity("1501", { decision: "qualified", matchedRules: ["china_heat_ops"] })
+    ]);
+    const prior = artifact([
+      opportunity("1501", { decision: "qualified", matchedRules: ["china_heat_ops"] })
+    ], { reportDate: "2026-07-09" });
+    const failedReceipt = {
+      ...successfulReceipt(prior),
+      status: "sync_failed",
+      sync_response: { synced: false },
+      created_count: 0
+    };
+
+    const retry = selectSteamReviewDeliveryCandidates({
+      artifact: current,
+      priorArtifacts: [prior],
+      priorReceipts: [failedReceipt],
+      mode: "scheduled"
+    });
+    assert.deepEqual(retry.candidates.map((item) => item.steam_app_id), ["1501"]);
+
+    const delivered = selectSteamReviewDeliveryCandidates({
+      artifact: current,
+      priorArtifacts: [prior],
+      priorReceipts: [successfulReceipt(prior)],
+      mode: "scheduled"
+    });
+    assert.deepEqual(delivered.candidates, []);
+    assert.equal(delivered.previouslyQualifiedCount, 1);
+
+    const replacementAtSamePath = artifact([
+      opportunity("1502", { decision: "qualified", matchedRules: ["china_heat_ops"] })
+    ], { reportDate: prior.report_date });
+    const retryReplacement = selectSteamReviewDeliveryCandidates({
+      artifact: replacementAtSamePath,
+      priorArtifacts: [replacementAtSamePath],
+      priorReceipts: [successfulReceipt(prior)],
+      mode: "scheduled"
+    });
+    assert.deepEqual(retryReplacement.candidates.map((item) => item.steam_app_id), ["1502"]);
   });
 
   it("never truncates qualified candidates and maps dual matches to one primary Lead", () => {
@@ -128,6 +172,7 @@ describe("Steam review opportunity V7.1 delivery", () => {
     assert.equal(result.preparation.catalog_scan_count, 2);
     assert.equal(result.preparation.qualified_count, 2);
     assert.equal(result.preparation.import_candidate_count, 2);
+    assert.equal(result.preparation.artifact_sha256, artifactSha256(current));
     assert.equal(result.preparation.collect_options.maxPages, undefined);
     assert.deepEqual(
       JSON.parse(readFileSync(result.importPayloadPath, "utf8")).push_pool.map((lead) => lead.steam_app_id),
@@ -168,6 +213,7 @@ describe("Steam review opportunity V7.1 delivery", () => {
       scan_complete: true,
       ready_for_sync: true,
       artifact_path: `data/steam_review_opportunities/${reportDate}.json`,
+      artifact_sha256: artifactSha256(artifact([])),
       import_payload_path: "data/runtime/import.json",
       catalog_scan_count: 20,
       catalog_entries_seen: 21,
@@ -195,6 +241,7 @@ describe("Steam review opportunity V7.1 delivery", () => {
     assert.equal(receipt.created_count, 5);
     assert.equal(receipt.updated_count, 0);
     assert.equal(receipt.sync_response.synced, true);
+    assert.equal(receipt.artifact_sha256, preparation.artifact_sha256);
     assert.doesNotThrow(() => validateSteamReviewOpportunityReceipt(receipt));
     assertValidSteamReceiptSchema(receipt);
 
@@ -284,6 +331,42 @@ function fakeAudit(current) {
     writeFileSync(outputPath, `${JSON.stringify(current, null, 2)}\n`, { encoding: "utf8", flag: "w" });
     return { artifact: current, outputPath };
   };
+}
+
+function successfulReceipt(sourceArtifact, options = {}) {
+  const date = sourceArtifact.report_date;
+  const mode = options.mode ?? "scheduled";
+  return {
+    schema_version: 1,
+    report_date: date,
+    run_slot: "fixture",
+    requested_mode: mode,
+    mode,
+    sourcing_run_type: mode === "backfill" ? "initial_backfill" : "scheduled",
+    status: "success",
+    scan_complete: true,
+    artifact_path: `data/steam_review_opportunities/${date}.json`,
+    artifact_sha256: artifactSha256(sourceArtifact),
+    catalog_scan_count: 1,
+    catalog_entries_seen: 1,
+    qualified_count: 1,
+    previously_qualified_count: 0,
+    import_candidate_count: 1,
+    deduplicated_count: 0,
+    created_count: 1,
+    updated_count: 0,
+    failure_reason: null,
+    run_id: "1",
+    run_number: "1",
+    run_url: "https://github.com/Neo0109/CRM/actions/runs/1",
+    head_sha: "fixture",
+    captured_at: "2026-07-16T00:00:00.000Z",
+    sync_response: { synced: true, created: 1, skipped_existing: 0, updated: 0 }
+  };
+}
+
+function artifactSha256(value) {
+  return createHash("sha256").update(`${JSON.stringify(value, null, 2)}\n`).digest("hex");
 }
 
 function assertValidDailyReport(report) {
