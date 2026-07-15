@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:52 CST
+Last updated: 2026-07-16 00:57 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation is in progress; the fixed-fixture source and pure-decision contract is green, and the standalone artifact/schema/writer contract is red for the expected missing artifact module only.
+Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 core implementation is complete: source, pure decision, dedicated artifact/schema/validator/writer, standalone runner, and fixed-fixture CI contract are green. Documentation alignment and final repository verification remain.
 
 ## Current Goal
 
@@ -96,10 +96,16 @@ Explicitly out of scope:
 - Focused source contract is green: 7/7. Combined new source, existing Steam source, and existing sourcing-candidate audit regression set is green: 21/21; standalone `git diff --check` is also green.
 - Added the focused artifact red contract for exact scan/decision counts, deterministic snake-case evidence shape, AppID uniqueness, raw-review/count integrity, false-complete rejection, sanitized dedicated-path writing, JSON-schema validation, the fixed-fixture Build entrypoint, and static proof that Daily/workflow/import/CRM paths do not consume this artifact.
 - Captured the artifact red run: `node --test automations/test/steamReviewOpportunityArtifact.test.mjs` fails only with `ERR_MODULE_NOT_FOUND` for the planned `steam_review_opportunity_artifact.mjs`.
+- Added the versioned `steam_review_opportunities` JSON schema and deterministic builder/integrity validator. It enforces scan/count parity, unique AppIDs, raw positive-plus-negative totals, calculated positive rate, exact language/purchase/source facts, EA two-fact qualification, both-rule/primary-lane consistency, and `scan_complete=false` whenever a source failure exists.
+- Added the dedicated writer through the existing recursive private-field sanitizer and the standalone `steam_review_opportunity_audit.mjs` runner. Its only default output is `data/steam_review_opportunities/YYYY-MM-DD.json`; bounded scans remain explicitly incomplete.
+- Added `validate-steam-review-opportunities.mjs`, root/automation package entrypoints, and a Build step that runs only the two fixed-fixture PR 5 tests. No production daily workflow, Daily generator, import job, or CRM sync path references the new artifact.
+- Restored ignored workspace dependencies with `npm install --package-lock=false`; no tracked lockfile or dependency artifact was created. The audit reported two pre-existing dependency vulnerabilities, which are unrelated and were not auto-fixed or widened into this PR.
+- Corrected null evidence preservation so an unavailable official review summary cannot become a synthetic `0%` value; the integrity contract now requires every unknown official metric to remain `null`.
+- Combined new source/artifact, existing Steam source, and existing sourcing-candidate audit regression set is green: 27/27. Dedicated JSON-schema validation and standalone `git diff --check` are green.
 
 ## Remaining
 
-- Implement the dedicated artifact builder/integrity validator/writer, JSON schema and CLI validator, standalone audit runner, package entrypoint, and fixed-fixture Build check until the artifact contract is green.
+- Document the exact source/artifact contract and dormant-until-PR-6 boundary in current sourcing-rule documentation.
 - Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
 - Audit the full diff against PLAN.md PR 5, push, open a ready PR to `main`, wait for all checks, resolve only in-scope failures, and verify clean mergeability plus zero unresolved review threads.
@@ -108,12 +114,19 @@ Explicitly out of scope:
 
 ## Next Action
 
-Implement only the approved dedicated artifact/schema/validator/writer/runner and fixed-fixture CI entrypoint against the captured red contract, run source plus artifact tests to green, update this checkpoint, and commit the artifact step.
+Commit the green artifact/runner/CI step, then update only the PR 5 source-contract and current-rule documentation before running the full focused, typecheck, contract, `verify:all`, and diff validation set.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main [ahead 4]
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 5]
+ M .github/workflows/build.yml
+ M automations/package.json
+ M automations/test/steamReviewOpportunityArtifact.test.mjs
  M docs/checkpoints/pr5-steam-schinese-review-source.md
-?? automations/test/steamReviewOpportunityArtifact.test.mjs
+ M package.json
+?? automations/jobs/steam_review_opportunity_artifact.mjs
+?? automations/jobs/steam_review_opportunity_audit.mjs
+?? schemas/steam_review_opportunities.schema.json
+?? scripts/validate-steam-review-opportunities.mjs
 ```

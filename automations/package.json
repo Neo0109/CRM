@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "audit:steam-reviews": "node jobs/steam_review_opportunity_audit.mjs",
     "daily:prompt": "tsx jobs/daily_scan.ts",
     "import:daily": "tsx jobs/import_to_crm.ts"
   },

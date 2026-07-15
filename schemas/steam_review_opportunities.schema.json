@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Steam Simplified-Chinese Review Opportunities Audit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_date",
+    "generated_at",
+    "source_contract",
+    "scan_summary",
+    "opportunities"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [1] },
+    "report_date": { "type": "string", "format": "date" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "source_contract": { "type": "string", "enum": ["steam-schinese-reviews-v1"] },
+    "scan_summary": { "$ref": "#/$defs/scanSummary" },
+    "opportunities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/opportunity" }
+    }
+  },
+  "$defs": {
+    "scanSummary": {
+      "type": "object",
+      "required": [
+        "scan_complete",
+        "pages_scanned",
+        "catalog_entries_seen",
+        "unique_apps_seen",
+        "reported_total",
+        "prefilter_matches",
+        "records_total",
+        "official_reviews_confirmed",
+        "store_details_confirmed",
+        "qualified",
+        "not_qualified",
+        "needs_evidence",
+        "source_failures"
+      ],
+      "properties": {
+        "scan_complete": { "type": "boolean" },
+        "pages_scanned": { "type": "integer", "minimum": 0 },
+        "catalog_entries_seen": { "type": "integer", "minimum": 0 },
+        "unique_apps_seen": { "type": "integer", "minimum": 0 },
+        "reported_total": { "type": ["integer", "null"], "minimum": 0 },
+        "prefilter_matches": { "type": "integer", "minimum": 0 },
+        "records_total": { "type": "integer", "minimum": 0 },
+        "official_reviews_confirmed": { "type": "integer", "minimum": 0 },
+        "store_details_confirmed": { "type": "integer", "minimum": 0 },
+        "qualified": { "type": "integer", "minimum": 0 },
+        "not_qualified": { "type": "integer", "minimum": 0 },
+        "needs_evidence": { "type": "integer", "minimum": 0 },
+        "source_failures": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourceFailure" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceFailure": {
+      "type": "object",
+      "required": ["stage", "steam_app_id", "message"],
+      "properties": {
+        "stage": { "type": "string", "enum": ["catalog", "reviews", "appdetails"] },
+        "steam_app_id": { "type": ["string", "null"], "pattern": "^[0-9]+$" },
+        "message": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "opportunity": {
+      "type": "object",
+      "required": [
+        "steam_app_id",
+        "project",
+        "store_url",
+        "catalog_review_summary",
+        "steam_review_summary",
+        "early_access",
+        "decision",
+        "matched_rules",
+        "primary_lane",
+        "missing_evidence",
+        "exclusion_reasons"
+      ],
+      "properties": {
+        "steam_app_id": { "type": "string", "pattern": "^[0-9]+$" },
+        "project": { "type": "string", "minLength": 1 },
+        "store_url": { "type": "string", "format": "uri" },
+        "catalog_review_summary": { "$ref": "#/$defs/catalogReviewSummary" },
+        "steam_review_summary": { "$ref": "#/$defs/steamReviewSummary" },
+        "early_access": { "$ref": "#/$defs/earlyAccess" },
+        "decision": { "type": "string", "enum": ["qualified", "not_qualified", "needs_evidence"] },
+        "matched_rules": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["ea_mobile_high_traction", "china_heat_ops"] }
+        },
+        "primary_lane": {
+          "type": ["string", "null"],
+          "enum": ["ea_mobile_high_traction", "china_heat_ops", null]
+        },
+        "missing_evidence": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "exclusion_reasons": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "catalogReviewSummary": {
+      "type": "object",
+      "required": ["status", "text", "total_reviews", "usage"],
+      "properties": {
+        "status": { "type": "string", "enum": ["available", "unknown"] },
+        "text": { "type": ["string", "null"] },
+        "total_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "usage": { "type": "string", "enum": ["prefilter_only"] }
+      },
+      "additionalProperties": false
+    },
+    "steamReviewSummary": {
+      "type": "object",
+      "required": [
+        "status",
+        "text",
+        "positive_reviews",
+        "negative_reviews",
+        "total_reviews",
+        "positive_rate",
+        "language",
+        "purchase_type",
+        "source_status"
+      ],
+      "properties": {
+        "status": { "type": "string", "enum": ["available", "unknown"] },
+        "text": { "type": ["string", "null"] },
+        "positive_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "negative_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "total_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "positive_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "language": { "type": "string", "enum": ["schinese"] },
+        "purchase_type": { "type": "string", "enum": ["all"] },
+        "source_status": { "type": "string", "enum": ["steam_appreviews", "not_fetched"] }
+      },
+      "additionalProperties": false
+    },
+    "earlyAccess": {
+      "type": "object",
+      "required": ["catalog_tag", "store_state", "confirmed_current"],
+      "properties": {
+        "catalog_tag": { "type": "string", "enum": ["yes", "no"] },
+        "store_state": { "type": "string", "enum": ["yes", "no", "unknown"] },
+        "confirmed_current": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

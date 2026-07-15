@@ -94,6 +94,36 @@ describe("Steam review opportunity audit artifact", () => {
     assert.throws(() => validateSteamReviewOpportunityArtifact(falseComplete), /scan_complete cannot be true/);
   });
 
+  it("preserves unknown official review metrics as null audit evidence", async () => {
+    const collection = await fixtureCollection();
+    collection.summary.scanComplete = false;
+    collection.summary.officialReviewsConfirmed = 3;
+    collection.summary.notQualified = 0;
+    collection.summary.needsEvidence = 1;
+    collection.summary.sourceFailures = [{ stage: "reviews", appId: "1002", message: "fixture unavailable" }];
+    collection.opportunities[0].reviewSummary = {
+      status: "unknown",
+      text: null,
+      positiveReviews: null,
+      negativeReviews: null,
+      totalReviews: null,
+      positiveRate: null,
+      language: "schinese",
+      purchaseType: "all",
+      sourceStatus: "not_fetched"
+    };
+    collection.opportunities[0].decision = "needs_evidence";
+    collection.opportunities[0].matchedRules = [];
+    collection.opportunities[0].primaryLane = null;
+    collection.opportunities[0].missingEvidence = ["steam_schinese_review_summary"];
+    collection.opportunities[0].exclusionReasons = [];
+
+    const artifact = buildSteamReviewOpportunityArtifact({ reportDate, generatedAt, collection });
+    assert.equal(artifact.opportunities[0].steam_review_summary.positive_rate, null);
+    assert.equal(artifact.opportunities[0].steam_review_summary.total_reviews, null);
+    assert.doesNotThrow(() => validateSteamReviewOpportunityArtifact(artifact));
+  });
+
   it("writes only the dedicated audit path through the private-field sanitizer", async () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), "crm-steam-review-audit-"));
     const collection = await fixtureCollection();
