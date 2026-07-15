@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.8 quality quarantine.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V7.0 indie admission.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -19,9 +19,7 @@ import { recordReleaseWindowHealth } from "./online_daily_v4_source_health.mjs";
 import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalToRadarItem } from "./online_daily_v4_reports.mjs";
 import {
   buildDailyRuleConfig,
-  isQualityQuarantineRule,
   loadDailyRules,
-  quarantineDailyLeadPools,
   RULE_VERSION,
   validateDailyRules
 } from "./online_daily_v4_rules.mjs";
@@ -31,7 +29,7 @@ import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
 const rootDir = process.cwd();
 const sourcingRuleVersion = RULE_VERSION;
-const generatorName = "online_daily_v4_sourcing_rules_v6_8_quality_quarantine";
+const generatorName = "online_daily_v4_sourcing_rules_v7_0_quality_gated_indie";
 const args = parseArgs(process.argv.slice(2));
 const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
 validateDailyRules(dailyRules);
@@ -41,9 +39,6 @@ const capturedAt = nowInShanghaiIso();
 const requestedMaxCandidates = Number(args.maxCandidates ?? 320);
 const maxCandidates = Number.isFinite(requestedMaxCandidates) ? Math.min(Math.max(requestedMaxCandidates, 80), 360) : 320;
 const maxSteamDetails = boundedNumber(args.maxSteamDetails, 90, 40, 160);
-const minReviewLeads = boundedNumber(args.minReviewLeads, 18, 8, 48);
-const minReviewBackfillScore = boundedNumber(args.minReviewBackfillScore, 18, 8, 48);
-const minMediaLeadsWhenHealthy = boundedNumber(args.minMediaLeads, 10, 4, 30);
 const maxBilibiliLeadAgeDays = boundedNumber(args.maxBilibiliLeadAgeDays, ruleConfig.mediaQualityGates.maxBilibiliLeadAgeDays, 14, 365);
 const maxOfficialLookups = boundedNumber(args.maxOfficialLookups, 12, 0, 30);
 const maxExactSteamLookups = boundedNumber(args.maxExactSteamLookups, 12, 0, 30);
@@ -114,8 +109,8 @@ if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
 }
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
-const candidatePools = buildPools(enrichedCandidates, mediaLeadCandidates, { reportDate, minReviewLeads, minReviewBackfillScore });
-const pools = quarantineDailyLeadPools(candidatePools, sourcingRuleVersion);
+const candidatePools = buildPools(enrichedCandidates, mediaLeadCandidates, { reportDate });
+const pools = candidatePools;
 let volumeDiagnostics;
 try {
   volumeDiagnostics = validateDailyVolume({
@@ -125,9 +120,7 @@ try {
     rawCandidateCount: rawCandidates.length,
     enrichedCandidateCount: enrichedCandidates.length,
     diagnostics: sourcingDiagnostics,
-    minReviewLeads,
-    minMediaLeadsWhenHealthy,
-    ruleVersion: sourcingRuleVersion
+    newQualifiedCount: pools.new_qualified_count
   });
 } catch (error) {
   const failurePayload = generationFailurePayload({
@@ -140,9 +133,6 @@ try {
     mediaSignals,
     mediaLeadCandidates,
     pools,
-    minReviewLeads,
-    minMediaLeadsWhenHealthy,
-    minReviewBackfillScore,
     sourcingDiagnostics
   });
   await writeJson(`data/runtime/${reportDate}-generation-failure.json`, failurePayload);
@@ -204,11 +194,9 @@ console.log(JSON.stringify({
     excluded: sourcingCandidateArtifact.scan_summary.excluded
   },
   max_steam_details: maxSteamDetails,
-  min_review_leads: minReviewLeads,
-  min_review_backfill_score: minReviewBackfillScore,
-  min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
-  quality_quarantine: isQualityQuarantineRule(sourcingRuleVersion),
-  quarantined_candidate_pool: {
+  new_qualified_count: pools.new_qualified_count,
+  qualified_push_parity: pools.new_qualified_count === pools.push.length,
+  qualified_candidate_pool: {
     push: candidatePools.push.length,
     watch: candidatePools.watch.length,
     drop: candidatePools.drop.length
@@ -362,9 +350,6 @@ function generationFailurePayload({
   mediaSignals,
   mediaLeadCandidates,
   pools,
-  minReviewLeads,
-  minMediaLeadsWhenHealthy,
-  minReviewBackfillScore,
   sourcingDiagnostics
 }) {
   return {
@@ -380,9 +365,8 @@ function generationFailurePayload({
     industry_signals: industrySignals.length,
     media_signals_seen: mediaSignals.length,
     media_lead_candidates: mediaLeadCandidates.length,
-    min_review_leads: minReviewLeads,
-    min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
-    min_review_backfill_score: minReviewBackfillScore,
+    new_qualified_count: pools.new_qualified_count,
+    push_pool_count: pools.push.length,
     push_pool: pools.push.length,
     watch_pool: pools.watch.length,
     drop_pool: pools.drop.length,

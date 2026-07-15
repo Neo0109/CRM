@@ -1,5 +1,3 @@
-import { isLeadCountHealthEnabled } from "./online_daily_v4_rules.mjs";
-
 export function validateDailyVolume({
   pools,
   mediaSignals,
@@ -7,43 +5,37 @@ export function validateDailyVolume({
   rawCandidateCount,
   enrichedCandidateCount,
   diagnostics,
-  minReviewLeads,
-  minMediaLeadsWhenHealthy,
-  ruleVersion,
-  logger = console
+  newQualifiedCount
 }) {
-  const issues = [];
-  const leadCountHealthEnabled = isLeadCountHealthEnabled(ruleVersion);
-  const reviewCount = pools.push.length + pools.watch.length;
-  if (leadCountHealthEnabled && reviewCount < minReviewLeads) {
-    issues.push({
-      code: "review_leads_low",
-      message: `Daily review candidate count low: push+watch=${reviewCount}, expected >= ${minReviewLeads}. Steam raw=${rawCandidateCount}, enriched=${enrichedCandidateCount}, media_leads=${mediaLeadCandidates.length}, media_raw=${diagnostics.media_signals_raw}, stale_filtered=${diagnostics.media_stale_filtered}, banned_filtered=${diagnostics.media_banned_filtered}, low_score_filtered=${diagnostics.media_low_score_filtered}, non_product_filtered=${diagnostics.media_non_product_filtered}, duplicate_filtered=${diagnostics.media_duplicate_filtered}. Publishing a degraded report with diagnostics.`,
-    });
-  }
-
+  const pushPoolCount = pools.push.length;
+  const qualifiedCount = Number.isInteger(newQualifiedCount)
+    ? newQualifiedCount
+    : Number.isInteger(pools.new_qualified_count)
+      ? pools.new_qualified_count
+      : pushPoolCount;
+  const qualifiedPushParity = qualifiedCount === pushPoolCount;
+  const issues = qualifiedPushParity
+    ? []
+    : [{
+        code: "qualified_push_mismatch",
+        message: `V7 admission parity failed: new_qualified_count=${qualifiedCount}, push_pool_count=${pushPoolCount}.`
+      }];
   const domesticSignalCount = mediaSignals.filter((item) => {
     const focus = new Set(item.source_focus ?? []);
     return focus.has("domestic_sourcing") || focus.has("bilibili");
   }).length;
-  if (leadCountHealthEnabled && domesticSignalCount >= 18 && mediaLeadCandidates.length < minMediaLeadsWhenHealthy) {
-    issues.push({
-      code: "domestic_media_leads_low",
-      message: `Domestic media/Bilibili lead extraction low: media_leads=${mediaLeadCandidates.length}, expected >= ${minMediaLeadsWhenHealthy} when domestic signals=${domesticSignalCount}. Official hits=${diagnostics.bilibili_official_source_hits}, expanded_candidates=${diagnostics.media_expanded_product_candidates}, rescue_candidates=${diagnostics.media_rescue_product_candidates}, released_routed_to_drop=${diagnostics.media_released_routed_to_drop}. Publishing a degraded report with diagnostics.`,
-    });
-  }
-  const warnings = issues.map((issue) => issue.message);
   const volumeDiagnostics = {
-    ok: issues.length === 0,
-    degraded: issues.length > 0,
+    ok: qualifiedPushParity,
+    degraded: false,
     issues,
-    warnings,
-    leadCountHealthEnabled,
-    reviewCount,
-    minReviewLeads,
+    warnings: [],
+    leadCountHealthEnabled: false,
+    qualifiedPushParity,
+    newQualifiedCount: qualifiedCount,
+    pushPoolCount,
+    reviewCount: pools.push.length + pools.watch.length,
     domesticSignalCount,
     mediaLeadCount: mediaLeadCandidates.length,
-    minMediaLeadsWhenHealthy,
     rawCandidateCount,
     enrichedCandidateCount,
     mediaSignalsRaw: diagnostics.media_signals_raw,
@@ -55,10 +47,14 @@ export function validateDailyVolume({
     bilibiliOfficialSourceHits: diagnostics.bilibili_official_source_hits,
     mediaExpandedProductCandidates: diagnostics.media_expanded_product_candidates,
     mediaRescueProductCandidates: diagnostics.media_rescue_product_candidates,
-    mediaReleasedRoutedToDrop: diagnostics.media_released_routed_to_drop,
+    mediaReleasedRoutedToDrop: diagnostics.media_released_routed_to_drop
   };
 
-  for (const warning of warnings) logger.warn(warning);
+  if (!qualifiedPushParity) {
+    const error = new Error(issues[0].message);
+    error.volumeDiagnostics = volumeDiagnostics;
+    throw error;
+  }
 
   return volumeDiagnostics;
 }

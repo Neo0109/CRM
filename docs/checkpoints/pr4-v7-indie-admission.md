@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:36 CST
+Last updated: 2026-07-15 23:43 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, shared candidate-audit decision, and existing-source evidence projection are implemented and narrowly green. Active machine-rule/version activation, count-health removal, documentation, and final verification remain.
+Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, shared candidate-audit decision, existing-source evidence projection, active machine/human rule chain, and focused activation/health contract are implemented and narrowly green. Workflow/watchdog/heartbeat cleanup, stale-test alignment, and final verification remain.
 
 ## Current Goal
 
@@ -107,22 +107,33 @@ Explicitly out of scope:
 - Steam source projection test is green: 8/8; focused V7 admission test is green: 9/9; combined source/admission set is green: 17/17.
 - Recovered the interrupted worktree on `codex/pr4-v7-indie-admission`, confirmed remote `main` is unchanged from the PR 4 baseline, no PR already exists for this branch, and only unrelated PR `#71` is open.
 - Added the focused V7 activation/health contract test and captured the expected red run: 0/5 passed because the canonical V7 rule doc is absent, V6.8 quarantine is still active, report text is still V6.8, qualified/push parity is not enforced, and the sourcing-candidate schema does not yet allow the parity counts.
+- Activated `sourcing-rules-v7.0-quality-gated-indie` in the runtime loader, machine rule, generator identity, current-rule pointer, new canonical `docs/SOURCING_RULES_V7_0.md`, Daily/Radar/Steam Trends text, and candidate schema/contract.
+- Removed V6.8 publication quarantine and formal-count generator arguments from the active generator, kept V6.8 helpers only for historical compatibility, and made `new_qualified_count === push_pool_count` a blocking generation and Daily-contract invariant.
+- Focused V7 activation/health contract is green: 5/5, including a real zero-formal-Lead Daily contract fixture and an explicit parity-mismatch failure.
 
 ## Remaining
 
-- Activate the V7.0 machine/human rule chain and report text; remove formal-count CLI/validator/watchdog/heartbeat/workflow/runbook behavior and add candidate-summary parity schema/contract checks.
+- Remove formal-count arguments and warnings from workflows, local watchdog, Cloudflare heartbeat, and runbook; add V7 parity health checks and align only the now-stale V6.8/quantity assertions.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
 - Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
 
 ## Next Action
 
-Make the focused V7 activation/health contract green by activating the machine/human rule chain and report text, disabling only V6.8 quarantine/formal-count behavior, enforcing qualified/push parity, and extending the sourcing-candidate schema for the two parity counts.
+Update the two production workflows, local watchdog, Cloudflare heartbeat, cloud runbook, and their focused tests so formal Lead quantity never degrades health or dispatches recovery while missing artifacts, invalid JSON, strict synced receipts, and V7 qualified/push parity remain blocking.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 5]
+## codex/pr4-v7-indie-admission...origin/main [ahead 6]
+ M automations/jobs/online_daily_v4.mjs
+ M automations/jobs/online_daily_v4_reports.mjs
+ M automations/jobs/online_daily_v4_rules.mjs
+ M automations/jobs/online_daily_v4_volume.mjs
+ M automations/rules/daily-report.json
  M docs/checkpoints/pr4-v7-indie-admission.md
-?? automations/test/onlineDailyV7Activation.test.mjs
+ M docs/SOURCING_RULES_CURRENT.md
+ M schemas/sourcing_candidates.schema.json
+ M scripts/validate-daily-contract.mjs
+?? docs/SOURCING_RULES_V7_0.md
 ```
