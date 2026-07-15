@@ -28,6 +28,7 @@ export type {
 export {
   buildLeadDedupeIndex,
   isDailyReport,
+  leadsForExport,
   leadsFromReport,
   toCsv
 } from "./leadModel";

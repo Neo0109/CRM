@@ -6,7 +6,7 @@ Authoritative plan: `/Users/neo/Downloads/PLAN.md`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: PR 2 Step 1 nullable-priority UI workflow is implemented, narrowly verified, and ready to commit. Step 2 export serialization remains.
+Phase status: PR 2 Steps 1 and 2 are implemented and narrowly verified. Final repository validation remains before publication.
 
 ## Current Goal
 
@@ -54,36 +54,34 @@ Explicitly out of scope:
 - Step 1 red test: 0/4 passed before implementation, with failures for literal `null 低`, unsorted null priority, missing filter behavior, and missing editor wiring.
 - Step 1 green test: 4/4 passed.
 - Related frontend regression tests passed 32/32; frontend typecheck passed; `git diff --check` passed.
+- Committed Step 1 as `aff86ea` (`feat: add nullable priority UI workflow`).
+- Added a canonical non-mutating export projection that keeps the stored/API priority contract nullable while rendering an unlabeled priority as an empty string in human JSON exports.
+- Routed both Cloud Functions and the local backend JSON export through the canonical projection; existing CSV and Excel serializers continue to render null values as empty cells.
+- Added `functions/test/priorityExport.test.ts` covering Cloud JSON/CSV/Excel behavior, projection immutability, and local-backend parity.
+- Step 2 red test: 0/3 passed before implementation because JSON emitted `"priority": null`, the canonical projection was absent, and the local backend did not use it.
+- Step 2 green test: 3/3 passed.
+- Related Functions/backend/Excel regression tests passed 27/27; Functions and backend typechecks passed; `git diff --check` passed.
 
 ## Remaining
 
-- Commit verified Step 1.
-- Implement and verify Step 2 export serialization so null priority is blank in human exports and never emitted as the literal priority value `null`.
+- Commit verified Step 2.
 - Run focused frontend tests, frontend typecheck, relevant contract/schema checks, frontend production build, `npm run verify:all`, and `git diff --check`.
 - Push, open a ready PR to `main`, wait for CI, verify scope/mergeability/reviews, and squash merge when clean.
 - Verify merged `main`, Build/deployment, production `/api/health`, and browser acceptance; record final evidence here and stop.
 
 ## Next Action
 
-Commit Step 1, then add the smallest failing export-contract tests and implement only the priority export presentation required by PR 2.
+Commit Step 2, then run all PLAN.md final verification without entering PR 3.
 
 ## Git Status
 
 ```text
-## codex/pr2-priority-ui...origin/main [ahead 1]
- M app/frontend/src/CalendarLauncher.tsx
- M app/frontend/src/ManualImportPage.tsx
- M app/frontend/src/WeeklyReportLauncher.tsx
- M app/frontend/src/assistantQuality.ts
- M app/frontend/src/features/leads/LeadDetail.tsx
- M app/frontend/src/features/leads/LeadsView.tsx
- M app/frontend/src/features/leads/leadConstants.ts
- M app/frontend/src/features/leads/leadFilters.ts
- M app/frontend/src/followUpQueue.ts
- M app/frontend/src/funnel-workflow.css
- M app/frontend/src/leadTriage.ts
- M app/frontend/src/types.ts
+## codex/pr2-priority-ui...origin/main [ahead 2]
+ M app/backend/src/lib/backendLeadModel.ts
+ M app/backend/src/server.ts
+ M functions/_lib/crm.ts
+ M functions/_lib/leadModel.ts
+ M functions/api/export/json.ts
  M docs/checkpoints/pr2-priority-ui.md
-?? app/frontend/src/leadPriority.ts
-?? app/frontend/test/priorityWorkflow.test.mjs
+?? functions/test/priorityExport.test.ts
 ```

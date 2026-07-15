@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   backendLeadsFromReport,
+  backendLeadsForExport,
   backendToCsv,
   createOnlyBackendIncomingLeads,
   mergeBackendIncomingLeads,
@@ -157,7 +158,7 @@ app.get("/api/export/json", async (_req, res, next) => {
     const leads = await readLeads();
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Content-Disposition", "attachment; filename=sourcing-leads.json");
-    res.send(JSON.stringify(leads, null, 2));
+    res.send(JSON.stringify(backendLeadsForExport(leads), null, 2));
   } catch (error) {
     next(error);
   }
