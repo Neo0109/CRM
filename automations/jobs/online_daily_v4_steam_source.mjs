@@ -1,6 +1,13 @@
 import { scoreCandidate } from "./online_daily_v4_decision.mjs";
 import { fetchJson, fetchText } from "./online_daily_v4_network.mjs";
 import {
+  buildSteamOfficialDemoEvidence,
+  buildSteamOfficialGameplayEvidence,
+  buildVerifiedPublicQualityProofs,
+  deriveConcreteChinaBilibiliValue,
+  deriveExplicitChinaDemandEvidence
+} from "./online_daily_v7_indie_admission.mjs";
+import {
   addContact,
   cleanExtractedText,
   daysUntil,
@@ -239,6 +246,16 @@ export async function enrichSteamCandidate(candidate, details, context = {}) {
   const mobileAdaptationPotential = hasMobileAdaptationPotential(text, genres, categories);
   const contactMethods = await collectContactMethodsImpl(details, candidate.appId);
   const score = scoreCandidateImpl({ source: candidate.source, domestic, domesticLens: Boolean(candidate.domesticLens), domesticQuery: Boolean(candidate.domesticQuery), hasDemoSignal, strongGameplay, highVisual, strongData, validatedPcHit, mobileAdaptationPotential, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
+  const officialDemoEvidence = buildSteamOfficialDemoEvidence(details, candidate.appId);
+  const officialGameplayEvidence = buildSteamOfficialGameplayEvidence(details);
+  const qualityProofs = buildVerifiedPublicQualityProofs(details, candidate.appId);
+  const chinaBilibiliValue = deriveConcreteChinaBilibiliValue(`${genres.join(" ")} ${categories.join(" ")}`);
+  const chinaDemandEvidence = deriveExplicitChinaDemandEvidence(
+    details?.short_description,
+    details?.detailed_description,
+    details?.about_the_game,
+    details?.supported_languages
+  );
 
   return {
     appId: candidate.appId,
@@ -273,6 +290,11 @@ export async function enrichSteamCandidate(candidate, details, context = {}) {
     recommendationCount: details?.recommendations?.total ?? 0,
     screenshotCount: details?.screenshots?.length ?? 0,
     movieCount: details?.movies?.length ?? 0,
+    officialDemoEvidence,
+    officialGameplayEvidence,
+    qualityProofs,
+    chinaBilibiliValue,
+    chinaDemandEvidence,
     reviewText: candidate.reviewText ?? "",
     domesticQuery: Boolean(candidate.domesticQuery),
     releaseTooSoon,

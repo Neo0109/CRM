@@ -14,84 +14,97 @@ import {
   RULE_VERSION
 } from "../jobs/online_daily_v4_rules.mjs";
 import { validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
+import { INDIE_PRELAUNCH_GATE_IDS, INDIE_PRELAUNCH_RULE_VERSION } from "../jobs/online_daily_v7_indie_admission.mjs";
 
-const QUALITY_QUARANTINE_RULE_VERSION = "sourcing-rules-v6.8-quality-quarantine";
-const emptyPools = () => ({ push: [], watch: [], drop: [] });
+const emptyPools = () => ({ push: [], watch: [], drop: [], new_qualified_count: 0 });
 
-describe("online daily v4 quality quarantine", () => {
-  it("keeps V6.8 quarantine historical while V7 is the active rule", () => {
+describe("online Daily V7.0 activation", () => {
+  it("uses one executable V7.0 rule across runtime, machine rules, docs, and generator", () => {
     const machineRules = JSON.parse(readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8"));
     const currentRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_CURRENT.md", import.meta.url), "utf8");
+    const canonicalRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_V7_0.md", import.meta.url), "utf8");
     const generator = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
-    const contractValidator = readFileSync(new URL("../../scripts/validate-daily-contract.mjs", import.meta.url), "utf8");
 
-    assert.notEqual(RULE_VERSION, QUALITY_QUARANTINE_RULE_VERSION);
-    assert.equal(machineRules.rule_version, RULE_VERSION);
+    assert.equal(RULE_VERSION, INDIE_PRELAUNCH_RULE_VERSION);
+    assert.equal(machineRules.rule_version, INDIE_PRELAUNCH_RULE_VERSION);
+    assert.equal(machineRules.canonical_rules_doc, "docs/SOURCING_RULES_V7_0.md");
+    assert.deepEqual(machineRules.indie_prelaunch_admission, {
+      active: true,
+      sourcing_lane: "indie_prelaunch",
+      required_gate_ids: INDIE_PRELAUNCH_GATE_IDS,
+      all_gates_required: true,
+      qualified_route: "push_pool",
+      unqualified_route: "sourcing_candidates",
+      automatic_priority: null,
+      formal_lead_minimum: null,
+      formal_lead_maximum: null,
+      watch_pool_enabled: false,
+      drop_pool_enabled: false,
+      invariant: "new_qualified_count === push_pool_count"
+    });
     assert.equal("quality_quarantine" in machineRules, false);
-    assert.match(currentRulesDoc, /Historical V6\.8 Quality Quarantine/);
     assert.match(currentRulesDoc, /sourcing-rules-v7\.0-quality-gated-indie/);
+    assert.match(currentRulesDoc, /SOURCING_RULES_V7_0\.md/);
+    assert.match(canonicalRulesDoc, /new_qualified_count === push_pool_count/);
     assert.match(generator, /const sourcingRuleVersion = RULE_VERSION/);
-    assert.doesNotMatch(generator, /quarantineDailyLeadPools/);
-    assert.doesNotMatch(contractValidator, /isLeadCountHealthEnabled\(RULE_VERSION\)/);
+    assert.doesNotMatch(generator, /quarantineDailyLeadPools|minReviewLeads|minReviewBackfillScore|minMediaLeadsWhenHealthy/);
   });
 
-  it("publishes no Daily Lead pools only for the explicit quarantine rule without mutating candidates", () => {
+  it("leaves V6.8 quarantine historical while active V7.0 publishes its qualified pools", () => {
     const candidatePools = {
-      push: [{ project: "Push" }],
-      watch: [{ project: "Watch" }],
-      drop: [{ project: "Drop" }]
+      push: [{ project: "Qualified" }],
+      watch: [],
+      drop: [],
+      new_qualified_count: 1
     };
 
     assert.equal(isQualityQuarantineRule(RULE_VERSION), false);
-    assert.equal(isQualityQuarantineRule(QUALITY_QUARANTINE_RULE_VERSION), true);
     assert.equal(isLeadCountHealthEnabled(RULE_VERSION), false);
-    assert.equal(isLeadCountHealthEnabled(QUALITY_QUARANTINE_RULE_VERSION), false);
     assert.equal(quarantineDailyLeadPools(candidatePools, RULE_VERSION), candidatePools);
-    assert.deepEqual(quarantineDailyLeadPools(candidatePools, QUALITY_QUARANTINE_RULE_VERSION), emptyPools());
-    assert.deepEqual(candidatePools, {
-      push: [{ project: "Push" }],
-      watch: [{ project: "Watch" }],
-      drop: [{ project: "Drop" }]
+    assert.deepEqual(quarantineDailyLeadPools(candidatePools, "sourcing-rules-v6.8-quality-quarantine"), {
+      push: [],
+      watch: [],
+      drop: []
     });
-    assert.equal(quarantineDailyLeadPools(candidatePools, "sourcing-rules-v6.7-non-game-animation-gate"), candidatePools);
   });
 
-  it("keeps Daily, Radar, and Steam Trends artifacts buildable with empty published Lead pools", () => {
+  it("keeps all three public report artifacts buildable when zero projects qualify", () => {
     const pools = emptyPools();
     const report = buildDailyReport({
       pools,
       rawCount: 12,
       enrichedCount: 8,
       mediaLeadCount: 3,
-      reportDate: "2026-07-15",
-      diagnostics: { bilibili_official_source_hits: 1 }
+      reportDate: "2026-07-16",
+      diagnostics: { bilibili_official_source_hits: 1, bilibili_probe: {} }
     });
     const radar = buildRadarReport({
       candidates: [],
       pools,
       industrySignals: [{ title: "External signal", source: "GameLook", link: "https://example.com/news" }],
-      reportDate: "2026-07-15",
-      capturedAt: "2026-07-15T12:00:00+08:00",
+      reportDate: "2026-07-16",
+      capturedAt: "2026-07-16T08:00:00+08:00",
       mediaSignalToRadarItem: (item) => ({
         id: "radar_external",
         category: "行业新闻",
         title: item.title,
         source: item.source,
         link: item.link,
-        captured_at: "2026-07-15T12:00:00+08:00"
+        captured_at: "2026-07-16T08:00:00+08:00"
       })
     });
     const steamTrends = buildSteamTrendReport({
       candidates: [],
       pools,
-      reportDate: "2026-07-15",
-      capturedAt: "2026-07-15T12:00:00+08:00"
+      reportDate: "2026-07-16",
+      capturedAt: "2026-07-16T08:00:00+08:00"
     });
 
     assert.deepEqual(report.push_pool, []);
     assert.deepEqual(report.watch_pool, []);
     assert.deepEqual(report.drop_pool, []);
-    assert.match(report.summary, /V7\.0 严格准入/);
+    assert.match(report.summary, /V7\.0/);
+    assert.doesNotMatch(report.summary, /质量隔离/);
     assert.equal(radar.items.length, 1);
     assert.ok(steamTrends.items.length >= 8);
     assert.ok(steamTrends.market_insights.length >= 3);
@@ -99,47 +112,53 @@ describe("online daily v4 quality quarantine", () => {
     assert.deepEqual(steamTrends.crm_candidates, []);
   });
 
-  it("keeps historical quarantine free of Lead-count diagnostics", () => {
-    const warnings = [];
+  it("treats formal Lead quantity as non-health while blocking qualified/push mismatch", () => {
+    const diagnostics = {
+      media_signals_raw: 18,
+      media_stale_filtered: 0,
+      media_banned_filtered: 0,
+      media_low_score_filtered: 0,
+      media_non_product_filtered: 0,
+      media_duplicate_filtered: 0,
+      bilibili_official_source_hits: 0,
+      media_expanded_product_candidates: 0,
+      media_rescue_product_candidates: 0,
+      media_released_routed_to_drop: 0
+    };
     const result = validateDailyVolume({
       pools: emptyPools(),
-      mediaSignals: Array.from({ length: 18 }, (_, index) => ({
-        title: `domestic ${index}`,
-        source_focus: ["domestic_sourcing"]
-      })),
+      mediaSignals: [],
       mediaLeadCandidates: [],
       rawCandidateCount: 40,
       enrichedCandidateCount: 20,
-      diagnostics: {
-        media_signals_raw: 18,
-        media_stale_filtered: 0,
-        media_banned_filtered: 0,
-        media_low_score_filtered: 0,
-        media_non_product_filtered: 0,
-        media_duplicate_filtered: 0,
-        bilibili_official_source_hits: 0,
-        media_expanded_product_candidates: 0,
-        media_rescue_product_candidates: 0,
-        media_released_routed_to_drop: 0
-      },
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      ruleVersion: QUALITY_QUARANTINE_RULE_VERSION,
-      logger: { warn: (message) => warnings.push(message) }
+      diagnostics,
+      newQualifiedCount: 0,
+      ruleVersion: RULE_VERSION,
+      logger: { warn: () => { throw new Error("formal count must not warn"); } }
     });
 
     assert.equal(result.ok, true);
     assert.equal(result.degraded, false);
     assert.equal(result.leadCountHealthEnabled, false);
+    assert.equal(result.qualifiedPushParity, true);
     assert.deepEqual(result.issues, []);
-    assert.deepEqual(result.warnings, []);
-    assert.deepEqual(warnings, []);
+
+    assert.throws(() => validateDailyVolume({
+      pools: { push: [], watch: [], drop: [], new_qualified_count: 1 },
+      mediaSignals: [],
+      mediaLeadCandidates: [],
+      rawCandidateCount: 1,
+      enrichedCandidateCount: 1,
+      diagnostics,
+      newQualifiedCount: 1,
+      ruleVersion: RULE_VERSION
+    }), /new_qualified_count=1.*push_pool_count=0/);
   });
 
-  it("passes the real Daily contract validator with four valid artifacts and zero formal Leads", () => {
-    const date = "2026-07-15";
-    const capturedAt = "2026-07-15T12:00:00+08:00";
-    const rootDir = mkdtempSync(path.join(tmpdir(), "crm-quality-quarantine-contract-"));
+  it("passes the real Daily contract with zero formal Leads and explicit V7 parity counts", () => {
+    const date = "2026-07-16";
+    const capturedAt = "2026-07-16T08:00:00+08:00";
+    const rootDir = mkdtempSync(path.join(tmpdir(), "crm-v7-indie-contract-"));
     const pools = emptyPools();
     const report = buildDailyReport({
       pools,
@@ -147,7 +166,7 @@ describe("online daily v4 quality quarantine", () => {
       enrichedCount: 8,
       mediaLeadCount: 3,
       reportDate: date,
-      diagnostics: { bilibili_official_source_hits: 1 }
+      diagnostics: { bilibili_official_source_hits: 1, bilibili_probe: {} }
     });
     const radar = buildRadarReport({
       candidates: [],
@@ -198,10 +217,7 @@ describe("online daily v4 quality quarantine", () => {
     ], { encoding: "utf8" });
 
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(result.stdout, /"ok": true/);
     assert.match(result.stdout, /"push": 0/);
-    assert.match(result.stdout, /"watch": 0/);
-    assert.match(result.stdout, /"drop": 0/);
     assert.match(result.stdout, /"sourcing_candidates": 0/);
   });
 });

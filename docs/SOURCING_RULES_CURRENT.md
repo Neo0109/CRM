@@ -2,12 +2,12 @@
 
 Date: 2026-07-15
 
-The current daily report rule version is `sourcing-rules-v6.8-quality-quarantine`.
+The current daily report rule version is `sourcing-rules-v7.0-quality-gated-indie`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V6.md
+docs/SOURCING_RULES_V7_0.md
 ```
 
 Machine-readable automation rule source:
@@ -24,7 +24,7 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V6.8 is an explicit quality-quarantine state. The normal source scan, evidence checks, Daily report, Industry Radar, Steam Trends, candidate audit, schema validation, and sync path remain active, but `push_pool`, `watch_pool`, `drop_pool`, and Steam Trends `crm_candidates` are published empty. A zero-Lead day is neither a failure nor `degraded` during this rule version. Missing/invalid artifacts, source failure, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V7.0 keeps broad discovery active and publishes every deduped `indie_prelaunch` project that passes all eleven mandatory gates to `push_pool` with `priority=null`. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 ## Operating Principle
 
@@ -42,21 +42,21 @@ Every important output should answer:
 
 ## Inbox Rule
 
-Automatic daily reports are discovery, not final human review. During V6.8 quality quarantine, no generated candidate is published into a formal Lead pool or the `未处理` inbox.
+Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that passes all V7.0 gates enters the formal `push_pool` and `未处理` inbox with `priority=null`.
 
-The scan preserves candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`, but the quarantine boundary empties every published Daily Lead pool. The candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
+The scan preserves all candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`. Failed or unknown candidates stay only there; the candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
 
 The default operating flow is efficiency-first: first test or inspect the game, then decide. If the game does not pass playtest/content judgment, move it to `淘汰池` immediately. Do not require the BD owner to补官网、邮箱、联系人或长资料 before the product itself has passed the first test.
 
-Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
+Contact methods must prefer real business touch points: official email, official site, official support URL, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. A Steam community discussion URL may remain a discovery fallback, but it does not satisfy the V7.0 non-Steam business-entry gate; do not invent contact details.
 
-Domestic media and Bilibili product signals are now first-class lead sources, not only radar background. If an article, video, Bilibili video-search result, TapTap/indienova page, official site, or developer post points to a concrete game, the automation may create a `未处理` lead with that original URL even when no Steam AppID exists yet. A named game plus edition approval, first reveal, playtest, Demo, trailer/PV, store page, reservation, developer post, or domestic studio/publisher context is enough for first-pass review.
+Domestic media and Bilibili product signals are first-class discovery sources, not only radar background. A named game or source label is never enough for formal publication: the normalized project must pass the same eleven V7.0 gates as a Steam candidate. A non-Steam project identity may be used for dedupe, but every other mandatory product, quality, contact, and China-value proof still applies.
 
 Bilibili search results must still be concrete games. Steam Next Fest signup tutorials, wishlist-growth data sharing, courses, or generic developer-experience videos are useful methodology references, but they should not be inserted into the lead queue as products.
 
-Already released projects must not enter push/watch candidates. They can only be dropped or used as market background unless a separate post-launch review is explicitly requested.
+Already released projects must not enter formal V7.0 pools. They remain excluded in the candidate audit or may be used as market background unless a separate post-launch review is explicitly requested.
 
-New candidates launching in fewer than 60 days must not enter push/watch candidates. Demo, playtest, or store-page-live signals only prove testability; they do not restore a meaningful BD cooperation window. Route near-launch items to `drop_pool` with `drop_reason = 窗口不合适` or keep them as market background unless the project is already in a human-owned CRM workflow.
+New candidates launching in fewer than 60 days must not enter formal V7.0 pools. Demo, playtest, or store-page-live signals only prove testability; they do not restore a meaningful BD cooperation window. Retain the failed window gate in the candidate audit or keep the project as market background unless it is already in a human-owned CRM workflow.
 
 For Bilibili video leads, the automation must do one more verification pass before creating a CRM candidate:
 
@@ -64,16 +64,16 @@ For Bilibili video leads, the automation must do one more verification pass befo
 - Treat recommendation-UP videos as discovery signals only. Search for matching official, developer, studio, or publisher Bilibili videos/posts and prefer those when they match the concrete project.
 - Extract Steam AppID, Steam store URL, official links, and real contact methods from the video description before writing the lead.
 - Extract Steam/TapTap/official/community links from any Bilibili description, media body, gameplay text, or source summary into structured `links`. Do not leave Steam store links buried inside long text fields.
-- Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released or launching in fewer than 60 days, it must not enter `push_pool` or `watch_pool`; route it to `drop_pool` or keep it as market background.
+- Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released or launching in fewer than 60 days, it must not enter a formal pool; retain the failed gate in the candidate audit or keep it as market background.
 - Do not treat `Demo 已上线`, `试玩上线`, `测试开启`, or `商店页已上线` as full release. Those are still valid review/test signals.
 - Deduplicate against existing CRM projects, Steam AppIDs, source URLs, and backend dedupe keys before creating a new lead. A slightly different Bilibili title for a previously sourced Steam product should enrich or be ignored, not create a duplicate.
 - Bilibili video signals must be timely. Old videos or old news should not create new leads unless they contain a current playable build, new demo, update, publishing window, or business-relevant event.
 
 Domestic products are the default sourcing priority. Domestic developer Demo/test signals are useful only while there is still a real cooperation window, because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better before the launch window closes.
 
-Overseas products should only consume review slots when they have PC data validation and a credible mobile-adaptation angle. Creative novelty alone is not enough.
+Overseas products require independent public-quality proof, a concrete China/Bilibili value case, and explicit official China demand. Creative novelty or a generic mobile-adaptation idea alone is not enough.
 
-The 60-day window is a hard filter for fresh automation-sourced leads. Domestic products can be discovered earlier or over a longer horizon, but if the confirmed release date is fewer than 60 days away, the lead is no longer a fresh BD opportunity and should not consume review slots.
+The 60-day window is a hard filter for fresh automation-sourced leads. Domestic products can be discovered earlier or over a longer horizon, but if the confirmed release date is fewer than 60 days away, the project remains outside formal pools and only its candidate-audit decision is retained.
 
 ## Update Protocol
 
@@ -96,7 +96,7 @@ The online generator must preserve the product intent of these rules:
 - Domestic Steam keyword searches must use actual search-term filtering, not just China-locale generic popular lists.
 - The same Steam AppID should keep the strongest discovery source, especially domestic keyword, Demo, or Next Fest signals.
 - Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
-- V6.8 must keep scanning broad enough for source and evidence diagnostics, but it must not publish candidates or use a minimum recommendation count as a health signal.
+- V7.0 must keep scanning broad enough for source and evidence diagnostics, publish every and only fully qualified project, and never use a minimum or maximum recommendation count as a health signal.
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 - Daily generation must write a schema-validated candidate audit with one deduped record per Steam AppID or normalized project key, explicit `formal | candidate | excluded` decisions, unknown evidence, matched rules, and exclusion reasons. Only the Daily report pools are eligible for CRM synchronization.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
@@ -114,15 +114,15 @@ The online generator must preserve the product intent of these rules:
 
 Domestic media and Bilibili sources now feed both the radar and the lead generator through structured evidence. The next calibration task is production monitoring: confirm successful receipts keep `steam_evidence_lost = 0` and review any exact-title lookup misses without weakening the integrity gate.
 
-## V6 Low-Volume Fix (superseded during V6.8 quarantine)
+## Historical V6 Low-Volume Fix (superseded by V7.0)
 
-Before V6.8, V6 treated a tiny daily queue as a degraded quality signal. V6.8 suspends that Lead-count health rule while preserving the non-Lead artifact checks below.
+Earlier V6 versions treated a tiny daily queue as a degraded quality signal. V7.0 permanently removes formal Lead quantity from health while preserving the non-Lead artifact checks below.
 
-The cloud workflow now passes stricter generation thresholds:
+Historical cloud thresholds were:
 
 - Steam scan budget: `260`
-- Historical target `push_pool + watch_pool`: `18`（V6.8 不执行，不触发失败或 degraded）
-- Historical minimum media/Bilibili leads when domestic signals are healthy: `10`（V6.8 不执行）
+- Historical target `push_pool + watch_pool`: `18`（V7.0 已删除）
+- Historical minimum media/Bilibili leads when domestic signals are healthy: `10`（V7.0 已删除）
 
 The generator now uses both strict and expanded domestic media/Bilibili extraction. Expanded candidates may enter `未处理` when they point to a concrete product moment, even if the project name later needs manual cleanup. Obvious non-products such as tutorials, wishlist-growth lessons, recruitment, financial reports, discounts, hardware posts, and generic ranking filler remain excluded.
 
@@ -192,9 +192,9 @@ V6.7 adds one narrow semantic gate for standalone animation/series signals witho
 - Existing scoring, source queries, Steam resolution, dedupe, release-window logic, CRM schema/UI, product version, and existing Lead records remain unchanged.
 - The runner imports the exported rule version used by the loader so a rule bump cannot leave the cloud wrapper on a stale hard-coded version.
 
-## V6.8 Quality Quarantine
+## Historical V6.8 Quality Quarantine
 
-V6.8 is a temporary publication boundary while the next qualification rules are implemented separately.
+V6.8 was the temporary publication boundary before V7.0 activation. It remains documented only for historical receipts and regression compatibility.
 
 - Continue the normal Steam and media/Bilibili scan, evidence normalization, dedupe, and source-health checks.
 - Continue generating the dated Daily report, Industry Radar, Steam Trends, and `data/sourcing_candidates/YYYY-MM-DD.json` candidate-audit artifacts.
@@ -203,7 +203,16 @@ V6.8 is a temporary publication boundary while the next qualification rules are 
 - Do not restore quantity backfill, P3-to-P2 promotion, or minimum recommendation counts.
 - Keep empty source output, missing files, schema damage, write failure, sync failure, and the strict successful-receipt contract blocking.
 - Keep the candidate audit outside every automatic CRM import path; it is an observability artifact for source, decision, and exclusion evidence only.
-- Keep workflow triggers limited to `schedule` and `workflow_dispatch`; V6.8 does not change product code, UI, CRM schema, existing Leads, or production data.
+- Workflow triggers remained limited to `schedule` and `workflow_dispatch`; V6.8 did not change product code, UI, CRM schema, existing Leads, or production data.
+
+## V7.0 Quality-Gated Indie Admission
+
+- All eleven gate IDs and their evidence meaning are canonical in `docs/SOURCING_RULES_V7_0.md` and mirrored by `automations/rules/daily-report.json`.
+- Scores, labels, tags, screenshots, movies, and field completeness can order discovery only; they cannot compensate for a failed or unknown gate.
+- Every qualified deduped project enters `push_pool`; `watch_pool` and `drop_pool` remain empty for new V7.0 decisions.
+- Every unqualified project remains only in the sourcing-candidate audit with missing gate IDs or hard exclusion reasons.
+- Automatic priority stays `null`, and `new_qualified_count === push_pool_count` is a blocking contract.
+- Formal Lead count has no minimum, maximum, cap, backfill, truncation, or health threshold.
 
 ## Source Health And Calibration
 
@@ -212,4 +221,4 @@ Each cloud run records fetch attempts, successes, failures, raw signals, retaine
 - Bilibili `412`/`429` and transient server responses use capped backoff instead of immediate source loss. Keyword sources may use an explicit configured fallback query after retries are exhausted.
 - Request concurrency and inter-batch delay are configured in `automations/rules/bilibili-probe.json`; they must remain capped so one run does not amplify rate limiting.
 - Sources that repeatedly fail from GitHub Actions are disabled explicitly with a reason instead of producing the same warning every day. `游戏茶馆` uses its reachable homepage; the unreachable `手游那点事`, legacy GamesBeat feed, and GitHub-egress-blocked `澎湃新闻` source stay disabled until a verified replacement exists.
-- The historical 18-candidate target is suspended as a health signal during V6.8 quality quarantine. The 60-day rule remains unchanged for now, while `release_window_health` records domestic, overseas, and media near-launch samples for later calibration from real runs.
+- The historical 18-candidate target is removed. The V7.0 prelaunch gate enforces the 60-day/TBA window, while `release_window_health` continues recording domestic, overseas, and media near-launch samples for diagnosis.

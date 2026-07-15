@@ -130,14 +130,11 @@ describe("online daily v4 sourcing candidate audit", () => {
     }
   });
 
-  it("declares the candidate audit in the active V6.8 artifact manifest", () => {
+  it("declares the candidate audit as the active V7 unqualified route", () => {
     const rules = JSON.parse(readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8"));
-    assert.deepEqual(rules.quality_quarantine.preserve_artifacts, [
-      "daily_report",
-      "industry_radar",
-      "steam_trends",
-      "sourcing_candidates"
-    ]);
+    assert.equal(rules.indie_prelaunch_admission.unqualified_route, "sourcing_candidates");
+    assert.equal(rules.indie_prelaunch_admission.qualified_route, "push_pool");
+    assert.equal("quality_quarantine" in rules, false);
   });
 });
 

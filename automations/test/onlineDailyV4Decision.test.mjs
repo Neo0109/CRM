@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { dedupeByAppId, dedupeMediaSignals, selectDiverseMediaSignals } from "../jobs/online_daily_v4_dedupe.mjs";
 import { buildPools, scoreCandidate } from "../jobs/online_daily_v4_decision.mjs";
 import { validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
+import { evaluateSteamIndiePrelaunchAdmission, INDIE_PRELAUNCH_RULE_VERSION } from "../jobs/online_daily_v7_indie_admission.mjs";
 
 function candidate(overrides = {}) {
   return {
@@ -94,10 +95,15 @@ describe("online daily v4 decision helpers", () => {
     assert.ok(penalizedScore < 0);
   });
 
-  it("interleaves media and Steam leads, keeps pool states stable, and strips private fields", () => {
+  it("interleaves every qualified media and Steam lead, sets nullable provenance, and strips private fields", () => {
     const pools = buildPools(
       [
-        candidate({ appId: "100", title: "Steam Push", score: 92 }),
+        candidate({
+          appId: "100",
+          title: "Steam Push",
+          score: -500,
+          _indieAdmissionEvidence: qualifiedEvidence({ project: "Steam Push", steam_app_id: "100", dedupe_key: "steam:100" })
+        }),
         candidate({
           appId: "200",
           title: "Steam Drop",
@@ -108,44 +114,77 @@ describe("online daily v4 decision helpers", () => {
         })
       ],
       [
-        mediaLead({ project: "Media Push", _class: "push" }),
+        mediaLead({
+          project: "Media Push",
+          steam_app_id: "300",
+          _class: "push",
+          _indieAdmissionEvidence: qualifiedEvidence({ project: "Media Push", steam_app_id: "300", dedupe_key: "steam:300" })
+        }),
         mediaLead({ project: "Media Watch", _class: "watch", priority: "P2" }),
         mediaLead({ project: "Media Drop", _class: "drop", bucket: "淘汰池", stage: "rejected", priority: "P3" })
       ],
-      { reportDate: "2026-07-04", minReviewLeads: 2, minReviewBackfillScore: 18 }
+      { reportDate: "2026-07-04" }
     );
 
     assert.deepEqual(pools.push.map((lead) => lead.project), ["Media Push", "Steam Push"]);
+    assert.equal(pools.new_qualified_count, 2);
+    assert.deepEqual(pools.watch, []);
+    assert.deepEqual(pools.drop, []);
     assert.equal(pools.push[0].bucket, "未处理");
     assert.equal(pools.push[0].stage, "new");
-    assert.equal(pools.drop[0].bucket, "淘汰池");
-    assert.equal(pools.drop[0].stage, "rejected");
+    assert.equal(pools.push[0].priority, null);
+    assert.equal(pools.push[0].sourcing_lane, "indie_prelaunch");
+    assert.equal(pools.push[0].sourcing_rule_version, INDIE_PRELAUNCH_RULE_VERSION);
     assert.equal("_class" in pools.push[0], false);
-    assert.equal("_reviewBackfill" in pools.push[1], false);
+    assert.equal("_indieAdmission" in pools.push[1], false);
     assert.equal(pools.push[1].id, "lead_steam_100_2026-07-04");
     assert.equal(pools.push[1].first_seen, "2026-07-04");
   });
 
-  it("routes domestic demo candidates launching within 60 days to drop instead of review", () => {
-    const pools = buildPools([
-      candidate({
-        appId: "300",
-        title: "Near Launch Domestic Demo",
-        releaseTooSoon: true,
-        releaseDate: "2026-07-20",
-        daysToRelease: 16,
-        score: 140
-      })
-    ], [], { reportDate: "2026-07-04", minReviewLeads: 1, minReviewBackfillScore: 8 });
+  it("keeps a domestic demo launching within 60 days out of every formal report pool", () => {
+    const nearLaunch = candidate({
+      appId: "300",
+      title: "Near Launch Domestic Demo",
+      releaseTooSoon: true,
+      releaseDate: "2026-07-20",
+      daysToRelease: 16,
+      score: 140,
+      officialDemoEvidence: [{ type: "steam_demo", value: "official demo" }],
+      officialGameplayEvidence: [{ type: "steam_gameplay", value: "official gameplay" }],
+      qualityProofs: [{ type: "public_quality", value: "verified" }]
+    });
+    const pools = buildPools([nearLaunch], [], { reportDate: "2026-07-04" });
+    const admission = evaluateSteamIndiePrelaunchAdmission(nearLaunch);
 
     assert.equal(pools.push.some((lead) => lead.project === "Near Launch Domestic Demo"), false);
     assert.equal(pools.watch.some((lead) => lead.project === "Near Launch Domestic Demo"), false);
-    assert.equal(pools.drop[0].project, "Near Launch Domestic Demo");
-    assert.equal(pools.drop[0].drop_reason, "窗口不合适");
-    assert.equal(pools.drop[0].priority_reason, null);
-    assert.match(`${pools.drop[0].rule_fit} ${pools.drop[0].risks}`, /不足60天|窗口不合适/);
+    assert.equal(pools.drop.some((lead) => lead.project === "Near Launch Domestic Demo"), false);
+    assert.equal(admission.disposition, "excluded");
+    assert.match(admission.exclusion_reasons.join("\n"), /60 days or fewer/);
   });
 });
+
+function qualifiedEvidence(overrides = {}) {
+  return {
+    project: "Qualified",
+    steam_app_id: "100",
+    dedupe_key: "steam:100",
+    region: "domestic",
+    release_state: "prelaunch",
+    release_window: "over_60",
+    early_access_state: "no",
+    publisher_occupancy: "clear",
+    narrative_state: "no",
+    india_team_state: "no",
+    official_demo_evidence: [{ type: "steam_demo", value: "official demo" }],
+    official_gameplay_evidence: [{ type: "official_gameplay", value: "official gameplay" }],
+    quality_proofs: [{ type: "public_quality", value: "verified quality" }],
+    business_entrypoints: [{ type: "Email", value: "bd@example.com" }],
+    china_bilibili_value: "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
+    china_demand: null,
+    ...overrides
+  };
+}
 
 describe("online daily v4 volume and dedupe helpers", () => {
   function baseDiagnostics(overrides = {}) {
@@ -164,12 +203,11 @@ describe("online daily v4 volume and dedupe helpers", () => {
     };
   }
 
-  it("publishes degraded diagnostics when review volume is below the quality target", () => {
-    const warnings = [];
+  it("does not degrade health when formal Lead volume is below the historical target", () => {
     const result = validateDailyVolume({
       pools: {
-        push: Array.from({ length: 8 }, (_, index) => mediaLead({ project: `Push ${index}` })),
-        watch: Array.from({ length: 5 }, (_, index) => mediaLead({ project: `Watch ${index}` })),
+        push: Array.from({ length: 13 }, (_, index) => mediaLead({ project: `Push ${index}` })),
+        watch: [],
         drop: []
       },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
@@ -180,23 +218,20 @@ describe("online daily v4 volume and dedupe helpers", () => {
       rawCandidateCount: 202,
       enrichedCandidateCount: 90,
       diagnostics: baseDiagnostics({ media_signals_raw: 624 }),
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      logger: { warn: (message) => warnings.push(message) }
+      newQualifiedCount: 13
     });
 
-    assert.equal(result.ok, false);
-    assert.equal(result.degraded, true);
+    assert.equal(result.ok, true);
+    assert.equal(result.degraded, false);
     assert.equal(result.reviewCount, 13);
     assert.equal(result.rawCandidateCount, 202);
     assert.equal(result.enrichedCandidateCount, 90);
     assert.equal(result.mediaLeadCount, 11);
-    assert.deepEqual(result.issues.map((issue) => issue.code), ["review_leads_low"]);
-    assert.match(result.warnings[0], /push\+watch=13, expected >= 18/);
-    assert.deepEqual(warnings, result.warnings);
+    assert.deepEqual(result.issues, []);
+    assert.deepEqual(result.warnings, []);
   });
 
-  it("reports domestic media under-conversion without blocking publication", () => {
+  it("keeps domestic media conversion volume diagnostic-only", () => {
     const result = validateDailyVolume({
       pools: { push: Array.from({ length: 18 }, (_, index) => mediaLead({ project: `Push ${index}` })), watch: [], drop: [] },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
@@ -207,22 +242,20 @@ describe("online daily v4 volume and dedupe helpers", () => {
       rawCandidateCount: 40,
       enrichedCandidateCount: 20,
       diagnostics: baseDiagnostics({ media_signals_raw: 18 }),
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      logger: { warn: () => {} }
+      newQualifiedCount: 18
     });
 
-    assert.equal(result.ok, false);
-    assert.equal(result.degraded, true);
-    assert.deepEqual(result.issues.map((issue) => issue.code), ["domestic_media_leads_low"]);
-    assert.match(result.warnings[0], /Domestic media\/Bilibili lead extraction low/);
+    assert.equal(result.ok, true);
+    assert.equal(result.degraded, false);
+    assert.deepEqual(result.issues, []);
+    assert.deepEqual(result.warnings, []);
   });
 
-  it("passes when review and media conversion volume meet production thresholds", () => {
+  it("passes when qualified and push counts match", () => {
     const result = validateDailyVolume({
       pools: {
-        push: Array.from({ length: 10 }, (_, index) => mediaLead({ project: `Push ${index}` })),
-        watch: Array.from({ length: 8 }, (_, index) => mediaLead({ project: `Watch ${index}` })),
+        push: Array.from({ length: 18 }, (_, index) => mediaLead({ project: `Push ${index}` })),
+        watch: [],
         drop: []
       },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
@@ -233,9 +266,7 @@ describe("online daily v4 volume and dedupe helpers", () => {
       rawCandidateCount: 80,
       enrichedCandidateCount: 40,
       diagnostics: baseDiagnostics({ media_signals_raw: 18 }),
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      logger: { warn: () => { throw new Error("unexpected low-volume warning"); } }
+      newQualifiedCount: 18
     });
 
     assert.equal(result.ok, true);

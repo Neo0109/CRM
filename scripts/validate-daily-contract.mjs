@@ -1,14 +1,13 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { isLeadCountHealthEnabled, RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
+import { RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
 
 const defaultRootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = parseArgs(process.argv.slice(2));
 const rootDir = args.rootDir ? path.resolve(args.rootDir) : defaultRootDir;
 const dates = args.all ? availableReportDates() : [args.date ?? latestReportDate()];
 const thresholds = {
-  minReviewCandidates: numberArg(args.minReviewCandidates, 18),
   minRadarItems: numberArg(args.minRadarItems, 8),
   minSteamTrendItems: numberArg(args.minSteamTrendItems, 8),
   minSteamMarketInsights: numberArg(args.minSteamMarketInsights, 3),
@@ -16,7 +15,6 @@ const thresholds = {
 };
 const allowLowVolume = booleanArg(args.allowLowVolume);
 const requireSourcingCandidates = booleanArg(args.requireSourcingCandidates);
-const leadCountHealthEnabled = isLeadCountHealthEnabled(RULE_VERSION);
 const allErrors = [];
 const allWarnings = [];
 const summaries = [];
@@ -101,13 +99,6 @@ function validateDate(date, thresholds, options = {}) {
     ...poolLeads(report, "watch_pool"),
     ...poolLeads(report, "drop_pool")
   ];
-  const totalLeads = poolEntries.length;
-  const reviewLeads = poolLeads(report, "push_pool").length + poolLeads(report, "watch_pool").length;
-  if (leadCountHealthEnabled && !totalLeads) errors.push("report has no leads across push_pool/watch_pool/drop_pool");
-  if (leadCountHealthEnabled) {
-    addVolumeIssue(warnings, errors, allowLowVolume, reviewLeads < thresholds.minReviewCandidates, `report has fewer than ${thresholds.minReviewCandidates} review candidates`);
-  }
-
   const seen = new Set();
   for (const { pool, lead } of poolEntries) {
     const key = lead.steam_app_id ? `steam:${lead.steam_app_id}` : `project:${normalizeLeadName(lead.project)}`;
@@ -198,6 +189,27 @@ function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
   for (const [key, actual] of Object.entries(counts)) {
     if (artifact.scan_summary?.[key] !== actual) {
       errors.push(`sourcing candidate scan_summary.${key} expected ${actual}, received ${artifact.scan_summary?.[key]}`);
+    }
+  }
+
+  if (artifact.sourcing_rule_version === RULE_VERSION) {
+    const newQualifiedCount = artifact.scan_summary?.new_qualified_count;
+    const recordedPushPoolCount = artifact.scan_summary?.push_pool_count;
+    const reportPushPoolCount = poolLeads(report, "push_pool").length;
+    if (!Number.isInteger(newQualifiedCount)) {
+      errors.push("V7 sourcing candidate scan_summary.new_qualified_count must be an integer");
+    }
+    if (!Number.isInteger(recordedPushPoolCount)) {
+      errors.push("V7 sourcing candidate scan_summary.push_pool_count must be an integer");
+    }
+    if (newQualifiedCount !== recordedPushPoolCount) {
+      errors.push(`V7 admission parity mismatch: new_qualified_count=${newQualifiedCount}, push_pool_count=${recordedPushPoolCount}`);
+    }
+    if (recordedPushPoolCount !== reportPushPoolCount) {
+      errors.push(`V7 report parity mismatch: scan_summary.push_pool_count=${recordedPushPoolCount}, report push_pool=${reportPushPoolCount}`);
+    }
+    if (poolLeads(report, "watch_pool").length || poolLeads(report, "drop_pool").length) {
+      errors.push("V7 Daily report must keep watch_pool and drop_pool empty");
     }
   }
 

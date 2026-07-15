@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, appendFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { isLeadCountHealthEnabled, RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
+import { RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
 
 const defaultRootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -9,8 +9,6 @@ function main(argv) {
   const args = parseArgs(argv);
   const reportDate = args.date ?? todayInShanghai();
   const thresholds = {
-    minCandidates: numberArg(args.minCandidates, 18),
-    minReviewCandidates: numberArg(args.minReviewCandidates, 18),
     minRadarItems: numberArg(args.minRadarItems, 8),
     minSteamTrendItems: numberArg(args.minSteamTrendItems, 8),
     minSteamMarketInsights: numberArg(args.minSteamMarketInsights, 3),
@@ -34,7 +32,6 @@ function main(argv) {
 export function inspectDailyReport(date, thresholds, options = {}) {
   const rootDir = options.rootDir ?? defaultRootDir;
   const ruleVersion = options.ruleVersion ?? RULE_VERSION;
-  const leadCountHealthEnabled = isLeadCountHealthEnabled(ruleVersion);
   const files = {
     report: `data/reports/${date}.json`,
     radar: `data/radar/${date}.json`,
@@ -66,7 +63,9 @@ export function inspectDailyReport(date, thresholds, options = {}) {
     sourcing_candidates: sourcingCandidates?.candidates?.length ?? 0,
     sourcing_formal: sourcingCandidates?.scan_summary?.formal ?? 0,
     sourcing_candidate: sourcingCandidates?.scan_summary?.candidate ?? 0,
-    sourcing_excluded: sourcingCandidates?.scan_summary?.excluded ?? 0
+    sourcing_excluded: sourcingCandidates?.scan_summary?.excluded ?? 0,
+    new_qualified_count: sourcingCandidates?.scan_summary?.new_qualified_count ?? null,
+    recorded_push_pool_count: sourcingCandidates?.scan_summary?.push_pool_count ?? null
   };
   counts.total = counts.push + counts.watch + counts.drop;
   counts.review = counts.push + counts.watch;
@@ -75,8 +74,17 @@ export function inspectDailyReport(date, thresholds, options = {}) {
   if (radar && radar.report_date !== date) reasons.push(`radar date mismatch: ${radar.report_date}`);
   if (steamTrends && steamTrends.report_date !== date) reasons.push(`steam trends date mismatch: ${steamTrends.report_date}`);
   if (sourcingCandidates && sourcingCandidates.report_date !== date) reasons.push(`sourcing candidates date mismatch: ${sourcingCandidates.report_date}`);
-  if (leadCountHealthEnabled && report && counts.total < thresholds.minCandidates) warnings.push(`candidate count ${counts.total} below target ${thresholds.minCandidates}`);
-  if (leadCountHealthEnabled && report && counts.review < thresholds.minReviewCandidates) warnings.push(`review candidate count ${counts.review} below target ${thresholds.minReviewCandidates}`);
+  if (ruleVersion === RULE_VERSION && report && sourcingCandidates) {
+    if (!Number.isInteger(counts.new_qualified_count)) reasons.push("V7 sourcing candidates missing new_qualified_count");
+    if (!Number.isInteger(counts.recorded_push_pool_count)) reasons.push("V7 sourcing candidates missing push_pool_count");
+    if (counts.new_qualified_count !== counts.recorded_push_pool_count) {
+      reasons.push(`V7 admission parity mismatch: new_qualified_count=${counts.new_qualified_count}, push_pool_count=${counts.recorded_push_pool_count}`);
+    }
+    if (counts.recorded_push_pool_count !== counts.push) {
+      reasons.push(`V7 report parity mismatch: recorded push_pool_count=${counts.recorded_push_pool_count}, report push_pool=${counts.push}`);
+    }
+    if (counts.watch || counts.drop) reasons.push("V7 report must keep watch_pool and drop_pool empty");
+  }
   if (radar && counts.radar_items < thresholds.minRadarItems) warnings.push(`radar item count ${counts.radar_items} below target ${thresholds.minRadarItems}`);
   if (steamTrends && counts.steam_trend_items < thresholds.minSteamTrendItems) warnings.push(`steam trend item count ${counts.steam_trend_items} below target ${thresholds.minSteamTrendItems}`);
   if (steamTrends && counts.steam_market_insights < thresholds.minSteamMarketInsights) warnings.push(`steam market insight count ${counts.steam_market_insights} below target ${thresholds.minSteamMarketInsights}`);
@@ -104,7 +112,6 @@ export function inspectDailyReport(date, thresholds, options = {}) {
     needs_run: reasons.length > 0,
     report_date: date,
     rule_version: ruleVersion,
-    lead_count_health_enabled: leadCountHealthEnabled,
     thresholds,
     counts,
     files,

@@ -68,7 +68,8 @@ assert.equal(fields.notes, null, "notes should default empty unless there is imp
 
 const onlineDailySource = readFileSync(new URL("../automations/jobs/online_daily_v4.mjs", import.meta.url), "utf8");
 assert.doesNotMatch(onlineDailySource, /V6保底|低置信度国内保底|打开 Steam\/原始链接快速判断|补入未处理首轮 review/, "review backfill must not write automation bookkeeping into lead fields");
-assert.match(onlineDailySource, /online_daily_v4_sourcing_rules_v6_8_quality_quarantine/, "online generator should publish the V6.8 quality quarantine generator identity");
-assert.match(onlineDailySource, /quality_quarantine:\s*isQualityQuarantineRule\(sourcingRuleVersion\)/, "online generator should publish V6.8 quality quarantine diagnostics");
+assert.match(onlineDailySource, /online_daily_v4_sourcing_rules_v7_0_quality_gated_indie/, "online generator should publish the V7.0 quality-gated indie identity");
+assert.match(onlineDailySource, /qualified_push_parity:\s*pools\.new_qualified_count === pools\.push\.length/, "online generator should publish the V7 qualified/push invariant");
+assert.doesNotMatch(onlineDailySource, /minReviewLeads|minMediaLeadsWhenHealthy|minReviewBackfillScore/, "online generator must not restore formal Lead quantity targets");
 
-console.log(JSON.stringify({ ok: true, checked: "sourcing-v6.8-quality-quarantine" }, null, 2));
+console.log(JSON.stringify({ ok: true, checked: "sourcing-v7.0-quality-gated-indie" }, null, 2));
