@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:18 CST
+Last updated: 2026-07-15 23:36 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -105,6 +105,8 @@ Explicitly out of scope:
   - overseas China demand is accepted only when official text contains both China/Chinese terms and publishing/localization/marketing/operations partnership intent.
 - Added a cross-source regression proving an actually enriched official media candidate uses the same eleven-gate contract rather than its legacy media score/class.
 - Steam source projection test is green: 8/8; focused V7 admission test is green: 9/9; combined source/admission set is green: 17/17.
+- Recovered the interrupted worktree on `codex/pr4-v7-indie-admission`, confirmed remote `main` is unchanged from the PR 4 baseline, no PR already exists for this branch, and only unrelated PR `#71` is open.
+- Added the focused V7 activation/health contract test and captured the expected red run: 0/5 passed because the canonical V7 rule doc is absent, V6.8 quarantine is still active, report text is still V6.8, qualified/push parity is not enforced, and the sourcing-candidate schema does not yet allow the parity counts.
 
 ## Remaining
 
@@ -115,15 +117,12 @@ Explicitly out of scope:
 
 ## Next Action
 
-Activate `sourcing-rules-v7.0-quality-gated-indie` across the loader, machine rule, generator, reports, schema/contract, workflows, local watchdog, cloud heartbeat, and current-rule/runbook documentation; remove only formal-count health/backfill arguments and preserve all source/artifact/sync gates and workflow triggers.
+Make the focused V7 activation/health contract green by activating the machine/human rule chain and report text, disabling only V6.8 quarantine/formal-count behavior, enforcing qualified/push parity, and extending the sourcing-candidate schema for the two parity counts.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 4]
- M automations/jobs/online_daily_v4_steam_source.mjs
- M automations/jobs/online_daily_v7_indie_admission.mjs
+## codex/pr4-v7-indie-admission...origin/main [ahead 5]
  M docs/checkpoints/pr4-v7-indie-admission.md
- M automations/test/onlineDailyV4SteamSource.test.mjs
- M automations/test/onlineDailyV7IndieAdmission.test.mjs
+?? automations/test/onlineDailyV7Activation.test.mjs
 ```
