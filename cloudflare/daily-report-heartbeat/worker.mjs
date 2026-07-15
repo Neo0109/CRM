@@ -47,6 +47,7 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     report: `data/reports/${date}.json`,
     radar: `data/radar/${date}.json`,
     steam_trends: `data/steam_trends/${date}.json`,
+    sourcing_candidates: `data/sourcing_candidates/${date}.json`,
   };
   const fileResults = {};
   for (const [key, repoPath] of Object.entries(files)) {

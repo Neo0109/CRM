@@ -130,7 +130,7 @@ jobs:
         run: |
           set +e
           log_file="$(mktemp)"
-          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE" --allowLowVolume=true 2>&1 | tee "$log_file"
+          node scripts/validate-daily-contract.mjs --date="$REPORT_DATE" --allowLowVolume=true --requireSourcingCandidates=true 2>&1 | tee "$log_file"
           status="${PIPESTATUS[0]}"
           set -e
 
@@ -152,7 +152,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "data/reports/$REPORT_DATE.json" "data/radar/$REPORT_DATE.json" "data/steam_trends/$REPORT_DATE.json"
+          git add "data/reports/$REPORT_DATE.json" "data/radar/$REPORT_DATE.json" "data/steam_trends/$REPORT_DATE.json" "data/sourcing_candidates/$REPORT_DATE.json"
 
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -299,9 +299,9 @@ jobs:
             echo "No automation sync receipt changes to commit."
           else
             git commit -m "Record $REPORT_DATE $RUN_SLOT automation sync"
-            if ! git diff --quiet -- data/reports data/radar data/steam_trends data/runtime || [ -n "$(git ls-files --others --exclude-standard data/reports data/radar data/steam_trends data/runtime)" ]; then
+            if ! git diff --quiet -- data/reports data/radar data/steam_trends data/sourcing_candidates data/runtime || [ -n "$(git ls-files --others --exclude-standard data/reports data/radar data/steam_trends data/sourcing_candidates data/runtime)" ]; then
               echo "Stashing generated artifact residue before receipt rebase."
-              git stash push --include-untracked -m "preserve failed generated artifacts before receipt push" -- data/reports data/radar data/steam_trends data/runtime
+              git stash push --include-untracked -m "preserve failed generated artifacts before receipt push" -- data/reports data/radar data/steam_trends data/sourcing_candidates data/runtime
             fi
             git pull --rebase origin main
             git push origin HEAD:main
@@ -357,4 +357,5 @@ jobs:
           echo "- data/reports/$REPORT_DATE.json"
           echo "- data/radar/$REPORT_DATE.json"
           echo "- data/steam_trends/$REPORT_DATE.json"
+          echo "- data/sourcing_candidates/$REPORT_DATE.json"
           echo "- data/automation_runs/$REPORT_DATE-$RUN_SLOT.json"

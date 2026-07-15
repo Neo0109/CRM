@@ -19,6 +19,8 @@ describe("daily automation hardening contract", () => {
 
     assert.match(syncWorkflow, /--allowLowVolume=true/);
     assert.match(watchdogWorkflow, /--allowLowVolume=true/);
+    assert.match(syncWorkflow, /--requireSourcingCandidates=true/);
+    assert.match(watchdogWorkflow, /--requireSourcingCandidates=true/);
     assert.match(runner, /allowLowVolume/);
     assert.doesNotMatch(workflowText, /--minReviewCandidates=3/);
     assert.match(syncWorkflow, /--minReviewLeads=18/);
@@ -39,7 +41,7 @@ describe("daily automation hardening contract", () => {
       active: true,
       publish_lead_pools: false,
       lead_count_health: "disabled",
-      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends"]
+      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends", "sourcing_candidates"]
     });
   });
 

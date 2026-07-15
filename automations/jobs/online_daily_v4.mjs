@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultBilibiliProbeDiagnostics } from "./bilibili_probe.mjs";
 import { serializeArtifact } from "./online_daily_v4_artifacts.mjs";
+import { buildSourcingCandidateArtifact } from "./online_daily_v4_candidate_audit.mjs";
 import { buildPools } from "./online_daily_v4_decision.mjs";
 import {
   dedupeByAppId,
@@ -150,6 +151,19 @@ try {
 }
 sourcingDiagnostics.low_volume_warnings.push(...volumeDiagnostics.warnings);
 
+const sourcingCandidateArtifact = buildSourcingCandidateArtifact({
+  reportDate,
+  capturedAt,
+  ruleVersion: sourcingRuleVersion,
+  rawSteamCandidates: rawCandidates,
+  enrichedSteamCandidates: enrichedCandidates,
+  mediaSignalsSeen: mediaSignals.length,
+  mediaCandidates: mediaLeadCandidates,
+  candidatePools,
+  publishedPools: pools
+});
+
+await writeJson(`data/sourcing_candidates/${reportDate}.json`, sourcingCandidateArtifact);
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport({
   pools,
   rawCount: rawCandidates.length,
@@ -183,6 +197,12 @@ console.log(JSON.stringify({
   industry_signals: industrySignals.length,
   media_signals_seen: mediaSignals.length,
   media_lead_candidates: mediaLeadCandidates.length,
+  sourcing_candidate_records: sourcingCandidateArtifact.scan_summary.records_total,
+  sourcing_candidate_decisions: {
+    formal: sourcingCandidateArtifact.scan_summary.formal,
+    candidate: sourcingCandidateArtifact.scan_summary.candidate,
+    excluded: sourcingCandidateArtifact.scan_summary.excluded
+  },
   max_steam_details: maxSteamDetails,
   min_review_leads: minReviewLeads,
   min_review_backfill_score: minReviewBackfillScore,

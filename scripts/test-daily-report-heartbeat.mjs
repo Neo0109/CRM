@@ -38,7 +38,7 @@ test("healthy artifacts suppress dispatch", async () => {
   assert.equal(result.needsDispatch, false);
   assert.deepEqual(result.reasons, []);
   assert.equal(result.report.review, 18);
-  assert.equal(fetches.filter((call) => call.method === "HEAD").length, 3);
+  assert.equal(fetches.filter((call) => call.method === "HEAD").length, 4);
 });
 
 test("missing files and receipt request watchdog dispatch", async () => {
@@ -52,7 +52,7 @@ test("missing files and receipt request watchdog dispatch", async () => {
 
   assert.equal(result.ok, false);
   assert.equal(result.needsDispatch, true);
-  assert.deepEqual(result.reasons, ["missing files: report, radar, steam_trends", "no successful synced receipt"]);
+  assert.deepEqual(result.reasons, ["missing files: report, radar, steam_trends, sourcing_candidates", "no successful synced receipt"]);
 });
 
 test("low-volume report is degraded but does not dispatch after a successful sync", async () => {

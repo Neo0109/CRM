@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sourcing Candidate Audit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_date",
+    "generated_at",
+    "sourcing_rule_version",
+    "scan_summary",
+    "candidates"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [1] },
+    "report_date": { "type": "string", "format": "date" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "sourcing_rule_version": { "type": "string" },
+    "scan_summary": { "$ref": "#/$defs/scanSummary" },
+    "candidates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/candidate" }
+    }
+  },
+  "$defs": {
+    "scanSummary": {
+      "type": "object",
+      "required": [
+        "steam_candidates_seen",
+        "steam_candidates_enriched",
+        "media_signals_seen",
+        "media_candidates_seen",
+        "records_total",
+        "formal",
+        "candidate",
+        "excluded"
+      ],
+      "properties": {
+        "steam_candidates_seen": { "type": "integer", "minimum": 0 },
+        "steam_candidates_enriched": { "type": "integer", "minimum": 0 },
+        "media_signals_seen": { "type": "integer", "minimum": 0 },
+        "media_candidates_seen": { "type": "integer", "minimum": 0 },
+        "records_total": { "type": "integer", "minimum": 0 },
+        "formal": { "type": "integer", "minimum": 0 },
+        "candidate": { "type": "integer", "minimum": 0 },
+        "excluded": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "decision",
+        "source_type",
+        "project",
+        "steam_app_id",
+        "dedupe_key",
+        "sourcing_lane",
+        "sourcing_rule_version",
+        "matched_rules",
+        "missing_evidence",
+        "exclusion_reasons",
+        "source_links",
+        "steam_review_summary",
+        "ea_state",
+        "visual_state"
+      ],
+      "properties": {
+        "decision": { "type": "string", "enum": ["formal", "candidate", "excluded"] },
+        "source_type": { "type": "string", "enum": ["steam", "media", "multi_source"] },
+        "project": { "type": "string", "minLength": 1 },
+        "steam_app_id": { "type": ["string", "null"] },
+        "dedupe_key": { "type": "string", "minLength": 1 },
+        "sourcing_lane": {
+          "type": ["string", "null"],
+          "enum": ["indie_prelaunch", "china_joint", "ea_mobile_high_traction", "china_heat_ops", null]
+        },
+        "sourcing_rule_version": { "type": "string", "minLength": 1 },
+        "matched_rules": { "type": "array", "items": { "type": "string" } },
+        "missing_evidence": { "type": "array", "items": { "type": "string" } },
+        "exclusion_reasons": { "type": "array", "items": { "type": "string" } },
+        "source_links": { "type": "array", "items": { "type": "string" } },
+        "steam_review_summary": { "$ref": "#/$defs/steamReviewSummary" },
+        "ea_state": { "type": "string", "enum": ["yes", "no", "unknown"] },
+        "visual_state": { "$ref": "#/$defs/visualState" }
+      },
+      "additionalProperties": false
+    },
+    "steamReviewSummary": {
+      "type": "object",
+      "required": [
+        "status",
+        "text",
+        "recommendation_count",
+        "positive_reviews",
+        "negative_reviews",
+        "total_reviews",
+        "positive_rate",
+        "language",
+        "purchase_type",
+        "source_status"
+      ],
+      "properties": {
+        "status": { "type": "string", "enum": ["available", "unknown"] },
+        "text": { "type": ["string", "null"] },
+        "recommendation_count": { "type": ["integer", "null"], "minimum": 0 },
+        "positive_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "negative_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "total_reviews": { "type": ["integer", "null"], "minimum": 0 },
+        "positive_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "language": { "type": ["string", "null"] },
+        "purchase_type": { "type": ["string", "null"] },
+        "source_status": { "type": "string", "enum": ["steam_appdetails", "not_fetched"] }
+      },
+      "additionalProperties": false
+    },
+    "visualState": {
+      "type": "object",
+      "required": ["status", "screenshot_count", "movie_count"],
+      "properties": {
+        "status": { "type": "string", "enum": ["available", "missing", "unknown"] },
+        "screenshot_count": { "type": ["integer", "null"], "minimum": 0 },
+        "movie_count": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

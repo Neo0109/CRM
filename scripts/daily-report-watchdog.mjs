@@ -38,7 +38,8 @@ export function inspectDailyReport(date, thresholds, options = {}) {
   const files = {
     report: `data/reports/${date}.json`,
     radar: `data/radar/${date}.json`,
-    steam_trends: `data/steam_trends/${date}.json`
+    steam_trends: `data/steam_trends/${date}.json`,
+    sourcing_candidates: `data/sourcing_candidates/${date}.json`
   };
   const reasons = [];
   const warnings = [];
@@ -48,9 +49,11 @@ export function inspectDailyReport(date, thresholds, options = {}) {
   let report = null;
   let radar = null;
   let steamTrends = null;
+  let sourcingCandidates = null;
   if (!missing.includes("report")) report = readJson(files.report, reasons, rootDir);
   if (!missing.includes("radar")) radar = readJson(files.radar, reasons, rootDir);
   if (!missing.includes("steam_trends")) steamTrends = readJson(files.steam_trends, reasons, rootDir);
+  if (!missing.includes("sourcing_candidates")) sourcingCandidates = readJson(files.sourcing_candidates, reasons, rootDir);
 
   const counts = {
     push: report?.push_pool?.length ?? 0,
@@ -59,7 +62,11 @@ export function inspectDailyReport(date, thresholds, options = {}) {
     radar_items: radar?.items?.length ?? 0,
     steam_trend_items: steamTrends?.items?.length ?? 0,
     steam_market_insights: steamTrends?.market_insights?.length ?? 0,
-    steam_genre_signals: steamTrends?.genre_signals?.length ?? 0
+    steam_genre_signals: steamTrends?.genre_signals?.length ?? 0,
+    sourcing_candidates: sourcingCandidates?.candidates?.length ?? 0,
+    sourcing_formal: sourcingCandidates?.scan_summary?.formal ?? 0,
+    sourcing_candidate: sourcingCandidates?.scan_summary?.candidate ?? 0,
+    sourcing_excluded: sourcingCandidates?.scan_summary?.excluded ?? 0
   };
   counts.total = counts.push + counts.watch + counts.drop;
   counts.review = counts.push + counts.watch;
@@ -67,6 +74,7 @@ export function inspectDailyReport(date, thresholds, options = {}) {
   if (report && report.report_date !== date) reasons.push(`report date mismatch: ${report.report_date}`);
   if (radar && radar.report_date !== date) reasons.push(`radar date mismatch: ${radar.report_date}`);
   if (steamTrends && steamTrends.report_date !== date) reasons.push(`steam trends date mismatch: ${steamTrends.report_date}`);
+  if (sourcingCandidates && sourcingCandidates.report_date !== date) reasons.push(`sourcing candidates date mismatch: ${sourcingCandidates.report_date}`);
   if (leadCountHealthEnabled && report && counts.total < thresholds.minCandidates) warnings.push(`candidate count ${counts.total} below target ${thresholds.minCandidates}`);
   if (leadCountHealthEnabled && report && counts.review < thresholds.minReviewCandidates) warnings.push(`review candidate count ${counts.review} below target ${thresholds.minReviewCandidates}`);
   if (radar && counts.radar_items < thresholds.minRadarItems) warnings.push(`radar item count ${counts.radar_items} below target ${thresholds.minRadarItems}`);

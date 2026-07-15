@@ -31,7 +31,7 @@ describe("online daily v4 quality quarantine", () => {
       active: true,
       publish_lead_pools: false,
       lead_count_health: "disabled",
-      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends"]
+      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends", "sourcing_candidates"]
     });
     assert.match(currentRulesDoc, /sourcing-rules-v6\.8-quality-quarantine/);
     assert.match(generator, /const sourcingRuleVersion = RULE_VERSION/);
@@ -137,7 +137,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.deepEqual(warnings, []);
   });
 
-  it("passes the real Daily contract validator with three valid artifacts and zero formal Leads", () => {
+  it("passes the real Daily contract validator with four valid artifacts and zero formal Leads", () => {
     const date = "2026-07-15";
     const capturedAt = "2026-07-15T12:00:00+08:00";
     const rootDir = mkdtempSync(path.join(tmpdir(), "crm-quality-quarantine-contract-"));
@@ -165,16 +165,35 @@ describe("online daily v4 quality quarantine", () => {
       capturedAt
     });
     const steamTrends = buildSteamTrendReport({ candidates: [], pools, reportDate: date, capturedAt });
+    const sourcingCandidates = {
+      schema_version: 1,
+      report_date: date,
+      generated_at: capturedAt,
+      sourcing_rule_version: RULE_VERSION,
+      scan_summary: {
+        steam_candidates_seen: 0,
+        steam_candidates_enriched: 0,
+        media_signals_seen: 0,
+        media_candidates_seen: 0,
+        records_total: 0,
+        formal: 0,
+        candidate: 0,
+        excluded: 0
+      },
+      candidates: []
+    };
 
     cpSync(fileURLToPath(new URL("../../schemas", import.meta.url)), path.join(rootDir, "schemas"), { recursive: true });
     writeArtifact(rootDir, `data/reports/${date}.json`, report);
     writeArtifact(rootDir, `data/radar/${date}.json`, radar);
     writeArtifact(rootDir, `data/steam_trends/${date}.json`, steamTrends);
+    writeArtifact(rootDir, `data/sourcing_candidates/${date}.json`, sourcingCandidates);
 
     const result = spawnSync(process.execPath, [
       fileURLToPath(new URL("../../scripts/validate-daily-contract.mjs", import.meta.url)),
       `--rootDir=${rootDir}`,
-      `--date=${date}`
+      `--date=${date}`,
+      "--requireSourcingCandidates=true"
     ], { encoding: "utf8" });
 
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
@@ -182,6 +201,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.match(result.stdout, /"push": 0/);
     assert.match(result.stdout, /"watch": 0/);
     assert.match(result.stdout, /"drop": 0/);
+    assert.match(result.stdout, /"sourcing_candidates": 0/);
   });
 });
 
