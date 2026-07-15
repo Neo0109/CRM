@@ -6,7 +6,7 @@ Authoritative plan: `/Users/neo/Downloads/PLAN.md`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: PR 2 Steps 1 and 2 are implemented and narrowly verified. Final repository validation remains before publication.
+Phase status: PR 2 Steps 1 and 2 are implemented and independently committed. All PLAN.md final repository validation is passing; publication remains.
 
 ## Current Goal
 
@@ -61,27 +61,26 @@ Explicitly out of scope:
 - Step 2 red test: 0/3 passed before implementation because JSON emitted `"priority": null`, the canonical projection was absent, and the local backend did not use it.
 - Step 2 green test: 3/3 passed.
 - Related Functions/backend/Excel regression tests passed 27/27; Functions and backend typechecks passed; `git diff --check` passed.
+- Committed Step 2 as `68a63d1` (`fix: keep unlabeled priority blank in exports`).
+- Re-ran the complete repository contract with `npm run verify:all`; it passed, including 112 frontend tests, 21 backend tests, 30 Functions tests, 91 Daily V4 tests, automation diagnostics, Lead Assistant, Sourcing Learning, Daily heartbeat, frontend/backend/Functions typechecks, sourcing rule guards, the Daily contract, and a temporary production frontend build.
+- Ran the required independent final `git diff --check`; it passed with no output.
+- Preserved the already-generated tracked frontend production assets for the final delivery commit; no source implementation from Steps 1 or 2 was repeated.
 
 ## Remaining
 
-- Commit verified Step 2.
-- Run focused frontend tests, frontend typecheck, relevant contract/schema checks, frontend production build, `npm run verify:all`, and `git diff --check`.
+- Commit the verified production assets and this final-validation checkpoint update.
 - Push, open a ready PR to `main`, wait for CI, verify scope/mergeability/reviews, and squash merge when clean.
 - Verify merged `main`, Build/deployment, production `/api/health`, and browser acceptance; record final evidence here and stop.
 
 ## Next Action
 
-Commit Step 2, then run all PLAN.md final verification without entering PR 3.
+Commit the verified production assets and checkpoint update, then follow `docs/CODEX_DELIVERY_WORKFLOW.md` through push, PR, checks, squash merge, deployment, production health, and browser acceptance. Stop after PR 2 acceptance and do not enter PR 3.
 
 ## Git Status
 
 ```text
-## codex/pr2-priority-ui...origin/main [ahead 2]
- M app/backend/src/lib/backendLeadModel.ts
- M app/backend/src/server.ts
- M functions/_lib/crm.ts
- M functions/_lib/leadModel.ts
- M functions/api/export/json.ts
+## codex/pr2-priority-ui...origin/main [ahead 3]
+ M app/frontend/dist/assets/index.css
+ M app/frontend/dist/assets/index.js
  M docs/checkpoints/pr2-priority-ui.md
-?? functions/test/priorityExport.test.ts
 ```
