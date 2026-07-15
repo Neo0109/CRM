@@ -2,88 +2,85 @@
 
 Date: 2026-07-15 18:09 CST
 
-Last updated: 2026-07-15 18:46 CST
+Last updated: 2026-07-15 19:05 CST
 
 Authoritative plan: `/Users/neo/Downloads/PLAN.md`
 
-Phase status: PR 1 Step 1 implementation and verification are complete. This checkpoint is included in the authorized local Step 1 commit; create-only import, UI work, push, and PR creation remain out of scope.
+Phase status: PR 1 Step 1 and Step 2 implementation and verification are complete. Step 2 is ready for its authorized local commit; PR 1 has no remaining implementation steps.
 
 ## Current Goal
 
-Implement and commit only PLAN.md PR 1 Step 1: make Lead priority nullable and add sourcing provenance fields in the existing `crm_leads.data` JSON contract, using a minimal red-green TDD slice.
+Implement and commit only PLAN.md PR 1 Step 2: add `POST /api/leads/import-daily-report?mode=create-only` with create-only persistence and explicit skip accounting.
 
 ## Scope
 
-Planned PR 1 contract scope, for a later approved implementation phase:
+- Only create Leads whose Steam AppID, canonical dedupe keys, and generated ID do not match an existing Lead.
+- Count matching incoming rows in `skipped_existing` without merging or rewriting any existing Lead fields.
+- Return `synced=true` for successful `mode=create-only` responses.
+- Preserve the existing default import behavior when `mode=create-only` is omitted.
+- Continue storing the complete Lead object under the existing `crm_leads.data` JSON column.
+- Add no Supabase migration, schema column, workflow, UI, or sourcing-rule change.
 
-- Make Lead priority nullable: `"P0" | "P1" | "P2" | "P3" | null`.
-- Add sourcing provenance fields:
-  - `sourcing_lane: "indie_prelaunch" | "china_joint" | "ea_mobile_high_traction" | "china_heat_ops" | null`
-  - `sourcing_rule_version: string | null`
-  - `sourcing_run_type: "scheduled" | "initial_backfill" | null`
-- Add `POST /api/leads/import-daily-report?mode=create-only` so only new Leads are written; existing Steam AppIDs or deduplication keys count toward `skipped_existing`, existing records are not rewritten, and a successful response includes `synced=true`.
-- Keep these fields in the existing `crm_leads.data` JSON; do not add a Supabase migration.
-- Preserve the default behavior of the existing import endpoint when `mode=create-only` is not requested.
-- Later verification scope: CRM core, backend, API, type checks, and `npm run verify:all`.
+Explicitly out of scope:
 
-Explicitly out of scope for this Step 1 implementation:
-
-- No create-only import endpoint; that is the next PR 1 step.
-- No UI, sourcing-rule, workflow, production-data, or Supabase migration changes.
+- No PR 2 UI behavior.
+- No workflow or production-data changes.
 - No push or PR creation.
-- No PR 2 or later PLAN.md work.
 
 ## Completed
 
-- Fetched and confirmed the latest remote baseline: `origin/main = 02c4bca2579fc60b35b3fefdb9899fbe69a3a89a`.
-- Read the authoritative PLAN.md Lead/API contract and PR 1 scope.
-- Created isolated worktree `/Users/neo/Documents/GitHub/CRM-pr1-lead-api-contract` and branch `codex/pr1-lead-api-contract` directly from the latest `origin/main`.
-- Created the preparation checkpoint without modifying business code.
-- Received explicit user approval to implement and commit PR 1 Step 1 only.
-- Located `functions/_lib/leadModel.ts` as the canonical Lead model; the backend model delegates to it, and both Functions and backend repositories continue writing the normalized object into the existing `crm_leads.data` JSON payload.
-- Added the minimal Lead contract test first. The red run failed because explicit `priority=null` normalized to `P2`.
-- Implemented nullable priority plus `sourcing_lane`, `sourcing_rule_version`, and `sourcing_run_type` normalization and JSON-schema support without adding database columns or migrations.
-- Kept omitted legacy priority behavior compatible (`P2` for the default `未处理` bucket) while preserving explicit `null`.
-- The narrow green run passed 5/5 in `functions/test/leadModel.test.ts`.
-- Added backend repository assertions proving the four contract fields remain nested inside the existing `crm_leads.data` JSON object; no new row columns or migration were introduced.
-- Confirmed the backend adapter still delegates to the canonical Functions Lead model and exports the sourcing provenance types.
-- Updated both Lead JSON schemas to accept nullable priority and optional nullable provenance fields without making current Daily V4 artifacts require the new fields.
-- Kept null priority sorting deterministic in canonical and weekly-report data logic without implementing PR 2 UI labels, filters, or editing behavior.
+- PR 1 Step 1 was committed as `c603634254fffb3dd2d02f40a5c18ef6945f4acc`.
+- Added the minimal create-only tests before implementation. The red run failed because the canonical helper, backend repository create method, query-mode route, and `synced=true` response did not yet exist.
+- Added canonical `createOnlyIncomingLeadSet` behavior that:
+  - compares existing and in-request Leads through the established Steam AppID/project/link dedupe keys plus Lead ID;
+  - returns only newly created Leads for persistence;
+  - counts all matches in `skipped_existing`;
+  - leaves the existing Lead array and fields unchanged;
+  - reports `updated=0` and create-only import stats.
+- Added Functions API routing for exact `mode=create-only` requests while leaving the default merge branch unchanged.
+- Added a create-only Supabase REST write using `resolution=ignore-duplicates`, with rows still shaped as `{ id, data, updated_at }` and the Lead stored inside `data`.
+- Added backend canonical-model parity, Express route handling, and repository create writes using `ignoreDuplicates: true`; the JSON fallback appends only new normalized Leads.
+- Confirmed a successful create-only response includes `synced=true`, while the default response and merge write preference remain unchanged.
 - Verification passed:
-  - canonical Lead tests: 5/5
-  - backend model/parity/repository tests: 11/11
-  - focused backend repository rerun: 2/2
+  - initial focused red run: expected failure before implementation
+  - focused green run: 18/18
+  - CRM core: 27/27
+  - backend: 21/21
+  - API direct tests: 2/2
   - Functions typecheck: passed
   - frontend and backend workspace typechecks: passed
-  - sourcing Lead and daily-report schema contract checks: passed
-  - `git diff --check`: passed after the final checkpoint update
+  - `git diff --check`: passed before the checkpoint update
 
 ## Remaining
 
-- Implement create-only import only in the next separately authorized PR 1 step.
-- Handle PR 2 UI behavior only in its own later task.
-- Do not push or create a PR until separately authorized.
+- No remaining PR 1 implementation steps.
+- Commit this verified Step 2 with `feat: add create-only daily report import`.
+- Do not enter PR 2, push, or create a PR in this task.
 
 ## Next Action
 
-Commit the verified Step 1 changes with `feat: add sourcing provenance to lead contract`, then stop. Do not enter the create-only import step, push, or create a PR.
+Run the final post-checkpoint `git diff --check`, review the staged file set, commit with the authorized message, and stop.
 
 ## Git Status
 
 - Worktree: `/Users/neo/Documents/GitHub/CRM-pr1-lead-api-contract`
 - Branch: `codex/pr1-lead-api-contract`
-- Upstream: `origin/main`
-- HEAD/base before the Step 1 commit: `02c4bca2579fc60b35b3fefdb9899fbe69a3a89a`
-- Expected post-commit state: clean worktree with one local Step 1 commit on this branch; the branch remains unpushed.
+- Upstream comparison before the Step 2 commit: `origin/main` (`ahead 1, behind 2`)
+- HEAD before the Step 2 commit: `c603634254fffb3dd2d02f40a5c18ef6945f4acc`
+- Expected post-commit state: clean worktree with Step 1 and Step 2 as two local commits; branch remains unpushed.
 
 ```text
-## codex/pr1-lead-api-contract...origin/main [behind 2]
+## codex/pr1-lead-api-contract...origin/main [ahead 1, behind 2]
  M app/backend/src/lib/backendLeadModel.ts
+ M app/backend/src/lib/leadRepository.ts
+ M app/backend/src/server.ts
+ M app/backend/test/backendLeadModelParity.test.ts
  M app/backend/test/backendRepository.test.ts
+ M app/backend/test/serverContract.test.ts
+ M docs/checkpoints/pr1-lead-api-contract.md
+ M functions/_lib/crm.ts
  M functions/_lib/leadModel.ts
- M functions/api/reports/weekly.ts
+ M functions/api/leads/import-daily-report.ts
  M functions/test/leadModel.test.ts
- M schemas/daily_report.schema.json
- M schemas/sourcing_lead.schema.json
-?? docs/checkpoints/pr1-lead-api-contract.md
+?? functions/test/importDailyReport.test.ts
 ```

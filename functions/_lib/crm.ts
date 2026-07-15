@@ -7,6 +7,7 @@ import {
   type AccessUser
 } from "./crmUsers";
 import {
+  createOnlyIncomingLeadSet,
   leadsFromReport,
   mergeIncomingLeadSet,
   normalizeLead,
@@ -220,10 +221,29 @@ export async function writeLeads(env: Env, leads: Lead[]) {
   });
 }
 
+async function writeNewLeads(env: Env, leads: Lead[]) {
+  if (!leads.length) return;
+  await supabaseFetch(env, "/rest/v1/crm_leads?on_conflict=id", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=ignore-duplicates,return=minimal"
+    },
+    body: JSON.stringify(leads.map((lead) => ({ id: lead.id, data: normalizeLead(lead), updated_at: new Date().toISOString() })))
+  });
+}
+
 export async function mergeIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
   const existing = await readLeads(env);
   const { leads, ...result } = mergeIncomingLeadSet(existing, rawLeads);
   await writeLeads(env, leads);
+  return result;
+}
+
+export async function createOnlyIncomingLeads(env: Env, rawLeads: Partial<Lead>[]) {
+  const existing = await readLeads(env);
+  const { leads, ...result } = createOnlyIncomingLeadSet(existing, rawLeads);
+  await writeNewLeads(env, leads);
   return result;
 }
 

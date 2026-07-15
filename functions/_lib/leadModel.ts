@@ -102,6 +102,16 @@ export type MergeIncomingLeadSetResult = {
   import_stats: ImportStats;
 };
 
+export type CreateOnlyIncomingLeadSetResult = {
+  leads: Lead[];
+  created: number;
+  skipped_existing: number;
+  updated: 0;
+  dropped: number;
+  total: number;
+  import_stats: ImportStats;
+};
+
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
 const priorityValues: NonNullable<Priority>[] = ["P0", "P1", "P2", "P3"];
 const sourcingLaneValues: SourcingLane[] = ["indie_prelaunch", "china_joint", "ea_mobile_high_traction", "china_heat_ops"];
@@ -222,6 +232,51 @@ export function mergeIncomingLeadSet(existing: Lead[], rawLeads: Partial<Lead>[]
   });
 
   return { leads, created, updated, dropped, total: leads.length, import_stats };
+}
+
+export function createOnlyIncomingLeadSet(existing: Lead[], rawLeads: Partial<Lead>[], options: NormalizeLeadOptions = {}): CreateOnlyIncomingLeadSetResult {
+  const existingIds = new Set(existing.map((lead) => lead.id));
+  const existingKeys = new Set(existing.flatMap((lead) => leadKeys(lead)));
+  const leads: Lead[] = [];
+  let skipped_existing = 0;
+  let dropped = 0;
+  const import_stats: ImportStats = {
+    created_unprocessed: 0,
+    created_dropped: 0,
+    created_other: 0,
+    updated_unprocessed_visible: 0,
+    updated_existing_workflow: 0,
+    updated_dropped: 0,
+    updated_other: 0,
+    visible_unprocessed: 0,
+    stale_updates: 0
+  };
+
+  for (const raw of rawLeads) {
+    const incoming = normalizeLead(raw, options);
+    const keys = leadKeys(incoming);
+    if (existingIds.has(incoming.id) || keys.some((key) => existingKeys.has(key))) {
+      skipped_existing += 1;
+      continue;
+    }
+
+    leads.push(incoming);
+    existingIds.add(incoming.id);
+    for (const key of keys) existingKeys.add(key);
+    trackCreatedImport(import_stats, incoming);
+    if (incoming.bucket === "淘汰池") dropped += 1;
+  }
+
+  import_stats.visible_unprocessed = import_stats.created_unprocessed;
+  return {
+    leads,
+    created: leads.length,
+    skipped_existing,
+    updated: 0,
+    dropped,
+    total: existing.length + leads.length,
+    import_stats
+  };
 }
 
 export function mergeLead(current: Lead, incoming: Lead): Lead {

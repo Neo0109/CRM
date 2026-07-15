@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import {
   backendLeadsFromReport,
   backendToCsv,
+  createOnlyBackendIncomingLeads,
   mergeBackendIncomingLeads,
   normalizeBackendLead,
   type BackendDailyReport,
@@ -138,6 +139,12 @@ app.post("/api/leads/import-daily-report", async (req, res, next) => {
   try {
     const report = req.body;
     assertValidDailyReport(report);
+    if (req.query.mode === "create-only") {
+      const result = await createOnlyIncomingLeads(backendLeadsFromReport(report));
+      res.json({ synced: true, ...result, report_date: report.report_date, summary: report.summary });
+      return;
+    }
+
     const result = await mergeIncomingLeads(backendLeadsFromReport(report));
     res.json({ ...result, report_date: report.report_date, summary: report.summary });
   } catch (error) {
@@ -198,6 +205,14 @@ async function mergeIncomingLeads(rawLeads: Partial<BackendLead>[]) {
   const result = mergeBackendIncomingLeads(await readLeads(), rawLeads);
   for (const lead of result.leads) assertValidLead(lead);
   await writeLeads(result.leads);
+  const { leads: _leads, ...summary } = result;
+  return summary;
+}
+
+async function createOnlyIncomingLeads(rawLeads: Partial<BackendLead>[]) {
+  const result = createOnlyBackendIncomingLeads(await readLeads(), rawLeads);
+  for (const lead of result.leads) assertValidLead(lead);
+  await leadRepository.createLeads(result.leads);
   const { leads: _leads, ...summary } = result;
   return summary;
 }

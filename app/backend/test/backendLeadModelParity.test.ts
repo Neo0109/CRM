@@ -6,6 +6,7 @@ import {
   backendLeadKeys,
   backendLeadsFromReport,
   backendToCsv,
+  createOnlyBackendIncomingLeads,
   isBackendSystemLeadRow,
   mergeBackendIncomingLeads,
   mergeBackendLead,
@@ -20,6 +21,7 @@ const canonicalLeadModel = ("normalizeLead" in canonicalLeadModelModule
   ? canonicalLeadModelModule
   : (canonicalLeadModelModule.default ?? canonicalLeadModelModule)) as typeof import("../../../functions/_lib/leadModel.ts");
 const {
+  createOnlyIncomingLeadSet,
   leadKeys,
   leadsFromReport,
   mergeIncomingLeadSet,
@@ -54,6 +56,7 @@ describe("backend lead model canonical parity", () => {
       "normalizeBackendLead",
       "mergeBackendLead",
       "mergeBackendIncomingLeads",
+      "createOnlyBackendIncomingLeads",
       "backendLeadKeys",
       "backendLeadsFromReport",
       "backendToCsv",
@@ -120,6 +123,26 @@ describe("backend lead model canonical parity", () => {
     ], { today: "2026-07-04" });
 
     assert.deepEqual(backendResult, canonicalResult);
+  });
+
+  it("uses canonical create-only semantics for backend imports", () => {
+    const existingRaw = rawLead({
+      id: "lead-existing",
+      project: "Existing Game",
+      steam_app_id: "777",
+      priority: "P0",
+      notes: "protected"
+    });
+    const existing = normalizeBackendLead(existingRaw as Partial<BackendLead>, { today: "2026-07-01" });
+    const incoming = [
+      rawLead({ project: "Steam Match", steam_app_id: "777", priority: null }),
+      rawLead({ project: "New Game", steam_app_id: "999", priority: null })
+    ] as Partial<BackendLead>[];
+
+    assert.deepEqual(
+      createOnlyBackendIncomingLeads([existing], incoming, { today: "2026-07-15" }),
+      createOnlyIncomingLeadSet([existing], incoming, { today: "2026-07-15" })
+    );
   });
 
   it("expands reports and exports CSV through canonical Functions semantics", () => {
