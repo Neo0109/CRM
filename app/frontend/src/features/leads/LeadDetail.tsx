@@ -2,7 +2,7 @@ import { AlertTriangle, CalendarCheck, CheckCircle2, ExternalLink, ListChecks, P
 import { useEffect, useState, type ReactElement } from "react";
 import { LeadEvidencePanel } from "../../LeadEvidencePanel";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead } from "../../types";
-import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityValues, regionPriorityValues, regionValues, stageLabel, stageValues } from "./leadConstants";
+import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityFromSelection, priorityLabel, prioritySelection, prioritySelectionOptions, regionPriorityValues, regionValues, stageLabel, stageValues } from "./leadConstants";
 import { Select, TextareaField, TextField } from "./leadControls";
 import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, normalizedLinkHref, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
 import { cleanHumanLeadText } from "./leadHumanFields";
@@ -72,7 +72,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
 
   return <aside className="detail-panel" data-detail-layout="pc-review-polish">
     <div className="detail-head">
-      <div><p className="eyebrow">{draft.bucket} · {draft.priority} · {draft.review_status}</p><h2>{isTestingOverdue(draft) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={16} /></span>}{draft.project}</h2></div>
+      <div><p className="eyebrow">{draft.bucket} · {priorityLabel(draft.priority)} · {draft.review_status}</p><h2>{isTestingOverdue(draft) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={16} /></span>}{draft.project}</h2></div>
       <button className="primary-button save-icon-button" type="button" onClick={save} aria-label="保存" title="保存"><Save size={18} /></button>
     </div>
 
@@ -128,7 +128,7 @@ export function LeadDetail({ lead, onPatch, missingLinksMode }: { lead: Lead | n
       <div className="form-grid two">
         <Select label="池子" value={draft.bucket} options={bucketValues} onChange={(value) => setDraft((current) => (current ? { ...current, bucket: value, stage: stageFromBucket(value), ...reviewPatchForBucket(value) } : current))} />
         <Select label="阶段" value={draft.stage} options={stageValues} getOptionLabel={stageLabel} onChange={(value) => setField("stage", value)} />
-        <Select label="优先级" value={draft.priority} options={priorityValues} onChange={(value) => setField("priority", value)} />
+        <Select label="优先级" value={prioritySelection(draft.priority)} options={prioritySelectionOptions} onChange={(value) => setField("priority", priorityFromSelection(value))} />
         <TextField label="发售窗口" value={draft.release_window} onChange={(value) => setField("release_window", value)} />
         {(draft.bucket === "未处理" || draft.bucket === "淘汰池" || draft.drop_reason) ? <Select label="淘汰原因（若淘汰）" value={draft.drop_reason ?? "未选择"} options={dropReasonOptions} onChange={(value) => setField("drop_reason", value === "未选择" ? null : value)} /> : null}
       </div>

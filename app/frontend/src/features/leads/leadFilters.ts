@@ -1,10 +1,12 @@
 import { hasEvidenceIssue, needsActionAttention } from "../../leadTriage";
+import { priorityRank, unlabeledPriority, type PriorityFilter } from "../../leadPriority";
 import type { Bucket, Lead, Region, ReviewStatus, Stage } from "../../types";
 import { needsGameLinkTriage } from "./leadLinks";
 
 export type LeadFilters = {
   query: string;
   bucket: "全部" | Bucket;
+  priority: PriorityFilter;
   region: "全部" | Region;
   stage: "全部" | Stage;
   owner: string;
@@ -31,6 +33,7 @@ export type DashboardStats = {
 export const emptyLeadFilters: LeadFilters = {
   query: "",
   bucket: "全部",
+  priority: "全部",
   region: "全部",
   stage: "全部",
   owner: "",
@@ -64,6 +67,8 @@ export function filterLeads(leads: Lead[], filters: LeadFilters, now = new Date(
     ].filter(Boolean).join(" ").toLowerCase();
     const queryMatch = !filters.query || haystack.includes(filters.query.toLowerCase());
     const bucketMatch = filters.bucket === "全部" || lead.bucket === filters.bucket;
+    const priorityMatch = filters.priority === "全部"
+      || (filters.priority === unlabeledPriority ? lead.priority === null : lead.priority === filters.priority);
     const regionMatch = filters.region === "全部" || lead.region === filters.region;
     const stageMatch = filters.stage === "全部" || lead.stage === filters.stage;
     const ownerMatch = !filters.owner || (lead.owner ?? "").toLowerCase().includes(filters.owner.toLowerCase());
@@ -73,14 +78,14 @@ export function filterLeads(leads: Lead[], filters: LeadFilters, now = new Date(
     const evidenceMatch = !filters.evidenceIssues || hasEvidenceIssue(lead, now);
     const missingLinkMatch = !filters.missingLinks || needsGameLinkTriage(lead);
     const actionMatch = !filters.needsAction || needsActionAttention(lead, now);
-    return queryMatch && bucketMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && evidenceMatch && missingLinkMatch && actionMatch;
+    return queryMatch && bucketMatch && priorityMatch && regionMatch && stageMatch && ownerMatch && cityMatch && releaseMatch && reviewMatch && evidenceMatch && missingLinkMatch && actionMatch;
   });
 
-  if (shouldUseDefaultReviewQueue(matchingLeads, filters)) {
-    return matchingLeads.filter(isDefaultReviewQueueLead);
-  }
+  const visibleLeads = shouldUseDefaultReviewQueue(matchingLeads, filters)
+    ? matchingLeads.filter(isDefaultReviewQueueLead)
+    : matchingLeads;
 
-  return matchingLeads;
+  return [...visibleLeads].sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority));
 }
 
 export function filterLeadsForView(leads: Lead[], filters: LeadFilters, now = new Date()) {
@@ -91,6 +96,7 @@ export function hasExplicitLeadFilters(filters: LeadFilters) {
   return Boolean(
     filters.query.trim() ||
     filters.bucket !== "全部" ||
+    filters.priority !== "全部" ||
     filters.region !== "全部" ||
     filters.stage !== "全部" ||
     filters.owner.trim() ||

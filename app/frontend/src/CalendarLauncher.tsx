@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { fetchLeads, updateLead } from "./api";
 import { buildCalendarReminderPatch, canQuickAddFollowUpToCalendar } from "./calendarFollowUpActions";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "./followUpQueue";
+import { priorityLabel } from "./leadPriority";
 import { officialSteamEvents, steamEventsSource, type SteamEventKind } from "./steamEvents";
 import type { Lead } from "./types";
 
@@ -73,7 +74,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
       start: lead.due_date!,
       end: lead.due_date!,
       kind: "lead",
-      note: `${lead.bucket} · ${lead.priority}${lead.owner ? ` · ${lead.owner}` : ""}`,
+      note: `${lead.bucket} · ${priorityLabel(lead.priority)}${lead.owner ? ` · ${lead.owner}` : ""}`,
       lead
     })), [calendarLeads]);
 
@@ -260,7 +261,7 @@ function FollowUpQueueCard({ item, onAddToCalendar, saving }: {
   return <article className="follow-reminder-card">
     <div>
       <strong>{item.lead.project}</strong>
-      <small>{item.lead.bucket} · {item.lead.priority}</small>
+      <small>{item.lead.bucket} · {priorityLabel(item.lead.priority)}</small>
     </div>
     <p>{formatFollowUpSummary(item)}</p>
     <div className="evidence-chip-list follow-up-chip-list">

@@ -1,5 +1,6 @@
 import { buildLeadEvidence, type LeadEvidenceFlag, type LeadEvidenceTone } from "./leadEvidence";
 import { buildFollowUpQueue } from "./followUpQueue";
+import { priorityRank } from "./leadPriority";
 import type { Bucket, Lead, ReviewStatus } from "./types";
 
 export type EvidenceChipTone = LeadEvidenceTone;
@@ -187,14 +188,7 @@ function evidenceIssueScore(lead: Lead, now: Date) {
 
 function sortByTriagePriority(a: Lead, b: Lead) {
   const domesticScore = Number(b.region === "中国") - Number(a.region === "中国");
-  return domesticScore || priorityScore(a.priority) - priorityScore(b.priority) || dateScore(b.first_seen) - dateScore(a.first_seen) || a.project.localeCompare(b.project, "zh-CN");
-}
-
-function priorityScore(priority: Lead["priority"]) {
-  if (priority === "P0") return 0;
-  if (priority === "P1") return 1;
-  if (priority === "P2") return 2;
-  return 3;
+  return domesticScore || priorityRank(a.priority) - priorityRank(b.priority) || dateScore(b.first_seen) - dateScore(a.first_seen) || a.project.localeCompare(b.project, "zh-CN");
 }
 
 function dateScore(value: string | null) {

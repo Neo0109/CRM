@@ -1,3 +1,4 @@
+import { priorityLabel } from "./leadPriority";
 import type { Lead, LeadAssistantAttachment, LeadAssistantResult } from "./types";
 
 export type AssistantDraftReadiness = "strong" | "usable" | "thin";
@@ -163,7 +164,7 @@ function leadResultSuggestions(lead: Partial<Lead>) {
 }
 
 function leadResultSummary(lead: Partial<Lead>) {
-  const priority = lead.priority ?? "P2";
+  const priority = priorityLabel(lead.priority ?? null);
   const bucket = lead.bucket ?? "观察池";
   const reason = lead.priority_reason ?? "待复核";
   return `${priority} · ${bucket} · ${reason}`;

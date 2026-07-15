@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { fetchLeads, fetchWeeklyReport } from "./api";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueue, type FollowUpQueueItem } from "./followUpQueue";
+import { priorityLabel } from "./leadPriority";
 import { linkLabel, normalizedLinkHref } from "./linkPresentation";
 import type { WeeklyLeadSummary, WeeklyReport } from "./types";
 
@@ -115,7 +116,7 @@ function WeeklyReportWorkspace({ onClose }: { onClose: () => void }) {
           </div>
           <div className="weekly-section compact">
             <div className="weekly-section-head"><h3>本周新增池子分布</h3><span>{report.sourced_leads.length}</span></div>
-            {report.sourced_leads.length ? <ul className="weekly-mini-list">{report.sourced_leads.slice(0, 12).map((lead) => <li key={lead.id}><strong>{lead.project}</strong><small>{lead.priority} · {lead.bucket} · {lead.region}</small></li>)}</ul> : <div className="weekly-empty">本周暂无新增。</div>}
+            {report.sourced_leads.length ? <ul className="weekly-mini-list">{report.sourced_leads.slice(0, 12).map((lead) => <li key={lead.id}><strong>{lead.project}</strong><small>{priorityLabel(lead.priority)} · {lead.bucket} · {lead.region}</small></li>)}</ul> : <div className="weekly-empty">本周暂无新增。</div>}
           </div>
         </section>
       </>}
@@ -127,7 +128,7 @@ function WeeklyFollowUpCard({ item }: { item: FollowUpQueueItem }) {
   return <article className="weekly-lead-card">
     <div className="weekly-lead-head">
       <div>
-        <p className="eyebrow">{item.lead.bucket} · {item.lead.priority}</p>
+        <p className="eyebrow">{item.lead.bucket} · {priorityLabel(item.lead.priority)}</p>
         <h3>{item.lead.project}</h3>
       </div>
       <div className="evidence-chip-list follow-up-chip-list">
@@ -148,7 +149,7 @@ function WeeklyLeadCard({ lead }: { lead: WeeklyLeadSummary }) {
   return <article className="weekly-lead-card">
     <div className="weekly-lead-head">
       <div>
-        <p className="eyebrow">{lead.bucket} · {lead.priority} · {lead.region}</p>
+        <p className="eyebrow">{lead.bucket} · {priorityLabel(lead.priority)} · {lead.region}</p>
         <h3>{lead.project}</h3>
       </div>
       {lead.evaluation_grade && <span className={`weekly-grade grade-${lead.evaluation_grade.replace("+", "plus").replace("-", "minus")}`}>{lead.evaluation_grade}</span>}

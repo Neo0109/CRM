@@ -1,7 +1,8 @@
 import { FileJson, PlusCircle, Save } from "lucide-react";
 import { useState } from "react";
 import { importJsonLeads } from "./api";
-import type { Bucket, ContactMethod, ContactType, Lead, Priority } from "./types";
+import { priorityFromSelection, prioritySelectionOptions, unlabeledPriority, type PrioritySelection } from "./leadPriority";
+import type { Bucket, ContactMethod, ContactType, Lead } from "./types";
 import "./manual.css";
 
 type ManualImportPageProps = {
@@ -16,7 +17,7 @@ type ManualLeadForm = {
   country: string;
   city: string;
   bucket: Bucket;
-  priority: Priority;
+  priority: PrioritySelection;
   genre: string;
   progress: string;
   publisher_status: string;
@@ -28,7 +29,6 @@ type ManualLeadForm = {
 };
 
 const bucketOptions: Bucket[] = ["未处理", "待评测", "测试中", "跟进中", "观察池", "推进池", "淘汰池"];
-const priorityOptions: Priority[] = ["P0", "P1", "P2", "P3"];
 const contactTypeOptions: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 
 const defaultForm: ManualLeadForm = {
@@ -38,7 +38,7 @@ const defaultForm: ManualLeadForm = {
   country: "中国",
   city: "",
   bucket: "未处理",
-  priority: "P2",
+  priority: unlabeledPriority,
   genre: "",
   progress: "待补充",
   publisher_status: "待确认",
@@ -53,7 +53,7 @@ const jsonPlaceholder = `{
   "project": "示例游戏",
   "country": "中国",
   "bucket": "未处理",
-  "priority": "P2",
+  "priority": null,
   "progress": "Demo 已上线",
   "publisher_status": "待确认",
   "priority_reason": "美术风格适合B站内容扩散",
@@ -136,7 +136,7 @@ export function ManualImportPage({ onImported, onStatus }: ManualImportPageProps
           <TextField label="国家/地区" value={form.country} onChange={(value) => setField("country", value || "未知")} />
           <TextField label="城市" value={form.city} onChange={(value) => setField("city", value)} />
           <SelectField label="池子" value={form.bucket} options={bucketOptions} onChange={(value) => setField("bucket", value)} />
-          <SelectField label="优先级" value={form.priority} options={priorityOptions} onChange={(value) => setField("priority", value)} />
+          <SelectField label="优先级" value={form.priority} options={prioritySelectionOptions} onChange={(value) => setField("priority", value)} />
           <TextField label="类型" value={form.genre} onChange={(value) => setField("genre", value)} />
         </div>
         <TextareaField label="进度" value={form.progress} onChange={(value) => setField("progress", value)} />
@@ -172,7 +172,7 @@ function buildLead(form: ManualLeadForm): Partial<Lead> {
     country: form.country.trim() || "未知",
     city: optionalText(form.city),
     bucket: form.bucket,
-    priority: form.priority,
+    priority: priorityFromSelection(form.priority),
     genre: optionalText(form.genre),
     progress: form.progress.trim() || "待补充",
     publisher_status: form.publisher_status.trim() || "待确认",
