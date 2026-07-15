@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:42 CST
+Last updated: 2026-07-16 00:45 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis and Phase 2 bounded proposal are complete. PLAN.md already locks the PR 5 business contract and the user has explicitly granted Phase 3 approval plus autonomous implementation, verification, PR, merge, deployment, and production-acceptance authority for this PR only. Phase 4 will start with fixed-fixture red tests.
+Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation is in progress; the fixed-fixture source and pure-decision contract is red for the expected missing module only.
 
 ## Current Goal
 
@@ -87,10 +87,14 @@ Explicitly out of scope:
 - Verified the pre-existing Steam-source and candidate-audit baseline is green: 14/14 focused tests.
 - Confirmed Steam's official review-list contract returns `query_summary.total_positive`, `total_negative`, and `total_reviews`, and documents both `language` and `purchase_type`; selected only documented request parameters.
 - Recorded the exact standalone source/artifact implementation boundary above without changing current Daily, workflow, Lead, or sync behavior.
+- Added the fixed catalog-page, official review-summary, AppDetails, and exact-threshold fixture for five deterministic candidates; the fixture JSON parses successfully.
+- Added focused source-contract tests for localized count/EA-tag parsing, complete pagination, prefilter-only catalog evidence, the documented official review query, raw-count rate calculation, two-fact EA confirmation, all locked threshold edges, full-set retention, and fixed-fixture collection.
+- Captured the focused red run: `node --test automations/test/steamReviewOpportunitySource.test.mjs` fails only with `ERR_MODULE_NOT_FOUND` for the planned `steam_review_opportunity_source.mjs`.
 
 ## Remaining
 
-- Add fixed-fixture red tests for catalog pagination/prefilter, official review confirmation, EA double confirmation, exact threshold edges, artifact schema, and the no-sync/no-Lead boundary.
+- Implement the standalone Steam catalog/review/AppDetails source and pure qualification module until the focused source contract is green.
+- Add fixed-fixture red tests for the audit artifact schema/contract, writer/CLI boundary, and no-sync/no-Lead guard.
 - Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
 - Audit the full diff against PLAN.md PR 5, push, open a ready PR to `main`, wait for all checks, resolve only in-scope failures, and verify clean mergeability plus zero unresolved review threads.
@@ -99,11 +103,13 @@ Explicitly out of scope:
 
 ## Next Action
 
-Add the fixed Steam catalog/review/AppDetails fixture and focused red tests for the approved standalone source, pure decision, audit artifact, schema/contract, and static no-sync boundary; capture the red result before implementation.
+Implement only `steam_review_opportunity_source.mjs` against the captured fixed-fixture contract, run the focused test to green, update this checkpoint, and commit the source step before adding the artifact/writer contract.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main [ahead 1]
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 2]
  M docs/checkpoints/pr5-steam-schinese-review-source.md
+?? automations/test/fixtures/steam-review-opportunity-source.json
+?? automations/test/steamReviewOpportunitySource.test.mjs
 ```

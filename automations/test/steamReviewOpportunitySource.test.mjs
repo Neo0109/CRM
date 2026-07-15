@@ -1,0 +1,171 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+import {
+  collectSteamReviewOpportunities,
+  evaluateSteamReviewOpportunity,
+  fetchSteamReviewSummary,
+  officialStoreEarlyAccess,
+  parseSteamCatalogPage,
+  prefilterSteamReviewCandidates,
+  scanSteamPcCatalog
+} from "../jobs/steam_review_opportunity_source.mjs";
+
+const fixture = JSON.parse(readFileSync(
+  new URL("./fixtures/steam-review-opportunity-source.json", import.meta.url),
+  "utf8"
+));
+
+describe("Steam simplified-Chinese review opportunity source", () => {
+  it("parses localized catalog review counts and the Steam Early Access tag", () => {
+    const page = fixture.catalog_pages[0];
+    const parsed = parseSteamCatalogPage(page.payload, { start: page.start });
+
+    assert.equal(parsed.totalCount, 5);
+    assert.deepEqual(parsed.candidates.map((candidate) => ({
+      appId: candidate.appId,
+      totalReviews: candidate.catalogReviewSummary.totalReviews,
+      earlyAccessTag: candidate.earlyAccessTag
+    })), [
+      { appId: "1001", totalReviews: 999, earlyAccessTag: true },
+      { appId: "1002", totalReviews: 1000, earlyAccessTag: true }
+    ]);
+  });
+
+  it("pages the public Steam PC catalog to completion with fixed responses", async () => {
+    const starts = [];
+    const scan = await scanSteamPcCatalog({
+      pageSize: 2,
+      fetchTextImpl: async (url) => {
+        const start = Number(new URL(url).searchParams.get("start"));
+        starts.push(start);
+        const page = fixture.catalog_pages.find((item) => item.start === start);
+        assert.ok(page, `unexpected catalog start ${start}`);
+        return JSON.stringify(page.payload);
+      }
+    });
+
+    assert.deepEqual(starts, [0, 2, 4]);
+    assert.equal(scan.summary.scanComplete, true);
+    assert.equal(scan.summary.pagesScanned, 3);
+    assert.equal(scan.summary.catalogEntriesSeen, 5);
+    assert.equal(scan.summary.uniqueAppsSeen, 5);
+    assert.deepEqual(scan.candidates.map((candidate) => candidate.appId), ["1001", "1002", "1003", "1004", "1005"]);
+  });
+
+  it("uses the localized catalog summary only to prefilter official lookups", () => {
+    const candidates = fixture.catalog_pages.flatMap((page) => parseSteamCatalogPage(page.payload, { start: page.start }).candidates);
+    const prefiltered = prefilterSteamReviewCandidates(candidates);
+
+    assert.deepEqual(prefiltered.map((candidate) => candidate.appId), ["1002", "1003", "1004", "1005"]);
+    assert.equal(prefiltered.some((candidate) => candidate.appId === "1001"), false);
+  });
+
+  it("requests the official schinese all-purchase summary and derives rate from raw counts", async () => {
+    let requestedUrl;
+    const summary = await fetchSteamReviewSummary("1003", {
+      fetchJsonImpl: async (url) => {
+        requestedUrl = new URL(url);
+        return fixture.review_responses["1003"];
+      }
+    });
+
+    assert.equal(requestedUrl.pathname, "/appreviews/1003");
+    assert.equal(requestedUrl.searchParams.get("json"), "1");
+    assert.equal(requestedUrl.searchParams.get("filter"), "all");
+    assert.equal(requestedUrl.searchParams.get("language"), "schinese");
+    assert.equal(requestedUrl.searchParams.get("purchase_type"), "all");
+    assert.equal(requestedUrl.searchParams.get("review_type"), "all");
+    assert.equal(summary.positiveReviews, 800);
+    assert.equal(summary.negativeReviews, 200);
+    assert.equal(summary.totalReviews, 1000);
+    assert.equal(summary.positiveRate, 80);
+  });
+
+  it("requires both the catalog tag and official store metadata for current EA", () => {
+    assert.equal(officialStoreEarlyAccess(fixture.appdetails["1003"]), true);
+    assert.equal(officialStoreEarlyAccess(fixture.appdetails["1004"]), false);
+
+    const reviewSummary = { status: "available", totalReviews: 1000, positiveRate: 80 };
+    assert.deepEqual(evaluateSteamReviewOpportunity({
+      reviewSummary,
+      catalogEarlyAccess: true,
+      storeEarlyAccess: false
+    }).matchedRules, []);
+    assert.deepEqual(evaluateSteamReviewOpportunity({
+      reviewSummary,
+      catalogEarlyAccess: false,
+      storeEarlyAccess: true
+    }).matchedRules, []);
+  });
+
+  it("implements every locked threshold boundary without truncation", () => {
+    for (const testCase of fixture.threshold_cases) {
+      const result = evaluateSteamReviewOpportunity({
+        reviewSummary: {
+          status: testCase.review_summary.status,
+          totalReviews: testCase.review_summary.total_reviews,
+          positiveRate: testCase.review_summary.positive_rate
+        },
+        catalogEarlyAccess: testCase.catalog_early_access,
+        storeEarlyAccess: testCase.store_early_access
+      });
+      assert.deepEqual(result.matchedRules, testCase.expected_rules, testCase.name);
+      assert.equal(result.primaryLane, testCase.expected_primary_lane, testCase.name);
+    }
+  });
+
+  it("confirms every prefilter hit through official fixtures and never calls the 999-review miss", async () => {
+    const reviewCalls = [];
+    const detailsCalls = [];
+    const scan = {
+      summary: {
+        scanComplete: true,
+        pagesScanned: 3,
+        catalogEntriesSeen: 5,
+        uniqueAppsSeen: 5,
+        reportedTotal: 5,
+        sourceFailures: []
+      },
+      candidates: fixture.catalog_pages.flatMap((page) => parseSteamCatalogPage(page.payload, { start: page.start }).candidates)
+    };
+
+    const result = await collectSteamReviewOpportunities({
+      scanCatalogImpl: async () => scan,
+      fetchReviewSummaryImpl: async (appId) => {
+        reviewCalls.push(appId);
+        const payload = fixture.review_responses[appId];
+        return {
+          status: "available",
+          text: payload.query_summary.review_score_desc,
+          positiveReviews: payload.query_summary.total_positive,
+          negativeReviews: payload.query_summary.total_negative,
+          totalReviews: payload.query_summary.total_reviews,
+          positiveRate: Number(((payload.query_summary.total_positive / payload.query_summary.total_reviews) * 100).toFixed(4)),
+          language: "schinese",
+          purchaseType: "all",
+          sourceStatus: "steam_appreviews"
+        };
+      },
+      fetchAppDetailsImpl: async (appId) => {
+        detailsCalls.push(appId);
+        return fixture.appdetails[appId];
+      }
+    });
+
+    assert.deepEqual(reviewCalls, ["1002", "1003", "1004", "1005"]);
+    assert.deepEqual(detailsCalls, reviewCalls);
+    assert.equal(result.summary.prefilterMatches, 4);
+    assert.equal(result.summary.officialReviewsConfirmed, 4);
+    assert.equal(result.summary.qualified, 3);
+    assert.equal(result.summary.notQualified, 1);
+    assert.equal(result.summary.needsEvidence, 0);
+    assert.deepEqual(result.opportunities.map((item) => [item.appId, item.primaryLane]), [
+      ["1002", null],
+      ["1003", "ea_mobile_high_traction"],
+      ["1004", "china_heat_ops"],
+      ["1005", "china_heat_ops"]
+    ]);
+    assert.deepEqual(result.opportunities.at(-1).matchedRules, ["ea_mobile_high_traction", "china_heat_ops"]);
+  });
+});
