@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 21:40 CST
 
-Last updated: 2026-07-15 22:25 CST
+Last updated: 2026-07-15 22:35 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: PR 3 implementation, all PLAN.md final repository verification, repository plan persistence, and the independent post-checkpoint diff check are complete. Publication, CI, merge, and production acceptance remain.
+Phase status: PR 3 is merged, deployed, and accepted at the approved non-mutating production boundary. Stop before PR 4.
 
 ## Current Goal
 
@@ -104,20 +104,28 @@ Explicitly out of scope:
 - The implementation is committed as `c3bd0ed` (`feat: add sourcing candidate audit artifacts`) after the checkpoint and red-test commits.
 - Persisted the authoritative plan unchanged at repository-relative `PLAN.md`; `cmp` passed and both copies have SHA-256 `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
 - Independent post-checkpoint `git diff --check` passed without rerunning the already-passing complete verification.
+- Published the verified tree through the connected GitHub App after the local OAuth credential correctly refused workflow-file writes without `workflow` scope; the remote branch tree SHA `c8886ccf2b969dce19a5b067ca5d370332033aac` exactly matched the verified local tree.
+- Created ready PR `#89` (`https://github.com/Neo0109/CRM/pull/89`); the PR was one commit ahead and zero behind `main`, contained exactly the 19 approved PR 3 files, and had no review submissions or unresolved review threads.
+- PR checks passed: Build run `29423938110` and Cloudflare Pages preview deployment both completed successfully; the PR was `CLEAN` and `MERGEABLE` before merge.
+- Squash-merged PR `#89` as remote-main commit `6542cee2b3ea1ba9e853c3606304557f343c9155`.
+- Verified `origin/main` contains the merge commit and has the same final tree as the verified PR 3 worktree.
+- Post-merge Build run `29424028861` completed successfully for head SHA `6542cee2b3ea1ba9e853c3606304557f343c9155`.
+- Cloudflare Pages production check `87381788395` completed successfully for the same SHA with deployment `7aaffb60-6496-42e4-8091-3cff9b4e9b9f`.
+- Production `https://crm-pages.pages.dev/api/health` returned HTTP `200`, `ok=true`, version `v2.7.6-sourcing-evidence-integrity`, and `storage=supabase`.
+- Direct remote-main acceptance confirmed repository `PLAN.md` is the expected 11,201-byte blob, the candidate schema and projection module are present, both Daily workflows require and stage `data/sourcing_candidates/YYYY-MM-DD.json`, workflow triggers remain `schedule`/`workflow_dispatch`, and CRM sync still calls only `/api/reports/sync`.
+- No manual Daily generation, workflow dispatch, CRM sync, or production-data mutation was performed; the first dated candidate audit will be created by the normal cloud schedule, preserving the explicit PR 3 non-scope boundary.
 
 ## Remaining
 
-- Commit the persisted plan and final checkpoint update, push, create a ready PR to `main`, wait for CI, resolve in-scope failures, verify diff/reviews/mergeability, and squash merge.
-- Verify merged `main`, deployment, production `/api/health`, and PLAN.md PR 3 online acceptance evidence; update this checkpoint and stop before PR 4.
+- None for PR 3 delivery.
+- Normal scheduled automation will provide the first dated candidate-audit artifact and receipt; do not force a production run as part of this completed PR 3 task.
 
 ## Next Action
 
-Commit the byte-identical repository `PLAN.md` and final checkpoint update, push the branch, and follow the delivery workflow through ready PR, CI, scope/review/mergeability checks, and squash merge.
+Stop. Do not enter PR 4 without a separate approved task.
 
 ## Git Status
 
 ```text
-## codex/pr3-sourcing-candidate-audit...origin/main [ahead 4]
- M docs/checkpoints/pr3-sourcing-candidate-audit.md
-?? PLAN.md
+## codex/pr3-sourcing-candidate-audit...origin/main [ahead 6, behind 1]
 ```
