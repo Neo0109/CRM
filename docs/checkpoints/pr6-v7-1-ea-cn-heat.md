@@ -57,18 +57,22 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - The create-only Functions route now accepts a valid configured `CRM_AUTOMATION_TOKEN` Bearer request and falls back to its original user/session access path; the default merge mode remains user-authenticated and unchanged.
   - The workflow reuses `CRM_AUTOMATION_TOKEN` (with the repository's existing backwards-compatible secret fallback) and neither creates nor rotates any secret.
   - Added a red-then-green API test for automation Bearer create-only import. CRM core now passes 31/31, PR 6 focused tests pass 11/11, Functions typecheck passes, and the complete post-fix `npm run verify:all` passes again.
+- Published PR 6 delivery branch and opened the ready PR:
+  - Branch `codex/pr6-v7-1-ea-cn-heat` was pushed at `dff8a7f`.
+  - The configured HTTPS OAuth credential lacked GitHub's workflow-file scope, so the first push was rejected before any remote ref changed. The existing authenticated SSH Git transport was verified read-only and then used successfully; no account, token, or permission was changed.
+  - Ready PR: `#92` — `https://github.com/Neo0109/CRM/pull/92`, base `main`.
 
 ## Remaining
 
-- Commit, push, open PR, monitor CI, and squash merge.
+- Monitor PR `#92` CI/review/mergeability and squash merge when all required checks are successful.
 - Verify build, Cloudflare deployment, production `/api/health`, and PR 6 online acceptance.
 
 ## Next Action
 
-Commit the automation-auth integration correction and this checkpoint, re-review the complete `origin/main...HEAD` diff for PR 6-only scope, then push and create the PR.
+Commit and push this checkpoint update, then wait for every PR `#92` check and review gate before merging.
 
 ## Git Status
 
 - Branch: `codex/pr6-v7-1-ea-cn-heat`
 - Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Worktree: the automation-auth integration correction, its tests/docs, and this checkpoint update are uncommitted; all checks are green and `PLAN.md` remains unchanged.
+- Worktree: only this post-publish checkpoint update is uncommitted; the remote PR branch otherwise matches local `dff8a7f`, all local checks are green, and `PLAN.md` remains unchanged.
