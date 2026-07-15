@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:57 CST
+Last updated: 2026-07-16 00:02 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation and final local verification are complete. The V7.0 admission, publication, source projection, active rule chain, health contract, documentation, complete Daily V4 regression alignment, typechecks, repository verification, and diff checks are green. GitHub delivery and online acceptance remain.
+Phase status: Phase 4 implementation and final local verification are complete. The V7.0 admission, publication, source projection, active rule chain, health contract, documentation, complete Daily V4 regression alignment, typechecks, repository verification, and diff checks are green. The branch is pushed and ready PR `#90` is open; CI, squash merge, deployment, and online acceptance remain.
 
 ## Current Goal
 
@@ -122,20 +122,22 @@ Explicitly out of scope:
 - The first `npm run verify:all` reached the legacy `scripts/test-sourcing-v6-3.mjs` guard and failed only because it still required the V6.8 generator identity/quarantine diagnostic. Updated that assertion to require the V7 generator identity, qualified/push invariant, and absence of formal-count targets.
 - Final `npm run verify:all` passed, including frontend/backend/functions tests and typechecks, Daily V4 114/114, automation diagnostics, Lead Assistant, Sourcing Learning, Daily heartbeat, V7 rule guards, Daily contract validation, temporary frontend production build, and internal `git diff --check`.
 - Standalone `git diff --check` is green and dependency installation left the tracked worktree unchanged.
+- Confirmed the final branch diff remains limited to PR 4 admission, activation, health-contract, directly required schema/validator, test, workflow-argument, documentation, and checkpoint surfaces; `origin/main` remains the recorded baseline.
+- Pushed all ten local PR 4 commits to `origin/codex/pr4-v7-indie-admission` and set the local branch to track the matching remote branch.
+- Opened ready PR `#90`, `Activate V7.0 indie admission and health contract`, against `main`: `https://github.com/Neo0109/CRM/pull/90`.
 
 ## Remaining
 
-- Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
+- Wait for PR `#90` CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
 - Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
 
 ## Next Action
 
-Commit the final stale guard alignment, verify a clean PR 4-only diff against current `origin/main`, push the branch, and create a ready PR to `main`.
+Commit and push this delivery checkpoint, then wait for PR `#90` checks, resolve only PR 4 failures, verify review threads and mergeability, and squash merge when green.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 9]
+## codex/pr4-v7-indie-admission...origin/codex/pr4-v7-indie-admission
  M docs/checkpoints/pr4-v7-indie-admission.md
- M scripts/test-sourcing-v6-3.mjs
 ```
