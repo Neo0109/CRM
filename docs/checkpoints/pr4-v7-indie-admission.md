@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:03 CST
+Last updated: 2026-07-15 23:06 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is explicitly authorized. The remote baseline and bounded read-only diagnosis are complete, and the exact implementation boundary is recorded below. No PR 4 business code has been changed yet; the next step is the focused red-test slice.
+Phase status: Phase 4 implementation is explicitly authorized. The remote baseline and bounded read-only diagnosis are complete. The fixed V7.0 fixture and focused test contract are committed in red state; implementation has not started yet.
 
 ## Current Goal
 
@@ -83,10 +83,12 @@ Explicitly out of scope:
   - keep workflow triggers, CRM import payload, schemas outside the directly required candidate-summary extension, Lead/API/UI/Supabase, and PR 5+ sources unchanged.
 - Reconstructed the exact seven historical weak Steam regression samples from dated reports; every one states that strong public data is missing:
   - `Brainrot Fight` (`4867700`), `Sweet Dance` (`4560290`), `鏡` (`4869740`), `I Am the Demon King: Stop Sun Wukong` (`4785810`), `Fantasy World / 幻想世界` (`4212170`), `从零开始的钓鱼人生Lift` (`4889630`), and `仙途有约` (`4833750`).
+- Added `automations/test/fixtures/v7-indie-admission.json` with one complete qualified evidence contract, one non-compensating failure per mandatory gate, exact 0/2/7 qualified-count cases, and the seven historical weak Steam samples/AppIDs.
+- Added `automations/test/onlineDailyV7IndieAdmission.test.mjs` covering mandatory gate non-bypass, discovery-score irrelevance, exact qualified/push parity, no truncation/backfill, nullable automatic priority and V7 provenance, cross-source dedupe, historical weak-sample rejection, and candidate-audit formal/candidate/excluded routing.
+- Captured the focused red run: `node --test automations/test/onlineDailyV7IndieAdmission.test.mjs` failed only with `ERR_MODULE_NOT_FOUND` for the planned `online_daily_v7_indie_admission.mjs`, proving the new contract is not yet implemented.
 
 ## Remaining
 
-- Write focused failing tests for the V7.0 mandatory gates, exact `new_qualified_count === push_pool_count`, the 0/2/7 fixtures, and the seven historical weak samples.
 - Implement the smallest pure admission/pool changes and required rule/documentation updates, running narrow tests and committing each verified step.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
@@ -94,11 +96,13 @@ Explicitly out of scope:
 
 ## Next Action
 
-Add the fixed V7.0 admission fixture and focused tests first, then run only that test file to capture the expected red failure before implementing the admission module.
+Implement the pure V7.0 admission evaluator and route `buildPools` through it without quantity caps, watch/drop publication, backfill, or priority promotion; rerun only the focused V7.0 test until green.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 1]
+## codex/pr4-v7-indie-admission...origin/main [ahead 2]
  M docs/checkpoints/pr4-v7-indie-admission.md
+?? automations/test/fixtures/v7-indie-admission.json
+?? automations/test/onlineDailyV7IndieAdmission.test.mjs
 ```

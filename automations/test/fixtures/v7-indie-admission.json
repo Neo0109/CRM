@@ -1,0 +1,173 @@
+{
+  "qualified_base": {
+    "project": "Qualified Indie",
+    "steam_app_id": "9000001",
+    "dedupe_key": "steam:9000001",
+    "region": "domestic",
+    "release_state": "prelaunch",
+    "release_window": "over_60",
+    "early_access_state": "no",
+    "publisher_occupancy": "clear",
+    "narrative_state": "no",
+    "india_team_state": "no",
+    "official_demo_evidence": [
+      {
+        "type": "steam_demo",
+        "url": "https://store.steampowered.com/app/9000001/"
+      }
+    ],
+    "official_gameplay_evidence": [
+      {
+        "type": "official_gameplay_video",
+        "url": "https://example.com/qualified-indie/gameplay"
+      }
+    ],
+    "quality_proofs": [
+      {
+        "type": "verified_public_traction",
+        "value": "1200 Steam recommendations",
+        "url": "https://store.steampowered.com/app/9000001/"
+      }
+    ],
+    "business_entrypoints": [
+      {
+        "type": "Email",
+        "value": "bd@qualified-indie.example"
+      }
+    ],
+    "china_bilibili_value": "系统型经营循环可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
+    "china_demand": null
+  },
+  "gate_failures": [
+    {
+      "gate_id": "identity_and_dedupe",
+      "patch": {
+        "project": "",
+        "steam_app_id": null,
+        "dedupe_key": null
+      },
+      "expected_disposition": "candidate"
+    },
+    {
+      "gate_id": "prelaunch_window",
+      "patch": {
+        "release_window": "too_soon"
+      },
+      "expected_disposition": "excluded"
+    },
+    {
+      "gate_id": "publisher_china_capacity_clear",
+      "patch": {
+        "publisher_occupancy": "occupied"
+      },
+      "expected_disposition": "excluded"
+    },
+    {
+      "gate_id": "non_narrative_product",
+      "patch": {
+        "narrative_state": "yes"
+      },
+      "expected_disposition": "excluded"
+    },
+    {
+      "gate_id": "non_india_team",
+      "patch": {
+        "india_team_state": "yes"
+      },
+      "expected_disposition": "excluded"
+    },
+    {
+      "gate_id": "official_demo_or_playtest",
+      "patch": {
+        "official_demo_evidence": []
+      },
+      "expected_disposition": "candidate"
+    },
+    {
+      "gate_id": "official_gameplay",
+      "patch": {
+        "official_gameplay_evidence": []
+      },
+      "expected_disposition": "candidate"
+    },
+    {
+      "gate_id": "independent_quality_proof",
+      "patch": {
+        "quality_proofs": []
+      },
+      "expected_disposition": "candidate"
+    },
+    {
+      "gate_id": "non_steam_business_entry",
+      "patch": {
+        "business_entrypoints": [
+          {
+            "type": "Steam",
+            "value": "https://steamcommunity.com/app/9000001/discussions/"
+          }
+        ]
+      },
+      "expected_disposition": "candidate"
+    },
+    {
+      "gate_id": "concrete_china_bilibili_value",
+      "patch": {
+        "china_bilibili_value": null
+      },
+      "expected_disposition": "candidate"
+    },
+    {
+      "gate_id": "overseas_china_demand",
+      "patch": {
+        "region": "overseas",
+        "china_demand": null
+      },
+      "expected_disposition": "candidate"
+    }
+  ],
+  "qualified_counts": [0, 2, 7],
+  "historical_weak_samples": [
+    {
+      "report_date": "2026-07-05",
+      "project": "Brainrot Fight",
+      "steam_app_id": "4867700",
+      "historical_priority": "P2"
+    },
+    {
+      "report_date": "2026-07-06",
+      "project": "Sweet Dance",
+      "steam_app_id": "4560290",
+      "historical_priority": "P2"
+    },
+    {
+      "report_date": "2026-07-06",
+      "project": "鏡",
+      "steam_app_id": "4869740",
+      "historical_priority": "P2"
+    },
+    {
+      "report_date": "2026-07-07",
+      "project": "I Am the Demon King: Stop Sun Wukong",
+      "steam_app_id": "4785810",
+      "historical_priority": "P1"
+    },
+    {
+      "report_date": "2026-07-07",
+      "project": "Fantasy World / 幻想世界",
+      "steam_app_id": "4212170",
+      "historical_priority": "P1"
+    },
+    {
+      "report_date": "2026-07-10",
+      "project": "从零开始的钓鱼人生Lift",
+      "steam_app_id": "4889630",
+      "historical_priority": "P1"
+    },
+    {
+      "report_date": "2026-07-13",
+      "project": "仙途有约",
+      "steam_app_id": "4833750",
+      "historical_priority": "P1"
+    }
+  ]
+}
