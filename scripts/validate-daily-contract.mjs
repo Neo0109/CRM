@@ -15,13 +15,14 @@ const thresholds = {
   minSteamGenreSignals: numberArg(args.minSteamGenreSignals, 3)
 };
 const allowLowVolume = booleanArg(args.allowLowVolume);
+const requireSourcingCandidates = booleanArg(args.requireSourcingCandidates);
 const leadCountHealthEnabled = isLeadCountHealthEnabled(RULE_VERSION);
 const allErrors = [];
 const allWarnings = [];
 const summaries = [];
 
 for (const date of dates) {
-  const result = validateDate(date, thresholds);
+  const result = validateDate(date, thresholds, { requireSourcingCandidates });
   summaries.push(result.summary);
   allErrors.push(...result.errors.map((error) => `${date}: ${error}`));
   allWarnings.push(...result.warnings.map((warning) => `${date}: ${warning}`));
@@ -45,35 +46,47 @@ console.log(JSON.stringify({
   summaries
 }, null, 2));
 
-function validateDate(date, thresholds) {
+function validateDate(date, thresholds, options = {}) {
   const schemas = {
     report: loadJson("schemas/daily_report.schema.json"),
     radar: loadJson("schemas/industry_radar.schema.json"),
     steamTrends: loadJson("schemas/steam_trends.schema.json"),
-    sourcingLead: loadJson("schemas/sourcing_lead.schema.json")
+    sourcingLead: loadJson("schemas/sourcing_lead.schema.json"),
+    sourcingCandidates: loadJson("schemas/sourcing_candidates.schema.json")
   };
 
   const files = {
     report: `data/reports/${date}.json`,
     radar: `data/radar/${date}.json`,
-    steamTrends: `data/steam_trends/${date}.json`
+    steamTrends: `data/steam_trends/${date}.json`,
+    sourcingCandidates: `data/sourcing_candidates/${date}.json`
   };
 
   const errors = [];
   const warnings = [];
-  for (const [label, filePath] of Object.entries(files)) {
+  for (const [label, filePath] of Object.entries(files).filter(([key]) => key !== "sourcingCandidates")) {
     if (!existsSync(path.join(rootDir, filePath))) errors.push(`missing ${filePath}`);
   }
+  const hasSourcingCandidates = existsSync(path.join(rootDir, files.sourcingCandidates));
+  if (options.requireSourcingCandidates && !hasSourcingCandidates) errors.push(`missing ${files.sourcingCandidates}`);
   if (errors.length) return { errors, warnings, summary: { date, missing: errors.length } };
 
   const report = loadJson(files.report);
   const radar = loadJson(files.radar);
   const steamTrends = loadJson(files.steamTrends);
+  const sourcingCandidates = hasSourcingCandidates ? loadJson(files.sourcingCandidates) : null;
   const enforceV62 = date >= "2026-06-04";
 
   validateSchemaSubset("daily report", schemas.report, report, errors, { root: schemas.report, sourcingLead: schemas.sourcingLead });
   validateSchemaSubset("industry radar", schemas.radar, radar, errors, { root: schemas.radar, sourcingLead: schemas.sourcingLead });
   validateSchemaSubset("steam trends", schemas.steamTrends, steamTrends, errors, { root: schemas.steamTrends, sourcingLead: schemas.sourcingLead });
+  if (sourcingCandidates) {
+    validateSchemaSubset("sourcing candidates", schemas.sourcingCandidates, sourcingCandidates, errors, {
+      root: schemas.sourcingCandidates,
+      sourcingLead: schemas.sourcingLead
+    });
+    validateSourcingCandidateIntegrity(sourcingCandidates, report, date, errors);
+  }
 
   if (report.report_date !== date) errors.push(`report_date mismatch in ${files.report}: ${report.report_date}`);
   if (radar.report_date !== date) errors.push(`report_date mismatch in ${files.radar}: ${radar.report_date}`);
@@ -154,9 +167,60 @@ function validateDate(date, thresholds) {
       radar_items: radar.items?.length ?? 0,
       steam_trend_items: steamTrends.items?.length ?? 0,
       steam_market_insights: steamTrends.market_insights?.length ?? 0,
-      steam_genre_signals: steamTrends.genre_signals?.length ?? 0
+      steam_genre_signals: steamTrends.genre_signals?.length ?? 0,
+      sourcing_candidates: sourcingCandidates?.candidates?.length ?? null
     }
   };
+}
+
+function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
+  if (artifact.report_date !== date) {
+    errors.push(`report_date mismatch in data/sourcing_candidates/${date}.json: ${artifact.report_date}`);
+  }
+
+  const candidates = Array.isArray(artifact.candidates) ? artifact.candidates : [];
+  const seen = new Set();
+  for (const candidate of candidates) {
+    const key = String(candidate?.dedupe_key ?? "");
+    if (seen.has(key)) errors.push(`duplicate sourcing candidate dedupe_key: ${key}`);
+    seen.add(key);
+    if (candidate?.sourcing_rule_version !== artifact.sourcing_rule_version) {
+      errors.push(`${key || "sourcing candidate"}: sourcing_rule_version must match artifact`);
+    }
+  }
+
+  const counts = {
+    records_total: candidates.length,
+    formal: candidates.filter((candidate) => candidate?.decision === "formal").length,
+    candidate: candidates.filter((candidate) => candidate?.decision === "candidate").length,
+    excluded: candidates.filter((candidate) => candidate?.decision === "excluded").length
+  };
+  for (const [key, actual] of Object.entries(counts)) {
+    if (artifact.scan_summary?.[key] !== actual) {
+      errors.push(`sourcing candidate scan_summary.${key} expected ${actual}, received ${artifact.scan_summary?.[key]}`);
+    }
+  }
+
+  const reportFormalKeys = new Set([
+    ...poolLeads(report, "push_pool"),
+    ...poolLeads(report, "watch_pool")
+  ].map(({ lead }) => auditDedupeKey(lead)).filter(Boolean));
+  const artifactFormalKeys = new Set(
+    candidates.filter((candidate) => candidate?.decision === "formal").map((candidate) => candidate.dedupe_key)
+  );
+  for (const key of reportFormalKeys) {
+    if (!artifactFormalKeys.has(key)) errors.push(`formal report Lead missing from sourcing candidate audit: ${key}`);
+  }
+  for (const key of artifactFormalKeys) {
+    if (!reportFormalKeys.has(key)) errors.push(`formal sourcing candidate missing from report pools: ${key}`);
+  }
+}
+
+function auditDedupeKey(lead) {
+  const appId = String(lead?.steam_app_id ?? "").trim();
+  if (appId) return `steam:${appId}`;
+  const project = normalizeLeadName(lead?.project);
+  return project ? `project:${project}` : null;
 }
 
 function poolLeads(report, pool) {
@@ -182,6 +246,18 @@ function validateSchemaSubset(label, schema, value, errors, context, instancePat
 
   if (schema.format === "date" && typeof value === "string" && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     errors.push(`${label} schema ${instancePath || "/"} must be YYYY-MM-DD`);
+  }
+  if (schema.format === "date-time" && typeof value === "string" && Number.isNaN(Date.parse(value))) {
+    errors.push(`${label} schema ${instancePath || "/"} must be an ISO date-time`);
+  }
+  if (typeof value === "string" && typeof schema.minLength === "number" && value.length < schema.minLength) {
+    errors.push(`${label} schema ${instancePath || "/"} must contain at least ${schema.minLength} character(s)`);
+  }
+  if (typeof value === "number" && typeof schema.minimum === "number" && value < schema.minimum) {
+    errors.push(`${label} schema ${instancePath || "/"} must be >= ${schema.minimum}`);
+  }
+  if (typeof value === "number" && typeof schema.maximum === "number" && value > schema.maximum) {
+    errors.push(`${label} schema ${instancePath || "/"} must be <= ${schema.maximum}`);
   }
 
   if (schema.type === "object" || (schema.properties && isPlainObject(value))) {
@@ -229,6 +305,8 @@ function matchesType(value, type) {
     if (entry === "null") return value === null;
     if (entry === "array") return Array.isArray(value);
     if (entry === "object") return isPlainObject(value);
+    if (entry === "integer") return Number.isInteger(value);
+    if (entry === "number") return typeof value === "number" && Number.isFinite(value);
     return typeof value === entry;
   });
 }

@@ -54,7 +54,7 @@ test("watchdog still requests recovery when artifacts or synced receipt are miss
 
 function fixtureRoot(date, counts) {
   const rootDir = mkdtempSync(path.join(tmpdir(), "crm-watchdog-degraded-"));
-  for (const directory of ["data/reports", "data/radar", "data/steam_trends", "data/automation_runs"]) {
+  for (const directory of ["data/reports", "data/radar", "data/steam_trends", "data/sourcing_candidates", "data/automation_runs"]) {
     mkdirSync(path.join(rootDir, directory), { recursive: true });
   }
 
@@ -70,6 +70,15 @@ function fixtureRoot(date, counts) {
     items: items(8),
     market_insights: items(3),
     genre_signals: items(3)
+  });
+  writeJson(rootDir, `data/sourcing_candidates/${date}.json`, {
+    report_date: date,
+    scan_summary: {
+      formal: counts.push + counts.watch,
+      candidate: 0,
+      excluded: counts.drop
+    },
+    candidates: items(counts.push + counts.watch + counts.drop)
   });
   writeJson(rootDir, `data/automation_runs/${date}-incident-recovery.json`, {
     report_date: date,

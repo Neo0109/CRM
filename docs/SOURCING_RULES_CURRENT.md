@@ -24,7 +24,7 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V6.8 is an explicit quality-quarantine state. The normal source scan, evidence checks, Daily report, Industry Radar, Steam Trends, schema validation, and sync path remain active, but `push_pool`, `watch_pool`, `drop_pool`, and Steam Trends `crm_candidates` are published empty. A zero-Lead day is neither a failure nor `degraded` during this rule version. Missing/invalid artifacts, source failure, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V6.8 is an explicit quality-quarantine state. The normal source scan, evidence checks, Daily report, Industry Radar, Steam Trends, candidate audit, schema validation, and sync path remain active, but `push_pool`, `watch_pool`, `drop_pool`, and Steam Trends `crm_candidates` are published empty. A zero-Lead day is neither a failure nor `degraded` during this rule version. Missing/invalid artifacts, source failure, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 ## Operating Principle
 
@@ -44,7 +44,7 @@ Every important output should answer:
 
 Automatic daily reports are discovery, not final human review. During V6.8 quality quarantine, no generated candidate is published into a formal Lead pool or the `未处理` inbox.
 
-The scan may still calculate candidate evidence and diagnostics internally, but the quarantine boundary empties every published Daily Lead pool. It must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
+The scan preserves candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`, but the quarantine boundary empties every published Daily Lead pool. The candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
 
 The default operating flow is efficiency-first: first test or inspect the game, then decide. If the game does not pass playtest/content judgment, move it to `淘汰池` immediately. Do not require the BD owner to补官网、邮箱、联系人或长资料 before the product itself has passed the first test.
 
@@ -98,6 +98,7 @@ The online generator must preserve the product intent of these rules:
 - Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
 - V6.8 must keep scanning broad enough for source and evidence diagnostics, but it must not publish candidates or use a minimum recommendation count as a health signal.
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
+- Daily generation must write a schema-validated candidate audit with one deduped record per Steam AppID or normalized project key, explicit `formal | candidate | excluded` decisions, unknown evidence, matched rules, and exclusion reasons. Only the Daily report pools are eligible for CRM synchronization.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
 - Bilibili candidates must be enriched from video descriptions before candidate creation, then checked for Steam release status, duplicate CRM history, and stale source age.
 - Bilibili probe candidates from configured official, developer, publisher, media, trusted creator, and keyword sources must prefer official/developer/publisher evidence when the same Steam AppID or video/link appears more than once.
@@ -196,11 +197,12 @@ V6.7 adds one narrow semantic gate for standalone animation/series signals witho
 V6.8 is a temporary publication boundary while the next qualification rules are implemented separately.
 
 - Continue the normal Steam and media/Bilibili scan, evidence normalization, dedupe, and source-health checks.
-- Continue generating the dated Daily report, Industry Radar, and Steam Trends artifacts.
+- Continue generating the dated Daily report, Industry Radar, Steam Trends, and `data/sourcing_candidates/YYYY-MM-DD.json` candidate-audit artifacts.
 - Publish empty `push_pool`, `watch_pool`, `drop_pool`, and Steam Trends `crm_candidates` arrays.
 - Do not treat zero or low formal Lead counts as failure or `degraded` while this exact rule version is active.
 - Do not restore quantity backfill, P3-to-P2 promotion, or minimum recommendation counts.
 - Keep empty source output, missing files, schema damage, write failure, sync failure, and the strict successful-receipt contract blocking.
+- Keep the candidate audit outside every automatic CRM import path; it is an observability artifact for source, decision, and exclusion evidence only.
 - Keep workflow triggers limited to `schedule` and `workflow_dispatch`; V6.8 does not change product code, UI, CRM schema, existing Leads, or production data.
 
 ## Source Health And Calibration

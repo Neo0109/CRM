@@ -28,7 +28,10 @@ console.log(JSON.stringify({
 }, null, 2));
 
 await import(pathToFileURL(generatorPath).href);
-runDailyContractValidation(reportDate, { allowLowVolume: booleanArg(args.allowLowVolume) });
+runDailyContractValidation(reportDate, {
+  allowLowVolume: booleanArg(args.allowLowVolume),
+  requireSourcingCandidates: true
+});
 
 async function loadRules(filePath) {
   try {
@@ -53,6 +56,7 @@ function validateRules(value) {
 function runDailyContractValidation(date, options = {}) {
   const validateArgs = ["scripts/validate-daily-contract.mjs", `--date=${date}`];
   if (options.allowLowVolume) validateArgs.push("--allowLowVolume=true");
+  if (options.requireSourcingCandidates) validateArgs.push("--requireSourcingCandidates=true");
   const result = spawnSync(process.execPath, validateArgs, {
     cwd: rootDir,
     stdio: "inherit"
