@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 22:52 CST
+Last updated: 2026-07-15 23:03 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is explicitly authorized. The remote baseline, PR queue, Actions queue, production-health baseline, independent branch, and independent worktree are established. No PR 4 business code has been changed yet.
+Phase status: Phase 4 implementation is explicitly authorized. The remote baseline and bounded read-only diagnosis are complete, and the exact implementation boundary is recorded below. No PR 4 business code has been changed yet; the next step is the focused red-test slice.
 
 ## Current Goal
 
@@ -62,10 +62,30 @@ Explicitly out of scope:
 - Verified the initial production `/api/health` baseline is healthy.
 - Created this branch and independent worktree from current `origin/main` without modifying the dirty planning worktree or existing PR worktrees.
 - Created this checkpoint before multi-file diagnosis or implementation.
+- Completed the bounded PR 4 diagnosis across the active rule loader, machine rule, Steam enrichment, media/Bilibili enrichment, scoring/decision module, pool builder, candidate audit, report builders, Daily contract validator, watchdogs, cloud heartbeat, workflows, and focused tests.
+- Confirmed the active bypass mechanisms are localized and directly in scope:
+  - Steam and media discovery scores currently decide push/watch class before a mandatory evidence contract;
+  - `buildPools` caps/interleaves formal output, targets `minReviewLeads`, backfills eligible drops into watch, and promotes P3 to P2;
+  - both production workflows still pass `--minReviewLeads=18`, `--minMediaLeads=10`, and `--minReviewBackfillScore=18`;
+  - the validator, local watchdog, cloud heartbeat, runbook, and stale tests still retain formal-count targets, although V6.8 temporarily suppresses them;
+  - V6.8 currently clears all Lead pools after pre-quarantine decisions, so PR 4 must activate V7.0 rather than layer another post-decision filter.
+- Confirmed the safe evidence mapping for the locked PLAN.md gates:
+  - source labels, genre keywords, numeric score, screenshots, movie count, field completeness, and Steam fallback contact remain discovery/ranking signals only;
+  - a formal Lead requires a normalized identity, verified pre-release/TBA window, verified non-EA state, no mature publisher/China-capability occupancy, non-narrative and non-India evidence, official Demo/Playtest evidence, explicit official gameplay evidence, verified independent public-quality data, a non-Steam business entrypoint, and a concrete gameplay-linked China/Bilibili value statement;
+  - overseas candidates additionally require explicit China demand; absent or unknown evidence cannot pass;
+  - hard contradictory facts become `excluded`; incomplete positive evidence remains `candidate`; neither is published to Daily Lead pools.
+- Selected the smallest implementation boundary:
+  - add one pure V7.0 indie-admission module with stable gate IDs and Steam/media evidence adapters;
+  - keep existing scores only for discovery/enrichment order, never admission;
+  - make `buildPools` publish every deduped qualified project to `push` with `priority=null` and V7.0 provenance, with `watch` and `drop` empty and no cap/backfill;
+  - make candidate-audit decisions and reasons come from the same admission result, and add `new_qualified_count` / `push_pool_count` contract parity;
+  - activate `sourcing-rules-v7.0-quality-gated-indie`, remove formal-count CLI/health gates while preserving non-Lead artifact/source/sync checks, and update the current human/machine rule chain;
+  - keep workflow triggers, CRM import payload, schemas outside the directly required candidate-summary extension, Lead/API/UI/Supabase, and PR 5+ sources unchanged.
+- Reconstructed the exact seven historical weak Steam regression samples from dated reports; every one states that strong public data is missing:
+  - `Brainrot Fight` (`4867700`), `Sweet Dance` (`4560290`), `鏡` (`4869740`), `I Am the Demon King: Stop Sun Wukong` (`4785810`), `Fantasy World / 幻想世界` (`4212170`), `从零开始的钓鱼人生Lift` (`4889630`), and `仙途有约` (`4833750`).
 
 ## Remaining
 
-- Read the current independent-game decision, pool, candidate-audit, rule, schema, and focused-test surfaces needed to implement only PR 4.
 - Write focused failing tests for the V7.0 mandatory gates, exact `new_qualified_count === push_pool_count`, the 0/2/7 fixtures, and the seven historical weak samples.
 - Implement the smallest pure admission/pool changes and required rule/documentation updates, running narrow tests and committing each verified step.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
@@ -74,11 +94,11 @@ Explicitly out of scope:
 
 ## Next Action
 
-Perform a bounded read-only diagnosis of the current independent-game scoring, pool construction, candidate-audit integration, machine rule, and existing fixtures/tests; then record the exact implementation boundary before writing the first red test.
+Add the fixed V7.0 admission fixture and focused tests first, then run only that test file to capture the expected red failure before implementing the admission module.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main
-?? docs/checkpoints/pr4-v7-indie-admission.md
+## codex/pr4-v7-indie-admission...origin/main [ahead 1]
+ M docs/checkpoints/pr4-v7-indie-admission.md
 ```
