@@ -19,12 +19,16 @@ import {
   type Region,
   type RegionPriority,
   type ReviewStatus,
+  type SourcingLane,
+  type SourcingRunType,
   type Stage
 } from "../../../../functions/_lib/leadModel.js";
 
 export type BackendBucket = Bucket;
 export type BackendStage = Stage;
 export type BackendPriority = Priority;
+export type BackendSourcingLane = SourcingLane;
+export type BackendSourcingRunType = SourcingRunType;
 export type BackendRegionPriority = RegionPriority;
 export type BackendRegion = Region;
 export type BackendReviewStatus = ReviewStatus;

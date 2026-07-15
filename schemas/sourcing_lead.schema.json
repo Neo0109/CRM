@@ -40,8 +40,17 @@
       "enum": ["new", "watch", "active", "negotiating", "won", "rejected"]
     },
     "priority": {
-      "type": "string",
-      "enum": ["P0", "P1", "P2", "P3"]
+      "type": ["string", "null"],
+      "enum": ["P0", "P1", "P2", "P3", null]
+    },
+    "sourcing_lane": {
+      "type": ["string", "null"],
+      "enum": ["indie_prelaunch", "china_joint", "ea_mobile_high_traction", "china_heat_ops", null]
+    },
+    "sourcing_rule_version": { "type": ["string", "null"] },
+    "sourcing_run_type": {
+      "type": ["string", "null"],
+      "enum": ["scheduled", "initial_backfill", null]
     },
     "review_status": {
       "type": "string",

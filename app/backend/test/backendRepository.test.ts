@@ -43,7 +43,17 @@ describe("backend lead repository", () => {
               order: async () => ({
                 data: [
                   { id: "__crm_event", data: { id: "__crm_event", type: "sourcing_decision_event" } },
-                  { id: "lead-real", data: { project: "Real Game", contact: "real@example.com" } }
+                  {
+                    id: "lead-real",
+                    data: {
+                      project: "Real Game",
+                      contact: "real@example.com",
+                      priority: null,
+                      sourcing_lane: "china_joint",
+                      sourcing_rule_version: "sourcing-rules-v7.1-two-lane-china-joint",
+                      sourcing_run_type: "initial_backfill"
+                    }
+                  }
                 ],
                 error: null
               })
@@ -61,10 +71,20 @@ describe("backend lead repository", () => {
     const leads = await repository.readLeads();
     assert.equal(leads.length, 1);
     assert.equal(leads[0].project, "Real Game");
+    assert.equal(leads[0].priority, null);
+    assert.equal(leads[0].sourcing_lane, "china_joint");
+    assert.equal(leads[0].sourcing_rule_version, "sourcing-rules-v7.1-two-lane-china-joint");
+    assert.equal(leads[0].sourcing_run_type, "initial_backfill");
 
     await repository.writeLeads(leads);
     assert.equal(calls.length, 1);
     assert.deepEqual((calls[0] as { options: unknown }).options, { onConflict: "id" });
+    const rows = (calls[0] as { rows: Array<{ id: string; data: Record<string, unknown>; updated_at: string }> }).rows;
+    assert.deepEqual(Object.keys(rows[0]).sort(), ["data", "id", "updated_at"]);
+    assert.equal(rows[0].data.priority, null);
+    assert.equal(rows[0].data.sourcing_lane, "china_joint");
+    assert.equal(rows[0].data.sourcing_rule_version, "sourcing-rules-v7.1-two-lane-china-joint");
+    assert.equal(rows[0].data.sourcing_run_type, "initial_backfill");
 
     const failingRepository = createLeadRepository({
       supabase: {

@@ -11,6 +11,27 @@ import {
 } from "../_lib/leadModel.ts";
 
 describe("lead model helpers", () => {
+  it("preserves nullable priority and sourcing provenance in the Lead JSON contract", () => {
+    const lead = normalizeLead({
+      project: "Provenance Game",
+      priority: null,
+      sourcing_lane: "china_joint",
+      sourcing_rule_version: "sourcing-rules-v7.1-two-lane-china-joint",
+      sourcing_run_type: "initial_backfill"
+    }, { today: "2026-07-15" });
+
+    assert.equal(lead.priority, null);
+    assert.equal(lead.sourcing_lane, "china_joint");
+    assert.equal(lead.sourcing_rule_version, "sourcing-rules-v7.1-two-lane-china-joint");
+    assert.equal(lead.sourcing_run_type, "initial_backfill");
+
+    const legacyLead = normalizeLead({ project: "Legacy Game" }, { today: "2026-07-15" });
+    assert.equal(legacyLead.priority, "P2");
+    assert.equal(legacyLead.sourcing_lane, null);
+    assert.equal(legacyLead.sourcing_rule_version, null);
+    assert.equal(legacyLead.sourcing_run_type, null);
+  });
+
   it("normalizes defaults, Steam links, region, contacts, and workflow fields", () => {
     const lead = normalizeLead({
       project: " Demo Game ",

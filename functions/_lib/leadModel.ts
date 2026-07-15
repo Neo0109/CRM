@@ -1,6 +1,8 @@
 export type Bucket = "未处理" | "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
 export type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
-export type Priority = "P0" | "P1" | "P2" | "P3";
+export type Priority = "P0" | "P1" | "P2" | "P3" | null;
+export type SourcingLane = "indie_prelaunch" | "china_joint" | "ea_mobile_high_traction" | "china_heat_ops";
+export type SourcingRunType = "scheduled" | "initial_backfill";
 export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
 export type Region = "中国" | "海外";
 export type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";
@@ -26,6 +28,9 @@ export type Lead = {
   bucket: Bucket;
   stage: Stage;
   priority: Priority;
+  sourcing_lane: SourcingLane | null;
+  sourcing_rule_version: string | null;
+  sourcing_run_type: SourcingRunType | null;
   review_status: ReviewStatus;
   reviewed_at: string | null;
   drop_reason: string | null;
@@ -98,6 +103,9 @@ export type MergeIncomingLeadSetResult = {
 };
 
 const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
+const priorityValues: NonNullable<Priority>[] = ["P0", "P1", "P2", "P3"];
+const sourcingLaneValues: SourcingLane[] = ["indie_prelaunch", "china_joint", "ea_mobile_high_traction", "china_heat_ops"];
+const sourcingRunTypeValues: SourcingRunType[] = ["scheduled", "initial_backfill"];
 const reviewStatusValues: ReviewStatus[] = ["未处理", "已查看", "跟进中", "已淘汰"];
 const contactTypes: ContactType[] = ["微信/QQ", "Email", "电话", "官网", "Steam", "Discord", "B站", "X/Twitter", "其他"];
 const evaluationGrades: EvaluationGrade[] = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
@@ -123,7 +131,10 @@ export function normalizeLead(raw: Partial<Lead>, options: NormalizeLeadOptions 
     region_priority: raw.region_priority ?? inferRegionPriority(country, raw.public_signals),
     bucket,
     stage: raw.stage ?? stageFromBucket(bucket),
-    priority: raw.priority ?? priorityFromBucket(bucket),
+    priority: normalizePriority(raw.priority, bucket),
+    sourcing_lane: normalizeSourcingLane(raw.sourcing_lane),
+    sourcing_rule_version: valueOrNull(raw.sourcing_rule_version),
+    sourcing_run_type: normalizeSourcingRunType(raw.sourcing_run_type),
     review_status: normalizeReviewStatus(raw.review_status, bucket),
     reviewed_at: valueOrNull(raw.reviewed_at),
     drop_reason: valueOrNull(raw.drop_reason),
@@ -439,14 +450,28 @@ function stageFromBucket(bucket: Bucket | undefined): Stage {
   return "watch";
 }
 
-function priorityFromBucket(bucket: Bucket | undefined): Priority {
+function priorityFromBucket(bucket: Bucket | undefined): NonNullable<Priority> {
   if (bucket === "推进池" || bucket === "跟进中" || bucket === "测试中") return "P1";
   if (bucket === "待评测" || bucket === "观察池") return "P2";
   if (bucket === "淘汰池") return "P3";
   return "P2";
 }
 
+function normalizePriority(value: unknown, bucket: Bucket): Priority {
+  if (value === null) return null;
+  return priorityValues.includes(value as NonNullable<Priority>) ? value as NonNullable<Priority> : priorityFromBucket(bucket);
+}
+
+function normalizeSourcingLane(value: unknown): SourcingLane | null {
+  return sourcingLaneValues.includes(value as SourcingLane) ? value as SourcingLane : null;
+}
+
+function normalizeSourcingRunType(value: unknown): SourcingRunType | null {
+  return sourcingRunTypeValues.includes(value as SourcingRunType) ? value as SourcingRunType : null;
+}
+
 function priorityOrder(priority: Priority) {
+  if (priority === null) return 4;
   return { P0: 0, P1: 1, P2: 2, P3: 3 }[priority];
 }
 
