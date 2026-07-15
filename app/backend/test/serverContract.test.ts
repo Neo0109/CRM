@@ -18,4 +18,14 @@ describe("legacy backend server contract", () => {
     assert.doesNotMatch(source, /async function readLeadsFromSupabase\(/);
     assert.doesNotMatch(source, /async function writeLeadsToSupabase\(/);
   });
+
+  it("routes create-only daily report imports without changing the default import path", async () => {
+    const source = await readFile(serverPath, "utf8");
+
+    assert.match(source, /req\.query\.mode === "create-only"/);
+    assert.match(source, /createOnlyBackendIncomingLeads/);
+    assert.match(source, /createLeads\(result\.leads\)/);
+    assert.match(source, /synced:\s*true/);
+    assert.match(source, /mergeIncomingLeads\(backendLeadsFromReport\(report\)\)/);
+  });
 });

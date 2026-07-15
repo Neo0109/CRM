@@ -241,6 +241,7 @@ function compareWeeklyLead(a: WeeklyLeadSummary, b: WeeklyLeadSummary) {
 }
 
 function priorityRank(priority: Lead["priority"]) {
+  if (priority === null) return 9;
   return { P0: 0, P1: 1, P2: 2, P3: 3 }[priority] ?? 9;
 }
 

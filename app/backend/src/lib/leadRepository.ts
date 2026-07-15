@@ -13,7 +13,7 @@ type SupabaseLeadClient = {
     select(columns: string): {
       order(column: string, options: { ascending: boolean }): Promise<{ data?: SupabaseLeadRow[] | null; error?: SupabaseError }>;
     };
-    upsert(rows: unknown[], options: { onConflict: string }): Promise<{ error?: SupabaseError }>;
+    upsert(rows: unknown[], options: { onConflict: string; ignoreDuplicates?: boolean }): Promise<{ error?: SupabaseError }>;
   };
 };
 
@@ -38,6 +38,18 @@ export function createLeadRepository(input: LeadRepositoryInput) {
         return;
       }
       await writeLeadsToJson(requireDataPath(input.dataPath), normalized);
+    },
+
+    async createLeads(leads: Partial<BackendLead>[]) {
+      const normalized = leads.map((lead) => normalizeBackendLead(lead));
+      if (supabase) {
+        await writeLeadsToSupabase(supabase, normalized, true);
+        return;
+      }
+      const dataPath = requireDataPath(input.dataPath);
+      const existing = await readLeadsFromJson(dataPath);
+      const existingIds = new Set(existing.map((lead) => lead.id));
+      await writeLeadsToJson(dataPath, [...existing, ...normalized.filter((lead) => !existingIds.has(lead.id))]);
     }
   };
 }
@@ -70,10 +82,11 @@ async function readLeadsFromSupabase(client: SupabaseLeadClient): Promise<Backen
     .map((row) => normalizeBackendLead(row.data ?? {}));
 }
 
-async function writeLeadsToSupabase(client: SupabaseLeadClient, leads: BackendLead[]) {
+async function writeLeadsToSupabase(client: SupabaseLeadClient, leads: BackendLead[], ignoreDuplicates = false) {
   const rows = leads.map((lead) => ({ id: lead.id, data: lead, updated_at: new Date().toISOString() }));
   if (!rows.length) return;
-  const { error } = await client.from("crm_leads").upsert(rows, { onConflict: "id" });
+  const options = ignoreDuplicates ? { onConflict: "id", ignoreDuplicates: true } : { onConflict: "id" };
+  const { error } = await client.from("crm_leads").upsert(rows, options);
   if (error) throw new Error(`Supabase write failed: ${error.message}`);
 }
 

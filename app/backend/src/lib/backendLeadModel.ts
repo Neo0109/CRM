@@ -1,4 +1,5 @@
 import {
+  createOnlyIncomingLeadSet as canonicalCreateOnlyIncomingLeadSet,
   isDailyReport as canonicalIsDailyReport,
   leadKeys as canonicalLeadKeys,
   leadsFromReport as canonicalLeadsFromReport,
@@ -9,6 +10,7 @@ import {
   type Bucket,
   type ContactMethod,
   type ContactType,
+  type CreateOnlyIncomingLeadSetResult,
   type DailyReport,
   type EvaluationGrade,
   type ImportStats,
@@ -19,12 +21,16 @@ import {
   type Region,
   type RegionPriority,
   type ReviewStatus,
+  type SourcingLane,
+  type SourcingRunType,
   type Stage
 } from "../../../../functions/_lib/leadModel.js";
 
 export type BackendBucket = Bucket;
 export type BackendStage = Stage;
 export type BackendPriority = Priority;
+export type BackendSourcingLane = SourcingLane;
+export type BackendSourcingRunType = SourcingRunType;
 export type BackendRegionPriority = RegionPriority;
 export type BackendRegion = Region;
 export type BackendReviewStatus = ReviewStatus;
@@ -36,6 +42,7 @@ export type BackendDailyReport = DailyReport;
 export type BackendNormalizeLeadOptions = NormalizeLeadOptions;
 export type BackendImportStats = ImportStats;
 export type BackendMergeIncomingLeadsResult = MergeIncomingLeadSetResult;
+export type BackendCreateOnlyIncomingLeadsResult = CreateOnlyIncomingLeadSetResult;
 
 export const normalizeBackendLead = canonicalNormalizeLead as (
   raw: Partial<BackendLead>,
@@ -47,6 +54,12 @@ export const mergeBackendIncomingLeads = canonicalMergeIncomingLeadSet as (
   rawLeads: Partial<BackendLead>[],
   options?: BackendNormalizeLeadOptions
 ) => BackendMergeIncomingLeadsResult;
+
+export const createOnlyBackendIncomingLeads = canonicalCreateOnlyIncomingLeadSet as (
+  existing: BackendLead[],
+  rawLeads: Partial<BackendLead>[],
+  options?: BackendNormalizeLeadOptions
+) => BackendCreateOnlyIncomingLeadsResult;
 
 export const mergeBackendLead = canonicalMergeLead as (
   current: BackendLead,
