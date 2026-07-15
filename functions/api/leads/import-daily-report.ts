@@ -1,12 +1,16 @@
-import { createOnlyIncomingLeads, json, leadsFromReport, mergeIncomingLeads, requireAccess, type PagesContext } from "../../_lib/crm";
+import { createOnlyIncomingLeads, json, leadsFromReport, mergeIncomingLeads, requireAccess, requireAutomationAccess, type PagesContext } from "../../_lib/crm";
 
 export const onRequestPost = async ({ request, env }: PagesContext) => {
-  const denied = await requireAccess(request, env);
+  const createOnly = new URL(request.url).searchParams.get("mode") === "create-only";
+  const automationDenied = createOnly ? requireAutomationAccess(request, env) : null;
+  const denied = createOnly && automationDenied === null
+    ? null
+    : await requireAccess(request, env);
   if (denied) return denied;
 
   try {
     const report = (await request.json()) as any;
-    if (new URL(request.url).searchParams.get("mode") === "create-only") {
+    if (createOnly) {
       const result = await createOnlyIncomingLeads(env, leadsFromReport(report));
       return json({ synced: true, ...result, report_date: report.report_date, summary: report.summary });
     }

@@ -52,6 +52,8 @@ POST /api/leads/import-daily-report?mode=create-only
 
 Create-only is the final dedupe and immutability boundary. Existing Steam AppIDs or dedupe keys contribute to `skipped_existing`; they are not merged or updated. A valid response must report `updated=0`.
 
+The independent workflow authenticates this create-only call through the existing Bearer `CRM_AUTOMATION_TOKEN` path. The original human/session access path remains compatible; PR 6 does not create or rotate any secret.
+
 ## Scan Failure Boundary
 
 The preparation layer writes an import payload only when the validated audit has `scan_complete=true`. Any catalog, official-review, or AppDetails failure makes the audit incomplete and prevents the CRM request entirely.

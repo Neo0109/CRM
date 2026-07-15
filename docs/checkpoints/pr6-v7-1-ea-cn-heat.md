@@ -52,6 +52,11 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Final `git diff --check` passes; both existing Daily workflow files remain byte-unchanged relative to `origin/main`.
   - Re-ran the required `cmp` and SHA-256 check: repository `PLAN.md` remains byte-identical to `/Users/neo/Downloads/PLAN.md` at `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
   - Final pre-publish baseline remains `origin/main=d98009bc5b8dad3ae81e304839fdc950a200248b`, unrelated open PR `#71`, and no queued or in-progress Actions runs.
+- Pre-publish authentication integration correction completed:
+  - Self-review found that the independent workflow must use the existing automation Bearer path rather than assume a human `CRM_ACCESS_TOKEN` session can authenticate without a username in every production configuration.
+  - The create-only Functions route now accepts a valid configured `CRM_AUTOMATION_TOKEN` Bearer request and falls back to its original user/session access path; the default merge mode remains user-authenticated and unchanged.
+  - The workflow reuses `CRM_AUTOMATION_TOKEN` (with the repository's existing backwards-compatible secret fallback) and neither creates nor rotates any secret.
+  - Added a red-then-green API test for automation Bearer create-only import. CRM core now passes 31/31, PR 6 focused tests pass 11/11, Functions typecheck passes, and the complete post-fix `npm run verify:all` passes again.
 
 ## Remaining
 
@@ -60,10 +65,10 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
 
 ## Next Action
 
-Commit the final validation/documentation update, review the complete `origin/main...HEAD` diff for PR 6-only scope, then push and create the PR.
+Commit the automation-auth integration correction and this checkpoint, re-review the complete `origin/main...HEAD` diff for PR 6-only scope, then push and create the PR.
 
 ## Git Status
 
 - Branch: `codex/pr6-v7-1-ea-cn-heat`
 - Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Worktree: only the final current-rule wording correction and this checkpoint update are uncommitted; implementation is otherwise committed in three PR 6 commits and `PLAN.md` remains unchanged.
+- Worktree: the automation-auth integration correction, its tests/docs, and this checkpoint update are uncommitted; all checks are green and `PLAN.md` remains unchanged.

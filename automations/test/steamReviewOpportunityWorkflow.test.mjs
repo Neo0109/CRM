@@ -33,7 +33,7 @@ describe("Steam review opportunity workflow contract", () => {
     assert.match(workflow, /ready_for_sync/);
     assert.match(workflow, /scan_complete/);
     assert.match(workflow, /import-daily-report\?mode=create-only/);
-    assert.match(workflow, /x-crm-token: \$CRM_ACCESS_TOKEN/);
+    assert.match(workflow, /Authorization: Bearer \$CRM_AUTOMATION_TOKEN/);
     assert.doesNotMatch(workflow, /api\/reports\/sync/);
   });
 

@@ -8,7 +8,8 @@ const env: Env = {
   SUPABASE_URL: "https://supabase.example",
   SUPABASE_SECRET_KEY: "service-key",
   CRM_USERNAME: "neo",
-  CRM_ACCESS_TOKEN: "access-token"
+  CRM_ACCESS_TOKEN: "access-token",
+  CRM_AUTOMATION_TOKEN: "automation-token"
 };
 
 afterEach(() => {
@@ -66,6 +67,32 @@ describe("daily report import API", () => {
     assert.equal("skipped_existing" in payload, false);
     assert.equal(writes.length, 1);
     assert.equal(new Headers(writes[0].init.headers).get("Prefer"), "resolution=merge-duplicates,return=minimal");
+  });
+
+  it("accepts the configured automation bearer token for create-only workflow imports", async () => {
+    const writes = installSupabaseMock([]);
+    const request = reportRequest("?mode=create-only", {
+      push_pool: [{
+        project: "Automated Heat Lead",
+        steam_app_id: "12345",
+        priority: null,
+        sourcing_lane: "china_heat_ops",
+        sourcing_rule_version: "sourcing-rules-v7.1",
+        sourcing_run_type: "initial_backfill"
+      }]
+    });
+    request.headers.delete("x-crm-username");
+    request.headers.delete("x-crm-token");
+    request.headers.set("Authorization", "Bearer automation-token");
+
+    const response = await onRequestPost(context(request));
+    const payload = await response.json() as Record<string, unknown>;
+
+    assert.equal(response.status, 200);
+    assert.equal(payload.synced, true);
+    assert.equal(payload.created, 1);
+    assert.equal(payload.updated, 0);
+    assert.equal(writes.length, 1);
   });
 });
 
