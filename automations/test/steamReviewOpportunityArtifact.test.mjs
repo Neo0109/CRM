@@ -85,6 +85,13 @@ describe("Steam review opportunity audit artifact", () => {
     rawCountDrift.opportunities[1].steam_review_summary.negative_reviews = 199;
     assert.throws(() => validateSteamReviewOpportunityArtifact(rawCountDrift), /positive_reviews \+ negative_reviews/);
 
+    const roundedRateDrift = structuredClone(artifact);
+    roundedRateDrift.opportunities.at(-1).steam_review_summary.positive_reviews = 8000000;
+    roundedRateDrift.opportunities.at(-1).steam_review_summary.negative_reviews = 2000001;
+    roundedRateDrift.opportunities.at(-1).steam_review_summary.total_reviews = 10000001;
+    roundedRateDrift.opportunities.at(-1).steam_review_summary.positive_rate = 80;
+    assert.throws(() => validateSteamReviewOpportunityArtifact(roundedRateDrift), /ea_mobile_high_traction review threshold mismatch/);
+
     const falseComplete = structuredClone(artifact);
     falseComplete.scan_summary.source_failures.push({
       stage: "reviews",

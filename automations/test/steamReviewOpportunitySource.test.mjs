@@ -115,6 +115,23 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     }
   });
 
+  it("uses raw review counts instead of a rounded display rate at the 80 percent edge", () => {
+    const result = evaluateSteamReviewOpportunity({
+      reviewSummary: {
+        status: "available",
+        positiveReviews: 8000000,
+        negativeReviews: 2000001,
+        totalReviews: 10000001,
+        positiveRate: 80
+      },
+      catalogEarlyAccess: true,
+      storeEarlyAccess: true
+    });
+
+    assert.deepEqual(result.matchedRules, ["china_heat_ops"]);
+    assert.equal(result.primaryLane, "china_heat_ops");
+  });
+
   it("confirms every prefilter hit through official fixtures and never calls the 999-review miss", async () => {
     const reviewCalls = [];
     const detailsCalls = [];

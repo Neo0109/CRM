@@ -189,7 +189,7 @@ function validateOpportunity(opportunity, errors) {
   if (eaMatched && opportunity?.early_access?.confirmed_current !== true) {
     errors.push(`${label}: ea_mobile_high_traction requires confirmed current Early Access`);
   }
-  if (eaMatched && !(totalReviews >= 1000 && positiveRate >= 80)) {
+  if (eaMatched && !(totalReviews >= 1000 && reviewRateAtLeast(review, 80))) {
     errors.push(`${label}: ea_mobile_high_traction review threshold mismatch`);
   }
   if (heatMatched && !(totalReviews >= 10000)) {
@@ -220,6 +220,13 @@ function isNonNegativeInteger(value) {
 
 function isRate(value) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
+}
+
+function reviewRateAtLeast(review, threshold) {
+  if (isNonNegativeInteger(review?.positive_reviews) && isNonNegativeInteger(review?.total_reviews)) {
+    return review.total_reviews > 0 && (review.positive_reviews / review.total_reviews) * 100 >= threshold;
+  }
+  return isRate(review?.positive_rate) && review.positive_rate >= threshold;
 }
 
 function integerOrZero(value) {

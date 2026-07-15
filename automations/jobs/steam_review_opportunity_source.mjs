@@ -151,7 +151,7 @@ export function evaluateSteamReviewOpportunity({
   storeEarlyAccess
 }) {
   const totalReviews = Number(reviewSummary?.totalReviews);
-  const positiveRate = Number(reviewSummary?.positiveRate);
+  const positiveRate = qualificationPositiveRate(reviewSummary);
   const reviewEvidenceKnown = reviewSummary?.status === "available"
     && Number.isFinite(totalReviews)
     && totalReviews >= 0
@@ -412,6 +412,15 @@ function boundedInteger(value, fallback, min, max) {
 
 function roundRate(value) {
   return Number(Number(value).toFixed(4));
+}
+
+function qualificationPositiveRate(reviewSummary) {
+  const positiveReviews = nonNegativeInteger(reviewSummary?.positiveReviews);
+  const totalReviews = nonNegativeInteger(reviewSummary?.totalReviews);
+  if (positiveReviews !== null && totalReviews !== null) {
+    return totalReviews === 0 ? 0 : (positiveReviews / totalReviews) * 100;
+  }
+  return Number(reviewSummary?.positiveRate);
 }
 
 function stringOrNull(value) {

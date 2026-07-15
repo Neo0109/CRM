@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:59 CST
+Last updated: 2026-07-16 01:17 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation and documentation alignment are complete: source, pure decision, dedicated artifact/schema/validator/writer, standalone runner, fixed-fixture CI contract, and traceability docs are green. Final repository verification remains.
+Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation and documentation alignment are complete: source, pure decision, dedicated artifact/schema/validator/writer, standalone runner, fixed-fixture CI contract, and traceability docs are green. The raw-count 80% qualification boundary correction is narrowly verified at 14/14; final repository verification remains.
 
 ## Current Goal
 
@@ -105,10 +105,12 @@ Explicitly out of scope:
 - Added `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md` as the human-readable source/artifact contract and linked it from the current-rule entrypoint.
 - Updated current and V7.0 rule documentation to state precisely that the PR 5 source exists but is audit-only, is not consumed by V7.0 or any current production workflow/import path, and cannot activate EA/high-traction or China-heat publication before PR 6.
 - Extended the fixed artifact guard to require the current-rule pointer, explicit non-import boundary, and fixture-only CI statement. The combined focused regression set remains green: 27/27.
+- Resumed from the interrupted PR 5 worktree and confirmed the only uncommitted implementation changes were the raw-count qualification correction in the source and artifact integrity contract plus their two focused test files; no completed source, artifact, audit, or documentation implementation was repeated.
+- Corrected the exact 80% EA threshold so qualification and artifact integrity use raw positive-review and total-review counts instead of the rounded display `positive_rate`; a displayed `80%` backed by `8,000,000 / 10,000,001` raw reviews no longer qualifies for `ea_mobile_high_traction`.
+- Added direct source and artifact regression coverage for the rounded-display boundary. The two focused PR 5 suites pass 14/14.
 
 ## Remaining
 
-- Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
 - Audit the full diff against PLAN.md PR 5, push, open a ready PR to `main`, wait for all checks, resolve only in-scope failures, and verify clean mergeability plus zero unresolved review threads.
 - Squash merge only when all delivery guards pass.
@@ -116,15 +118,15 @@ Explicitly out of scope:
 
 ## Next Action
 
-Commit the documentation-alignment step, then run the complete required validation set: focused PR 5 tests, full Daily V4, frontend/backend/Functions typechecks, Daily and dedicated schema/contracts, `npm run verify:all`, standalone `git diff --check`, and final scope audit against `origin/main`.
+Commit the narrowly verified raw-count boundary correction, then run the complete required validation set: focused PR 5 tests, full Daily V4, frontend/backend/Functions typechecks, Daily and dedicated schema/contracts, `npm run verify:all`, standalone `git diff --check`, and final scope audit against `origin/main`.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main [ahead 6]
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 7]
+ M automations/jobs/steam_review_opportunity_artifact.mjs
+ M automations/jobs/steam_review_opportunity_source.mjs
  M automations/test/steamReviewOpportunityArtifact.test.mjs
- M docs/SOURCING_RULES_CURRENT.md
- M docs/SOURCING_RULES_V7_0.md
+ M automations/test/steamReviewOpportunitySource.test.mjs
  M docs/checkpoints/pr5-steam-schinese-review-source.md
-?? docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md
 ```
