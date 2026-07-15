@@ -1,6 +1,6 @@
 # Current Daily Report Rules
 
-Date: 2026-07-15
+Date: 2026-07-16
 
 The current daily report rule version is `sourcing-rules-v7.0-quality-gated-indie`.
 
@@ -25,6 +25,8 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
 V7.0 keeps broad discovery active and publishes every deduped `indie_prelaunch` project that passes all eleven mandatory gates to `push_pool` with `priority=null`. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+
+PLAN.md PR 5 adds the standalone `steam-schinese-reviews-v1` audit source documented in `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md`. It writes only `data/steam_review_opportunities/YYYY-MM-DD.json`; it is not imported by the active Daily runner, either production daily workflow, the report importer, or CRM sync. EA/high-traction and China-heat publication remain disabled until PR 6.
 
 ## Operating Principle
 
@@ -213,6 +215,17 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - Every unqualified project remains only in the sourcing-candidate audit with missing gate IDs or hard exclusion reasons.
 - Automatic priority stays `null`, and `new_qualified_count === push_pool_count` is a blocking contract.
 - Formal Lead count has no minimum, maximum, cap, backfill, truncation, or health threshold.
+
+## PR 5 Steam Simplified-Chinese Review Audit Source
+
+- Page through public Steam PC/Windows catalog results in the simplified-Chinese China storefront context; dedupe by AppID and record whether the reported catalog end was reached.
+- Use the localized catalog review summary only to prefilter official lookups. It is never qualification evidence.
+- Confirm positive, negative, and total review counts through the official `appreviews/<appid>` summary with `language=schinese` and `purchase_type=all`; calculate positive rate from the raw counts.
+- Treat current Early Access as confirmed only when both the catalog EA tag and official AppDetails/store state say EA.
+- Preserve every prefilter decision in `data/steam_review_opportunities/YYYY-MM-DD.json` under `schemas/steam_review_opportunities.schema.json` with no cap or truncation.
+- Keep unknown official evidence `null`, mark bounded or failed collection `scan_complete=false`, and never synchronize this artifact to CRM.
+- Run `node --test automations/test/steamReviewOpportunity*.test.mjs`; CI uses only fixed catalog/review/AppDetails fixtures and never calls live Steam.
+- The full source, threshold, artifact, validation, and dormant-until-PR-6 contract is canonical in `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md`.
 
 ## Source Health And Calibration
 

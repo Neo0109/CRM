@@ -71,7 +71,7 @@ Radar and Steam Trends retain their independent minimum content contracts becaus
 - The candidate audit is never imported into CRM.
 - No production report is generated or synchronized from a developer checkout.
 - No Lead/API, frontend, Supabase schema, migration, or production-data behavior changes in V7.0.
-- Steam simplified-Chinese review collection, EA/high-traction, China-heat, `china_joint`, learning-loop, and visual-AI work are outside V7.0.
+- The standalone PR 5 simplified-Chinese review audit source is documented in `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md`, but it is not consumed by V7.0. EA/high-traction and China-heat publication/import, `china_joint`, the learning loop, and visual-AI work remain outside V7.0.
 
 ## Regression Contract
 

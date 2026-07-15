@@ -29,5 +29,7 @@ jobs:
         run: npm run typecheck:functions
       - name: Test CRM core
         run: npm run test:crm-core
+      - name: Test Steam review opportunity source
+        run: node --test automations/test/steamReviewOpportunity*.test.mjs
       - name: Build frontend
         run: npm run build --workspace app/frontend
