@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:35 CST
+Last updated: 2026-07-16 00:42 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis setup is complete. PLAN.md already locks the PR 5 business contract and the user has explicitly granted Phase 3 approval plus autonomous implementation, verification, PR, merge, deployment, and production-acceptance authority for this PR only. Multi-file diagnosis and implementation have not started.
+Phase status: Phase 1 diagnosis and Phase 2 bounded proposal are complete. PLAN.md already locks the PR 5 business contract and the user has explicitly granted Phase 3 approval plus autonomous implementation, verification, PR, merge, deployment, and production-acceptance authority for this PR only. Phase 4 will start with fixed-fixture red tests.
 
 ## Current Goal
 
@@ -59,6 +59,21 @@ Explicitly out of scope:
 - Worktree: `/Users/neo/Documents/GitHub/CRM-pr5-steam-schinese-review-source`.
 - Starting HEAD: `b36e11fda7aa167e53bde0de0f58508d3f7b524c`.
 
+## Diagnosis And Bounded Proposal
+
+- The current Daily Steam source calls only the first 50-result page for each curated query/filter, localizes several discovery pages to simplified Chinese, and parses a localized review label, but it does not page through the publicly searchable PC catalog or preserve a numeric catalog review summary.
+- Current AppDetails enrichment exposes only aggregate `details.recommendations.total`. It cannot prove `language=schinese`, cannot split positive and negative counts, and therefore cannot execute either locked PR 5 threshold.
+- PR 3 deliberately reserved `positive_reviews`, `negative_reviews`, `total_reviews`, `positive_rate`, `language`, and `purchase_type` fields in the existing Daily sourcing-candidate schema, but left them `null` and documented that no new review network collection was in PR 3 scope.
+- The existing Daily generator writes `data/sourcing_candidates/YYYY-MM-DD.json` as the fourth artifact for V7.0 indie admission. Reusing that same path for a full-catalog review scan would overwrite or couple the Daily audit, violating the PR 5/PR 6 separation.
+- The smallest safe source boundary is therefore a new standalone `steam_review_opportunity_source` module plus a dedicated `data/steam_review_opportunities/YYYY-MM-DD.json` schema and writer. It will not be imported by the current Daily generator, either production workflow, or any CRM function.
+- Catalog collection will use the existing public Steam `search/results` shape with `category1=998`, `os=win`, `cc=cn`, `l=schinese`, and an injectable fetch implementation. Pagination will stop only when the reported total is covered or the source explicitly returns no more results; bounded/test scans must record `scan_complete=false`.
+- The localized catalog review summary is a prefilter only. It can trigger an official lookup but can never qualify a record. The prefilter selects a catalog EA-tagged item at 1,000+ summarized reviews or any item at 10,000+ summarized reviews.
+- Official confirmation will call `appreviews/<appid>` with documented `filter=all`, `language=schinese`, `purchase_type=all`, `review_type=all`, and a minimal first page. The artifact will store `total_positive`, `total_negative`, `total_reviews`, and a positive rate calculated from the raw counts.
+- Current Early Access will require two independent facts: the catalog result carries the Steam EA tag and AppDetails/store metadata independently identifies Early Access. A single signal is auditable but cannot satisfy `ea_mobile_high_traction`.
+- Pure qualification will implement the locked boundaries without ranking or limits: 999 reviews fails EA; 1,000 at 79.99% fails EA; 1,000 at 80% passes EA; 10,000 passes `china_heat_ops` at any positive rate. When both match, `china_heat_ops` is primary and all matched rules remain recorded.
+- The artifact will contain scan completeness/counts, per-AppID source evidence, official review evidence, both EA facts, matched rules, primary lane, and exclusion/missing-evidence reasons. It is an audit dataset only and will expose no CRM payload or sync behavior.
+- Phase 4 will add one fixed input fixture, pure/network-boundary tests, schema/contract tests, and a static guard proving no existing workflow, Daily generator, import job, or CRM sync path references the new artifact.
+
 ## Completed
 
 - Read the complete repository `AGENTS.md`, authoritative remote-main `PLAN.md`, and explicitly required delivery protocol.
@@ -68,11 +83,13 @@ Explicitly out of scope:
 - Verified the initial production `/api/health` baseline is healthy.
 - Created this branch and independent worktree from current `origin/main` without modifying the dirty planning checkout or existing PR0-PR4 worktrees.
 - Created this checkpoint before multi-file diagnosis or implementation.
+- Completed the bounded read-only diagnosis across the existing Steam search/AppDetails source, network adapter, Daily orchestrator, V7 admission, candidate-audit builder/schema, contract validator, workflow/import boundary, fixtures, and verification entrypoint.
+- Verified the pre-existing Steam-source and candidate-audit baseline is green: 14/14 focused tests.
+- Confirmed Steam's official review-list contract returns `query_summary.total_positive`, `total_negative`, and `total_reviews`, and documents both `language` and `purchase_type`; selected only documented request parameters.
+- Recorded the exact standalone source/artifact implementation boundary above without changing current Daily, workflow, Lead, or sync behavior.
 
 ## Remaining
 
-- Diagnose the smallest existing source, decision, schema, fixture, and test extension points without changing code.
-- Record the Phase 2 bounded implementation proposal in this checkpoint; use the user's already-granted approval to proceed only if it remains within this scope.
 - Add fixed-fixture red tests for catalog pagination/prefilter, official review confirmation, EA double confirmation, exact threshold edges, artifact schema, and the no-sync/no-Lead boundary.
 - Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
@@ -82,11 +99,11 @@ Explicitly out of scope:
 
 ## Next Action
 
-Perform the bounded read-only diagnosis of the existing Steam source adapters, V7 decision modules, candidate audit artifact/schema helpers, repository scripts, and focused tests, then record the exact PR 5 extension points before writing red tests.
+Add the fixed Steam catalog/review/AppDetails fixture and focused red tests for the approved standalone source, pure decision, audit artifact, schema/contract, and static no-sync boundary; capture the red result before implementation.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main
-?? docs/checkpoints/pr5-steam-schinese-review-source.md
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 1]
+ M docs/checkpoints/pr5-steam-schinese-review-source.md
 ```
