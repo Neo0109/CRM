@@ -19,24 +19,20 @@ const QUALITY_QUARANTINE_RULE_VERSION = "sourcing-rules-v6.8-quality-quarantine"
 const emptyPools = () => ({ push: [], watch: [], drop: [] });
 
 describe("online daily v4 quality quarantine", () => {
-  it("uses one explicit V6.8 quarantine rule across runtime, machine rules, docs, and contract validation", () => {
+  it("keeps V6.8 quarantine historical while V7 is the active rule", () => {
     const machineRules = JSON.parse(readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8"));
     const currentRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_CURRENT.md", import.meta.url), "utf8");
     const generator = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
     const contractValidator = readFileSync(new URL("../../scripts/validate-daily-contract.mjs", import.meta.url), "utf8");
 
-    assert.equal(RULE_VERSION, QUALITY_QUARANTINE_RULE_VERSION);
-    assert.equal(machineRules.rule_version, QUALITY_QUARANTINE_RULE_VERSION);
-    assert.deepEqual(machineRules.quality_quarantine, {
-      active: true,
-      publish_lead_pools: false,
-      lead_count_health: "disabled",
-      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends", "sourcing_candidates"]
-    });
-    assert.match(currentRulesDoc, /sourcing-rules-v6\.8-quality-quarantine/);
+    assert.notEqual(RULE_VERSION, QUALITY_QUARANTINE_RULE_VERSION);
+    assert.equal(machineRules.rule_version, RULE_VERSION);
+    assert.equal("quality_quarantine" in machineRules, false);
+    assert.match(currentRulesDoc, /Historical V6\.8 Quality Quarantine/);
+    assert.match(currentRulesDoc, /sourcing-rules-v7\.0-quality-gated-indie/);
     assert.match(generator, /const sourcingRuleVersion = RULE_VERSION/);
-    assert.match(generator, /quarantineDailyLeadPools/);
-    assert.match(contractValidator, /isLeadCountHealthEnabled\(RULE_VERSION\)/);
+    assert.doesNotMatch(generator, /quarantineDailyLeadPools/);
+    assert.doesNotMatch(contractValidator, /isLeadCountHealthEnabled\(RULE_VERSION\)/);
   });
 
   it("publishes no Daily Lead pools only for the explicit quarantine rule without mutating candidates", () => {
@@ -46,9 +42,12 @@ describe("online daily v4 quality quarantine", () => {
       drop: [{ project: "Drop" }]
     };
 
-    assert.equal(isQualityQuarantineRule(RULE_VERSION), true);
+    assert.equal(isQualityQuarantineRule(RULE_VERSION), false);
+    assert.equal(isQualityQuarantineRule(QUALITY_QUARANTINE_RULE_VERSION), true);
     assert.equal(isLeadCountHealthEnabled(RULE_VERSION), false);
-    assert.deepEqual(quarantineDailyLeadPools(candidatePools, RULE_VERSION), emptyPools());
+    assert.equal(isLeadCountHealthEnabled(QUALITY_QUARANTINE_RULE_VERSION), false);
+    assert.equal(quarantineDailyLeadPools(candidatePools, RULE_VERSION), candidatePools);
+    assert.deepEqual(quarantineDailyLeadPools(candidatePools, QUALITY_QUARANTINE_RULE_VERSION), emptyPools());
     assert.deepEqual(candidatePools, {
       push: [{ project: "Push" }],
       watch: [{ project: "Watch" }],
@@ -92,7 +91,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.deepEqual(report.push_pool, []);
     assert.deepEqual(report.watch_pool, []);
     assert.deepEqual(report.drop_pool, []);
-    assert.match(report.summary, /V6\.8 质量隔离/);
+    assert.match(report.summary, /V7\.0 严格准入/);
     assert.equal(radar.items.length, 1);
     assert.ok(steamTrends.items.length >= 8);
     assert.ok(steamTrends.market_insights.length >= 3);
@@ -100,7 +99,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.deepEqual(steamTrends.crm_candidates, []);
   });
 
-  it("disables only Lead-count diagnostics during quarantine", () => {
+  it("keeps historical quarantine free of Lead-count diagnostics", () => {
     const warnings = [];
     const result = validateDailyVolume({
       pools: emptyPools(),
@@ -125,7 +124,7 @@ describe("online daily v4 quality quarantine", () => {
       },
       minReviewLeads: 18,
       minMediaLeadsWhenHealthy: 10,
-      ruleVersion: RULE_VERSION,
+      ruleVersion: QUALITY_QUARANTINE_RULE_VERSION,
       logger: { warn: (message) => warnings.push(message) }
     });
 
@@ -178,7 +177,9 @@ describe("online daily v4 quality quarantine", () => {
         records_total: 0,
         formal: 0,
         candidate: 0,
-        excluded: 0
+        excluded: 0,
+        new_qualified_count: 0,
+        push_pool_count: 0
       },
       candidates: []
     };

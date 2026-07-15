@@ -203,12 +203,11 @@ describe("online daily v4 volume and dedupe helpers", () => {
     };
   }
 
-  it("publishes degraded diagnostics when review volume is below the quality target", () => {
-    const warnings = [];
+  it("does not degrade health when formal Lead volume is below the historical target", () => {
     const result = validateDailyVolume({
       pools: {
-        push: Array.from({ length: 8 }, (_, index) => mediaLead({ project: `Push ${index}` })),
-        watch: Array.from({ length: 5 }, (_, index) => mediaLead({ project: `Watch ${index}` })),
+        push: Array.from({ length: 13 }, (_, index) => mediaLead({ project: `Push ${index}` })),
+        watch: [],
         drop: []
       },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
@@ -219,23 +218,20 @@ describe("online daily v4 volume and dedupe helpers", () => {
       rawCandidateCount: 202,
       enrichedCandidateCount: 90,
       diagnostics: baseDiagnostics({ media_signals_raw: 624 }),
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      logger: { warn: (message) => warnings.push(message) }
+      newQualifiedCount: 13
     });
 
-    assert.equal(result.ok, false);
-    assert.equal(result.degraded, true);
+    assert.equal(result.ok, true);
+    assert.equal(result.degraded, false);
     assert.equal(result.reviewCount, 13);
     assert.equal(result.rawCandidateCount, 202);
     assert.equal(result.enrichedCandidateCount, 90);
     assert.equal(result.mediaLeadCount, 11);
-    assert.deepEqual(result.issues.map((issue) => issue.code), ["review_leads_low"]);
-    assert.match(result.warnings[0], /push\+watch=13, expected >= 18/);
-    assert.deepEqual(warnings, result.warnings);
+    assert.deepEqual(result.issues, []);
+    assert.deepEqual(result.warnings, []);
   });
 
-  it("reports domestic media under-conversion without blocking publication", () => {
+  it("keeps domestic media conversion volume diagnostic-only", () => {
     const result = validateDailyVolume({
       pools: { push: Array.from({ length: 18 }, (_, index) => mediaLead({ project: `Push ${index}` })), watch: [], drop: [] },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
@@ -246,22 +242,20 @@ describe("online daily v4 volume and dedupe helpers", () => {
       rawCandidateCount: 40,
       enrichedCandidateCount: 20,
       diagnostics: baseDiagnostics({ media_signals_raw: 18 }),
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      logger: { warn: () => {} }
+      newQualifiedCount: 18
     });
 
-    assert.equal(result.ok, false);
-    assert.equal(result.degraded, true);
-    assert.deepEqual(result.issues.map((issue) => issue.code), ["domestic_media_leads_low"]);
-    assert.match(result.warnings[0], /Domestic media\/Bilibili lead extraction low/);
+    assert.equal(result.ok, true);
+    assert.equal(result.degraded, false);
+    assert.deepEqual(result.issues, []);
+    assert.deepEqual(result.warnings, []);
   });
 
-  it("passes when review and media conversion volume meet production thresholds", () => {
+  it("passes when qualified and push counts match", () => {
     const result = validateDailyVolume({
       pools: {
-        push: Array.from({ length: 10 }, (_, index) => mediaLead({ project: `Push ${index}` })),
-        watch: Array.from({ length: 8 }, (_, index) => mediaLead({ project: `Watch ${index}` })),
+        push: Array.from({ length: 18 }, (_, index) => mediaLead({ project: `Push ${index}` })),
+        watch: [],
         drop: []
       },
       mediaSignals: Array.from({ length: 18 }, (_, index) => ({
@@ -272,9 +266,7 @@ describe("online daily v4 volume and dedupe helpers", () => {
       rawCandidateCount: 80,
       enrichedCandidateCount: 40,
       diagnostics: baseDiagnostics({ media_signals_raw: 18 }),
-      minReviewLeads: 18,
-      minMediaLeadsWhenHealthy: 10,
-      logger: { warn: () => { throw new Error("unexpected low-volume warning"); } }
+      newQualifiedCount: 18
     });
 
     assert.equal(result.ok, true);

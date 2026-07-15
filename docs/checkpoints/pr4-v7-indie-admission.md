@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:48 CST
+Last updated: 2026-07-15 23:52 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, shared candidate-audit decision, existing-source evidence projection, active machine/human rule chain, and workflow/watchdog/heartbeat health contract are implemented and narrowly green. Stale-test alignment and final verification remain.
+Phase status: Phase 4 implementation is in progress. The V7.0 admission, publication, source projection, active rule chain, health contract, documentation, and complete Daily V4 regression alignment are implemented and green. Final verification and delivery remain.
 
 ## Current Goal
 
@@ -113,30 +113,28 @@ Explicitly out of scope:
 - Removed `minReviewLeads`, `minMediaLeads`, `minReviewBackfillScore`, `minCandidates`, and `minReviewCandidates` arguments from both production workflows without changing their `schedule` / `workflow_dispatch` triggers or sync chain.
 - Removed formal Lead count degradation from the local watchdog and Cloudflare heartbeat; both now treat missing/invalid artifacts, strict synced-receipt failure, and V7 qualified/push mismatch as blocking while zero formal Leads remains healthy.
 - Updated the cloud runbook and focused automation/candidate-audit assertions for the V7 health contract; combined activation, workflow, watchdog, heartbeat, and candidate-audit set is green: 30/30.
+- Ran the complete Daily V4 suite; the first pass was 106/114 with exactly eight stale V6.8/current-version or formal-count-degraded assertions and no new implementation failures.
+- Updated only those stale assertions, retained explicit historical V6.8 quarantine compatibility tests, and corrected the remaining active-rule wording that still pointed failed candidates toward `watch_pool` / `drop_pool` instead of the candidate audit.
+- Complete Daily V4 is green: 114/114.
 
 ## Remaining
 
-- Align the remaining stale V6.8 identity/report assertions exposed by the full Daily V4 suite without weakening historical-quarantine compatibility.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
 - Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
 
 ## Next Action
 
-Run the complete Daily V4 suite, update only stale V6.8/quantity assertions caused by V7 activation, then run the full PLAN.md final verification matrix.
+Run the full PLAN.md final verification matrix: focused V7 tests, Daily V4, schema/contract fixtures, all typechecks, `npm run verify:all`, and `git diff --check`; resolve only PR 4 failures.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 7]
- M .github/workflows/daily-report-watchdog.yml
- M .github/workflows/sync-daily-report.yml
- M automations/test/dailyAutomationHardening.test.mjs
- M automations/test/dailyWatchdogDegraded.test.mjs
- M automations/test/onlineDailyV4CandidateAudit.test.mjs
- M cloudflare/daily-report-heartbeat/worker.mjs
- M docs/CLOUD_AUTOMATION_RUNBOOK.md
+## codex/pr4-v7-indie-admission...origin/main [ahead 8]
+ M automations/test/onlineDailyV4Decision.test.mjs
+ M automations/test/onlineDailyV4QualityQuarantine.test.mjs
+ M automations/test/onlineDailyV4Reports.test.mjs
+ M automations/test/onlineDailyV4Rules.test.mjs
+ M docs/SOURCING_RULES_CURRENT.md
  M docs/checkpoints/pr4-v7-indie-admission.md
- M scripts/daily-report-watchdog.mjs
- M scripts/test-daily-report-heartbeat.mjs
 ```

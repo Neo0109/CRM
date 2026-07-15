@@ -48,7 +48,7 @@ The scan preserves all candidate evidence and decisions in `data/sourcing_candid
 
 The default operating flow is efficiency-first: first test or inspect the game, then decide. If the game does not pass playtest/content judgment, move it to `淘汰池` immediately. Do not require the BD owner to补官网、邮箱、联系人或长资料 before the product itself has passed the first test.
 
-Contact methods must prefer real business touch points: Steam support email, official site, official support URL, official-site email, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. If no website/email/social entry is publicly available, keep the Steam community discussion URL as a fallback and do not invent contact details.
+Contact methods must prefer real business touch points: official email, official site, official support URL, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. A Steam community discussion URL may remain a discovery fallback, but it does not satisfy the V7.0 non-Steam business-entry gate; do not invent contact details.
 
 Domestic media and Bilibili product signals are first-class discovery sources, not only radar background. A named game or source label is never enough for formal publication: the normalized project must pass the same eleven V7.0 gates as a Steam candidate. A non-Steam project identity may be used for dedupe, but every other mandatory product, quality, contact, and China-value proof still applies.
 
@@ -64,16 +64,16 @@ For Bilibili video leads, the automation must do one more verification pass befo
 - Treat recommendation-UP videos as discovery signals only. Search for matching official, developer, studio, or publisher Bilibili videos/posts and prefer those when they match the concrete project.
 - Extract Steam AppID, Steam store URL, official links, and real contact methods from the video description before writing the lead.
 - Extract Steam/TapTap/official/community links from any Bilibili description, media body, gameplay text, or source summary into structured `links`. Do not leave Steam store links buried inside long text fields.
-- Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released or launching in fewer than 60 days, it must not enter `push_pool` or `watch_pool`; route it to `drop_pool` or keep it as market background.
+- Cross-check Steam release state when a Steam link/AppID is available. If Steam or the original Bilibili text shows the product is already fully released or launching in fewer than 60 days, it must not enter a formal pool; retain the failed gate in the candidate audit or keep it as market background.
 - Do not treat `Demo 已上线`, `试玩上线`, `测试开启`, or `商店页已上线` as full release. Those are still valid review/test signals.
 - Deduplicate against existing CRM projects, Steam AppIDs, source URLs, and backend dedupe keys before creating a new lead. A slightly different Bilibili title for a previously sourced Steam product should enrich or be ignored, not create a duplicate.
 - Bilibili video signals must be timely. Old videos or old news should not create new leads unless they contain a current playable build, new demo, update, publishing window, or business-relevant event.
 
 Domestic products are the default sourcing priority. Domestic developer Demo/test signals are useful only while there is still a real cooperation window, because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better before the launch window closes.
 
-Overseas products should only consume review slots when they have PC data validation and a credible mobile-adaptation angle. Creative novelty alone is not enough.
+Overseas products require independent public-quality proof, a concrete China/Bilibili value case, and explicit official China demand. Creative novelty or a generic mobile-adaptation idea alone is not enough.
 
-The 60-day window is a hard filter for fresh automation-sourced leads. Domestic products can be discovered earlier or over a longer horizon, but if the confirmed release date is fewer than 60 days away, the lead is no longer a fresh BD opportunity and should not consume review slots.
+The 60-day window is a hard filter for fresh automation-sourced leads. Domestic products can be discovered earlier or over a longer horizon, but if the confirmed release date is fewer than 60 days away, the project remains outside formal pools and only its candidate-audit decision is retained.
 
 ## Update Protocol
 
