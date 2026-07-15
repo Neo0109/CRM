@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, appendFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { isLeadCountHealthEnabled, RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
 
 const defaultRootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -32,6 +33,8 @@ function main(argv) {
 
 export function inspectDailyReport(date, thresholds, options = {}) {
   const rootDir = options.rootDir ?? defaultRootDir;
+  const ruleVersion = options.ruleVersion ?? RULE_VERSION;
+  const leadCountHealthEnabled = isLeadCountHealthEnabled(ruleVersion);
   const files = {
     report: `data/reports/${date}.json`,
     radar: `data/radar/${date}.json`,
@@ -64,8 +67,8 @@ export function inspectDailyReport(date, thresholds, options = {}) {
   if (report && report.report_date !== date) reasons.push(`report date mismatch: ${report.report_date}`);
   if (radar && radar.report_date !== date) reasons.push(`radar date mismatch: ${radar.report_date}`);
   if (steamTrends && steamTrends.report_date !== date) reasons.push(`steam trends date mismatch: ${steamTrends.report_date}`);
-  if (report && counts.total < thresholds.minCandidates) warnings.push(`candidate count ${counts.total} below target ${thresholds.minCandidates}`);
-  if (report && counts.review < thresholds.minReviewCandidates) warnings.push(`review candidate count ${counts.review} below target ${thresholds.minReviewCandidates}`);
+  if (leadCountHealthEnabled && report && counts.total < thresholds.minCandidates) warnings.push(`candidate count ${counts.total} below target ${thresholds.minCandidates}`);
+  if (leadCountHealthEnabled && report && counts.review < thresholds.minReviewCandidates) warnings.push(`review candidate count ${counts.review} below target ${thresholds.minReviewCandidates}`);
   if (radar && counts.radar_items < thresholds.minRadarItems) warnings.push(`radar item count ${counts.radar_items} below target ${thresholds.minRadarItems}`);
   if (steamTrends && counts.steam_trend_items < thresholds.minSteamTrendItems) warnings.push(`steam trend item count ${counts.steam_trend_items} below target ${thresholds.minSteamTrendItems}`);
   if (steamTrends && counts.steam_market_insights < thresholds.minSteamMarketInsights) warnings.push(`steam market insight count ${counts.steam_market_insights} below target ${thresholds.minSteamMarketInsights}`);
@@ -92,6 +95,8 @@ export function inspectDailyReport(date, thresholds, options = {}) {
     degraded: warnings.length > 0,
     needs_run: reasons.length > 0,
     report_date: date,
+    rule_version: ruleVersion,
+    lead_count_health_enabled: leadCountHealthEnabled,
     thresholds,
     counts,
     files,

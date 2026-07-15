@@ -47,7 +47,7 @@ describe("online daily v4 report builders", () => {
     assert.ok(report.insights.length >= 10);
   });
 
-  it("includes Bilibili probe diagnostics in V6.5 report summaries without changing lead payloads", () => {
+  it("includes Bilibili probe diagnostics in V6.8 report summaries without changing lead payloads", () => {
     const pools = {
       push: [lead({ project: "Push Game", priority_reason: "保持人工可读", notes: null })],
       watch: [],
@@ -70,7 +70,7 @@ describe("online daily v4 report builders", () => {
     });
 
     assert.equal(report.report_date, "2026-07-05");
-    assert.match(report.summary, /Sourcing V6\.5线上自动化/);
+    assert.match(report.summary, /Sourcing V6\.8 质量隔离/);
     assert.match(report.summary, /B站探头候选 12 条、最终 3 条、官方源命中 2 条/);
     assert.equal(report.push_pool[0].priority_reason, "保持人工可读");
     assert.equal(report.push_pool[0].notes, null);

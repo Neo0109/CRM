@@ -13,11 +13,11 @@ export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCoun
   const probe = diagnostics.bilibili_probe ?? {};
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.5线上自动化：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；B站探头候选 ${probe.raw_candidates ?? 0} 条、最终 ${probe.final_candidates ?? 0} 条、官方源命中 ${diagnostics.bilibili_official_source_hits} 条；进入日报候选 ${pools.push.length + pools.watch.length + pools.drop.length} 条；推荐优先复核 ${pools.push.length} 条、普通复核 ${pools.watch.length} 条、淘汰 ${pools.drop.length} 条。非淘汰项目统一进入未处理 inbox，人工 review 后再分池。`,
+    summary: `Sourcing V6.8 质量隔离：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从国内媒体/B站提取产品线索 ${mediaLeadCount} 条；B站探头候选 ${probe.raw_candidates ?? 0} 条、最终 ${probe.final_candidates ?? 0} 条、官方源命中 ${diagnostics.bilibili_official_source_hits} 条；日报正式 Lead 池暂时为空，扫描结果仅用于 Radar、Steam Trends 与质量诊断。`,
     insights: [
-      "V6.5把日报读者明确为B站商务负责人：国内项目优先，不输出泛趋势废话，只输出能辅助BD判断的信息。",
+      "V6.8质量隔离继续面向B站商务负责人生成日报、Radar与Steam Trends，但暂不发布正式Lead。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
-      "国内媒体和B站捕捉到的具体产品必须进入lead候选；没有Steam AppID时，原文、视频、官网、TapTap、indienova等链接也可作为首轮验证入口。",
+      "国内媒体和B站捕捉到的具体产品继续参与扫描与证据校验；质量隔离期间不进入正式Lead池。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
       "Demo/试玩只能证明可测试，不能覆盖合作窗口；距发售不足60天的新线索默认淘汰或作为市场背景。",
@@ -26,8 +26,8 @@ export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCoun
       "海外项目默认不占用BD复核名额，除非具备PC数据验证且能说清手游化/移动端改编角度。",
       "已发售、EA、叙事主导、印度团队、成熟发行商占位的项目不再进入人工复核候选。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
-      "自动日报只负责发现和优先级建议，非淘汰项目不得自动进入观察池/待评测/跟进池/推进池。",
-      "低量日报不是正常产物；push+watch 或国内媒体/B站转换未达阈值时，线上生成必须失败并在 receipt 中暴露 sourcing/规则/上游诊断。"
+      "自动日报在质量隔离期间只负责发现与诊断，不向观察池/待评测/跟进池/推进池发布项目。",
+      "质量隔离期间正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、写入失败或同步失败仍然阻断。"
     ],
     push_pool: pools.push,
     watch_pool: pools.watch,
@@ -41,7 +41,7 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
   if (!candidates.length) {
     return {
       report_date: reportDate,
-      summary: `Sourcing V6.5行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      summary: `Sourcing V6.8质量隔离行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
       items: mediaItems
     };
   }
@@ -51,16 +51,16 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
     "bilibili_bd_lens",
     "B站趋势",
     `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
-    `样本高频不等于推荐。V6.5只关心这些方向里哪些产品能被UP主讲清楚、剪出看点、形成社区话题，并且仍有中国区权益空间。`,
+    `样本高频不等于推荐。V6.8质量隔离只保留方向观察，不把扫描候选发布为正式Lead。`,
     "中",
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
     "这是给BD选品的背景信号，不是新闻，也不直接进入推进池。",
-    `优先复核 ${pools.push.length} 个强信号项目；其余候选先在未处理 inbox 等人工分池。`
+    `正式Lead池处于质量隔离；本卡片只提供行业方向观察。`
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V6.5行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V6.8质量隔离行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -72,7 +72,7 @@ export function buildSteamTrendReport({ candidates, pools, reportDate, capturedA
   }
 
   const marketInsights = buildSteamMarketInsights(candidates, pools, context);
-  const genreSignals = buildSteamGenreSignals(candidates, context);
+  const genreSignals = ensureMinimumSteamGenreSignals(buildSteamGenreSignals(candidates, context), context);
   const focusGenres = genreSignals.slice(0, 3).map((signal) => signal.genre.replace(/（.+$/, ""));
   const steamSamples = selectSteamTrendSamples(candidates);
   const steamItems = steamSamples.map((candidate) => ({
@@ -99,7 +99,7 @@ export function buildSteamTrendReport({ candidates, pools, reportDate, capturedA
   }, context);
   return {
     report_date: reportDate,
-    summary: `Steam大盘V6.5：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；候选入库仍只进入未处理 inbox，人工再分池。`,
+    summary: `Steam大盘V6.8质量隔离：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；扫描候选暂不进入正式Lead池。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...steamItems, ...mediaFallbackItems, ...diagnosticFallbackItems].slice(0, 12),
@@ -139,7 +139,7 @@ function buildSteamUnavailableFallbackTrendReport(pools, context) {
       "中",
       "Domestic discovery source mix",
       "https://www.gamelook.com.cn/",
-      "后续持续扩展国内源，并用低数量闸门阻止一两条线索的坏日报上线。"
+      "后续持续扩展国内源；质量隔离期间不按Lead数量判断交付健康。"
     )
   ];
   const fallbackItems = buildFallbackSteamTrendItems(reviewLeads, 0, 12, context);
@@ -152,7 +152,7 @@ function buildSteamUnavailableFallbackTrendReport(pools, context) {
 
   return {
     report_date: context.reportDate,
-    summary: `Steam大盘V6.5：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
+    summary: `Steam大盘V6.8质量隔离：本次 Steam 抓取未返回有效候选，使用 ${reviewLeads.length} 个国内媒体/B站 review 候选做保底观察，避免日报因单一源失败而断档。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...fallbackItems, ...diagnosticItems].slice(0, 12),
@@ -202,7 +202,7 @@ function buildSteamDiagnosticTrendItems({ existingCount, marketInsights, genreSi
     })),
     {
       title: "Steam 样本质量诊断",
-      signal: `本次 Steam 候选 ${candidates.length} 个；如果去重、已上线和低质量过滤后无法支撑足够 review 队列，线上日报应失败并记录诊断，而不是发布低量日报。`,
+      signal: `本次 Steam 候选 ${candidates.length} 个；质量隔离期间继续记录去重、已上线和低质量过滤诊断，但不按正式Lead数量判定失败。`,
       source: "CRM automation diagnostics",
       links: ["https://steamdb.info/charts/"],
       bilibili_fit: "用诊断判断是否需要扩展国内媒体/B站官方源，不直接占用人工 lead 队列。",
@@ -226,11 +226,11 @@ function buildSteamDiagnosticTrendItems({ existingCount, marketInsights, genreSi
     },
     {
       title: "BD 可执行样本优先",
-      signal: "日报不能低量发布；只有达到 review 阈值的非淘汰有效项目才进入未处理 inbox，人工 review 后再决定待评测、测试中或淘汰。",
+      signal: "质量隔离期间日报正式Lead池保持为空；日报、Radar与Steam Trends继续生成，等待新准入规则通过独立PR上线。",
       source: "CRM automation diagnostics",
       links: ["https://github.com/Neo0109/CRM/actions"],
       bilibili_fit: "不要让诊断卡片进入 CRM lead；它只解释自动化状态，帮助决定是否补跑或扩源。",
-      reason: "自动化稳定护栏：质量不足时让 workflow 失败并记录诊断，而不是同步低量日报。"
+      reason: "自动化稳定护栏：来源、结构、写入和同步失败仍阻断，Lead数量不参与隔离期健康判断。"
     }
   ];
 

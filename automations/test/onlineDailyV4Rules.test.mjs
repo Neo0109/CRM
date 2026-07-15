@@ -22,6 +22,10 @@ const validRuleHeader = {
 };
 
 describe("online daily v4 rule config", () => {
+  it("exposes the locked V6.8 quality quarantine rule version", () => {
+    assert.equal(RULE_VERSION, "sourcing-rules-v6.8-quality-quarantine");
+  });
+
   it("loads the current daily rules into machine-readable runtime config", async () => {
     const rules = await loadDailyRules({ rootDir });
     assert.doesNotThrow(() => validateDailyRules(rules));

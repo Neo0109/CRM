@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.5.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V6.8 quality quarantine.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -16,14 +16,21 @@ import { buildMediaLeadCandidates } from "./online_daily_v4_media_leads.mjs";
 import { fetchMediaSignals } from "./online_daily_v4_media_sources.mjs";
 import { recordReleaseWindowHealth } from "./online_daily_v4_source_health.mjs";
 import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalToRadarItem } from "./online_daily_v4_reports.mjs";
-import { buildDailyRuleConfig, loadDailyRules, validateDailyRules } from "./online_daily_v4_rules.mjs";
+import {
+  buildDailyRuleConfig,
+  isQualityQuarantineRule,
+  loadDailyRules,
+  quarantineDailyLeadPools,
+  RULE_VERSION,
+  validateDailyRules
+} from "./online_daily_v4_rules.mjs";
 import { buildSteamCandidateTasks, enrichSteamCandidates, prioritizeSteamCandidatesForReview } from "./online_daily_v4_steam_source.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
 const rootDir = process.cwd();
-const sourcingRuleVersion = "sourcing-rules-v6.5-window-hygiene";
-const generatorName = "online_daily_v4_sourcing_rules_v6_5_window_hygiene";
+const sourcingRuleVersion = RULE_VERSION;
+const generatorName = "online_daily_v4_sourcing_rules_v6_8_quality_quarantine";
 const args = parseArgs(process.argv.slice(2));
 const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
 validateDailyRules(dailyRules);
@@ -106,7 +113,8 @@ if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
 }
 
 enrichedCandidates.sort((a, b) => b.score - a.score);
-const pools = buildPools(enrichedCandidates, mediaLeadCandidates, { reportDate, minReviewLeads, minReviewBackfillScore });
+const candidatePools = buildPools(enrichedCandidates, mediaLeadCandidates, { reportDate, minReviewLeads, minReviewBackfillScore });
+const pools = quarantineDailyLeadPools(candidatePools, sourcingRuleVersion);
 let volumeDiagnostics;
 try {
   volumeDiagnostics = validateDailyVolume({
@@ -117,7 +125,8 @@ try {
     enrichedCandidateCount: enrichedCandidates.length,
     diagnostics: sourcingDiagnostics,
     minReviewLeads,
-    minMediaLeadsWhenHealthy
+    minMediaLeadsWhenHealthy,
+    ruleVersion: sourcingRuleVersion
   });
 } catch (error) {
   const failurePayload = generationFailurePayload({
@@ -178,6 +187,12 @@ console.log(JSON.stringify({
   min_review_leads: minReviewLeads,
   min_review_backfill_score: minReviewBackfillScore,
   min_media_leads_when_healthy: minMediaLeadsWhenHealthy,
+  quality_quarantine: isQualityQuarantineRule(sourcingRuleVersion),
+  quarantined_candidate_pool: {
+    push: candidatePools.push.length,
+    watch: candidatePools.watch.length,
+    drop: candidatePools.drop.length
+  },
   max_bilibili_lead_age_days: maxBilibiliLeadAgeDays,
   existing_project_names: existingIndex.projects.size,
   existing_steam_app_ids: existingIndex.steamAppIds.size,

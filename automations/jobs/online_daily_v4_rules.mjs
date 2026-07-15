@@ -3,8 +3,22 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const GENERATOR_REPO_PATH = "automations/jobs/online_daily_v4.mjs";
-export const RULE_VERSION = "sourcing-rules-v6.7-non-game-animation-gate";
+export const QUALITY_QUARANTINE_RULE_VERSION = "sourcing-rules-v6.8-quality-quarantine";
+export const RULE_VERSION = QUALITY_QUARANTINE_RULE_VERSION;
 const ACTIVE_RULES_DOC = "docs/SOURCING_RULES_CURRENT.md";
+
+export function isQualityQuarantineRule(ruleVersion) {
+  return ruleVersion === QUALITY_QUARANTINE_RULE_VERSION;
+}
+
+export function isLeadCountHealthEnabled(ruleVersion) {
+  return !isQualityQuarantineRule(ruleVersion);
+}
+
+export function quarantineDailyLeadPools(pools, ruleVersion) {
+  if (!isQualityQuarantineRule(ruleVersion)) return pools;
+  return { push: [], watch: [], drop: [] };
+}
 
 const DEFAULT_MEDIA_SOURCES = [
   { name: "GameLook", url: "http://www.gamelook.com.cn/feed", type: "feed", quality: 16, focus: ["china", "business", "domestic_sourcing"] },

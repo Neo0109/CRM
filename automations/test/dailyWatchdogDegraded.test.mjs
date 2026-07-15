@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
+import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
 import { inspectDailyReport } from "../../scripts/daily-report-watchdog.mjs";
 
 const thresholds = {
@@ -17,13 +18,28 @@ const thresholds = {
 
 test("watchdog treats low volume as degraded after artifacts and sync succeed", () => {
   const rootDir = fixtureRoot("2026-07-10", { push: 8, watch: 5, drop: 12 });
-  const state = inspectDailyReport("2026-07-10", thresholds, { rootDir });
+  const state = inspectDailyReport("2026-07-10", thresholds, {
+    rootDir,
+    ruleVersion: "sourcing-rules-v6.7-non-game-animation-gate"
+  });
 
   assert.equal(state.ok, true);
   assert.equal(state.degraded, true);
   assert.equal(state.needs_run, false);
   assert.deepEqual(state.reasons, []);
   assert.match(state.warnings.join("\n"), /review candidate count 13 below target 18/);
+});
+
+test("watchdog treats an empty quarantine Lead pool as healthy after artifacts and sync succeed", () => {
+  const rootDir = fixtureRoot("2026-07-15", { push: 0, watch: 0, drop: 0 });
+  const state = inspectDailyReport("2026-07-15", thresholds, { rootDir, ruleVersion: RULE_VERSION });
+
+  assert.equal(state.ok, true);
+  assert.equal(state.degraded, false);
+  assert.equal(state.needs_run, false);
+  assert.equal(state.rule_version, RULE_VERSION);
+  assert.deepEqual(state.reasons, []);
+  assert.deepEqual(state.warnings, []);
 });
 
 test("watchdog still requests recovery when artifacts or synced receipt are missing", () => {

@@ -31,10 +31,16 @@ describe("daily automation hardening contract", () => {
     assert.deepEqual(schema.$defs.reportLead.properties.drop_reason, { type: ["string", "null"] });
   });
 
-  it("keeps machine-readable sourcing rules aligned with degraded publication", () => {
-    const rules = readRepoFile("automations/rules/daily-report.json");
-    assert.match(rules, /Low review volume.*degraded diagnostics.*must not block/);
-    assert.doesNotMatch(rules, /Low review volume, schema damage.*must fail scheduled automation/);
+  it("keeps machine-readable sourcing rules aligned with explicit quality quarantine", () => {
+    const rules = JSON.parse(readRepoFile("automations/rules/daily-report.json"));
+
+    assert.equal(rules.rule_version, "sourcing-rules-v6.8-quality-quarantine");
+    assert.deepEqual(rules.quality_quarantine, {
+      active: true,
+      publish_lead_pools: false,
+      lead_count_health: "disabled",
+      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends"]
+    });
   });
 
   it("records generation failures without treating them as successful receipts", () => {

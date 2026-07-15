@@ -1,9 +1,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isLeadCountHealthEnabled, RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
 
-const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const defaultRootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const args = parseArgs(process.argv.slice(2));
+const rootDir = args.rootDir ? path.resolve(args.rootDir) : defaultRootDir;
 const dates = args.all ? availableReportDates() : [args.date ?? latestReportDate()];
 const thresholds = {
   minReviewCandidates: numberArg(args.minReviewCandidates, 18),
@@ -13,6 +15,7 @@ const thresholds = {
   minSteamGenreSignals: numberArg(args.minSteamGenreSignals, 3)
 };
 const allowLowVolume = booleanArg(args.allowLowVolume);
+const leadCountHealthEnabled = isLeadCountHealthEnabled(RULE_VERSION);
 const allErrors = [];
 const allWarnings = [];
 const summaries = [];
@@ -87,8 +90,10 @@ function validateDate(date, thresholds) {
   ];
   const totalLeads = poolEntries.length;
   const reviewLeads = poolLeads(report, "push_pool").length + poolLeads(report, "watch_pool").length;
-  if (!totalLeads) errors.push("report has no leads across push_pool/watch_pool/drop_pool");
-  addVolumeIssue(warnings, errors, allowLowVolume, reviewLeads < thresholds.minReviewCandidates, `report has fewer than ${thresholds.minReviewCandidates} review candidates`);
+  if (leadCountHealthEnabled && !totalLeads) errors.push("report has no leads across push_pool/watch_pool/drop_pool");
+  if (leadCountHealthEnabled) {
+    addVolumeIssue(warnings, errors, allowLowVolume, reviewLeads < thresholds.minReviewCandidates, `report has fewer than ${thresholds.minReviewCandidates} review candidates`);
+  }
 
   const seen = new Set();
   for (const { pool, lead } of poolEntries) {
