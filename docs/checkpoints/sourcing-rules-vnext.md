@@ -2,7 +2,7 @@
 
 Date: 2026-07-15
 
-Status: Read-only root-cause diagnosis complete. No rule, product behavior, UI, Lead data, or workflow trigger has been changed.
+Status: Local P1/P2 root-cause audit complete. No rule, scoring logic, daily generation, product behavior, UI, Lead data, or workflow trigger has been changed.
 
 ## Baseline
 
@@ -29,6 +29,7 @@ Status: Read-only root-cause diagnosis complete. No rule, product behavior, UI, 
 - Added context-budget management requirements to `AGENTS.md`.
 - Added task-size control requirements to `AGENTS.md`.
 - Added task-scope control requirements to `AGENTS.md`.
+- Added the required business-system phase boundary to `AGENTS.md`.
 - Verified remote `main`, local checkout identity, current branch, dirty state, and open PR queue.
 - Verified PR `#84` and PR `#86` are merged and will not be reopened without concrete regression evidence.
 - Preserved all pre-existing local documentation changes; no active Sourcing rule or product code has been modified.
@@ -64,24 +65,43 @@ Status: Read-only root-cause diagnosis complete. No rule, product behavior, UI, 
 - Identified the rule-execution mismatch: much of the human and JSON rule prose is documentation/guardrail text, while business decisions remain duplicated as hard-coded heuristics; important requirements can be stated without being executable gates.
 - Identified the evaluation mismatch: tests protect structure, penalties, pool stability, volume targets, and known regressions, but there is no expert-labeled golden set or Precision@K/P1 acceptance gate preventing visually weak products from ranking highly.
 - Researched primary sources for the corrective pattern: two-stage candidate generation/ranking, expert relevance judgments, top-K ranking evaluation, simple observable objectives, and human-feedback learning.
+- Created `docs/audit/sourcing-quality-root-cause.md` as the local evidence-backed diagnosis for the current P1/P2 execution chain.
+- Re-verified the active local chain from rule loading through Steam/media scoring, per-source ordering, final pool construction, and daily output without reading unrelated business code.
+- Confirmed Steam P1 can be reached through domestic/source/genre/visual metadata without mandatory positive quality or traction evidence.
+- Confirmed media P1 is gated by source/relevance score rather than verified product quality, while every non-dropped media remainder becomes P2.
+- Confirmed non-push, non-drop Steam candidates enter `watch_pool` even when their displayed priority is P3; all non-dropped leads use the `未处理` bucket.
+- Confirmed the rule JSON's prose guardrails are version-checked but are not converted into executable P1/P2 predicates by `buildDailyRuleConfig`.
+- Distinguished historical report false positives from current reproducibility: the current 60-day hard drop should block the July 7 near-launch P1 examples, while missing-quality-evidence P1 patterns remain compatible with current predicates.
+- Identified the primary root cause as a stage-boundary error: discovery relevance, product quality, and formal BD recommendation are collapsed into one scoring/pool path.
+- Reviewed `docs/audit/sourcing-quality-root-cause.md` using only the audit and this checkpoint; no business code was re-read during the review.
+- Confirmed the diagnosis has traceable factual support through named execution symbols, explicit P1/P2 predicates, stated rule/config boundaries, and concrete local report examples.
+- Classified the stage-boundary root cause as a well-supported explanatory synthesis, but not a controlled causal proof until current-version fixtures or a labeled regression set reproduce the ranking outcomes.
+- Identified an internal checkpoint conflict: the earlier claim that the 18-candidate target actively backfills dropped candidates and upgrades P3 to P2 is not established by the audit; the audit instead finds broad ordinary watch/media-watch admission to be the main mechanism and describes explicit backfill as apparently contradictory or unreachable.
+- Confirmed historical near-launch and non-game report examples are valid evidence of past false positives, but not proof of a current V6.7 regression without reproduction.
+- Classified discovery/recommendation separation, affirmative P1 evidence, diagnostics-only volume targets, explicit unknown-state handling, executable rule traceability, and a shared post-enrichment admission contract as ready for Proposal-stage rule design.
+- Classified exact quality signals, numeric thresholds, P2 routing semantics, current backfill reachability, media upstream-score provenance, current output version labels, downstream import effects, and the approved regression set as requiring confirmation or additional evidence before final design approval.
 
 ## Remaining
 
-- Present the diagnosis and evidence to the user.
-- If the user approves a separate implementation task, convert the diagnosis into an approval-ready rule/architecture plan and TDD slice without mixing in UI or workflow-trigger changes.
+- User confirmation that the fact-supported diagnosis is accepted as the basis for a separate Proposal stage.
+- Resolve the checkpoint inconsistency around the 18-candidate target and explicit backfill before using backfill as a design premise.
+- Obtain current-version evidence for backfill reachability, representative score breakdowns, media upstream-score provenance, current rule-version output, and any downstream routing claim that materially affects the proposal.
+- Confirm which positive quality signals qualify for P1, whether P2 stays in `未处理` or moves to an upstream observation funnel, whether zero formal recommendations is acceptable, and which historical cases form the regression set.
+- No scoring, ranking, generator, UI, product, data, or workflow implementation before separate proposal approval.
 
 ## Next Action
 
-- Present the root-cause diagnosis. Do not implement until the user approves a separate change task.
+- Stop after this review and wait for user confirmation. If approved, open a separate Proposal-stage task using only the design-ready findings; keep unresolved evidence and policy questions explicit and do not proceed to Implementation.
 
 ## Git Status
 
 - Branch: `codex/sourcing-rules-vnext`
 - Base/remote truth: `origin/main` at `f564a9b722eb35c251b0c869f5bdc010f27cfc2e`
-- Pre-existing local changes: modified `AGENTS.md`; untracked `docs/SOURCING_RULES_INPUT.md` and `docs/checkpoints/`.
-- This checkpoint update is documentation-only and required by the Long Task Checkpoint Protocol.
-- No business code, active rule, generated report, existing Lead data, or workflow has been changed.
-- Current working tree remains: modified `AGENTS.md`; untracked `docs/SOURCING_RULES_INPUT.md` and `docs/checkpoints/`.
+- Base/remote truth was not re-fetched during this local-only diagnosis stage.
+- Pre-existing at stage start: modified `AGENTS.md` and modified `docs/checkpoints/sourcing-rules-vnext.md`.
+- This stage added `docs/audit/sourcing-quality-root-cause.md` and updated this checkpoint only.
+- No business code, active rule, scoring logic, generated report, existing Lead data, or workflow has been changed.
+- Expected working tree: modified `AGENTS.md`; modified `docs/checkpoints/sourcing-rules-vnext.md`; untracked `docs/audit/sourcing-quality-root-cause.md`.
 
 ## Scope
 

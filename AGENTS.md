@@ -83,3 +83,25 @@
 
 大型需求必须拆成多个 checkpoint 阶段。
 每个阶段完成后停止等待确认。
+
+## Phase Boundary
+
+任何业务系统修改必须经过：
+
+Phase 1:
+Diagnosis
+（只读分析）
+
+Phase 2:
+Proposal
+（方案设计）
+
+Phase 3:
+Approval
+（用户确认）
+
+Phase 4:
+Implementation
+（代码修改）
+
+不得从 Diagnosis 直接进入 Implementation。
