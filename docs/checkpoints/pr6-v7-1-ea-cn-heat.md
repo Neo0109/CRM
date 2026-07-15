@@ -42,19 +42,28 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Added `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md` and updated `docs/SOURCING_RULES_CURRENT.md` so the active V7.1 machine rule, source boundary, workflow, artifact, receipt, and success invariants are traceable without changing the PR 5 source implementation.
   - Static workflow/rule/documentation contract tests pass: 4/4. YAML syntax parsing and `git diff --check` pass.
   - Confirmed the two existing Daily workflow files remain untouched by this step.
+- Final local validation completed:
+  - Restored workspace dependencies with `npm install --no-package-lock`; no lockfile or dependency artifact is tracked.
+  - PR 6 focused delivery/workflow tests pass: 11/11.
+  - CRM core tests pass: 30/30, including the create-only invariant that an existing Steam AppID/dedupe match is skipped with no existing-field mutation.
+  - Frontend, backend, and Functions type checks pass; frontend and backend production builds pass.
+  - The first `verify:all` run exposed only an obsolete exact documentation phrase expected by the accepted source boundary test. Restoring the true phrase “not imported by the active Daily runner” fixed the assertion without changing behavior.
+  - The final `npm run verify:all` run passes all tasks, including 139/139 Daily/automation tests, contract checks, type checks, source checks, temporary production build, and diff check.
+  - Final `git diff --check` passes; both existing Daily workflow files remain byte-unchanged relative to `origin/main`.
+  - Re-ran the required `cmp` and SHA-256 check: repository `PLAN.md` remains byte-identical to `/Users/neo/Downloads/PLAN.md` at `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
+  - Final pre-publish baseline remains `origin/main=d98009bc5b8dad3ae81e304839fdc950a200248b`, unrelated open PR `#71`, and no queued or in-progress Actions runs.
 
 ## Remaining
 
-- Run all final validation and deliver the PR.
 - Commit, push, open PR, monitor CI, and squash merge.
 - Verify build, Cloudflare deployment, production `/api/health`, and PR 6 online acceptance.
 
 ## Next Action
 
-Run focused PR 6 tests, receipt/schema contracts, type checks, `npm run verify:all`, and `git diff --check`; fix only PR 6 regressions, then prepare the PR.
+Commit the final validation/documentation update, review the complete `origin/main...HEAD` diff for PR 6-only scope, then push and create the PR.
 
 ## Git Status
 
 - Branch: `codex/pr6-v7-1-ea-cn-heat`
 - Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Worktree: workflow, workflow contract test, V7.1 delivery documentation, current-rule entrypoint update, and this checkpoint are modified and ready for the second implementation commit; `PLAN.md` remains unchanged.
+- Worktree: only the final current-rule wording correction and this checkpoint update are uncommitted; implementation is otherwise committed in three PR 6 commits and `PLAN.md` remains unchanged.

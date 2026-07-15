@@ -26,7 +26,7 @@ The pre-v4 daily generators are archived in git history. Do not use `online_dail
 
 V7.0 keeps broad discovery active and publishes every deduped `indie_prelaunch` project that passes all eleven mandatory gates to `push_pool` with `priority=null`. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
-The standalone `steam-schinese-reviews-v1` audit source remains outside the active Daily runner and both Daily workflows. V7.1 activates EA/high-traction and China-heat publication through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
+The standalone `steam-schinese-reviews-v1` audit source is not imported by the active Daily runner or either Daily workflow. V7.1 consumes its validated artifact and activates EA/high-traction and China-heat publication only through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
 
 ## Operating Principle
 
