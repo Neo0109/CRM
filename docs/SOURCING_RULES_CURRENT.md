@@ -26,7 +26,7 @@ The pre-v4 daily generators are archived in git history. Do not use `online_dail
 
 V7.0 keeps broad discovery active and publishes every deduped `indie_prelaunch` project that passes all eleven mandatory gates to `push_pool` with `priority=null`. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
-PLAN.md PR 5 adds the standalone `steam-schinese-reviews-v1` audit source documented in `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md`. It writes only `data/steam_review_opportunities/YYYY-MM-DD.json`; it is not imported by the active Daily runner, either production daily workflow, the report importer, or CRM sync. EA/high-traction and China-heat publication remain disabled until PR 6.
+The standalone `steam-schinese-reviews-v1` audit source remains outside the active Daily runner and both Daily workflows. V7.1 activates EA/high-traction and China-heat publication through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
 
 ## Operating Principle
 
@@ -225,7 +225,18 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - Preserve every prefilter decision in `data/steam_review_opportunities/YYYY-MM-DD.json` under `schemas/steam_review_opportunities.schema.json` with no cap or truncation.
 - Keep unknown official evidence `null`, mark bounded or failed collection `scan_complete=false`, and never synchronize this artifact to CRM.
 - Run `node --test automations/test/steamReviewOpportunity*.test.mjs`; CI uses only fixed catalog/review/AppDetails fixtures and never calls live Steam.
-- The full source, threshold, artifact, validation, and dormant-until-PR-6 contract is canonical in `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md`.
+- The full source, threshold, artifact, and validation contract is canonical in `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md`; the separate V7.1 workflow/import contract is canonical in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
+
+## V7.1 EA / Chinese Heat Independent Delivery
+
+- The machine-readable rule source is `automations/rules/steam-review-opportunities.json`; the delivery entrypoint is `automations/jobs/steam_review_opportunity_delivery.mjs`.
+- `.github/workflows/steam-review-opportunities.yml` contains only `schedule` and `workflow_dispatch`. The Daily workflow triggers and execution chain remain unchanged.
+- Production collection is always an unbounded full-catalog scan. `scan_complete=false` prevents creation of any CRM import payload and prevents any CRM request.
+- The first `backfill` run delivers every qualified AppID with `sourcing_run_type=initial_backfill`; no count limit or ranking cutoff exists.
+- Later scheduled runs retain only new discoveries and AppIDs crossing a threshold for the first time, based on prior complete audit artifacts.
+- The final API boundary is `POST /api/leads/import-daily-report?mode=create-only`; existing Lead matches are skipped and must never be updated.
+- Independent receipts under `data/steam_review_opportunity_runs/` record scan, qualification, prior-qualified suppression, import, dedupe, creation, update, and structured sync metrics.
+- Success requires `scan_complete=true`, `status=success`, `sync_response.synced=true`, `updated_count=0`, and created-plus-deduplicated parity with the import candidate count.
 
 ## Source Health And Calibration
 

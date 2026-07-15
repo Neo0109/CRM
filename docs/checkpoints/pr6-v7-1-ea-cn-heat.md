@@ -35,20 +35,26 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Incomplete scans write preparation state but no CRM import payload.
   - Added the independent run-receipt schema and validator; strict success requires the complete scan, structured `synced=true`, zero updates, and exact created-plus-deduplicated parity with import candidates.
   - Fixed-fixture delivery tests pass: 7/7. The existing source/artifact fixture suite also remained green when exercised as a dependency contract; no live Steam or CRM call was made.
+- Independent workflow and rule-documentation step completed:
+  - Added `.github/workflows/steam-review-opportunities.yml` with only weekly `schedule` and manual `workflow_dispatch` triggers, main-branch guard, isolated concurrency, and no bounded-scan option.
+  - The workflow validates and commits the dedicated audit, reads the strict scan gate, calls only the create-only Lead import when complete, then validates and commits a separate structured receipt.
+  - Missing CRM access, incomplete scans, sync failures, non-zero updates, or receipt parity drift remain blocking; a complete zero-candidate run still calls create-only and can produce a strict successful receipt.
+  - Added `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md` and updated `docs/SOURCING_RULES_CURRENT.md` so the active V7.1 machine rule, source boundary, workflow, artifact, receipt, and success invariants are traceable without changing the PR 5 source implementation.
+  - Static workflow/rule/documentation contract tests pass: 4/4. YAML syntax parsing and `git diff --check` pass.
+  - Confirmed the two existing Daily workflow files remain untouched by this step.
 
 ## Remaining
 
-- Implement the independent workflow and PR 6 operational documentation.
 - Run all final validation and deliver the PR.
 - Commit, push, open PR, monitor CI, and squash merge.
 - Verify build, Cloudflare deployment, production `/api/health`, and PR 6 online acceptance.
 
 ## Next Action
 
-Add the independent `schedule`/`workflow_dispatch` workflow, its static safety contract test, and PR 6 operational documentation without editing either existing Daily workflow.
+Run focused PR 6 tests, receipt/schema contracts, type checks, `npm run verify:all`, and `git diff --check`; fix only PR 6 regressions, then prepare the PR.
 
 ## Git Status
 
 - Branch: `codex/pr6-v7-1-ea-cn-heat`
 - Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Worktree: pure PR 6 delivery/rule/schema/test files plus this checkpoint are modified and ready for the first implementation commit; `PLAN.md` remains unchanged.
+- Worktree: workflow, workflow contract test, V7.1 delivery documentation, current-rule entrypoint update, and this checkpoint are modified and ready for the second implementation commit; `PLAN.md` remains unchanged.

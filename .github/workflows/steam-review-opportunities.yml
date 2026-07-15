@@ -1,0 +1,275 @@
+name: Steam review opportunities
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: Shanghai report date in YYYY-MM-DD. Defaults to today.
+        required: false
+        type: string
+      mode:
+        description: Auto uses backfill until a strict successful initial receipt exists, then scheduled.
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - backfill
+          - scheduled
+      slot:
+        description: Traceability label for the independent receipt.
+        required: false
+        default: manual
+        type: string
+  schedule:
+    # Monday 03:23 Asia/Shanghai; isolated from both Daily automation windows.
+    - cron: "23 19 * * 0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-review-opportunities-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  scan-and-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require main branch
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "Steam review opportunity delivery must run from main." >&2
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-package-lock
+
+      - name: Resolve date, mode, and slot
+        id: resolve
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.date }}" ]; then
+            report_date="${{ inputs.date }}"
+          else
+            report_date="$(TZ=Asia/Shanghai date +%F)"
+          fi
+          if ! [[ "$report_date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "Invalid report date: $report_date" >&2
+            exit 1
+          fi
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            requested_mode="${{ inputs.mode }}"
+            run_slot="${{ inputs.slot }}"
+          else
+            requested_mode="auto"
+            run_slot="scheduled"
+          fi
+          requested_mode="${requested_mode:-auto}"
+          run_slot="$(printf '%s' "${run_slot:-manual}" | tr '[:upper:] ' '[:lower:]-' | sed 's/[^a-z0-9_-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-40)"
+          if [ -z "$run_slot" ]; then
+            run_slot="manual"
+          fi
+
+          echo "date=$report_date" >> "$GITHUB_OUTPUT"
+          echo "mode=$requested_mode" >> "$GITHUB_OUTPUT"
+          echo "slot=$run_slot" >> "$GITHUB_OUTPUT"
+          echo "REPORT_DATE=$report_date" >> "$GITHUB_ENV"
+          echo "REQUESTED_MODE=$requested_mode" >> "$GITHUB_ENV"
+          echo "RUN_SLOT=$run_slot" >> "$GITHUB_ENV"
+          echo "PREPARATION_PATH=data/runtime/$report_date-$run_slot-steam-review-preparation.json" >> "$GITHUB_ENV"
+          echo "IMPORT_PAYLOAD_PATH=data/runtime/$report_date-$run_slot-steam-review-import.json" >> "$GITHUB_ENV"
+          echo "SYNC_RESPONSE_PATH=data/runtime/$report_date-$run_slot-steam-review-sync-response.json" >> "$GITHUB_ENV"
+          echo "RECEIPT_PATH=data/steam_review_opportunity_runs/$report_date-$run_slot.json" >> "$GITHUB_ENV"
+
+      - name: Prepare full Steam review opportunity scan
+        id: prepare
+        shell: bash
+        run: |
+          set +e
+          log_file="$(mktemp)"
+          node automations/jobs/steam_review_opportunity_delivery.mjs prepare \
+            --date="$REPORT_DATE" \
+            --slot="$RUN_SLOT" \
+            --mode="$REQUESTED_MODE" \
+            --pageSize=100 \
+            --concurrency=2 \
+            --requestDelayMs=250 2>&1 | tee "$log_file"
+          status="${PIPESTATUS[0]}"
+          set -e
+
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          echo "log_b64=$(tail -c 20000 "$log_file" | base64 -w 0)" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ] && [ -f "$PREPARATION_PATH" ]; then
+            echo "preparation_status=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "preparation_status=failed" >> "$GITHUB_OUTPUT"
+            exit "$status"
+          fi
+
+      - name: Validate scan artifact
+        if: steps.prepare.outputs.preparation_status == 'success'
+        run: npm run validate:steam-review-opportunities -- --file="data/steam_review_opportunities/$REPORT_DATE.json"
+
+      - name: Read scan gate
+        id: gate
+        if: steps.prepare.outputs.preparation_status == 'success'
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const preparation = JSON.parse(fs.readFileSync(process.env.PREPARATION_PATH, 'utf8'));
+          const ready = preparation.ready_for_sync === true && preparation.scan_complete === true;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `ready_for_sync=${ready}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `resolved_mode=${preparation.mode}\n`);
+          console.log(JSON.stringify({
+            scan_complete: preparation.scan_complete,
+            catalog_scan_count: preparation.catalog_scan_count,
+            qualified_count: preparation.qualified_count,
+            import_candidate_count: preparation.import_candidate_count
+          }, null, 2));
+          NODE
+
+      - name: Commit scan artifact
+        if: steps.prepare.outputs.preparation_status == 'success'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "data/steam_review_opportunities/$REPORT_DATE.json"
+          if git diff --cached --quiet; then
+            echo "No Steam review opportunity artifact changes to commit."
+          else
+            git commit -m "Record $REPORT_DATE Steam review opportunity scan"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Sync eligible opportunities with create-only import
+        id: sync
+        if: steps.gate.outputs.ready_for_sync == 'true'
+        shell: bash
+        env:
+          CRM_ACCESS_TOKEN: ${{ secrets.CRM_ACCESS_TOKEN }}
+        run: |
+          mkdir -p data/runtime
+          if [ -z "$CRM_ACCESS_TOKEN" ]; then
+            printf '%s\n' '{"synced":false,"error":"CRM_ACCESS_TOKEN is not configured"}' > "$SYNC_RESPONSE_PATH"
+            echo "sync_status=failed" >> "$GITHUB_OUTPUT"
+            echo "attempts=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          sync_status="failed"
+          attempts=0
+          for attempt in 1 2 3; do
+            attempts="$attempt"
+            raw_response="$(mktemp)"
+            set +e
+            http_code="$(curl -sS --output "$raw_response" --write-out '%{http_code}' \
+              --request POST \
+              --header 'Content-Type: application/json' \
+              --header "x-crm-token: $CRM_ACCESS_TOKEN" \
+              --data-binary "@$IMPORT_PAYLOAD_PATH" \
+              'https://crm-pages.pages.dev/api/leads/import-daily-report?mode=create-only')"
+            curl_status="$?"
+            set -e
+
+            RAW_RESPONSE="$raw_response" HTTP_CODE="$http_code" CURL_STATUS="$curl_status" node <<'NODE'
+            const fs = require('node:fs');
+            const raw = fs.readFileSync(process.env.RAW_RESPONSE, 'utf8');
+            let payload;
+            try {
+              payload = JSON.parse(raw);
+            } catch {
+              payload = {
+                synced: false,
+                error: `CRM create-only import returned a non-JSON response (HTTP ${process.env.HTTP_CODE || 'unknown'})`
+              };
+            }
+            if (typeof payload.synced !== 'boolean') payload.synced = false;
+            if (process.env.CURL_STATUS !== '0') {
+              payload = { synced: false, error: `CRM create-only import transport failed (curl ${process.env.CURL_STATUS})` };
+            }
+            fs.writeFileSync(process.env.SYNC_RESPONSE_PATH, `${JSON.stringify(payload, null, 2)}\n`);
+            NODE
+
+            if node -e 'const r=require("./"+process.env.SYNC_RESPONSE_PATH); process.exit(r.synced === true && r.updated === 0 ? 0 : 1)'; then
+              sync_status="success"
+              break
+            fi
+            sleep 12
+          done
+
+          echo "sync_status=$sync_status" >> "$GITHUB_OUTPUT"
+          echo "attempts=$attempts" >> "$GITHUB_OUTPUT"
+
+      - name: Write strict delivery receipt
+        id: receipt
+        if: always() && steps.prepare.outputs.preparation_status == 'success'
+        shell: bash
+        run: |
+          receipt_args=(
+            receipt
+            "--preparation=$PREPARATION_PATH"
+            "--output=$RECEIPT_PATH"
+          )
+          if [ -f "$SYNC_RESPONSE_PATH" ]; then
+            receipt_args+=("--syncResponse=$SYNC_RESPONSE_PATH")
+          fi
+          node automations/jobs/steam_review_opportunity_delivery.mjs "${receipt_args[@]}"
+          npm run validate:steam-review-opportunity-run -- --file="$RECEIPT_PATH"
+
+      - name: Commit delivery receipt
+        if: always() && steps.receipt.outcome == 'success'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "data/steam_review_opportunity_runs/$REPORT_DATE-$RUN_SLOT.json"
+          if git diff --cached --quiet; then
+            echo "No Steam review opportunity receipt changes to commit."
+          else
+            git commit -m "Record $REPORT_DATE $RUN_SLOT Steam review delivery"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Enforce strict delivery success
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          if (!fs.existsSync(process.env.RECEIPT_PATH)) {
+            throw new Error('Steam review opportunity receipt was not created');
+          }
+          const receipt = JSON.parse(fs.readFileSync(process.env.RECEIPT_PATH, 'utf8'));
+          if (receipt.status !== "success") throw new Error(`receipt status=${receipt.status}`);
+          if (receipt.scan_complete !== true) throw new Error('receipt scan_complete is not true');
+          if (receipt.sync_response?.synced !== true) throw new Error('receipt sync_response.synced is not true');
+          if (receipt.updated_count !== 0) throw new Error(`receipt updated_count=${receipt.updated_count}`);
+          console.log(JSON.stringify({
+            status: receipt.status,
+            scan_complete: receipt.scan_complete,
+            catalog_scan_count: receipt.catalog_scan_count,
+            qualified_count: receipt.qualified_count,
+            deduplicated_count: receipt.deduplicated_count,
+            created_count: receipt.created_count,
+            sync_response: receipt.sync_response
+          }, null, 2));
+          NODE
