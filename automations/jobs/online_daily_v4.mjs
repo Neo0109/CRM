@@ -3,6 +3,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultBilibiliProbeDiagnostics } from "./bilibili_probe.mjs";
+import { serializeArtifact } from "./online_daily_v4_artifacts.mjs";
 import { buildPools } from "./online_daily_v4_decision.mjs";
 import {
   dedupeByAppId,
@@ -313,7 +314,7 @@ function previousDatePaths(date, days) {
 async function writeJson(relativePath, payload) {
   const absolutePath = path.join(rootDir, relativePath);
   await mkdir(path.dirname(absolutePath), { recursive: true });
-  await writeFile(absolutePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  await writeFile(absolutePath, serializeArtifact(payload), "utf8");
 }
 
 function generationFailurePayload({

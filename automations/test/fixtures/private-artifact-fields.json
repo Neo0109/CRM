@@ -1,0 +1,75 @@
+{
+  "input": {
+    "report_date": "2026-07-15",
+    "_runtimeState": {
+      "attempt": 1
+    },
+    "push_pool": [
+      {
+        "project": "Contract Fixture",
+        "links": [
+          "https://store.steampowered.com/app/123456/"
+        ],
+        "_bilibiliEvidence": {
+          "steam_app_id": "123456"
+        },
+        "nested": {
+          "visible": "keep",
+          "_mediaDisposition": "lead_candidate",
+          "items": [
+            {
+              "name": "first",
+              "_steamEvidencePrimary": 1
+            },
+            {
+              "name": "second",
+              "_steamEntityResolution": {
+                "relation": "same_product"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "steam_trends": {
+      "crm_candidates": [
+        {
+          "project": "Trend Fixture",
+          "_steamEvidenceOutcome": "steam_evidence_materialized",
+          "_steamTitleLookupMatched": true
+        }
+      ]
+    },
+    "nullable": null
+  },
+  "expected": {
+    "report_date": "2026-07-15",
+    "push_pool": [
+      {
+        "project": "Contract Fixture",
+        "links": [
+          "https://store.steampowered.com/app/123456/"
+        ],
+        "nested": {
+          "visible": "keep",
+          "items": [
+            {
+              "name": "first"
+            },
+            {
+              "name": "second"
+            }
+          ]
+        }
+      }
+    ],
+    "steam_trends": {
+      "crm_candidates": [
+        {
+          "project": "Trend Fixture"
+        }
+      ]
+    },
+    "nullable": null
+  }
+}
