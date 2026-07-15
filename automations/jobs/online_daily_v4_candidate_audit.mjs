@@ -1,6 +1,11 @@
 import { hardDropReason } from "./online_daily_v4_decision.mjs";
 import { normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
 import { isQualityQuarantineRule } from "./online_daily_v4_rules.mjs";
+import {
+  evaluateMediaIndiePrelaunchAdmission,
+  evaluateSteamIndiePrelaunchAdmission,
+  INDIE_PRELAUNCH_RULE_VERSION
+} from "./online_daily_v7_indie_admission.mjs";
 
 const DECISION_RANK = { excluded: 1, candidate: 2, formal: 3 };
 
@@ -43,8 +48,15 @@ export function buildSourcingCandidateArtifact({
     }));
   }
 
-  const candidates = [...records.values()].sort((left, right) => left.dedupe_key.localeCompare(right.dedupe_key));
+  const internalCandidates = [...records.values()].sort((left, right) => left.dedupe_key.localeCompare(right.dedupe_key));
+  const candidates = internalCandidates.map(stripAuditPrivate);
   const decisionCount = (decision) => candidates.filter((candidate) => candidate.decision === decision).length;
+  const v7Summary = ruleVersion === INDIE_PRELAUNCH_RULE_VERSION
+    ? {
+        new_qualified_count: internalCandidates.filter((candidate) => candidate._admissionQualified).length,
+        push_pool_count: publishedPools?.push?.length ?? 0
+      }
+    : {};
 
   return {
     schema_version: 1,
@@ -59,7 +71,8 @@ export function buildSourcingCandidateArtifact({
       records_total: candidates.length,
       formal: decisionCount("formal"),
       candidate: decisionCount("candidate"),
-      excluded: decisionCount("excluded")
+      excluded: decisionCount("excluded"),
+      ...v7Summary
     },
     candidates
   };
@@ -67,6 +80,8 @@ export function buildSourcingCandidateArtifact({
 
 function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }) {
   const candidate = enriched ?? raw ?? {};
+  const isV7 = ruleVersion === INDIE_PRELAUNCH_RULE_VERSION;
+  const admission = isV7 ? evaluateSteamIndiePrelaunchAdmission(candidate) : null;
   const hasDetails = enriched?.hasDetails === true;
   const reviewSummary = steamReviewSummary({
     hasDetails,
@@ -80,30 +95,38 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }
   });
   const eaState = hasDetails ? booleanState(Boolean(enriched?.earlyAccess)) : "unknown";
   const fallbackExclusion = enriched ? hardDropReason(enriched) : null;
-  const decision = poolDecision?.decision ?? (fallbackExclusion ? "excluded" : "candidate");
+  const decision = poolDecision?.decision === "formal"
+    ? "formal"
+    : isV7
+      ? admission.disposition === "excluded" ? "excluded" : "candidate"
+      : poolDecision?.decision ?? (fallbackExclusion ? "excluded" : "candidate");
   const matchedRules = [
     "steam_discovery",
     enriched ? "steam_enriched" : null,
     poolDecision?.matchedRule,
+    ...(admission?.matched_rules ?? []),
     isQualityQuarantineRule(ruleVersion) ? "quality_quarantine" : null
   ].filter(Boolean);
   const missingEvidence = [];
   if (!hasDetails) missingEvidence.push("steam_app_details", "ea_status", "visual_assets");
   if (reviewSummary.status === "unknown") missingEvidence.push("steam_review_summary");
+  if (isV7) missingEvidence.push(...admission.missing_evidence);
 
   return {
+    _admissionQualified: admission?.qualified === true,
     decision,
     source_type: "steam",
     project: String(candidate.title ?? "").trim(),
     steam_app_id: stringOrNull(candidate.appId),
     dedupe_key: key,
-    sourcing_lane: candidate.sourcing_lane ?? null,
+    sourcing_lane: isV7 ? admission.sourcing_lane : candidate.sourcing_lane ?? null,
     sourcing_rule_version: ruleVersion,
     matched_rules: uniqueStrings(matchedRules),
     missing_evidence: uniqueStrings(missingEvidence),
     exclusion_reasons: uniqueStrings([
       poolDecision?.decision === "excluded" ? poolDecision.reason : null,
-      fallbackExclusion
+      isV7 ? null : fallbackExclusion,
+      ...(admission?.exclusion_reasons ?? [])
     ]),
     source_links: normalizedLinks([
       candidate.storeUrl,
@@ -120,6 +143,8 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }
 }
 
 function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
+  const isV7 = ruleVersion === INDIE_PRELAUNCH_RULE_VERSION;
+  const admission = isV7 ? evaluateMediaIndiePrelaunchAdmission(lead) : null;
   const details = lead?._steamEntityResolution?.details ?? null;
   const hasDetails = Boolean(details);
   const recommendationCount = Number(details?.recommendations?.total ?? 0);
@@ -135,20 +160,26 @@ function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
   });
   const eaState = hasDetails ? booleanState(mediaDetailsShowEarlyAccess(lead, details)) : "unknown";
   const fallbackExcluded = lead?._class === "drop";
-  const decision = poolDecision?.decision ?? (fallbackExcluded ? "excluded" : "candidate");
+  const decision = poolDecision?.decision === "formal"
+    ? "formal"
+    : isV7
+      ? admission.disposition === "excluded" ? "excluded" : "candidate"
+      : poolDecision?.decision ?? (fallbackExcluded ? "excluded" : "candidate");
   const missingEvidence = [];
   if (!lead?.steam_app_id) missingEvidence.push("steam_app_id");
   if (!hasDetails) missingEvidence.push("steam_app_details", "ea_status", "visual_assets");
   if (reviewSummary.status === "unknown") missingEvidence.push("steam_review_summary");
+  if (isV7) missingEvidence.push(...admission.missing_evidence);
   const sourceLink = lead?._mediaItem?.link ?? null;
 
   return {
+    _admissionQualified: admission?.qualified === true,
     decision,
     source_type: "media",
     project: String(lead?.project ?? "").trim(),
     steam_app_id: stringOrNull(lead?.steam_app_id),
     dedupe_key: key,
-    sourcing_lane: lead?.sourcing_lane ?? null,
+    sourcing_lane: isV7 ? admission.sourcing_lane : lead?.sourcing_lane ?? null,
     sourcing_rule_version: ruleVersion,
     matched_rules: uniqueStrings([
       "media_discovery",
@@ -156,12 +187,14 @@ function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
       lead?._officialSourceMatched ? "official_source_matched" : null,
       lead?.steam_app_id ? "steam_entity_matched" : null,
       poolDecision?.matchedRule,
+      ...(admission?.matched_rules ?? []),
       isQualityQuarantineRule(ruleVersion) ? "quality_quarantine" : null
     ]),
     missing_evidence: uniqueStrings(missingEvidence),
     exclusion_reasons: uniqueStrings([
       poolDecision?.decision === "excluded" ? poolDecision.reason : null,
-      fallbackExcluded ? lead?.risks ?? lead?.drop_reason ?? lead?.verdict : null
+      isV7 ? null : fallbackExcluded ? lead?.risks ?? lead?.drop_reason ?? lead?.verdict : null,
+      ...(admission?.exclusion_reasons ?? [])
     ]),
     source_links: normalizedLinks([sourceLink, ...(lead?.links ?? [])]),
     steam_review_summary: reviewSummary,
@@ -209,6 +242,7 @@ function addOrMergeRecord(records, incoming) {
   const incomingDecisionWins = DECISION_RANK[incoming.decision] > DECISION_RANK[current.decision];
   records.set(incoming.dedupe_key, {
     ...current,
+    _admissionQualified: current._admissionQualified || incoming._admissionQualified,
     decision: incomingDecisionWins ? incoming.decision : current.decision,
     source_type: current.source_type === incoming.source_type ? current.source_type : "multi_source",
     project: current.source_type === "steam" ? current.project : incoming.project || current.project,
@@ -337,4 +371,8 @@ function stringOrNull(value) {
 
 function emptyPools() {
   return { push: [], watch: [], drop: [] };
+}
+
+function stripAuditPrivate(candidate) {
+  return Object.fromEntries(Object.entries(candidate).filter(([key]) => !key.startsWith("_")));
 }

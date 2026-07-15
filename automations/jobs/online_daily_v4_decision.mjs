@@ -1,4 +1,10 @@
 import { normalizeDisplayText, normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
+import {
+  deriveConcreteChinaBilibiliValue,
+  evaluateMediaIndiePrelaunchAdmission,
+  evaluateSteamIndiePrelaunchAdmission,
+  INDIE_PRELAUNCH_RULE_VERSION
+} from "./online_daily_v7_indie_admission.mjs";
 
 export function scoreCandidate(input) {
   let score = 0;
@@ -29,47 +35,23 @@ export function scoreCandidate(input) {
 
 export function buildPools(candidates, mediaLeads = [], options = {}) {
   const context = {
-    reportDate: options.reportDate ?? new Date().toISOString().slice(0, 10),
-    minReviewLeads: options.minReviewLeads ?? 18,
-    minReviewBackfillScore: options.minReviewBackfillScore ?? 18
+    reportDate: options.reportDate ?? new Date().toISOString().slice(0, 10)
   };
-  const leads = candidates.map((candidate) => toLead(candidate, context));
+  const steamLeads = candidates
+    .map((candidate) => toLead(candidate, context))
+    .filter((lead) => lead._indieAdmission.qualified);
+  const qualifiedMediaLeads = mediaLeads
+    .map((lead) => toQualifiedMediaLead(lead))
+    .filter((lead) => lead._indieAdmission.qualified);
   const used = new Set();
-  const mediaPush = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "push"), 8, used);
-  const steamPush = selectUniqueLeads(leads.filter((lead) => lead._class === "push"), 8, used);
-  const push = interleaveLeads(mediaPush, steamPush).slice(0, 14);
-  const mediaWatch = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "watch" || lead._class === "push"), 24, used);
-  const steamWatch = selectUniqueLeads(leads.filter((lead) => lead._class === "watch" || lead._class === "push"), 28, used);
-  const watch = interleaveLeads(mediaWatch, steamWatch).slice(0, 40);
-  const reviewShortfall = Math.max(0, context.minReviewLeads - push.length - watch.length);
-  if (reviewShortfall > 0) {
-    const backfill = selectUniqueLeads(
-      leads
-        .filter((lead) => lead._reviewBackfill && lead._class === "drop")
-        .sort((a, b) => (b._reviewBackfillScore ?? 0) - (a._reviewBackfillScore ?? 0)),
-      reviewShortfall,
-      used
-    ).map(toBackfillReviewLead);
-    watch.push(...backfill);
-  }
-  const mediaDrop = selectUniqueLeads(mediaLeads.filter((lead) => lead._class === "drop"), 8, used);
-  const steamDrop = selectUniqueLeads(leads.filter((lead) => lead._class === "drop"), 12, used);
-  const drop = interleaveLeads(mediaDrop, steamDrop).slice(0, 12);
-  return { push: push.map(stripPrivate), watch: watch.map(stripPrivate), drop: drop.map(stripPrivate) };
-}
-
-function toBackfillReviewLead(lead) {
+  const mediaPush = selectUniqueLeads(qualifiedMediaLeads, used);
+  const steamPush = selectUniqueLeads(steamLeads, used);
+  const push = interleaveLeads(mediaPush, steamPush).map(stripPrivate);
   return {
-    ...lead,
-    _class: "watch",
-    bucket: "未处理",
-    stage: "new",
-    priority: lead.priority === "P3" ? "P2" : lead.priority,
-    rule_fit: "国内候选信号具体，但证据强度不足；只进入未处理 inbox，由人工首轮判断是否提测、观察或淘汰。",
-    verdict: "",
-    priority_reason: null,
-    next_action: null,
-    notes: null
+    push,
+    watch: [],
+    drop: [],
+    new_qualified_count: push.length
   };
 }
 
@@ -83,14 +65,13 @@ function interleaveLeads(primary, secondary) {
   return out;
 }
 
-function selectUniqueLeads(leads, limit, used) {
+function selectUniqueLeads(leads, used) {
   const selected = [];
   for (const lead of leads) {
     const key = poolLeadKey(lead);
     if (used.has(key)) continue;
     selected.push(lead);
     used.add(key);
-    if (selected.length >= limit) break;
   }
   return selected;
 }
@@ -108,16 +89,11 @@ function looseChineseProjectKey(value) {
 }
 
 function toLead(candidate, context) {
-  const dropReason = hardDropReason(candidate);
-  const pushEligible = isPushEligible(candidate, dropReason);
-  const className = dropReason ? "drop" : pushEligible ? "push" : "watch";
-  const bucket = className === "drop" ? "淘汰池" : "未处理";
-  const priority = className === "push" ? "P1" : className === "drop" ? "P3" : candidate.score >= 34 ? "P2" : "P3";
+  const admission = evaluateSteamIndiePrelaunchAdmission(candidate);
   const genre = candidate.genres.join(" / ") || null;
   return {
-    _class: className,
-    _reviewBackfill: isReviewBackfillEligible(candidate, dropReason, context.minReviewBackfillScore),
-    _reviewBackfillScore: candidate.score,
+    _class: admission.qualified ? "push" : "candidate",
+    _indieAdmission: admission,
     id: `lead_steam_${candidate.appId}_${context.reportDate}`,
     project: candidate.title,
     steam_app_id: candidate.appId,
@@ -127,12 +103,17 @@ function toLead(candidate, context) {
     region: candidate.region,
     city: null,
     region_priority: candidate.region === "中国" ? "国内优先" : candidate.validatedPcHit && candidate.mobileAdaptationPotential ? "海外-强数据" : "其他",
-    bucket,
-    stage: className === "drop" ? "rejected" : "new",
-    priority,
-    drop_reason: dropReasonLabel(candidate, dropReason),
+    bucket: "未处理",
+    stage: "new",
+    priority: null,
+    sourcing_lane: "indie_prelaunch",
+    sourcing_rule_version: INDIE_PRELAUNCH_RULE_VERSION,
+    sourcing_run_type: "scheduled",
+    drop_reason: null,
     priority_reason: null,
-    rule_fit: buildRuleFit(candidate, dropReason, className),
+    rule_fit: admission.qualified
+      ? "V7.0 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。"
+      : admissionFailureText(admission),
     genre,
     gameplay: candidate.shortDescription || `${genre ?? "玩法待复核"}。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。`,
     progress: `Steam ${candidate.source}；发售窗口：${candidate.releaseDate}${candidate.hasDemoSignal ? "；Demo/试玩信号需优先复核" : ""}`,
@@ -149,10 +130,10 @@ function toLead(candidate, context) {
     contact_methods: candidate.contactMethods,
     links: [candidate.storeUrl, candidate.steamDbUrl, candidate.website].filter(Boolean),
     exposure_trail: buildExposureTrail(candidate, context.reportDate),
-    bilibili_fit: buildBilibiliFit(candidate),
+    bilibili_fit: admission.evidence.china_bilibili_value ?? buildBilibiliFit(candidate),
     amplification: buildAmplification(candidate),
-    risks: buildRisks(candidate, dropReason),
-    verdict: buildVerdict(className, dropReason),
+    risks: admission.qualified ? buildRisks(candidate, null) : admissionFailureText(admission),
+    verdict: admission.qualified ? "符合 V7.0 indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。" : "",
     next_action: null,
     owner: null,
     due_date: null,
@@ -161,36 +142,34 @@ function toLead(candidate, context) {
   };
 }
 
+function toQualifiedMediaLead(lead) {
+  const admission = evaluateMediaIndiePrelaunchAdmission(lead);
+  return {
+    ...lead,
+    _class: admission.qualified ? "push" : "candidate",
+    _indieAdmission: admission,
+    bucket: "未处理",
+    stage: "new",
+    priority: null,
+    sourcing_lane: "indie_prelaunch",
+    sourcing_rule_version: INDIE_PRELAUNCH_RULE_VERSION,
+    sourcing_run_type: "scheduled",
+    drop_reason: null,
+    priority_reason: null,
+    rule_fit: admission.qualified
+      ? "V7.0 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。"
+      : admissionFailureText(admission),
+    bilibili_fit: admission.evidence.china_bilibili_value ?? lead.bilibili_fit,
+    risks: admission.qualified ? lead.risks : admissionFailureText(admission),
+    verdict: admission.qualified ? "符合 V7.0 indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。" : "",
+    next_action: null,
+    notes: null
+  };
+}
+
 export function hardDropReason(candidate) {
-  if (candidate.earlyAccess && candidate.region !== "中国") return "命中排除项：海外 PC Early Access";
-  if (candidate.narrativeHeavy) return "命中排除项：叙事主导/视觉小说倾向";
-  if (candidate.indiaTeam) return "命中排除项：印度团队/印度开发主体";
-  if (candidate.publisherOccupied) return "成熟发行商占位，BD切入价值低";
-  if (candidate.alreadyReleased) return "Steam 页面显示已发售，不符合前置BD窗口";
-  if (candidate.releaseTooSoon) return "发售窗口不足60天，合作窗口不合适";
-  if (candidate.region === "海外" && !candidate.validatedPcHit) return "海外项目缺少PC大数据验证，不符合当前国内BD优先策略";
-  if (candidate.region === "海外" && !candidate.mobileAdaptationPotential) return "海外项目缺少明确手游化/移动端改编角度";
-  return null;
-}
-
-function isReviewBackfillEligible(candidate, dropReason, minReviewBackfillScore) {
-  if (!dropReason) return false;
-  if (candidate.region !== "中国") return false;
-  if (candidate.alreadyReleased || candidate.releaseTooSoon || candidate.publisherOccupied || candidate.narrativeHeavy || candidate.indiaTeam) return false;
-  if (!candidate.hasDetails && !candidate.hasDemoSignal && !candidate.domesticQuery) return false;
-  if (candidate.score >= minReviewBackfillScore) return true;
-  return Boolean(candidate.hasDemoSignal || candidate.domesticQuery || (candidate.strongGameplay && candidate.highVisual));
-}
-
-function isPushEligible(candidate, dropReason) {
-  if (dropReason) return false;
-  if (!candidate.strongGameplay) return false;
-  if (candidate.region === "中国") {
-    if (!candidate.hasDetails && !candidate.hasDemoSignal) return false;
-    return candidate.score >= 54;
-  }
-  if (typeof candidate.daysToRelease === "number" && candidate.daysToRelease < 60) return false;
-  return candidate.score >= 72 && candidate.validatedPcHit && candidate.mobileAdaptationPotential;
+  const admission = evaluateSteamIndiePrelaunchAdmission(candidate);
+  return admission.disposition === "excluded" ? admission.exclusion_reasons.join("；") : null;
 }
 
 function releaseWindowText(candidate) {
@@ -242,6 +221,16 @@ function buildRisks(candidate, dropReason) {
   return risks.length ? risks.join("；") : "需要人工确认团队地区、中文计划、发行占位和商务合作意愿。";
 }
 
+function admissionFailureText(admission) {
+  const missing = admission.missing_evidence.length
+    ? `缺少证据：${admission.missing_evidence.join("、")}`
+    : null;
+  const excluded = admission.exclusion_reasons.length
+    ? `排除原因：${admission.exclusion_reasons.join("；")}`
+    : null;
+  return [missing, excluded].filter(Boolean).join("；") || "未通过 V7.0 独立游戏前置发行准入。";
+}
+
 function buildVerdict(className, dropReason) {
   if (className === "push") return "符合V6重点复核标准，建议先测游戏；测试成立后再确认中国区合作窗口与开发者真实需求";
   if (className === "drop") return `${dropReason}，暂不投入BD时间`;
@@ -257,9 +246,8 @@ function dropReasonLabel(candidate, dropReason) {
 
 export function buildBilibiliFit(candidate) {
   const text = `${candidate.genres.join(" ")} ${candidate.categories.join(" ")}`;
-  if (/co-op|multiplayer/i.test(text)) return "多人协作适合直播切片、挑战局和UP主联动。";
-  if (/strategy|simulation|management|automation|city builder|tower defense|factory/i.test(text)) return "系统型玩法适合做教学、机制讲解、效率挑战和长线栏目。";
-  if (/roguelike|deckbuilder|card game|tactical/i.test(text)) return "构筑、流派和局内选择适合标题化、复盘化和挑战化。";
+  const concreteValue = deriveConcreteChinaBilibiliValue(text);
+  if (concreteValue) return concreteValue;
   if (candidate.highVisual) return "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。";
   return "需要先看 Steam 页面素材，确认是否能被标题化、切片化和讲解化。";
 }
@@ -273,6 +261,5 @@ function buildAmplification(candidate) {
 }
 
 export function stripPrivate(lead) {
-  const { _class, _reviewBackfill, _reviewBackfillScore, _mediaItem, _originalMediaItem, _confidence, _officialSourceMatched, media_score, ...rest } = lead;
-  return rest;
+  return Object.fromEntries(Object.entries(lead).filter(([key]) => !key.startsWith("_") && key !== "media_score"));
 }

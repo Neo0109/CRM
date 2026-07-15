@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:06 CST
+Last updated: 2026-07-15 23:14 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is explicitly authorized. The remote baseline and bounded read-only diagnosis are complete. The fixed V7.0 fixture and focused test contract are committed in red state; implementation has not started yet.
+Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, and shared candidate-audit decision are implemented and narrowly green. Active machine-rule/version activation, production evidence projection, count-health removal, documentation, and final verification remain.
 
 ## Current Goal
 
@@ -86,23 +86,34 @@ Explicitly out of scope:
 - Added `automations/test/fixtures/v7-indie-admission.json` with one complete qualified evidence contract, one non-compensating failure per mandatory gate, exact 0/2/7 qualified-count cases, and the seven historical weak Steam samples/AppIDs.
 - Added `automations/test/onlineDailyV7IndieAdmission.test.mjs` covering mandatory gate non-bypass, discovery-score irrelevance, exact qualified/push parity, no truncation/backfill, nullable automatic priority and V7 provenance, cross-source dedupe, historical weak-sample rejection, and candidate-audit formal/candidate/excluded routing.
 - Captured the focused red run: `node --test automations/test/onlineDailyV7IndieAdmission.test.mjs` failed only with `ERR_MODULE_NOT_FOUND` for the planned `online_daily_v7_indie_admission.mjs`, proving the new contract is not yet implemented.
+- Added `online_daily_v7_indie_admission.mjs` with eleven stable, non-compensating gate IDs, explicit pass/fail/unknown states, hard-exclusion versus missing-evidence routing, Steam/media evidence adapters, cross-source dedupe keys, and the locked `sourcing-rules-v7.0-quality-gated-indie` version.
+- Kept score/source/tag/asset-count behavior available only for discovery ordering; the admission evaluator never reads discovery score.
+- Replaced active `buildPools` quantity/cap/backfill behavior with one deduped set of fully qualified Steam/media projects: every qualified project is published to `push`, `watch` and `drop` stay empty, `priority=null`, and V7.0 lane/rule/run provenance is explicit.
+- Removed the P3-to-P2 promotion and all per-source/total formal-pool slices from `buildPools`; `new_qualified_count` is the deduped qualified count and is constructed from the exact published push set.
+- Routed V7 candidate-audit formal/candidate/excluded decisions, missing-evidence gate IDs, and hard exclusion reasons through the same evaluator; legacy V6.8 candidate fixtures retain their historical behavior.
+- Updated the pre-existing decision tests to the approved V7 semantics: failed/near-window candidates are retained only in audit rather than Daily `drop_pool`, and old score-based push expectations are replaced by explicit admission evidence.
+- Focused V7 test is green: 8/8.
+- Related decision, candidate-audit, and V7 regression set is green: 23/23.
 
 ## Remaining
 
-- Implement the smallest pure admission/pool changes and required rule/documentation updates, running narrow tests and committing each verified step.
+- Project official Demo/gameplay, verified public-quality, business-entrypoint, concrete China/Bilibili value, and overseas-China-demand evidence from the existing production enrichment path without adding a new source.
+- Activate the V7.0 machine/human rule chain and report text; remove formal-count CLI/validator/watchdog/heartbeat/workflow/runbook behavior and add candidate-summary parity schema/contract checks.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
 - Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
 
 ## Next Action
 
-Implement the pure V7.0 admission evaluator and route `buildPools` through it without quantity caps, watch/drop publication, backfill, or priority promotion; rerun only the focused V7.0 test until green.
+Project the existing Steam/media enrichment data into explicit official Demo/gameplay, independent-quality, non-Steam contact, China/Bilibili value, and overseas-China-demand evidence fields, with focused source/enrichment tests proving that metadata counts alone cannot synthesize a gate pass.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 2]
+## codex/pr4-v7-indie-admission...origin/main [ahead 3]
+ M automations/jobs/online_daily_v4_candidate_audit.mjs
+ M automations/jobs/online_daily_v4_decision.mjs
  M docs/checkpoints/pr4-v7-indie-admission.md
-?? automations/test/fixtures/v7-indie-admission.json
-?? automations/test/onlineDailyV7IndieAdmission.test.mjs
+ M automations/test/onlineDailyV4Decision.test.mjs
+?? automations/jobs/online_daily_v7_indie_admission.mjs
 ```
