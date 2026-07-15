@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-16 00:05 CST
+Last updated: 2026-07-16 00:09 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation, final local verification, and initial GitHub delivery checks are complete. The V7.0 admission, publication, source projection, active rule chain, health contract, documentation, Daily V4 regression alignment, typechecks, repository verification, Build, Cloudflare Pages preview, and diff checks are green. Ready PR `#90` is cleanly mergeable with no review threads; the final checkpoint check, squash merge, deployment, and online acceptance remain.
+Phase status: Complete. PR `#90` was squash merged, merged `main` contains the validated PR 4 tree, the main Build and Cloudflare Pages production deployment succeeded, production `/api/health` is healthy, and every PLAN.md PR 4 online acceptance invariant passed. Stop before PR 5.
 
 ## Current Goal
 
@@ -128,19 +128,26 @@ Explicitly out of scope:
 - PR `#90` Build checks succeeded for both the push and pull-request contexts; Cloudflare Pages preview deployment also succeeded.
 - Re-fetched `origin/main`, re-ran `git diff --check origin/main...HEAD`, and re-audited all 32 changed paths against the locked PR 4 boundary.
 - Confirmed PR `#90` is `MERGEABLE` with `mergeStateStatus=CLEAN`, has no review decision blocker, and has zero review threads.
+- Final PR head `39f477a8b527a277f9d2561f1eebfdae637e629c` passed both Build contexts and Cloudflare Pages, remained cleanly mergeable, and had no review threads.
+- Squash merged PR `#90` into `main` as `b36e11fda7aa167e53bde0de0f58508d3f7b524c` at `2026-07-16 00:06 CST`; fetched `origin/main` and confirmed it points to that merge commit.
+- Confirmed the merged `main` tree SHA `a42aaca4508b22a8df72893644e7b1aa6c8bcab3` exactly matches the fully validated PR head tree.
+- Main Build run `29431050099` completed successfully for merge SHA `b36e11fda7aa167e53bde0de0f58508d3f7b524c`.
+- Cloudflare Pages production deployment for the same merge SHA completed successfully (`61c77446-7b76-4eb8-b82f-7cc745db4306`).
+- Production `https://crm-pages.pages.dev/api/health` returned HTTP `200`, `ok=true`, version `v2.7.6-sourcing-evidence-integrity`, and storage `supabase` after deployment.
+- Re-read the PLAN.md PR 4 acceptance section from merged `main` and confirmed the active V7 rule, exact mandatory-gate contract, absence of formal quantity arguments, qualified/push parity enforcement, schedule/manual workflow trigger boundary, and audit-only failed-candidate routing are present.
+- Re-ran the merged-tree activation and indie-admission acceptance set: 14/14 green, including exact 0/2/7 qualified-to-push output, no truncation/backfill, and exclusion of all seven historical weak Steam samples.
+- Retained this post-merge acceptance checkpoint on the PR 4 branch as the final durable continuation record; it contains no PR 5 implementation.
 
 ## Remaining
 
-- Commit and push this completed-check checkpoint, wait for its final Build and Cloudflare checks, and squash merge PR `#90`.
-- Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
+- None. PR 4 implementation, delivery, deployment, and online acceptance are complete.
 
 ## Next Action
 
-Commit and push this CI/review checkpoint, wait for the new head checks, then squash merge PR `#90` when the final head is green and cleanly mergeable.
+Stop. Do not begin PR 5 in this task.
 
 ## Git Status
 
 ```text
 ## codex/pr4-v7-indie-admission...origin/codex/pr4-v7-indie-admission
- M docs/checkpoints/pr4-v7-indie-admission.md
 ```
