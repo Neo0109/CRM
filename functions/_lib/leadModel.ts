@@ -68,6 +68,10 @@ export type Lead = {
   notes: string | null;
 };
 
+export type ExportLead = Omit<Lead, "priority"> & {
+  priority: NonNullable<Priority> | "";
+};
+
 export type DailyReport = {
   report_date: string;
   summary: string;
@@ -384,6 +388,13 @@ export function leadsFromReport(report: DailyReport): Partial<Lead>[] {
 
 export function isDailyReport(value: unknown): value is DailyReport {
   return Boolean(value && typeof value === "object" && "report_date" in value && "push_pool" in value && "watch_pool" in value && "drop_pool" in value);
+}
+
+export function leadsForExport(leads: Lead[]): ExportLead[] {
+  return leads.map((lead) => ({
+    ...lead,
+    priority: lead.priority ?? ""
+  }));
 }
 
 export function toCsv(leads: Lead[]) {

@@ -1,6 +1,6 @@
 export type Bucket = "未处理" | "推进池" | "待评测" | "测试中" | "跟进中" | "观察池" | "淘汰池";
 export type Stage = "new" | "watch" | "active" | "negotiating" | "won" | "rejected";
-export type Priority = "P0" | "P1" | "P2" | "P3";
+export type Priority = "P0" | "P1" | "P2" | "P3" | null;
 export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强数据" | "其他";
 export type Region = "中国" | "海外";
 export type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";

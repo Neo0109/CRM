@@ -1,4 +1,5 @@
-import type { Bucket, Lead, Priority } from "./types";
+import { priorityRank } from "./leadPriority";
+import type { Bucket, Lead } from "./types";
 
 export type FollowUpReasonKey = "overdue" | "due-soon" | "missing-next-action" | "missing-owner" | "not-in-calendar";
 
@@ -117,10 +118,6 @@ function hasReason(item: FollowUpQueueItem, key: FollowUpReasonKey) {
 function dueRank(item: FollowUpQueueItem) {
   if (item.daysUntilDue === null) return Number.POSITIVE_INFINITY;
   return item.daysUntilDue;
-}
-
-function priorityRank(priority: Priority) {
-  return { P0: 0, P1: 1, P2: 2, P3: 3 }[priority] ?? 9;
 }
 
 function cleanValue(value: string | null) {

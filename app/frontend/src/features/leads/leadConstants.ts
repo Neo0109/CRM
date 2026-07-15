@@ -1,4 +1,17 @@
-import type { Bucket, ContactType, EvaluationGrade, Priority, Region, RegionPriority, Stage } from "../../types";
+import type { Bucket, ContactType, EvaluationGrade, Region, RegionPriority, Stage } from "../../types";
+
+export {
+  priorityFilterOptions,
+  priorityFromSelection,
+  priorityLabel,
+  priorityRank,
+  prioritySelection,
+  prioritySelectionOptions,
+  priorityTone,
+  priorityValues,
+  unlabeledPriority
+} from "../../leadPriority";
+export type { PriorityFilter, PrioritySelection } from "../../leadPriority";
 
 export const bucketOptions: ("全部" | Bucket)[] = ["全部", "未处理", "待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
 export const bucketValues: Bucket[] = ["未处理", "待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
@@ -12,7 +25,6 @@ export const stageLabels: Record<Stage, string> = {
   won: "Won",
   rejected: "Rejected"
 };
-export const priorityValues: Priority[] = ["P0", "P1", "P2", "P3"];
 export const evaluationGradeOptions: ("未评级" | EvaluationGrade)[] = ["未评级", "S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
 export const regionValues: Region[] = ["中国", "海外"];
 export const regionOptions: ("全部" | Region)[] = ["全部", ...regionValues];
@@ -33,16 +45,4 @@ export function bucketClass(bucket: Bucket) {
   if (bucket === "跟进中") return "follow";
   if (bucket === "淘汰池") return "drop";
   return "watch";
-}
-
-export function priorityTone(priority: Priority) {
-  if (priority === "P0" || priority === "P1") return "high";
-  if (priority === "P2") return "medium";
-  return "low";
-}
-
-export function priorityLabel(priority: Priority) {
-  if (priority === "P0" || priority === "P1") return `${priority} 高`;
-  if (priority === "P2") return `${priority} 中`;
-  return `${priority} 低`;
 }

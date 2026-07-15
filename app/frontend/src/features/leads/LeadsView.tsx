@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { buildBucketNavigation, buildDecisionTriage, buildLeadEvidenceChips, type BucketNavigationItem, type TriageFilter } from "../../leadTriage";
 import { buildFollowUpQueue, formatFollowUpSummary, type FollowUpQueueItem } from "../../followUpQueue";
 import type { Lead } from "../../types";
-import { bucketOptions, bucketClass, priorityLabel, priorityTone, regionOptions, stageLabel, stageOptions } from "./leadConstants";
+import { bucketOptions, bucketClass, priorityFilterOptions, priorityLabel, priorityTone, regionOptions, stageLabel, stageOptions } from "./leadConstants";
 import { Select } from "./leadControls";
 import { buildDashboardStats, emptyLeadFilters, filterLeadsForView, type LeadFilters } from "./leadFilters";
 import { ContactChips, LeadDetail, QuickActions } from "./LeadDetail";
@@ -166,7 +166,7 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
                   <span>{lead.project}</span>
                   {lane.key === "action" && followUpByLeadId.get(lead.id)
                     ? <FollowUpQueueBrief item={followUpByLeadId.get(lead.id)!} />
-                    : <small>{lead.priority} · {lead.bucket} · {lead.region === "中国" ? lead.country : lead.region_priority}</small>}
+                    : <small>{priorityLabel(lead.priority)} · {lead.bucket} · {lead.region === "中国" ? lead.country : lead.region_priority}</small>}
                 </button>
               </li>
             )) : <li className="empty-lane">{lane.empty}</li>}
@@ -178,6 +178,7 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
     <section className="filters">
       <label className="search-box"><Search size={16} /><input value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} placeholder="项目 / 团队 / 联系方式 / 推荐理由" /></label>
       <Select label="池子" value={filters.bucket} options={bucketOptions} onChange={(bucket) => setFilters({ ...filters, bucket })} />
+      <Select label="优先级" value={filters.priority} options={priorityFilterOptions} onChange={(priority) => setFilters({ ...filters, priority })} />
       <Select label="地区" value={filters.region} options={regionOptions} onChange={(region) => setFilters({ ...filters, region })} />
       <Select label="阶段" value={filters.stage} options={stageOptions} getOptionLabel={stageLabel} onChange={(stage) => setFilters({ ...filters, stage })} />
       <label><span>城市/国家</span><input value={filters.city} onChange={(event) => setFilters({ ...filters, city: event.target.value })} /></label>
@@ -241,6 +242,7 @@ function activeFilterLabel(filters: LeadFilters) {
   if (filters.missingLinks) return "缺链接补全";
   if (filters.reviewStatus !== "全部") return filters.reviewStatus;
   if (filters.bucket !== "全部") return filters.bucket;
+  if (filters.priority !== "全部") return filters.priority === "未标注" ? "未标注优先级" : `${filters.priority} 优先级`;
   if (filters.query) return "搜索结果";
   return "Leads Review";
 }

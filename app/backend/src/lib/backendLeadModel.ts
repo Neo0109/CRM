@@ -2,6 +2,7 @@ import {
   createOnlyIncomingLeadSet as canonicalCreateOnlyIncomingLeadSet,
   isDailyReport as canonicalIsDailyReport,
   leadKeys as canonicalLeadKeys,
+  leadsForExport as canonicalLeadsForExport,
   leadsFromReport as canonicalLeadsFromReport,
   mergeIncomingLeadSet as canonicalMergeIncomingLeadSet,
   mergeLead as canonicalMergeLead,
@@ -13,6 +14,7 @@ import {
   type CreateOnlyIncomingLeadSetResult,
   type DailyReport,
   type EvaluationGrade,
+  type ExportLead,
   type ImportStats,
   type Lead,
   type MergeIncomingLeadSetResult,
@@ -38,6 +40,7 @@ export type BackendContactType = ContactType;
 export type BackendEvaluationGrade = EvaluationGrade;
 export type BackendContactMethod = ContactMethod;
 export type BackendLead = Lead;
+export type BackendExportLead = ExportLead;
 export type BackendDailyReport = DailyReport;
 export type BackendNormalizeLeadOptions = NormalizeLeadOptions;
 export type BackendImportStats = ImportStats;
@@ -77,6 +80,8 @@ export const isBackendDailyReport = canonicalIsDailyReport as (
 ) => value is BackendDailyReport;
 
 export const backendToCsv = canonicalToCsv as (leads: BackendLead[]) => string;
+
+export const backendLeadsForExport = canonicalLeadsForExport as (leads: BackendLead[]) => BackendExportLead[];
 
 export function isBackendSystemLeadRow(row: { id?: string | null; data?: (Partial<BackendLead> & { type?: string }) | null }) {
   return Boolean(
