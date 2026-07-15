@@ -125,6 +125,92 @@ describe("online daily v4 Steam source pipeline", () => {
     assert.ok(lead.contactMethods.some((method) => method.type === "Email"));
   });
 
+  it("projects only explicit official Demo/gameplay and verified public-quality evidence", async () => {
+    const lead = await enrichSteamCandidate(
+      {
+        appId: "234567",
+        title: "Evidence Game",
+        source: "Steam Popular Upcoming",
+        release: "Coming soon",
+        reviewText: "",
+        tags: ["Strategy"],
+        domesticLens: false,
+        domesticQuery: false
+      },
+      {
+        name: "Evidence Game",
+        type: "game",
+        developers: ["Evidence Studio"],
+        publishers: [],
+        genres: [{ description: "Strategy" }],
+        categories: [{ description: "Single-player" }],
+        release_date: { coming_soon: true, date: "2027 年 1 月 1 日" },
+        short_description: "A systems-heavy strategy game seeking a Chinese publishing and localization partner for China.",
+        screenshots: Array.from({ length: 12 }, () => ({})),
+        movies: [
+          { name: "Cinematic Trailer", webm: { max: "https://cdn.example/cinematic.webm" } },
+          { name: "Official Gameplay Trailer", webm: { max: "https://cdn.example/gameplay.webm" } }
+        ],
+        demos: [{ appid: 234568, description: "Evidence Game Demo" }],
+        recommendations: { total: 1200 },
+        support_info: { email: "publishing@evidence.example", url: "" },
+        website: "https://evidence.example"
+      },
+      {
+        reportDate: "2026-07-16",
+        contactsFromWebsiteImpl: async () => [],
+        scoreCandidateImpl: () => 1
+      }
+    );
+
+    assert.deepEqual(lead.officialDemoEvidence.map((item) => item.type), ["steam_demo"]);
+    assert.deepEqual(lead.officialGameplayEvidence.map((item) => item.value), ["Official Gameplay Trailer"]);
+    assert.deepEqual(lead.qualityProofs.map((item) => item.type), ["steam_recommendations_500_plus"]);
+    assert.match(lead.chinaBilibiliValue, /机制讲解|效率挑战/);
+    assert.match(lead.chinaDemandEvidence, /Chinese publishing and localization partner for China/i);
+  });
+
+  it("does not turn screenshot count or a generic cinematic trailer into official gameplay evidence", async () => {
+    const lead = await enrichSteamCandidate(
+      {
+        appId: "345678",
+        title: "Metadata Only",
+        source: "Steam CN Strategy Upcoming",
+        release: "Coming soon",
+        reviewText: "",
+        tags: ["Strategy"],
+        domesticLens: true,
+        domesticQuery: true
+      },
+      {
+        name: "Metadata Only",
+        type: "game",
+        developers: ["Metadata Studio"],
+        publishers: [],
+        genres: [{ description: "Strategy" }],
+        categories: [{ description: "Single-player" }],
+        release_date: { coming_soon: true, date: "2027 年 1 月 1 日" },
+        short_description: "A strategy game.",
+        screenshots: Array.from({ length: 40 }, () => ({})),
+        movies: [{ name: "Announcement Trailer", mp4: { max: "https://cdn.example/announcement.mp4" } }],
+        demos: [],
+        recommendations: { total: 0 },
+        support_info: { email: "", url: "" },
+        website: ""
+      },
+      {
+        reportDate: "2026-07-16",
+        contactsFromWebsiteImpl: async () => [],
+        scoreCandidateImpl: () => 9999
+      }
+    );
+
+    assert.deepEqual(lead.officialDemoEvidence, []);
+    assert.deepEqual(lead.officialGameplayEvidence, []);
+    assert.deepEqual(lead.qualityProofs, []);
+    assert.equal(lead.chinaDemandEvidence, null);
+  });
+
   it("builds the same Steam source task fanout used by the daily orchestrator", () => {
     const tasks = buildSteamCandidateTasks({
       fetchSteamSearchImpl: async () => [],

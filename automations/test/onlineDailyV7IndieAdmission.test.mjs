@@ -6,6 +6,7 @@ import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidat
 import { buildPools } from "../jobs/online_daily_v4_decision.mjs";
 import {
   evaluateIndiePrelaunchAdmission,
+  evaluateMediaIndiePrelaunchAdmission,
   INDIE_PRELAUNCH_GATE_IDS,
   INDIE_PRELAUNCH_RULE_VERSION
 } from "../jobs/online_daily_v7_indie_admission.mjs";
@@ -85,6 +86,16 @@ describe("V7.0 indie_prelaunch admission", () => {
     assert.equal(pools.new_qualified_count, 1);
     assert.equal(pools.push.length, 1);
     assert.equal(pools.push[0].steam_app_id, "9200001");
+  });
+
+  it("applies the same gate contract to an actually enriched official media candidate", () => {
+    const result = evaluateIndiePrelaunchAdmissionFromMediaFixture();
+
+    assert.equal(result.qualified, true);
+    assert.deepEqual(result.failed_gates, []);
+    assert.ok(result.evidence.official_demo_evidence.length > 0);
+    assert.ok(result.evidence.official_gameplay_evidence.length > 0);
+    assert.ok(result.evidence.quality_proofs.length > 0);
   });
 
   it("keeps all seven historical weak Steam samples out of formal Leads", () => {
@@ -207,4 +218,45 @@ function mediaLead(evidence, overrides = {}) {
     public_signals: "B站官方源 / https://www.bilibili.com/video/BVqualified",
     ...overrides
   };
+}
+
+function evaluateIndiePrelaunchAdmissionFromMediaFixture() {
+  const lead = {
+    project: "Official Media Qualified",
+    steam_app_id: "9250001",
+    region: "中国",
+    country: "中国（媒体/B站信号待确认）",
+    progress: "Demo 可玩、正式版未发售",
+    gameplay: "Strategy / Simulation",
+    first_seen: reportDate,
+    release_window: null,
+    _class: "push",
+    _officialSourceMatched: true,
+    _mediaItem: {
+      title: "Official Media Qualified 官方实机 Gameplay",
+      summary: "开发者官方账号发布 Demo 实机演示",
+      link: "https://www.bilibili.com/video/BVofficialqualified"
+    },
+    _steamEntityResolution: {
+      canonical_app_id: "9250001",
+      relation: "self",
+      demo_available: true,
+      demo_only: false,
+      details: {
+        name: "Official Media Qualified",
+        type: "game",
+        developers: ["Official Studio"],
+        publishers: [],
+        release_date: { coming_soon: true, date: "Coming soon" },
+        short_description: "A strategy simulation game.",
+        genres: [{ description: "Strategy" }],
+        categories: [{ description: "Single-player" }],
+        demos: [{ appid: 9250002 }],
+        movies: [{ name: "Official Gameplay Trailer" }],
+        recommendations: { total: 800 }
+      }
+    },
+    contact_methods: [{ type: "Email", value: "bd@official-media.example" }]
+  };
+  return evaluateMediaIndiePrelaunchAdmission(lead);
 }

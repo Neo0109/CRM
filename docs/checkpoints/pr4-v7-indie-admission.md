@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:14 CST
+Last updated: 2026-07-15 23:18 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, and shared candidate-audit decision are implemented and narrowly green. Active machine-rule/version activation, production evidence projection, count-health removal, documentation, and final verification remain.
+Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, shared candidate-audit decision, and existing-source evidence projection are implemented and narrowly green. Active machine-rule/version activation, count-health removal, documentation, and final verification remain.
 
 ## Current Goal
 
@@ -94,10 +94,20 @@ Explicitly out of scope:
 - Updated the pre-existing decision tests to the approved V7 semantics: failed/near-window candidates are retained only in audit rather than Daily `drop_pool`, and old score-based push expectations are replaced by explicit admission evidence.
 - Focused V7 test is green: 8/8.
 - Related decision, candidate-audit, and V7 regression set is green: 23/23.
+- Added source-level red tests for explicit official Demo/gameplay and public-quality projection; the first run failed 2/8 because the enriched Steam candidate did not yet expose those fields.
+- Projected only existing first-party/verified data into admission evidence:
+  - Steam `details.demos` produces official Demo evidence;
+  - only Steam movie names or matched official Bilibili source text that explicitly says gameplay/实机/玩法/试玩 produces official gameplay evidence;
+  - screenshots and generic announcement/cinematic trailers never produce official gameplay evidence;
+  - verified Steam recommendations `>=500` or Metacritic `>=75` produce independent public-quality proof;
+  - existing non-Steam email/website/community contacts remain the only business-entry candidates;
+  - known systemic gameplay tags produce a concrete China/Bilibili content-and-community value statement;
+  - overseas China demand is accepted only when official text contains both China/Chinese terms and publishing/localization/marketing/operations partnership intent.
+- Added a cross-source regression proving an actually enriched official media candidate uses the same eleven-gate contract rather than its legacy media score/class.
+- Steam source projection test is green: 8/8; focused V7 admission test is green: 9/9; combined source/admission set is green: 17/17.
 
 ## Remaining
 
-- Project official Demo/gameplay, verified public-quality, business-entrypoint, concrete China/Bilibili value, and overseas-China-demand evidence from the existing production enrichment path without adding a new source.
 - Activate the V7.0 machine/human rule chain and report text; remove formal-count CLI/validator/watchdog/heartbeat/workflow/runbook behavior and add candidate-summary parity schema/contract checks.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
@@ -105,15 +115,15 @@ Explicitly out of scope:
 
 ## Next Action
 
-Project the existing Steam/media enrichment data into explicit official Demo/gameplay, independent-quality, non-Steam contact, China/Bilibili value, and overseas-China-demand evidence fields, with focused source/enrichment tests proving that metadata counts alone cannot synthesize a gate pass.
+Activate `sourcing-rules-v7.0-quality-gated-indie` across the loader, machine rule, generator, reports, schema/contract, workflows, local watchdog, cloud heartbeat, and current-rule/runbook documentation; remove only formal-count health/backfill arguments and preserve all source/artifact/sync gates and workflow triggers.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 3]
- M automations/jobs/online_daily_v4_candidate_audit.mjs
- M automations/jobs/online_daily_v4_decision.mjs
+## codex/pr4-v7-indie-admission...origin/main [ahead 4]
+ M automations/jobs/online_daily_v4_steam_source.mjs
+ M automations/jobs/online_daily_v7_indie_admission.mjs
  M docs/checkpoints/pr4-v7-indie-admission.md
- M automations/test/onlineDailyV4Decision.test.mjs
-?? automations/jobs/online_daily_v7_indie_admission.mjs
+ M automations/test/onlineDailyV4SteamSource.test.mjs
+ M automations/test/onlineDailyV7IndieAdmission.test.mjs
 ```

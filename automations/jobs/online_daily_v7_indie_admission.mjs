@@ -172,6 +172,7 @@ export function mediaIndieAdmissionEvidence(lead = {}) {
     china_bilibili_value: cleanEvidenceText(lead.chinaBilibiliValue ?? lead.china_bilibili_value)
       ?? deriveConcreteChinaBilibiliValue(`${lead.gameplay ?? ""} ${sourceText}`),
     china_demand: cleanEvidenceText(lead.chinaDemandEvidence ?? lead.china_demand)
+      ?? deriveExplicitChinaDemandEvidence(sourceText, details?.detailed_description, details?.about_the_game)
   };
   return mergeExplicitEvidence(derived, lead._indieAdmissionEvidence);
 }
@@ -195,6 +196,36 @@ export function deriveConcreteChinaBilibiliValue(value) {
     return "构筑与局内选择可形成流派复盘、挑战路线和UP主栏目，并以简中内容验证中国用户反馈。";
   }
   return null;
+}
+
+export function buildSteamOfficialDemoEvidence(details, appId) {
+  return normalizeEvidenceList((details?.demos ?? []).map((demo) => {
+    const demoAppId = numericString(demo?.appid ?? demo?.appId);
+    return {
+      type: "steam_demo",
+      value: normalizeDisplayText(demo?.description ?? demo?.name) || "Steam official Demo",
+      url: demoAppId
+        ? `https://store.steampowered.com/app/${demoAppId}/`
+        : numericString(appId)
+          ? `https://store.steampowered.com/app/${appId}/`
+          : null
+    };
+  }));
+}
+
+export function buildSteamOfficialGameplayEvidence(details) {
+  return officialGameplayEvidence({ details, officialSourceMatched: false, sourceItem: null });
+}
+
+export function buildVerifiedPublicQualityProofs(details, appId) {
+  return publicQualityProofs(details, numericString(appId));
+}
+
+export function deriveExplicitChinaDemandEvidence(...values) {
+  const text = values.flat(Infinity).filter(Boolean).map((value) => normalizeDisplayText(value)).join(" ");
+  if (!/(?:china|chinese|simplified chinese|中国|中国区|中文|简中)/i.test(text)) return null;
+  if (!/(?:publisher|publishing|locali[sz]ation|marketing|operation|partner|发行|本地化|营销|运营|合作)/i.test(text)) return null;
+  return text || null;
 }
 
 function normalizeAdmissionEvidence(input) {
