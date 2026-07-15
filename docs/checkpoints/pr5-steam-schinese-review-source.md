@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:45 CST
+Last updated: 2026-07-16 00:49 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation is in progress; the fixed-fixture source and pure-decision contract is red for the expected missing module only.
+Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation is in progress; the fixed-fixture source and pure-decision contract is green, while the standalone artifact/schema/writer contract remains.
 
 ## Current Goal
 
@@ -90,10 +90,13 @@ Explicitly out of scope:
 - Added the fixed catalog-page, official review-summary, AppDetails, and exact-threshold fixture for five deterministic candidates; the fixture JSON parses successfully.
 - Added focused source-contract tests for localized count/EA-tag parsing, complete pagination, prefilter-only catalog evidence, the documented official review query, raw-count rate calculation, two-fact EA confirmation, all locked threshold edges, full-set retention, and fixed-fixture collection.
 - Captured the focused red run: `node --test automations/test/steamReviewOpportunitySource.test.mjs` fails only with `ERR_MODULE_NOT_FOUND` for the planned `steam_review_opportunity_source.mjs`.
+- Added `steam_review_opportunity_source.mjs` with an injectable public-PC-catalog paginator, deterministic AppID dedupe, localized review-count/EA-tag parsing, prefilter-only catalog evidence, documented official simplified-Chinese review-summary requests, raw-count positive-rate normalization, and explicit source-failure tracking.
+- Added the pure EA/high-traction and China-heat evaluator with two-fact current-EA confirmation, exact locked thresholds, both-rule preservation, and `china_heat_ops` primary-lane precedence.
+- Added fixed-fixture orchestration that retains every prefilter hit without caps, records missing official evidence instead of promoting it, and makes overall scan completeness false on any catalog/review/AppDetails failure.
+- Focused source contract is green: 7/7. Combined new source, existing Steam source, and existing sourcing-candidate audit regression set is green: 21/21; standalone `git diff --check` is also green.
 
 ## Remaining
 
-- Implement the standalone Steam catalog/review/AppDetails source and pure qualification module until the focused source contract is green.
 - Add fixed-fixture red tests for the audit artifact schema/contract, writer/CLI boundary, and no-sync/no-Lead guard.
 - Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
@@ -103,13 +106,12 @@ Explicitly out of scope:
 
 ## Next Action
 
-Implement only `steam_review_opportunity_source.mjs` against the captured fixed-fixture contract, run the focused test to green, update this checkpoint, and commit the source step before adding the artifact/writer contract.
+Commit the green source step, then add a focused red contract for the dedicated audit schema, deterministic artifact builder/validator/writer, CLI entrypoint, and static proof that no Daily/workflow/import/CRM path consumes the artifact.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main [ahead 2]
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 3]
  M docs/checkpoints/pr5-steam-schinese-review-source.md
-?? automations/test/fixtures/steam-review-opportunity-source.json
-?? automations/test/steamReviewOpportunitySource.test.mjs
+?? automations/jobs/steam_review_opportunity_source.mjs
 ```
