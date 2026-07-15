@@ -2,7 +2,7 @@
 
 Date: 2026-07-15 22:52 CST
 
-Last updated: 2026-07-15 23:43 CST
+Last updated: 2026-07-15 23:48 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `docs/CODEX_DELIVERY_WORKFLOW.md`
 
-Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, shared candidate-audit decision, existing-source evidence projection, active machine/human rule chain, and focused activation/health contract are implemented and narrowly green. Workflow/watchdog/heartbeat cleanup, stale-test alignment, and final verification remain.
+Phase status: Phase 4 implementation is in progress. The pure V7.0 admission contract, formal-pool routing, shared candidate-audit decision, existing-source evidence projection, active machine/human rule chain, and workflow/watchdog/heartbeat health contract are implemented and narrowly green. Stale-test alignment and final verification remain.
 
 ## Current Goal
 
@@ -110,30 +110,33 @@ Explicitly out of scope:
 - Activated `sourcing-rules-v7.0-quality-gated-indie` in the runtime loader, machine rule, generator identity, current-rule pointer, new canonical `docs/SOURCING_RULES_V7_0.md`, Daily/Radar/Steam Trends text, and candidate schema/contract.
 - Removed V6.8 publication quarantine and formal-count generator arguments from the active generator, kept V6.8 helpers only for historical compatibility, and made `new_qualified_count === push_pool_count` a blocking generation and Daily-contract invariant.
 - Focused V7 activation/health contract is green: 5/5, including a real zero-formal-Lead Daily contract fixture and an explicit parity-mismatch failure.
+- Removed `minReviewLeads`, `minMediaLeads`, `minReviewBackfillScore`, `minCandidates`, and `minReviewCandidates` arguments from both production workflows without changing their `schedule` / `workflow_dispatch` triggers or sync chain.
+- Removed formal Lead count degradation from the local watchdog and Cloudflare heartbeat; both now treat missing/invalid artifacts, strict synced-receipt failure, and V7 qualified/push mismatch as blocking while zero formal Leads remains healthy.
+- Updated the cloud runbook and focused automation/candidate-audit assertions for the V7 health contract; combined activation, workflow, watchdog, heartbeat, and candidate-audit set is green: 30/30.
 
 ## Remaining
 
-- Remove formal-count arguments and warnings from workflows, local watchdog, Cloudflare heartbeat, and runbook; add V7 parity health checks and align only the now-stale V6.8/quantity assertions.
+- Align the remaining stale V6.8 identity/report assertions exposed by the full Daily V4 suite without weakening historical-quarantine compatibility.
 - Run every PLAN.md final gate: focused tests, typechecks, schema/contract validation, Daily V4 fixtures, `npm run verify:all`, and `git diff --check`.
 - Push, create a ready PR to `main`, wait for CI, resolve only in-scope failures, verify scope/reviews/mergeability, and squash merge.
 - Verify merged `main`, deployment, production `/api/health`, and PR 4 online acceptance evidence; update this checkpoint and stop before PR 5.
 
 ## Next Action
 
-Update the two production workflows, local watchdog, Cloudflare heartbeat, cloud runbook, and their focused tests so formal Lead quantity never degrades health or dispatches recovery while missing artifacts, invalid JSON, strict synced receipts, and V7 qualified/push parity remain blocking.
+Run the complete Daily V4 suite, update only stale V6.8/quantity assertions caused by V7 activation, then run the full PLAN.md final verification matrix.
 
 ## Git Status
 
 ```text
-## codex/pr4-v7-indie-admission...origin/main [ahead 6]
- M automations/jobs/online_daily_v4.mjs
- M automations/jobs/online_daily_v4_reports.mjs
- M automations/jobs/online_daily_v4_rules.mjs
- M automations/jobs/online_daily_v4_volume.mjs
- M automations/rules/daily-report.json
+## codex/pr4-v7-indie-admission...origin/main [ahead 7]
+ M .github/workflows/daily-report-watchdog.yml
+ M .github/workflows/sync-daily-report.yml
+ M automations/test/dailyAutomationHardening.test.mjs
+ M automations/test/dailyWatchdogDegraded.test.mjs
+ M automations/test/onlineDailyV4CandidateAudit.test.mjs
+ M cloudflare/daily-report-heartbeat/worker.mjs
+ M docs/CLOUD_AUTOMATION_RUNBOOK.md
  M docs/checkpoints/pr4-v7-indie-admission.md
- M docs/SOURCING_RULES_CURRENT.md
- M schemas/sourcing_candidates.schema.json
- M scripts/validate-daily-contract.mjs
-?? docs/SOURCING_RULES_V7_0.md
+ M scripts/daily-report-watchdog.mjs
+ M scripts/test-daily-report-heartbeat.mjs
 ```

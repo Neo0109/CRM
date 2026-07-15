@@ -106,7 +106,7 @@ jobs:
         run: |
           set +e
           log_file="$(mktemp)"
-          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --minReviewLeads=18 --minMediaLeads=10 --minReviewBackfillScore=18 --allowLowVolume=true ${{ steps.dedupe.outputs.index_args }} 2>&1 | tee "$log_file"
+          node automations/jobs/online_daily_runner.mjs --date="$REPORT_DATE" --maxCandidates=260 --maxSteamDetails=90 --allowLowVolume=true ${{ steps.dedupe.outputs.index_args }} 2>&1 | tee "$log_file"
           status="${PIPESTATUS[0]}"
           set -e
 

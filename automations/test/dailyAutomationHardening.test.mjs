@@ -11,7 +11,7 @@ function readRepoFile(repoPath) {
 }
 
 describe("daily automation hardening contract", () => {
-  it("keeps production volume targets diagnostic while contract and sync failures stay blocking", () => {
+  it("removes formal Lead quantity targets while contract and sync failures stay blocking", () => {
     const syncWorkflow = readRepoFile(".github/workflows/sync-daily-report.yml");
     const watchdogWorkflow = readRepoFile(".github/workflows/daily-report-watchdog.yml");
     const runner = readRepoFile("automations/jobs/online_daily_runner.mjs");
@@ -22,10 +22,7 @@ describe("daily automation hardening contract", () => {
     assert.match(syncWorkflow, /--requireSourcingCandidates=true/);
     assert.match(watchdogWorkflow, /--requireSourcingCandidates=true/);
     assert.match(runner, /allowLowVolume/);
-    assert.doesNotMatch(workflowText, /--minReviewCandidates=3/);
-    assert.match(syncWorkflow, /--minReviewLeads=18/);
-    assert.match(syncWorkflow, /--minMediaLeads=10/);
-    assert.match(watchdogWorkflow, /--minCandidates=18 --minReviewCandidates=18/);
+    assert.doesNotMatch(workflowText, /--minReviewCandidates|--minCandidates|--minReviewLeads|--minMediaLeads|--minReviewBackfillScore/);
   });
 
   it("allows the daily report schema to carry the canonical drop reason field", () => {
@@ -33,15 +30,36 @@ describe("daily automation hardening contract", () => {
     assert.deepEqual(schema.$defs.reportLead.properties.drop_reason, { type: ["string", "null"] });
   });
 
-  it("keeps machine-readable sourcing rules aligned with explicit quality quarantine", () => {
+  it("keeps machine-readable sourcing rules aligned with V7 indie admission", () => {
     const rules = JSON.parse(readRepoFile("automations/rules/daily-report.json"));
 
-    assert.equal(rules.rule_version, "sourcing-rules-v6.8-quality-quarantine");
-    assert.deepEqual(rules.quality_quarantine, {
+    assert.equal(rules.rule_version, "sourcing-rules-v7.0-quality-gated-indie");
+    assert.equal("quality_quarantine" in rules, false);
+    assert.deepEqual(rules.indie_prelaunch_admission, {
       active: true,
-      publish_lead_pools: false,
-      lead_count_health: "disabled",
-      preserve_artifacts: ["daily_report", "industry_radar", "steam_trends", "sourcing_candidates"]
+      sourcing_lane: "indie_prelaunch",
+      required_gate_ids: [
+        "identity_and_dedupe",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value",
+        "overseas_china_demand"
+      ],
+      all_gates_required: true,
+      qualified_route: "push_pool",
+      unqualified_route: "sourcing_candidates",
+      automatic_priority: null,
+      formal_lead_minimum: null,
+      formal_lead_maximum: null,
+      watch_pool_enabled: false,
+      drop_pool_enabled: false,
+      invariant: "new_qualified_count === push_pool_count"
     });
   });
 

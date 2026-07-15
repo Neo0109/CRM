@@ -19,7 +19,8 @@ test("healthy artifacts suppress dispatch", async () => {
   const fetchFn = async (url, init = {}) => {
     fetches.push({ url, method: init.method ?? "GET" });
     if (init.method === "HEAD") return new Response(null, { status: 200 });
-    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 10, watch: 8 });
+    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 2, watch: 0 });
+    if (url.includes("/data/sourcing_candidates/2026-07-09.json")) return sourcingCandidatesJson({ qualified: 2 });
     if (url.includes("/contents/data/automation_runs")) {
       return json([
         { type: "file", name: "2026-07-09-watchdog.json", download_url: "https://example.test/receipt.json" },
@@ -37,7 +38,7 @@ test("healthy artifacts suppress dispatch", async () => {
   assert.equal(result.ok, true);
   assert.equal(result.needsDispatch, false);
   assert.deepEqual(result.reasons, []);
-  assert.equal(result.report.review, 18);
+  assert.equal(result.report.review, 2);
   assert.equal(fetches.filter((call) => call.method === "HEAD").length, 4);
 });
 
@@ -55,10 +56,11 @@ test("missing files and receipt request watchdog dispatch", async () => {
   assert.deepEqual(result.reasons, ["missing files: report, radar, steam_trends, sourcing_candidates", "no successful synced receipt"]);
 });
 
-test("low-volume report is degraded but does not dispatch after a successful sync", async () => {
+test("zero-formal report stays healthy and does not dispatch after a successful sync", async () => {
   const fetchFn = async (url, init = {}) => {
     if (init.method === "HEAD") return new Response(null, { status: 200 });
-    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 1, watch: 0 });
+    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 0, watch: 0 });
+    if (url.includes("/data/sourcing_candidates/2026-07-09.json")) return sourcingCandidatesJson({ qualified: 0 });
     if (url.includes("/contents/data/automation_runs")) {
       return json([
         { type: "file", name: "2026-07-09-morning.json", download_url: "https://example.test/receipt.json" },
@@ -73,17 +75,38 @@ test("low-volume report is degraded but does not dispatch after a successful syn
   const result = await inspectDailyArtifacts({ env, date: "2026-07-09", fetchFn });
 
   assert.equal(result.ok, true);
-  assert.equal(result.degraded, true);
+  assert.equal(result.degraded, false);
   assert.equal(result.needsDispatch, false);
-  assert.equal(result.report.review, 1);
+  assert.equal(result.report.review, 0);
   assert.deepEqual(result.reasons, []);
-  assert.deepEqual(result.warnings, ["review candidate count 1 below target 18"]);
+  assert.deepEqual(result.warnings, []);
+});
+
+test("V7 qualified/push mismatch requests watchdog dispatch", async () => {
+  const fetchFn = async (url, init = {}) => {
+    if (init.method === "HEAD") return new Response(null, { status: 200 });
+    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 1, watch: 0 });
+    if (url.includes("/data/sourcing_candidates/2026-07-09.json")) return sourcingCandidatesJson({ qualified: 2 });
+    if (url.includes("/contents/data/automation_runs")) {
+      return json([
+        { type: "file", name: "2026-07-09-morning.json", download_url: "https://example.test/receipt.json" },
+      ]);
+    }
+    return json({ status: "success", sync_response: JSON.stringify({ synced: true }) });
+  };
+
+  const result = await inspectDailyArtifacts({ env, date: "2026-07-09", fetchFn });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.needsDispatch, true);
+  assert.match(result.reasons.join("\n"), /recorded push_pool_count=2, report push_pool=1/);
 });
 
 test("status unknown receipt is not success evidence", async () => {
   const fetchFn = async (url, init = {}) => {
     if (init.method === "HEAD") return new Response(null, { status: 200 });
-    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 10, watch: 8 });
+    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 1, watch: 0 });
+    if (url.includes("/data/sourcing_candidates/2026-07-09.json")) return sourcingCandidatesJson({ qualified: 1 });
     if (url.includes("/contents/data/automation_runs")) {
       return json([
         { type: "file", name: "2026-07-09-watchdog.json", download_url: "https://example.test/receipt.json" },
@@ -144,7 +167,8 @@ test("runHeartbeat derives the report date from the provided time", async () => 
       if (match) seenDates.push(match[1]);
       return new Response(null, { status: 200 });
     }
-    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 10, watch: 8 });
+    if (url.includes("/data/reports/2026-07-09.json")) return reportJson({ push: 1, watch: 0 });
+    if (url.includes("/data/sourcing_candidates/2026-07-09.json")) return sourcingCandidatesJson({ qualified: 1 });
     if (url.includes("/contents/data/automation_runs")) {
       return json([
         { type: "file", name: "2026-07-09-watchdog.json", download_url: "https://example.test/receipt.json" },
@@ -180,5 +204,17 @@ function reportJson({ push, watch }) {
     push_pool: Array.from({ length: push }, (_, index) => ({ project: `Push ${index}` })),
     watch_pool: Array.from({ length: watch }, (_, index) => ({ project: `Watch ${index}` })),
     drop_pool: [],
+  });
+}
+
+function sourcingCandidatesJson({ qualified }) {
+  return json({
+    report_date: "2026-07-09",
+    sourcing_rule_version: "sourcing-rules-v7.0-quality-gated-indie",
+    scan_summary: {
+      new_qualified_count: qualified,
+      push_pool_count: qualified,
+    },
+    candidates: [],
   });
 }

@@ -2,7 +2,7 @@ const DEFAULT_OWNER = "Neo0109";
 const DEFAULT_REPO = "CRM";
 const DEFAULT_BRANCH = "main";
 const DEFAULT_WORKFLOW_FILE = "daily-report-watchdog.yml";
-const DEFAULT_MIN_REVIEW_CANDIDATES = 18;
+const V7_RULE_VERSION = "sourcing-rules-v7.0-quality-gated-indie";
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -54,8 +54,13 @@ export async function inspectDailyArtifacts({ env, date, fetchFn = fetch }) {
     fileResults[key] = await rawFileExists({ config, repoPath, fetchFn });
   }
 
-  const reportHealth = fileResults.report
-    ? await inspectReportVolume({ config, repoPath: files.report, fetchFn })
+  const reportHealth = fileResults.report && fileResults.sourcing_candidates
+    ? await inspectReportHealth({
+        config,
+        reportPath: files.report,
+        sourcingCandidatesPath: files.sourcing_candidates,
+        fetchFn,
+      })
     : null;
   const receipts = await listReceipts({ config, date, fetchFn });
   const successfulReceipt = receipts.find((receipt) => receipt.status === "success" && receipt.synced === true);
@@ -125,7 +130,6 @@ export function githubConfig(env = {}) {
     repo: env.GITHUB_REPO ?? DEFAULT_REPO,
     branch: env.GITHUB_BRANCH ?? DEFAULT_BRANCH,
     workflowFile: env.GITHUB_WORKFLOW_FILE ?? DEFAULT_WORKFLOW_FILE,
-    minReviewCandidates: numericEnv(env.MIN_REVIEW_CANDIDATES, DEFAULT_MIN_REVIEW_CANDIDATES),
     token,
   };
 }
@@ -158,8 +162,8 @@ async function listReceipts({ config, date, fetchFn }) {
   return receipts;
 }
 
-async function inspectReportVolume({ config, repoPath, fetchFn }) {
-  const response = await fetchFn(rawUrl(config, repoPath), {
+async function inspectReportHealth({ config, reportPath, sourcingCandidatesPath, fetchFn }) {
+  const response = await fetchFn(rawUrl(config, reportPath), {
     headers: githubHeaders(config.token),
   });
   if (!response.ok) {
@@ -167,8 +171,6 @@ async function inspectReportVolume({ config, repoPath, fetchFn }) {
       ok: false,
       reasons: [`report fetch failed: HTTP ${response.status}`],
       warnings: [],
-      review: 0,
-      threshold: config.minReviewCandidates,
     };
   }
 
@@ -178,28 +180,59 @@ async function inspectReportVolume({ config, repoPath, fetchFn }) {
       ok: false,
       reasons: ["report JSON is invalid"],
       warnings: [],
-      review: 0,
-      threshold: config.minReviewCandidates,
+    };
+  }
+
+  const sourcingCandidatesResponse = await fetchFn(rawUrl(config, sourcingCandidatesPath), {
+    headers: githubHeaders(config.token),
+  });
+  if (!sourcingCandidatesResponse.ok) {
+    return {
+      ok: false,
+      reasons: [`sourcing candidates fetch failed: HTTP ${sourcingCandidatesResponse.status}`],
+      warnings: [],
+    };
+  }
+  const sourcingCandidates = await sourcingCandidatesResponse.json().catch(() => null);
+  if (!sourcingCandidates) {
+    return {
+      ok: false,
+      reasons: ["sourcing candidates JSON is invalid"],
+      warnings: [],
     };
   }
 
   const push = Array.isArray(payload.push_pool) ? payload.push_pool.length : 0;
   const watch = Array.isArray(payload.watch_pool) ? payload.watch_pool.length : 0;
+  const drop = Array.isArray(payload.drop_pool) ? payload.drop_pool.length : 0;
   const review = push + watch;
+  const newQualifiedCount = sourcingCandidates.scan_summary?.new_qualified_count ?? null;
+  const recordedPushPoolCount = sourcingCandidates.scan_summary?.push_pool_count ?? null;
+  const reasons = [];
   const warnings = [];
-  if (review < config.minReviewCandidates) {
-    warnings.push(`review candidate count ${review} below target ${config.minReviewCandidates}`);
+  if (sourcingCandidates.sourcing_rule_version === V7_RULE_VERSION) {
+    if (!Number.isInteger(newQualifiedCount)) reasons.push("V7 sourcing candidates missing new_qualified_count");
+    if (!Number.isInteger(recordedPushPoolCount)) reasons.push("V7 sourcing candidates missing push_pool_count");
+    if (newQualifiedCount !== recordedPushPoolCount) {
+      reasons.push(`V7 admission parity mismatch: new_qualified_count=${newQualifiedCount}, push_pool_count=${recordedPushPoolCount}`);
+    }
+    if (recordedPushPoolCount !== push) {
+      reasons.push(`V7 report parity mismatch: recorded push_pool_count=${recordedPushPoolCount}, report push_pool=${push}`);
+    }
+    if (watch || drop) reasons.push("V7 report must keep watch_pool and drop_pool empty");
   }
 
   return {
-    ok: true,
-    degraded: warnings.length > 0,
-    reasons: [],
+    ok: reasons.length === 0,
+    degraded: false,
+    reasons,
     warnings,
     push,
     watch,
+    drop,
     review,
-    threshold: config.minReviewCandidates,
+    new_qualified_count: newQualifiedCount,
+    recorded_push_pool_count: recordedPushPoolCount,
   };
 }
 
@@ -222,11 +255,6 @@ function parseSyncResponse(value) {
   } catch {
     return null;
   }
-}
-
-function numericEnv(value, fallback) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
 }
 
 function rawUrl(config, repoPath) {

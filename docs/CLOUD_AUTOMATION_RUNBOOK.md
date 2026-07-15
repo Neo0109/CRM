@@ -15,6 +15,7 @@ Cloud-owned files:
 - `data/reports/YYYY-MM-DD.json`
 - `data/radar/YYYY-MM-DD.json`
 - `data/steam_trends/YYYY-MM-DD.json`
+- `data/sourcing_candidates/YYYY-MM-DD.json`
 - `data/automation_runs/YYYY-MM-DD-*.json`
 
 The source of truth is GitHub `main`. Cloudflare Pages and Supabase sync from that source.
@@ -24,7 +25,7 @@ The primary daily report workflow must be independent from product/UI iteration:
 - `.github/workflows/sync-daily-report.yml` may only use `schedule` and `workflow_dispatch`.
 - Product feature, auth, UI, or documentation pushes must not trigger production daily report generation.
 - `.github/workflows/daily-report-watchdog.yml` is the GitHub-hosted self-healing layer and may run repeatedly during the workday; it should do nothing when the day is already healthy.
-- `cloudflare/daily-report-heartbeat/worker.mjs` is the non-GitHub-schedule heartbeat. It checks GitHub `main` at 11:00 Asia/Shanghai and dispatches the watchdog if the day is missing or has no synced receipt.
+- `cloudflare/daily-report-heartbeat/worker.mjs` is the non-GitHub-schedule heartbeat. It checks GitHub `main` at 11:00 Asia/Shanghai and dispatches the watchdog if the day is missing, V7 qualified/push parity is invalid, or there is no synced receipt.
 - A successful CRM sync is proven only by a `data/automation_runs/YYYY-MM-DD-*.json` receipt with `status=success` and a parseable `sync_response.synced=true`.
 
 ## Production Deduplication
@@ -69,6 +70,7 @@ The contract checks:
 - Steam Trends uses Steam market-board structure: `market_insights`, `genre_signals`, and candidate samples. It must not cite CRM rule docs or internal automation notes as market signals.
 - Industry Radar and Steam Trends must both have enough items; a network-failed run that writes empty Steam trends is invalid.
 - `data/sourcing_candidates/YYYY-MM-DD.json` records deduped discovery decisions, missing evidence, and exclusion reasons. It is validated and published with the other dated artifacts but is never used as a CRM import payload.
+- V7 requires `new_qualified_count === push_pool_count`; the recorded push count must also equal the Daily report `push_pool`, while `watch_pool` and `drop_pool` remain empty.
 
 `automations/jobs/online_daily_runner.mjs` runs this contract automatically after generation, including the required candidate-audit schema and integrity checks, so the cloud job fails before committing broken structure.
 
@@ -84,11 +86,11 @@ The watchdog checks:
 
 - Required files exist.
 - A successful sync receipt exists.
-- Candidate counts are measured against their quality targets.
-- Non-dropped review candidates (`push_pool + watch_pool`) are measured against the target of 18; lower volume is degraded, not blocking.
+- Formal Lead quantity has no minimum, maximum, or degraded threshold; zero qualified projects is healthy.
+- V7 candidate-audit `new_qualified_count` and `push_pool_count` must match the Daily report, and any mismatch is blocking.
 - Radar, Steam Trends, Steam market insights, and Steam genre signals report degraded warnings when below their targets.
 
-Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis. Report volume remains a quality signal, while missing/invalid files and missing successful sync receipts decide whether recovery is needed.
+Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis, but none of those counts is a health gate. Missing/invalid files, V7 qualified/push mismatch, and missing successful sync receipts decide whether recovery is needed.
 
 For source-quality diagnosis, inspect the generator's `diagnostics.media_source_health`, nested `diagnostics.bilibili_probe.source_health`, retry counters, and `release_window_health`. These distinguish an upstream fetch failure from aggressive filtering, duplicate removal, weak product conversion, and near-launch routing. A source with repeated cloud failures should be disabled or replaced in the rule file; do not raise a global publication threshold to compensate for one unhealthy source.
 
@@ -112,9 +114,8 @@ Optional environment overrides:
 - `GITHUB_REPO` defaults to `CRM`.
 - `GITHUB_BRANCH` defaults to `main`.
 - `GITHUB_WORKFLOW_FILE` defaults to `daily-report-watchdog.yml`.
-- `MIN_REVIEW_CANDIDATES` defaults to `18`.
 
-The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. It reads `push_pool + watch_pool` against the target of 18 and reports lower volume as degraded. It dispatches `daily-report-watchdog.yml` only when required files are missing, report JSON is invalid, or no receipt has `status=success` and `sync_response.synced=true`.
+The heartbeat checks `data/reports/YYYY-MM-DD.json`, `data/radar/YYYY-MM-DD.json`, `data/steam_trends/YYYY-MM-DD.json`, `data/sourcing_candidates/YYYY-MM-DD.json`, and `data/automation_runs/YYYY-MM-DD-*.json` on GitHub `main`. Formal Lead quantity never degrades health. For V7 artifacts it requires candidate-audit `new_qualified_count` and `push_pool_count` to equal the Daily report `push_pool`, with empty `watch_pool` and `drop_pool`. It dispatches `daily-report-watchdog.yml` only when required files are missing, report/candidate JSON or V7 parity is invalid, or no receipt has `status=success` and `sync_response.synced=true`.
 
 ## Codex Task Policy
 
