@@ -61,18 +61,24 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Branch `codex/pr6-v7-1-ea-cn-heat` was pushed at `dff8a7f`.
   - The configured HTTPS OAuth credential lacked GitHub's workflow-file scope, so the first push was rejected before any remote ref changed. The existing authenticated SSH Git transport was verified read-only and then used successfully; no account, token, or permission was changed.
   - Ready PR: `#92` — `https://github.com/Neo0109/CRM/pull/92`, base `main`.
+- PR `#92` pre-merge acceptance completed at head `2f96d78ed7f83d62836d300dfc9c971267a50ecf`:
+  - `Build / frontend` succeeded for Actions runs `29439073307` and `29439076628`.
+  - Cloudflare Pages PR preview check succeeded.
+  - GitHub reports `mergeable=MERGEABLE` and `mergeStateStatus=CLEAN` against `origin/main=d98009bc5b8dad3ae81e304839fdc950a200248b`.
+  - No reviews, review threads, or unresolved comments exist.
+  - The remote PR file list contains only the 13 PR 6 workflow, delivery, rule, schema, validator, tests, docs/checkpoint, package-script, and create-only automation-auth files; both existing Daily workflow files remain absent from the diff.
 
 ## Remaining
 
-- Monitor PR `#92` CI/review/mergeability and squash merge when all required checks are successful.
+- Push this CI checkpoint and reconfirm the resulting head checks, then squash merge PR `#92`.
 - Verify build, Cloudflare deployment, production `/api/health`, and PR 6 online acceptance.
 
 ## Next Action
 
-Commit and push this checkpoint update, then wait for every PR `#92` check and review gate before merging.
+Commit and push this CI checkpoint update, wait for every resulting PR `#92` check, then squash merge without further approval.
 
 ## Git Status
 
 - Branch: `codex/pr6-v7-1-ea-cn-heat`
 - Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Worktree: only this post-publish checkpoint update is uncommitted; the remote PR branch otherwise matches local `dff8a7f`, all local checks are green, and `PLAN.md` remains unchanged.
+- Worktree: only this CI checkpoint update is uncommitted; the remote PR branch otherwise matches local `2f96d78`, all local and remote checks are green, and `PLAN.md` remains unchanged.
