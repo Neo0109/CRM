@@ -179,6 +179,13 @@ describe("Steam review opportunity audit artifact", () => {
 
     const buildWorkflow = readFileSync(path.join(repoRoot, ".github/workflows/build.yml"), "utf8");
     assert.match(buildWorkflow, /node --test automations\/test\/steamReviewOpportunity\*\.test\.mjs/);
+
+    const currentRules = readFileSync(path.join(repoRoot, "docs/SOURCING_RULES_CURRENT.md"), "utf8");
+    const sourceContract = readFileSync(path.join(repoRoot, "docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md"), "utf8");
+    assert.match(currentRules, /STEAM_REVIEW_OPPORTUNITY_SOURCE\.md/);
+    assert.match(currentRules, /not imported by the active Daily runner/i);
+    assert.match(sourceContract, /not a Daily report, sourcing-candidate replacement, Lead payload, automation receipt, or CRM import input/i);
+    assert.match(sourceContract, /CI runs only fixed fixture/i);
   });
 });
 

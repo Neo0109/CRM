@@ -2,7 +2,7 @@
 
 Date: 2026-07-16 00:35 CST
 
-Last updated: 2026-07-16 00:57 CST
+Last updated: 2026-07-16 00:59 CST
 
 Authoritative plan: `PLAN.md`
 
@@ -10,7 +10,7 @@ Plan SHA-256: `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`
 
 Delivery protocol: `/Users/neo/Documents/GitHub/CRM/docs/CODEX_DELIVERY_WORKFLOW.md` at planning commit `ef2dd37344e40df79e4bc5e2d4e9b234d429026b`
 
-Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 core implementation is complete: source, pure decision, dedicated artifact/schema/validator/writer, standalone runner, and fixed-fixture CI contract are green. Documentation alignment and final repository verification remain.
+Phase status: Phase 1 diagnosis, Phase 2 bounded proposal, and the user-authorized Phase 3 approval are complete. Phase 4 implementation and documentation alignment are complete: source, pure decision, dedicated artifact/schema/validator/writer, standalone runner, fixed-fixture CI contract, and traceability docs are green. Final repository verification remains.
 
 ## Current Goal
 
@@ -102,10 +102,12 @@ Explicitly out of scope:
 - Restored ignored workspace dependencies with `npm install --package-lock=false`; no tracked lockfile or dependency artifact was created. The audit reported two pre-existing dependency vulnerabilities, which are unrelated and were not auto-fixed or widened into this PR.
 - Corrected null evidence preservation so an unavailable official review summary cannot become a synthetic `0%` value; the integrity contract now requires every unknown official metric to remain `null`.
 - Combined new source/artifact, existing Steam source, and existing sourcing-candidate audit regression set is green: 27/27. Dedicated JSON-schema validation and standalone `git diff --check` are green.
+- Added `docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md` as the human-readable source/artifact contract and linked it from the current-rule entrypoint.
+- Updated current and V7.0 rule documentation to state precisely that the PR 5 source exists but is audit-only, is not consumed by V7.0 or any current production workflow/import path, and cannot activate EA/high-traction or China-heat publication before PR 6.
+- Extended the fixed artifact guard to require the current-rule pointer, explicit non-import boundary, and fixture-only CI statement. The combined focused regression set remains green: 27/27.
 
 ## Remaining
 
-- Document the exact source/artifact contract and dormant-until-PR-6 boundary in current sourcing-rule documentation.
 - Implement each verified step, updating this checkpoint and committing after each step as required by the delivery protocol.
 - Run all focused tests, relevant typechecks, schema/contract checks, `npm run verify:all`, and standalone `git diff --check`.
 - Audit the full diff against PLAN.md PR 5, push, open a ready PR to `main`, wait for all checks, resolve only in-scope failures, and verify clean mergeability plus zero unresolved review threads.
@@ -114,19 +116,15 @@ Explicitly out of scope:
 
 ## Next Action
 
-Commit the green artifact/runner/CI step, then update only the PR 5 source-contract and current-rule documentation before running the full focused, typecheck, contract, `verify:all`, and diff validation set.
+Commit the documentation-alignment step, then run the complete required validation set: focused PR 5 tests, full Daily V4, frontend/backend/Functions typechecks, Daily and dedicated schema/contracts, `npm run verify:all`, standalone `git diff --check`, and final scope audit against `origin/main`.
 
 ## Git Status
 
 ```text
-## codex/pr5-steam-schinese-review-source...origin/main [ahead 5]
- M .github/workflows/build.yml
- M automations/package.json
+## codex/pr5-steam-schinese-review-source...origin/main [ahead 6]
  M automations/test/steamReviewOpportunityArtifact.test.mjs
+ M docs/SOURCING_RULES_CURRENT.md
+ M docs/SOURCING_RULES_V7_0.md
  M docs/checkpoints/pr5-steam-schinese-review-source.md
- M package.json
-?? automations/jobs/steam_review_opportunity_artifact.mjs
-?? automations/jobs/steam_review_opportunity_audit.mjs
-?? schemas/steam_review_opportunities.schema.json
-?? scripts/validate-steam-review-opportunities.mjs
+?? docs/STEAM_REVIEW_OPPORTUNITY_SOURCE.md
 ```
