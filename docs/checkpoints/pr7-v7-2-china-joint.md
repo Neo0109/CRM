@@ -42,10 +42,17 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
   - the required same-day fixture with exactly 5 qualified indie projects plus 4 qualified joint projects, all 9 required in the formal pool;
   - no-China-demand and occupied-China-partner exclusions in both formal output and candidate audit.
 - Confirmed the expected red state with `node --test automations/test/onlineDailyV7ChinaJointAdmission.test.mjs`: it fails because the two new PR 7 admission modules do not yet exist.
+- Implemented the focused PR 7 decision slice:
+  - added an auditable `china_joint` evaluator with four non-compensating gates and exact boundary handling for all three locked data paths;
+  - requires structured current China business-opportunity evidence and a confirmed clear mature-China-partner state;
+  - maps regular Steam and official-media evidence without importing or changing the PR 6 Steam review-opportunity path;
+  - added a shared regular-lane selector used by both `buildPools` and candidate audit, preserving an already-qualified indie classification before admitting the new joint lane;
+  - keeps the published union deduped and unbounded, with `priority=null` and one active V7.2 provenance version.
+- Focused green evidence: `node --test automations/test/onlineDailyV7ChinaJointAdmission.test.mjs` passes 6/6, including the required 9-formal fixture and both exclusion cases.
 
 ## Remaining
 
-- Implement `china_joint` admission and parallel unbounded output.
+- Activate the V7.2 machine/human rule chain and generator identity.
 - Run focused tests and update this checkpoint at each verifiable step.
 - Run Daily V4, schema/contract, typecheck, `npm run verify:all`, and `git diff --check`.
 - Commit, push, open PR, wait for checks/reviews/mergeability, and squash merge.
@@ -53,11 +60,11 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
 
 ## Next Action
 
-Implement the pure `china_joint` evaluator and shared regular-lane selector, then wire decision and candidate audit to the same selected admission until the focused red test turns green.
+Commit the green decision slice, then activate V7.2 across the regular generator, machine rules, canonical/current documentation, Daily parity/heartbeat contracts, and source enrichment.
 
 ## Git Status
 
 - Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
-- Commits on branch: setup checkpoint `27ef1fc`, diagnosis `fe5cd0d`; the red fixture/test step is pending commit.
-- Expected change before the next commit: the PR 7 fixture, focused red test, and this checkpoint only.
+- Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`; the green decision step is pending commit.
+- Expected change before the next commit: two PR 7 admission modules, decision/audit integration, China-partner source helper, and this checkpoint.

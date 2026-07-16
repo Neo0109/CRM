@@ -6,6 +6,11 @@ import {
   evaluateSteamIndiePrelaunchAdmission,
   INDIE_PRELAUNCH_RULE_VERSION
 } from "./online_daily_v7_indie_admission.mjs";
+import {
+  evaluateMediaRegularAdmission,
+  evaluateSteamRegularAdmission,
+  REGULAR_SOURCING_RULE_VERSION
+} from "./online_daily_v7_2_regular_admission.mjs";
 
 const DECISION_RANK = { excluded: 1, candidate: 2, formal: 3 };
 
@@ -51,7 +56,7 @@ export function buildSourcingCandidateArtifact({
   const internalCandidates = [...records.values()].sort((left, right) => left.dedupe_key.localeCompare(right.dedupe_key));
   const candidates = internalCandidates.map(stripAuditPrivate);
   const decisionCount = (decision) => candidates.filter((candidate) => candidate.decision === decision).length;
-  const v7Summary = ruleVersion === INDIE_PRELAUNCH_RULE_VERSION
+  const v7Summary = isV7AdmissionRule(ruleVersion)
     ? {
         new_qualified_count: internalCandidates.filter((candidate) => candidate._admissionQualified).length,
         push_pool_count: publishedPools?.push?.length ?? 0
@@ -80,8 +85,8 @@ export function buildSourcingCandidateArtifact({
 
 function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }) {
   const candidate = enriched ?? raw ?? {};
-  const isV7 = ruleVersion === INDIE_PRELAUNCH_RULE_VERSION;
-  const admission = isV7 ? evaluateSteamIndiePrelaunchAdmission(candidate) : null;
+  const isV7 = isV7AdmissionRule(ruleVersion);
+  const admission = steamAdmissionForRule(candidate, ruleVersion);
   const hasDetails = enriched?.hasDetails === true;
   const reviewSummary = steamReviewSummary({
     hasDetails,
@@ -143,8 +148,8 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }
 }
 
 function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
-  const isV7 = ruleVersion === INDIE_PRELAUNCH_RULE_VERSION;
-  const admission = isV7 ? evaluateMediaIndiePrelaunchAdmission(lead) : null;
+  const isV7 = isV7AdmissionRule(ruleVersion);
+  const admission = mediaAdmissionForRule(lead, ruleVersion);
   const details = lead?._steamEntityResolution?.details ?? null;
   const hasDetails = Boolean(details);
   const recommendationCount = Number(details?.recommendations?.total ?? 0);
@@ -371,6 +376,22 @@ function stringOrNull(value) {
 
 function emptyPools() {
   return { push: [], watch: [], drop: [] };
+}
+
+function isV7AdmissionRule(ruleVersion) {
+  return ruleVersion === INDIE_PRELAUNCH_RULE_VERSION || ruleVersion === REGULAR_SOURCING_RULE_VERSION;
+}
+
+function steamAdmissionForRule(candidate, ruleVersion) {
+  if (ruleVersion === REGULAR_SOURCING_RULE_VERSION) return evaluateSteamRegularAdmission(candidate);
+  if (ruleVersion === INDIE_PRELAUNCH_RULE_VERSION) return evaluateSteamIndiePrelaunchAdmission(candidate);
+  return null;
+}
+
+function mediaAdmissionForRule(lead, ruleVersion) {
+  if (ruleVersion === REGULAR_SOURCING_RULE_VERSION) return evaluateMediaRegularAdmission(lead);
+  if (ruleVersion === INDIE_PRELAUNCH_RULE_VERSION) return evaluateMediaIndiePrelaunchAdmission(lead);
+  return null;
 }
 
 function stripAuditPrivate(candidate) {

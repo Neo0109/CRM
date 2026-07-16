@@ -5,6 +5,24 @@ export function hasMaturePublisher(publishers) {
   return ["devolver", "raw fury", "annapurna", "team17", "hooded horse", "tinybuild", "kasedo", "kepler", "11 bit", "chucklefish", "humble", "paradox", "focus", "playstack", "fireshine", "nacon", "secret mode", "thunderful", "netea", "tencent", "bilibili", "xd", "gamera", " indienova"].some((name) => text.includes(name.trim()));
 }
 
+export function hasMatureChinaPartner(publishers) {
+  const text = publishers.join(" ").toLowerCase();
+  return [
+    "netease",
+    "netea",
+    "网易",
+    "tencent",
+    "腾讯",
+    "bilibili",
+    "哔哩哔哩",
+    "xd network",
+    "x.d. network",
+    "心动",
+    "gamera",
+    "indienova"
+  ].some((name) => text.includes(name));
+}
+
 export function looksDomestic(text) {
   return /[\u4e00-\u9fff]/.test(text) || /china|beijing|shanghai|shenzhen|guangzhou|chengdu|hangzhou|wuhan|xiamen|nanjing|suzhou|chongqing/i.test(text);
 }

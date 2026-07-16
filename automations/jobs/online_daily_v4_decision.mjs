@@ -1,10 +1,13 @@
 import { normalizeDisplayText, normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
 import {
   deriveConcreteChinaBilibiliValue,
-  evaluateMediaIndiePrelaunchAdmission,
-  evaluateSteamIndiePrelaunchAdmission,
-  INDIE_PRELAUNCH_RULE_VERSION
+  evaluateSteamIndiePrelaunchAdmission
 } from "./online_daily_v7_indie_admission.mjs";
+import {
+  evaluateMediaRegularAdmission,
+  evaluateSteamRegularAdmission,
+  REGULAR_SOURCING_RULE_VERSION
+} from "./online_daily_v7_2_regular_admission.mjs";
 
 export function scoreCandidate(input) {
   let score = 0;
@@ -39,10 +42,10 @@ export function buildPools(candidates, mediaLeads = [], options = {}) {
   };
   const steamLeads = candidates
     .map((candidate) => toLead(candidate, context))
-    .filter((lead) => lead._indieAdmission.qualified);
+    .filter((lead) => lead._regularAdmission.qualified);
   const qualifiedMediaLeads = mediaLeads
     .map((lead) => toQualifiedMediaLead(lead))
-    .filter((lead) => lead._indieAdmission.qualified);
+    .filter((lead) => lead._regularAdmission.qualified);
   const used = new Set();
   const mediaPush = selectUniqueLeads(qualifiedMediaLeads, used);
   const steamPush = selectUniqueLeads(steamLeads, used);
@@ -89,11 +92,11 @@ function looseChineseProjectKey(value) {
 }
 
 function toLead(candidate, context) {
-  const admission = evaluateSteamIndiePrelaunchAdmission(candidate);
+  const admission = evaluateSteamRegularAdmission(candidate);
   const genre = candidate.genres.join(" / ") || null;
   return {
     _class: admission.qualified ? "push" : "candidate",
-    _indieAdmission: admission,
+    _regularAdmission: admission,
     id: `lead_steam_${candidate.appId}_${context.reportDate}`,
     project: candidate.title,
     steam_app_id: candidate.appId,
@@ -106,13 +109,13 @@ function toLead(candidate, context) {
     bucket: "未处理",
     stage: "new",
     priority: null,
-    sourcing_lane: "indie_prelaunch",
-    sourcing_rule_version: INDIE_PRELAUNCH_RULE_VERSION,
+    sourcing_lane: admission.sourcing_lane,
+    sourcing_rule_version: REGULAR_SOURCING_RULE_VERSION,
     sourcing_run_type: "scheduled",
     drop_reason: null,
     priority_reason: null,
     rule_fit: admission.qualified
-      ? "V7.0 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。"
+      ? admissionSuccessText(admission.sourcing_lane)
       : admissionFailureText(admission),
     genre,
     gameplay: candidate.shortDescription || `${genre ?? "玩法待复核"}。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。`,
@@ -123,7 +126,9 @@ function toLead(candidate, context) {
     india_team: candidate.indiaTeam,
     publisher_status: buildPublisherStatus(candidate),
     publisher_name: candidate.publishers[0] ?? null,
-    china_capability_occupied: candidate.publisherOccupied,
+    china_capability_occupied: admission.sourcing_lane === "china_joint"
+      ? candidate.chinaPartnerOccupied
+      : candidate.publisherOccupied,
     traction_summary: buildTractionSummary(candidate),
     public_signals: `${candidate.source} / Steam App ${candidate.appId}`,
     contact: candidate.contactMethods.map((method) => `${method.type}: ${method.value}`).join("；"),
@@ -133,7 +138,7 @@ function toLead(candidate, context) {
     bilibili_fit: admission.evidence.china_bilibili_value ?? buildBilibiliFit(candidate),
     amplification: buildAmplification(candidate),
     risks: admission.qualified ? buildRisks(candidate, null) : admissionFailureText(admission),
-    verdict: admission.qualified ? "符合 V7.0 indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。" : "",
+    verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane) : "",
     next_action: null,
     owner: null,
     due_date: null,
@@ -143,25 +148,25 @@ function toLead(candidate, context) {
 }
 
 function toQualifiedMediaLead(lead) {
-  const admission = evaluateMediaIndiePrelaunchAdmission(lead);
+  const admission = evaluateMediaRegularAdmission(lead);
   return {
     ...lead,
     _class: admission.qualified ? "push" : "candidate",
-    _indieAdmission: admission,
+    _regularAdmission: admission,
     bucket: "未处理",
     stage: "new",
     priority: null,
-    sourcing_lane: "indie_prelaunch",
-    sourcing_rule_version: INDIE_PRELAUNCH_RULE_VERSION,
+    sourcing_lane: admission.sourcing_lane,
+    sourcing_rule_version: REGULAR_SOURCING_RULE_VERSION,
     sourcing_run_type: "scheduled",
     drop_reason: null,
     priority_reason: null,
     rule_fit: admission.qualified
-      ? "V7.0 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。"
+      ? admissionSuccessText(admission.sourcing_lane)
       : admissionFailureText(admission),
     bilibili_fit: admission.evidence.china_bilibili_value ?? lead.bilibili_fit,
     risks: admission.qualified ? lead.risks : admissionFailureText(admission),
-    verdict: admission.qualified ? "符合 V7.0 indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。" : "",
+    verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane) : "",
     next_action: null,
     notes: null
   };
@@ -228,7 +233,19 @@ function admissionFailureText(admission) {
   const excluded = admission.exclusion_reasons.length
     ? `排除原因：${admission.exclusion_reasons.join("；")}`
     : null;
-  return [missing, excluded].filter(Boolean).join("；") || "未通过 V7.0 独立游戏前置发行准入。";
+  return [missing, excluded].filter(Boolean).join("；") || "未通过 V7.2 常规业务通道准入。";
+}
+
+function admissionSuccessText(lane) {
+  return lane === "china_joint"
+    ? "V7.2 2A/3A 中国联合发行数据门与商业资格门全部通过；排序只影响阅读顺序，不影响推荐资格。"
+    : "V7.2 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。";
+}
+
+function admissionVerdict(lane) {
+  return lane === "china_joint"
+    ? "符合 V7.2 china_joint 正式准入；建议按人工优先级流程评估中国合作窗口并触达。"
+    : "符合 V7.2 indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。";
 }
 
 function buildVerdict(className, dropReason) {
