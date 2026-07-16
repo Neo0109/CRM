@@ -196,6 +196,49 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     assert.equal(result.opportunities[0].earlyAccess.storeState, "yes");
   });
 
+  it("does not require AppDetails after official reviews already fail the EA threshold", async () => {
+    const appId = "1002";
+    const candidate = fixture.catalog_pages
+      .flatMap((page) => parseSteamCatalogPage(page.payload, { start: page.start }).candidates)
+      .find((item) => item.appId === appId);
+    const reviewPayload = fixture.review_responses[appId].query_summary;
+    let appDetailsCalls = 0;
+    const result = await collectSteamReviewOpportunities({
+      scanCatalogImpl: async () => ({
+        summary: {
+          scanComplete: true,
+          pagesScanned: 1,
+          catalogEntriesSeen: 1,
+          uniqueAppsSeen: 1,
+          reportedTotal: 1,
+          sourceFailures: []
+        },
+        candidates: [candidate]
+      }),
+      fetchReviewSummaryImpl: async () => ({
+        status: "available",
+        text: reviewPayload.review_score_desc,
+        positiveReviews: reviewPayload.total_positive,
+        negativeReviews: reviewPayload.total_negative,
+        totalReviews: reviewPayload.total_reviews,
+        positiveRate: 79.9,
+        language: "schinese",
+        purchaseType: "all",
+        sourceStatus: "steam_appreviews"
+      }),
+      fetchAppDetailsImpl: async () => {
+        appDetailsCalls += 1;
+        throw new Error("irrelevant AppDetails must not be requested");
+      }
+    });
+
+    assert.equal(appDetailsCalls, 0);
+    assert.equal(result.summary.scanComplete, true);
+    assert.deepEqual(result.summary.sourceFailures, []);
+    assert.equal(result.opportunities[0].decision, "not_qualified");
+    assert.equal(result.opportunities[0].earlyAccess.storeState, "unknown");
+  });
+
   it("requires both the catalog tag and official store metadata for current EA", () => {
     assert.equal(officialStoreEarlyAccess(fixture.appdetails["1003"]), true);
     assert.equal(officialStoreEarlyAccess(fixture.appdetails["1004"]), false);
@@ -285,7 +328,7 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     });
 
     assert.deepEqual(reviewCalls, ["1002", "1003", "1004", "1005"]);
-    assert.deepEqual(detailsCalls, ["1002", "1003", "1005"]);
+    assert.deepEqual(detailsCalls, ["1003", "1005"]);
     assert.equal(result.summary.prefilterMatches, 4);
     assert.equal(result.summary.officialReviewsConfirmed, 4);
     assert.equal(result.summary.qualified, 3);

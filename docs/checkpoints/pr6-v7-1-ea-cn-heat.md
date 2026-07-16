@@ -159,22 +159,36 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Complete `npm run verify:all` passed against exact code head `929906b`: frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 144/144, diagnostics, sourcing learning, heartbeat, all three typechecks, contracts, temporary production build, and diff-check.
   - The isolated validation copy had an empty `git status --porcelain`. The user's local CRM worktree remains untouched.
 
+
+- PR #94 delivery and second post-hotfix production run completed:
+  - PR `#94` was squash-merged as `b6a042d14d9a0d96f64dc85f8fbeba4409f2a2e7`; post-merge Build `29479331338`, Cloudflare Pages, and production `/api/health` all succeeded.
+  - Final run `29479430663` at head `b6a042d` scanned all 1,650 catalog pages, saw 164,919 entries, and confirmed all 702 official simplified-Chinese review summaries.
+  - The 2100ms pacing eliminated terminal catalog failures. AppDetails logical-payload retry ran all ten attempts for apps `1630280` and `934430`, but GitHub Actions continued to receive unusable payloads.
+  - Receipt `data/steam_review_opportunity_runs/2026-07-16-pr6-final-acceptance.json` correctly records `scan_complete=false`, `status=scan_incomplete`, `sync_response.synced=false`, and `updated_count=0`; CRM sync was skipped.
+  - Both failed AppDetails records were already impossible to qualify through the EA rule from complete official review evidence: app `1630280` had 2,457 reviews at 58.7302%, and app `934430` had 1,094 reviews at 61.2431%, both below the locked 80% positive-rate threshold and below the 10,000-review China-heat threshold.
+  - Root cause: the source requests and requires AppDetails for every catalog-EA candidate in parallel with review lookup, even when the official review result independently proves the EA lane cannot qualify. This makes irrelevant optional evidence a false scan-completeness blocker.
+- Third PR 6 hotfix proposal is approved by the user's original autonomous hotfix authorization:
+  - Fetch official review evidence first. Require AppDetails only when catalog EA is true and the confirmed review evidence still meets the EA review gates (at least 1,000 reviews and at least 80% positive).
+  - A candidate that fails those immutable review gates is deterministically not EA-qualified regardless of store state, so skipping irrelevant AppDetails does not lower `scan_complete` or any business threshold.
+  - Any review failure, any required AppDetails failure for a still-eligible EA candidate, or any catalog failure remains terminal and prevents CRM sync.
+  - No batch/continuation change is required because the strict single-artifact run completes within the 360-minute window; this evidence-ordering change also shortens enrichment.
+
 ## Remaining
 
-- Finish PR #94 Cloudflare/check/review/diff-scope gates, mark ready, and squash-merge.
-- Verify post-merge Build, Cloudflare Pages, and production `/api/health`.
-- Dispatch one fresh full backfill only after deployment is healthy; require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`.
-- Update this checkpoint with final production evidence, merge the checkpoint if needed, and stop before PR 7.
+- Add a fixed red source contract proving that a below-80% EA-tagged candidate never calls AppDetails and remains a complete deterministic non-qualification.
+- Implement review-first, relevance-gated AppDetails lookup; update only affected fixed expectations and documentation.
+- Run focused tests, complete `npm run verify:all`, audit diff/Daily workflow scope, open and deliver the third PR 6 hotfix.
+- Verify post-merge Build, Cloudflare Pages, and production health, then dispatch one fresh full backfill.
+- Require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; update this checkpoint and stop before PR 7.
 
 ## Next Action
 
-Audit PR #94 file scope, Daily workflow immutability, reviews, mergeability, Build, and Cloudflare Pages. Mark ready and merge only when every pre-merge gate is green.
+Add the red evidence-relevance test on remote-only branch `codex/pr6-evidence-relevance-hotfix`, then implement the smallest review-first source change.
 
 ## Git Status
 
-- Remote branch: `codex/pr6-steam-payload-retry-hotfix`.
-- Current head before this checkpoint update: `929906ba07563ac241a7d5e607d697c6defa1924`.
-- Base: remote `main=630fe9d4b4f7625f2199d3f7ee86d643417d32ce`.
-- PR state: draft PR `#94` is open and mergeable; final Build checks are green and Cloudflare Pages is pending. PR `#92` and hotfix PR `#93` are merged; unrelated PR `#71` remains untouched.
-- Scope: PR 6 2100ms production pacing, AppDetails logical-payload retry, fixed tests/docs, and checkpoint only. No PR 7, Daily workflow, business-rule threshold, UI, schema relaxation, auth, or CRM mutation change.
+- Remote branch: `codex/pr6-evidence-relevance-hotfix`.
+- Base: remote `main=68500448f2bf384261c71ac606521b8454afd17b`, including the failed final-run artifact and receipt.
+- Scope: PR 6 review-first AppDetails relevance gate, fixed tests/docs, and checkpoint only. No PR 7, Daily workflow, threshold, UI, schema relaxation, auth, or CRM mutation change.
+- PR state: PR `#92`, `#93`, and `#94` are merged; unrelated PR `#71` remains untouched; third hotfix PR not yet opened.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.

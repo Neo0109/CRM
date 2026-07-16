@@ -42,7 +42,7 @@ describe("Steam review opportunity audit artifact", () => {
       prefilter_matches: 4,
       records_total: 4,
       official_reviews_confirmed: 4,
-      store_details_confirmed: 3,
+      store_details_confirmed: 2,
       qualified: 3,
       not_qualified: 1,
       needs_evidence: 0,
@@ -55,7 +55,7 @@ describe("Steam review opportunity audit artifact", () => {
       item.steam_review_summary.total_reviews,
       item.early_access.confirmed_current
     ]), [
-      ["1002", "not_qualified", null, 1000, true],
+      ["1002", "not_qualified", null, 1000, false],
       ["1003", "qualified", "ea_mobile_high_traction", 1000, true],
       ["1004", "qualified", "china_heat_ops", 10000, false],
       ["1005", "qualified", "china_heat_ops", 20000, true]
