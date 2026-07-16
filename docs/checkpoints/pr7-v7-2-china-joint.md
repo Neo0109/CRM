@@ -27,10 +27,16 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
 - Confirmed the start SHA and open PR queue.
 - Created branch `codex/pr7-v7-2-china-joint` and isolated worktree `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint` from the latest `origin/main`.
 - Recorded scope boundaries and approval state in this checkpoint.
+- Completed the read-only PR 7 boundary diagnosis:
+  - Daily V4 already gathers regular Steam discovery plus media/product-event evidence and enriches normalized Steam details outside PR 6.
+  - `buildPools` has no formal output quota or backfill; its missing behavior is that it evaluates only `indie_prelaunch`.
+  - Existing Steam enrichment already exposes exact recommendation counts, public rating text, developer/publisher identity, current source context, explicit China-demand text, and partner-occupancy state needed by PR 7.
+  - The locked `5000` and `1500 + Very/Overwhelmingly Positive` traction paths exist only as a legacy boolean helper, not as an auditable non-compensating `china_joint` admission decision.
+  - Candidate audit currently recomputes only the indie decision, so PR 7 must introduce one shared selected-admission result used by both formal publication and audit routing.
+  - The active machine/human rule chain remains V7.0 and needs a V7.2 canonical entrypoint; schemas and Lead model already permit `china_joint`, so no migration or API-contract expansion is needed.
 
 ## Remaining
 
-- Inspect the current regular sourcing source/decision/report/test boundaries.
 - Add failing focused fixtures for all locked PR 7 gates and the 9-formal union invariant.
 - Implement `china_joint` admission and parallel unbounded output.
 - Run focused tests and update this checkpoint at each verifiable step.
@@ -40,10 +46,11 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
 
 ## Next Action
 
-Perform the read-only PR 7 code-boundary diagnosis in this worktree, then add the focused red tests without reading or changing PR 6 implementation.
+Add a fixed PR 7 fixture and focused red tests for the three data paths, China-demand gate, mature-China-partner exclusion, selected-lane behavior, and the unbounded 5 indie + 4 joint union.
 
 ## Git Status
 
 - Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
-- Expected change: this newly created checkpoint only.
+- Commits on branch: setup checkpoint `27ef1fc`; this diagnosis update is pending commit.
+- Expected change before the next commit: this checkpoint only.
