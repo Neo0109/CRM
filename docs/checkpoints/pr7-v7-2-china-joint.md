@@ -34,10 +34,17 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
   - The locked `5000` and `1500 + Very/Overwhelmingly Positive` traction paths exist only as a legacy boolean helper, not as an auditable non-compensating `china_joint` admission decision.
   - Candidate audit currently recomputes only the indie decision, so PR 7 must introduce one shared selected-admission result used by both formal publication and audit routing.
   - The active machine/human rule chain remains V7.0 and needs a V7.2 canonical entrypoint; schemas and Lead model already permit `china_joint`, so no migration or API-contract expansion is needed.
+- Added the fixed PR 7 red-test contract:
+  - exact `5000`, `1500 + Very Positive`, `1500 + Overwhelmingly Positive`, and verified-major-title plus current-official-event boundaries;
+  - negative `4999`, `1499`, ordinary Positive, missing event, and missing track-record boundaries;
+  - mandatory current China-opportunity and mature-China-partner-clear gates;
+  - Steam and official-media evidence adapters;
+  - the required same-day fixture with exactly 5 qualified indie projects plus 4 qualified joint projects, all 9 required in the formal pool;
+  - no-China-demand and occupied-China-partner exclusions in both formal output and candidate audit.
+- Confirmed the expected red state with `node --test automations/test/onlineDailyV7ChinaJointAdmission.test.mjs`: it fails because the two new PR 7 admission modules do not yet exist.
 
 ## Remaining
 
-- Add failing focused fixtures for all locked PR 7 gates and the 9-formal union invariant.
 - Implement `china_joint` admission and parallel unbounded output.
 - Run focused tests and update this checkpoint at each verifiable step.
 - Run Daily V4, schema/contract, typecheck, `npm run verify:all`, and `git diff --check`.
@@ -46,11 +53,11 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
 
 ## Next Action
 
-Add a fixed PR 7 fixture and focused red tests for the three data paths, China-demand gate, mature-China-partner exclusion, selected-lane behavior, and the unbounded 5 indie + 4 joint union.
+Implement the pure `china_joint` evaluator and shared regular-lane selector, then wire decision and candidate audit to the same selected admission until the focused red test turns green.
 
 ## Git Status
 
 - Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
-- Commits on branch: setup checkpoint `27ef1fc`; this diagnosis update is pending commit.
-- Expected change before the next commit: this checkpoint only.
+- Commits on branch: setup checkpoint `27ef1fc`, diagnosis `fe5cd0d`; the red fixture/test step is pending commit.
+- Expected change before the next commit: the PR 7 fixture, focused red test, and this checkpoint only.
