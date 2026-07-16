@@ -1,0 +1,46 @@
+{
+  "rule_version": "sourcing-rules-v7.1",
+  "source_contract": "steam-schinese-reviews-v1",
+  "workflow": ".github/workflows/steam-review-opportunities.yml",
+  "artifact_path": "data/steam_review_opportunities/YYYY-MM-DD.json",
+  "receipt_path": "data/steam_review_opportunity_runs/YYYY-MM-DD-SLOT.json",
+  "run_modes": {
+    "backfill": "initial_backfill",
+    "scheduled": "scheduled"
+  },
+  "admission": {
+    "ea_mobile_high_traction": {
+      "current_early_access_required": true,
+      "simplified_chinese_reviews_minimum": 1000,
+      "simplified_chinese_positive_rate_minimum": 80
+    },
+    "china_heat_ops": {
+      "release_state": ["early_access", "released"],
+      "simplified_chinese_reviews_minimum": 10000,
+      "positive_rate_is_admission_gate": false
+    },
+    "primary_lane_precedence": ["china_heat_ops", "ea_mobile_high_traction"],
+    "preserve_all_matched_rules": true,
+    "formal_lead_minimum": null,
+    "formal_lead_maximum": null
+  },
+  "delivery_guardrails": {
+    "full_catalog_scan_required": true,
+    "scan_complete_required_before_sync": true,
+    "crm_import_mode": "create-only",
+    "existing_leads_may_be_updated": false,
+    "scheduled_delivery": ["new_discovery", "first_threshold_crossing"],
+    "suppression_history_requires_matching_success_receipt": true,
+    "suppression_history_artifact_identity": "sha256",
+    "failed_delivery_remains_retryable": true,
+    "bearer_secret": "CRM_AUTOMATION_TOKEN",
+    "crm_access_token_bearer_fallback": false,
+    "missing_bearer_secret_status": "sync_failed",
+    "success_receipt_requires": [
+      "scan_complete=true",
+      "status=success",
+      "sync_response.synced=true",
+      "updated_count=0"
+    ]
+  }
+}
