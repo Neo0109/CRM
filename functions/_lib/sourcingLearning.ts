@@ -5,6 +5,9 @@ export const decisionEventPrefix = "__crm_decision_event__";
 export type DecisionActor = Pick<CrmUser, "username" | "display_name" | "role">;
 export type DecisionAction = "evaluate" | "testing" | "follow" | "watch" | "push" | "drop" | "evaluation_update" | "drop_reason_update" | "decision_update";
 export type DecisionOutcome = "positive" | "negative" | "intermediate" | "pending";
+export type SourcingPrecisionCohortKey = "regular" | "ea_mobile_high_traction" | "china_heat_ops" | "initial_backfill" | "unclassified";
+export type SourcingPrecisionStatus = "provisional" | "meets_target" | "below_target" | "observational";
+export type SourcingPrecisionAction = "collect_more_resolved_samples" | "monitor" | "tighten_misclassification_rules" | "observe_separately";
 
 export type DecisionSnapshot = Pick<
   Lead,
@@ -37,6 +40,9 @@ export type DecisionEvent = {
     country: string;
     region: string;
     region_priority: string;
+    sourcing_lane: Lead["sourcing_lane"];
+    sourcing_rule_version: string | null;
+    sourcing_run_type: Lead["sourcing_run_type"];
     genre: string | null;
     gameplay: string | null;
     progress: string;
@@ -80,8 +86,44 @@ export type SourcingLearningReport = {
     by_gameplay: Record<string, SignalStats>;
     by_progress: Record<string, SignalStats>;
   };
+  precision: {
+    target: number;
+    minimum_resolved_samples: number;
+    denominator: {
+      included_outcomes: ["positive", "negative"];
+      excluded_outcomes: ["intermediate", "pending"];
+      excluded_states: ["未处理", "观察中", "未完成评测"];
+    };
+    cohorts: Record<SourcingPrecisionCohortKey, SourcingPrecisionStats>;
+    regular_by_rule_version: Record<string, SourcingPrecisionStats>;
+    guardrails: {
+      automatic_rule_changes_allowed: false;
+      below_target_action: "tighten_misclassification_rules";
+      forbidden_quantity_controls: [
+        "daily_recommendation_cap",
+        "minimum_recommendation_count",
+        "qualified_lead_truncation",
+        "backfill"
+      ];
+    };
+  };
   recommendations_ready: boolean;
   learning_note: string;
+};
+
+export type SourcingPrecisionStats = {
+  sample_count: number;
+  resolved_samples: number;
+  excluded_samples: number;
+  positive: number;
+  negative: number;
+  precision: number | null;
+  target: number | null;
+  provisional: boolean;
+  target_met: boolean | null;
+  status: SourcingPrecisionStatus;
+  recommended_action: SourcingPrecisionAction;
+  automatic_rule_changes_allowed: false;
 };
 
 export type SignalStats = {
@@ -94,8 +136,13 @@ export type SignalStats = {
 
 const activeLearningBuckets = ["未处理", "待评测", "测试中", "观察池", "跟进中", "推进池"];
 const funnelBuckets = ["未处理", "待评测", "测试中", "观察池", "跟进中", "推进池", "淘汰池"];
+const positiveBuckets = new Set(["待评测", "测试中", "跟进中", "推进池"]);
 const positiveGrades = new Set(["S", "A+", "A", "A-", "B+"]);
 const negativeGrades = new Set(["C+", "C", "C-"]);
+const regularSourcingLanes = new Set(["indie_prelaunch", "china_joint"]);
+const precisionCohortKeys: SourcingPrecisionCohortKey[] = ["regular", "ea_mobile_high_traction", "china_heat_ops", "initial_backfill", "unclassified"];
+const regularPrecisionTarget = 0.8;
+const minimumResolvedSamples = 30;
 const trackedDecisionFields: (keyof DecisionSnapshot)[] = [
   "bucket",
   "stage",
@@ -167,10 +214,22 @@ export function buildSourcingLearningReport(leads: Lead[], events: DecisionEvent
   const byRegion = new Map<string, SignalCounter>();
   const byGameplay = new Map<string, SignalCounter>();
   const byProgress = new Map<string, SignalCounter>();
+  const leadsById = new Map(leads.map((lead) => [lead.id, lead]));
+  const cohortCounters = newPrecisionCohortCounters();
+  const regularRuleCounters = new Map<string, PrecisionCounter>();
 
   for (const event of latestByLead.values()) {
     const outcome = classifyOutcome(event);
+    const provenance = decisionProvenance(event, leadsById.get(event.lead_id));
+    const cohort = precisionCohort(provenance.sourcing_lane, provenance.sourcing_run_type);
     outcomes[outcome] += 1;
+    addPrecisionSample(cohortCounters[cohort], outcome);
+    if (cohort === "regular") {
+      const ruleVersion = provenance.sourcing_rule_version ?? "unclassified";
+      const counter = regularRuleCounters.get(ruleVersion) ?? newPrecisionCounter();
+      addPrecisionSample(counter, outcome);
+      regularRuleCounters.set(ruleVersion, counter);
+    }
     if (event.after.evaluation_grade) {
       gradeDistribution[event.after.evaluation_grade] = (gradeDistribution[event.after.evaluation_grade] ?? 0) + 1;
     }
@@ -182,7 +241,8 @@ export function buildSourcingLearningReport(leads: Lead[], events: DecisionEvent
     addSignal(byProgress, event.snapshot.progress || "待补充", outcome);
   }
 
-  const resolvedSamples = outcomes.positive + outcomes.negative;
+  const precision = buildPrecisionReport(cohortCounters, regularRuleCounters);
+  const regularPrecision = precision.cohorts.regular;
   return {
     generated_at: generatedAt,
     cohort: {
@@ -204,10 +264,9 @@ export function buildSourcingLearningReport(leads: Lead[], events: DecisionEvent
       by_gameplay: toSignalStats(byGameplay),
       by_progress: toSignalStats(byProgress)
     },
-    recommendations_ready: resolvedSamples >= 30,
-    learning_note: resolvedSamples >= 30
-      ? `已有 ${resolvedSamples} 个明确结果样本，可以开始输出方向性权重建议。`
-      : `当前明确结果样本 ${resolvedSamples} 个，少于 30 个时只展示漏斗和样本积累，不输出强结论。`
+    precision,
+    recommendations_ready: !regularPrecision.provisional,
+    learning_note: precisionLearningNote(regularPrecision)
   };
 }
 
@@ -242,10 +301,141 @@ function classifyAction(before: Lead, after: Lead, changedFields: (keyof Decisio
 }
 
 function classifyOutcome(event: DecisionEvent): DecisionOutcome {
-  if (event.after.bucket === "淘汰池" || negativeGrades.has(event.after.evaluation_grade ?? "")) return "negative";
-  if (event.after.bucket === "推进池" || event.after.bucket === "跟进中" || positiveGrades.has(event.after.evaluation_grade ?? "")) return "positive";
-  if (["待评测", "测试中", "观察池"].includes(event.after.bucket)) return "intermediate";
+  if (
+    event.after.bucket === "淘汰池"
+    || event.after.stage === "rejected"
+    || event.after.review_status === "已淘汰"
+    || negativeGrades.has(event.after.evaluation_grade ?? "")
+  ) return "negative";
+  if (positiveBuckets.has(event.after.bucket) || positiveGrades.has(event.after.evaluation_grade ?? "")) return "positive";
+  if (event.after.bucket === "观察池") return "intermediate";
   return "pending";
+}
+
+function decisionProvenance(event: DecisionEvent, lead: Lead | undefined) {
+  return {
+    sourcing_lane: event.snapshot.sourcing_lane ?? lead?.sourcing_lane ?? null,
+    sourcing_rule_version: event.snapshot.sourcing_rule_version ?? lead?.sourcing_rule_version ?? null,
+    sourcing_run_type: event.snapshot.sourcing_run_type ?? lead?.sourcing_run_type ?? null
+  };
+}
+
+function precisionCohort(
+  sourcingLane: Lead["sourcing_lane"] | undefined,
+  sourcingRunType: Lead["sourcing_run_type"] | undefined
+): SourcingPrecisionCohortKey {
+  if (sourcingRunType === "initial_backfill") return "initial_backfill";
+  if (sourcingLane === "ea_mobile_high_traction") return "ea_mobile_high_traction";
+  if (sourcingLane === "china_heat_ops") return "china_heat_ops";
+  if (sourcingLane && regularSourcingLanes.has(sourcingLane)) return "regular";
+  return "unclassified";
+}
+
+type PrecisionCounter = {
+  sample_count: number;
+  positive: number;
+  negative: number;
+  excluded: number;
+};
+
+function newPrecisionCounter(): PrecisionCounter {
+  return { sample_count: 0, positive: 0, negative: 0, excluded: 0 };
+}
+
+function newPrecisionCohortCounters(): Record<SourcingPrecisionCohortKey, PrecisionCounter> {
+  return Object.fromEntries(precisionCohortKeys.map((key) => [key, newPrecisionCounter()])) as Record<SourcingPrecisionCohortKey, PrecisionCounter>;
+}
+
+function addPrecisionSample(counter: PrecisionCounter, outcome: DecisionOutcome) {
+  counter.sample_count += 1;
+  if (outcome === "positive") counter.positive += 1;
+  else if (outcome === "negative") counter.negative += 1;
+  else counter.excluded += 1;
+}
+
+function buildPrecisionReport(
+  cohortCounters: Record<SourcingPrecisionCohortKey, PrecisionCounter>,
+  regularRuleCounters: Map<string, PrecisionCounter>
+): SourcingLearningReport["precision"] {
+  const cohorts = Object.fromEntries(precisionCohortKeys.map((key) => [
+    key,
+    precisionStats(cohortCounters[key], key === "regular" ? regularPrecisionTarget : null)
+  ])) as Record<SourcingPrecisionCohortKey, SourcingPrecisionStats>;
+  const regularByRuleVersion = Object.fromEntries([...regularRuleCounters.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([ruleVersion, counter]) => [ruleVersion, precisionStats(counter, regularPrecisionTarget)]));
+
+  return {
+    target: regularPrecisionTarget,
+    minimum_resolved_samples: minimumResolvedSamples,
+    denominator: {
+      included_outcomes: ["positive", "negative"],
+      excluded_outcomes: ["intermediate", "pending"],
+      excluded_states: ["未处理", "观察中", "未完成评测"]
+    },
+    cohorts,
+    regular_by_rule_version: regularByRuleVersion,
+    guardrails: {
+      automatic_rule_changes_allowed: false,
+      below_target_action: "tighten_misclassification_rules",
+      forbidden_quantity_controls: [
+        "daily_recommendation_cap",
+        "minimum_recommendation_count",
+        "qualified_lead_truncation",
+        "backfill"
+      ]
+    }
+  };
+}
+
+function precisionStats(counter: PrecisionCounter, target: number | null): SourcingPrecisionStats {
+  const resolvedSamples = counter.positive + counter.negative;
+  const provisional = resolvedSamples < minimumResolvedSamples;
+  const precision = resolvedSamples ? rate(counter.positive, resolvedSamples) : null;
+  const targetMet = target === null || provisional || precision === null ? null : precision >= target;
+  const status: SourcingPrecisionStatus = provisional
+    ? "provisional"
+    : target === null
+      ? "observational"
+      : targetMet
+        ? "meets_target"
+        : "below_target";
+  const recommendedAction: SourcingPrecisionAction = provisional
+    ? "collect_more_resolved_samples"
+    : target === null
+      ? "observe_separately"
+      : targetMet
+        ? "monitor"
+        : "tighten_misclassification_rules";
+
+  return {
+    sample_count: counter.sample_count,
+    resolved_samples: resolvedSamples,
+    excluded_samples: counter.excluded,
+    positive: counter.positive,
+    negative: counter.negative,
+    precision,
+    target,
+    provisional,
+    target_met: targetMet,
+    status,
+    recommended_action: recommendedAction,
+    automatic_rule_changes_allowed: false
+  };
+}
+
+function precisionLearningNote(regular: SourcingPrecisionStats) {
+  if (regular.provisional) {
+    return `常规通道已解决样本 ${regular.resolved_samples} 个，少于 ${minimumResolvedSamples} 个，结果为 provisional；只积累样本，不自动修改生产规则。`;
+  }
+  if (regular.target_met === false) {
+    return `常规通道精度 ${percent(regular.precision)}，低于 ${percent(regularPrecisionTarget)}；应定位并收紧产生误判的规则，不得设置推荐上限、最低数量、截断或 backfill。`;
+  }
+  return `常规通道精度 ${percent(regular.precision)}，达到 ${percent(regularPrecisionTarget)} 目标；继续监测且不自动修改生产规则。`;
+}
+
+function percent(value: number | null) {
+  return value === null ? "暂无" : `${Number((value * 100).toFixed(2))}%`;
 }
 
 function latestEventsByLead(events: DecisionEvent[]) {
@@ -297,6 +487,9 @@ function leadSnapshot(lead: Lead): DecisionEvent["snapshot"] {
     country: lead.country,
     region: lead.region,
     region_priority: lead.region_priority,
+    sourcing_lane: lead.sourcing_lane,
+    sourcing_rule_version: lead.sourcing_rule_version,
+    sourcing_run_type: lead.sourcing_run_type,
     genre: lead.genre,
     gameplay: lead.gameplay,
     progress: lead.progress,

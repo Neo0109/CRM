@@ -23,6 +23,15 @@
   - 决策事件 snapshot 未保存 `sourcing_lane`、`sourcing_rule_version`、`sourcing_run_type`，因此无法可靠拆分常规、EA、中文热度和 `initial_backfill`。
   - 当前 readiness 使用所有 cohort 的全局样本量，可能让 EA/backfill 样本误触发常规通道结论。
   - `test:sourcing-learning` 已存在且纳入 `verify:all`，但断言仍保护旧口径，需要先改成 PR 8 契约并确认红灯。
+- 已完成核心 TDD 步骤：
+  - 先扩展 `scripts/test-sourcing-learning.mjs`，确认红灯准确暴露 provenance、正向边界和 cohort/precision 契约缺失（9 tests 中 4 fail）。
+  - 在 `functions/_lib/sourcingLearning.ts` 为新事件固化 lane/rule/run provenance，并对旧事件使用当前 Lead provenance 兼容回退。
+  - 已实现互斥 cohort、resolved denominator、常规 80% 目标、30 样本 provisional、规则版本拆分和禁止数量控制/自动改规则 guardrail。
+  - 已修正结果优先级：淘汰或 C+ 及以下为负向；否则待评测、测试中、跟进中、推进池或 B+ 及以上为正向；未处理、观察池和其余未明确结果不进分母。
+- 核心验证已通过：
+  - `npm run test:sourcing-learning`（9/9 tests pass）
+  - `npm run typecheck:functions`
+  - 独立 worktree 初始缺少依赖，已用 `npm install --no-package-lock --ignore-scripts` 恢复本地依赖；未改依赖版本或锁文件。
 
 ## Approved Implementation Slice
 
@@ -50,9 +59,7 @@
 
 ## Remaining
 
-- 读取 PR 8 的精确交付契约和仓库现状。
-- 以 TDD 实现人工结果分类、分母排除、常规/EA 中文热度/initial_backfill cohort 分离和 provisional 边界。
-- 实现并运行 `test:sourcing-learning`。
+- 更新现有 Sourcing Learning 前端类型/视图，使 UI 不再混用全局样本 readiness，并展示互斥 cohort 与常规精度。
 - 运行窄测试、类型/契约检查、`verify:all` 和 `git diff --check`。
 - 提交、推送、创建并验收 PR；处理 CI、review threads、mergeability 和范围。
 - squash merge 后验证 Build、Cloudflare Pages、生产 `/api/health` 和 PR 8 线上验收条件。
@@ -68,10 +75,10 @@
 
 ## Next Action
 
-提交诊断 checkpoint；随后先修改 `test:sourcing-learning` 形成 PR 8 红灯，再实现最小纯函数与前端契约。
+提交核心 TDD 步骤；随后以现有 view-model 测试保护前端精度/cohort 展示，运行前端窄测试与 typecheck。
 
 ## Git Status
 
 - HEAD: `0382d7de9a31b186153e27630684115d6beeb19df`
-- Working tree: 仅新增并更新本 checkpoint，尚未提交。
+- Working tree: 核心实现、学习测试和本 checkpoint 待提交；`node_modules` 为 ignored 安装产物。
 - PR: 尚未创建。
