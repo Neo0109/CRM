@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Visual AI Manual Advisory Audit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "audit_kind",
+    "generated_at",
+    "status",
+    "provider",
+    "model",
+    "skip_reason",
+    "subject",
+    "guardrails",
+    "result"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "audit_kind": { "const": "visual_ai_manual_advisory" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["completed", "skipped"] },
+    "provider": { "type": "string", "enum": ["disabled", "fake", "openai"] },
+    "model": { "type": ["string", "null"] },
+    "skip_reason": { "type": ["string", "null"] },
+    "subject": { "$ref": "#/$defs/subject" },
+    "guardrails": { "$ref": "#/$defs/guardrails" },
+    "result": {
+      "anyOf": [
+        { "$ref": "#/$defs/auditResult" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "required": ["project", "dedupe_key", "image_count", "snapshot_sha256"],
+      "properties": {
+        "project": { "type": "string", "minLength": 1 },
+        "dedupe_key": { "type": "string", "minLength": 1 },
+        "image_count": { "type": "integer", "minimum": 0 },
+        "snapshot_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "guardrails": {
+      "type": "object",
+      "required": ["advisory_only", "real_ai_requests", "crm_import_calls", "lead_mutations", "priority_mutations", "pool_mutations"],
+      "properties": {
+        "advisory_only": { "const": true },
+        "real_ai_requests": { "type": "integer", "minimum": 0, "maximum": 1 },
+        "crm_import_calls": { "const": 0 },
+        "lead_mutations": { "const": 0 },
+        "priority_mutations": { "const": 0 },
+        "pool_mutations": { "const": 0 }
+      },
+      "additionalProperties": false
+    },
+    "auditResult": {
+      "type": "object",
+      "required": ["visual_summary", "strengths", "risks", "questions_for_human", "confidence", "recommendation_impact"],
+      "properties": {
+        "visual_summary": { "type": "string" },
+        "strengths": { "type": "array", "items": { "type": "string" } },
+        "risks": { "type": "array", "items": { "type": "string" } },
+        "questions_for_human": { "type": "array", "items": { "type": "string" } },
+        "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+        "recommendation_impact": { "const": "none" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

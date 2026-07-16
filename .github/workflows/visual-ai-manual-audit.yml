@@ -1,0 +1,109 @@
+name: Visual AI manual audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Disabled is zero-cost. Fake is deterministic. OpenAI remains gated by separate repository approval and configuration.
+        required: true
+        default: disabled
+        type: choice
+        options:
+          - disabled
+          - fake
+          - openai
+      project:
+        description: Human-readable project label for this manual audit.
+        required: false
+        default: ""
+        type: string
+      dedupe_key:
+        description: Stable audit subject key such as steam:123.
+        required: false
+        default: ""
+        type: string
+      image_urls_json:
+        description: JSON array of explicit HTTPS image URLs. No discovery or CRM lookup is performed.
+        required: false
+        default: "[]"
+        type: string
+      context:
+        description: Optional human context. Advisory output cannot alter recommendations.
+        required: false
+        default: ""
+        type: string
+      lead_snapshot_json:
+        description: Optional read-only JSON snapshot used only for an integrity hash.
+        required: false
+        default: "{}"
+        type: string
+      model:
+        description: Future real-provider model. Empty by default and required for eligibility.
+        required: false
+        default: ""
+        type: string
+      max_requests:
+        description: Future real-provider request budget. Zero disables real calls.
+        required: true
+        default: 0
+        type: number
+      max_images:
+        description: Future real-provider image budget. Zero disables real calls.
+        required: true
+        default: 0
+        type: number
+      max_output_tokens:
+        description: Future real-provider output-token budget. Zero disables real calls.
+        required: true
+        default: 0
+        type: number
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-ai-manual-audit-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository read-only
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run isolated manual advisory audit
+        id: audit
+        env:
+          VISUAL_AI_PROVIDER: ${{ inputs.provider }}
+          VISUAL_AI_PRODUCTION_APPROVED: ${{ vars.VISUAL_AI_PRODUCTION_APPROVED || 'false' }}
+          VISUAL_AI_API_KEY: ${{ secrets.VISUAL_AI_API_KEY }}
+          VISUAL_AI_MODEL: ${{ inputs.model }}
+          VISUAL_AI_MAX_REQUESTS: ${{ inputs.max_requests }}
+          VISUAL_AI_MAX_IMAGES: ${{ inputs.max_images }}
+          VISUAL_AI_MAX_OUTPUT_TOKENS: ${{ inputs.max_output_tokens }}
+          VISUAL_AI_PROJECT: ${{ inputs.project }}
+          VISUAL_AI_DEDUPE_KEY: ${{ inputs.dedupe_key }}
+          VISUAL_AI_IMAGE_URLS_JSON: ${{ inputs.image_urls_json }}
+          VISUAL_AI_CONTEXT: ${{ inputs.context }}
+          VISUAL_AI_LEAD_SNAPSHOT_JSON: ${{ inputs.lead_snapshot_json }}
+          VISUAL_AI_OUTPUT_PATH: ${{ runner.temp }}/visual-ai-manual-audit.json
+        run: |
+          node automations/jobs/visual_ai_manual_audit_cli.mjs --output="$VISUAL_AI_OUTPUT_PATH"
+          npm run validate:visual-ai-audit -- --file="$VISUAL_AI_OUTPUT_PATH"
+
+      - name: Upload advisory audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-ai-manual-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/visual-ai-manual-audit.json
+          if-no-files-found: error
+          retention-days: 14

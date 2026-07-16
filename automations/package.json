@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "audit:visual-ai": "node jobs/visual_ai_manual_audit_cli.mjs",
     "audit:steam-reviews": "node jobs/steam_review_opportunity_audit.mjs",
     "daily:prompt": "tsx jobs/daily_scan.ts",
     "import:daily": "tsx jobs/import_to_crm.ts"
