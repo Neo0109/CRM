@@ -134,23 +134,32 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Final `git diff --check` passed and `git status --porcelain` was empty; the disposable copy was removed.
   - This validation is test evidence only. Remote GitHub checks, deployment, production health, and the final live backfill remain separate acceptance gates.
 
+- PR #93 hotfix pre-merge and deployment acceptance completed:
+  - Final PR head `2bc61ae21f48d3709d1bb3cdb447e16743faf8dc` was mergeable/CLEAN against unchanged `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
+  - The 13-file diff remained limited to PR 6 network/source/workflow timing, machine rule, fixed tests, human docs, and this checkpoint; neither Daily workflow, PLAN.md, product UI, database, secrets, nor PR 7+ changed.
+  - Latest pre-merge Build runs `29474063203` and `29474065031` and Cloudflare Pages preview all succeeded; no reviews or review threads were present.
+  - PR `#93` was squash-merged as `3216d0b5084f184594185c8dabe6658956fe5f90`.
+  - Post-merge main Build `29474233502` succeeded, and the Cloudflare Pages check for `3216d0b` completed successfully.
+  - Production `/api/health` returned HTTP 200 with `ok=true`, `storage=supabase`, and valid configured CRM users at 2026-07-16 13:36 Asia/Shanghai.
+- Created remote-only continuation branch `codex/pr6-final-acceptance` from `main=3216d0b` before the long production backfill so final acceptance evidence can be persisted without editing main directly or entering PR 7.
+
 ## Remaining
 
-- Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
-- Implement the smallest PR 6 source/network/workflow change that makes those tests green without weakening the strict scan or CRM write gates.
-- Run focused Steam opportunity tests, network/source contracts, schema/YAML checks, typechecks/builds, `npm run verify:all`, and diff-scope checks through the remote PR/Actions path.
-- Open and validate the PR 6 hotfix PR, close all review findings, squash-merge only after every required check is green, and verify deployment plus production `/api/health`.
-- Dispatch a fresh backfill, follow it to completion, and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; compare pre/post existing-Lead evidence so create-only delivery cannot hide a rewrite.
-- Update this checkpoint with the final main SHA, hotfix PR/run/deployment handles, receipt metrics, CRM sync result, and formal PR 6 acceptance; then stop before PR 7.
+- Confirm no Steam review opportunity workflow run is queued or in progress, then dispatch one `main` backfill for 2026-07-16 with slot `pr6-hotfix-acceptance`.
+- Follow the run through the full catalog, required evidence requests, artifact and receipt commits, create-only sync, and strict final gate. Do not dispatch a duplicate.
+- Require the final receipt to record `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; use the zero-update result as the production proof that existing Leads were not rewritten.
+- Re-check remote main, the committed full artifact/receipt, Build/Cloudflare state, production `/api/health`, and any 429 retry timing before classifying acceptance.
+- Update this checkpoint with the final run metrics and formal PR 6 acceptance, publish it through a PR 6 documentation-only PR, merge after checks, then stop before PR 7.
 
 ## Next Action
 
-Audit PR #93 diff scope, current main drift, review threads, mergeability, Build, and Cloudflare Pages. Resolve only hotfix findings, update the PR body, and mark the PR ready only when every pre-merge gate is green.
+Verify the workflow queue is empty and dispatch exactly one `Steam review opportunities` backfill from `main` for date `2026-07-16`, slot `pr6-hotfix-acceptance`; then monitor without duplicate recovery.
 
 ## Git Status
 
-- Remote branch: `codex/pr6-steam-429-hotfix`.
-- Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
-- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only. Focused checks and full verify are green; final PR checks/review are pending.
-- PR state: PR `#92` merged; draft hotfix PR `#93` is open; unrelated PR `#71` remains open.
+- Remote checkpoint branch: `codex/pr6-final-acceptance`.
+- Base: remote `main=3216d0b5084f184594185c8dabe6658956fe5f90`.
+- Hotfix: PR `#93` merged; Build and Cloudflare deployment succeeded.
+- Acceptance: final live backfill not yet dispatched at this checkpoint.
+- Unrelated open PR `#71` and PLAN.md PR 7+ remain untouched.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
