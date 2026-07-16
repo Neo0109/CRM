@@ -28,6 +28,9 @@ describe("Steam review opportunity workflow contract", () => {
     const workflow = readRepoFile(".github/workflows/steam-review-opportunities.yml");
 
     assert.match(workflow, /steam_review_opportunity_delivery\.mjs prepare/);
+    assert.match(workflow, /timeout-minutes: 360/);
+    assert.match(workflow, /--concurrency=2/);
+    assert.match(workflow, /--requestDelayMs=1000/);
     assert.match(workflow, /--mode="\$REQUESTED_MODE"/);
     assert.doesNotMatch(workflow, /--maxPages|--max-pages|max_pages/);
     assert.match(workflow, /ready_for_sync/);

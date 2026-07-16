@@ -101,6 +101,12 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Keep both Daily workflows, business thresholds, schema success rules, create-only import, UI, database, secrets, PR 7+, and existing Lead mutation behavior unchanged.
 - Created remote-only branch `codex/pr6-steam-429-hotfix` from current `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`. The user's dirty local `codex/sourcing-rules-vnext` worktree remains read-only and untouched.
 
+- Added the PR 6 hotfix red regression contract without implementation:
+  - Network contract requires HTTP 429 errors to retain status and parsed `Retry-After`.
+  - Source contracts require catalog page pacing, retry after the server cooldown, bounded exponential retry with deterministic jitter, and no AppDetails request for a non-EA catalog candidate that already qualifies only through `china_heat_ops`.
+  - Workflow contract requires a 360-minute safety window, `concurrency=2`, and a 1000ms source-level minimum request interval.
+  - The next Build is expected to fail these new assertions against the unchanged production code; no success claim is recorded until that red result is observed.
+
 ## Remaining
 
 - Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
@@ -112,12 +118,12 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
 
 ## Next Action
 
-Add and commit the fixed red regression tests on `codex/pr6-steam-429-hotfix`, open the scoped hotfix PR so the red result is observable, then implement only the approved rate-limit recovery slice.
+Open the scoped PR 6 hotfix PR at this red-test head, capture the expected failing Build evidence, then implement only the approved rate-limit recovery slice and make the same contracts green.
 
 ## Git Status
 
 - Remote branch: `codex/pr6-steam-429-hotfix`.
 - Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
-- Scope at this checkpoint: this checkpoint update only; no source or workflow change has been made yet.
+- Scope at this checkpoint: checkpoint plus fixed regression tests only; no production source or workflow implementation change has been made yet.
 - PR state: PR `#92` merged; unrelated PR `#71` remains open; hotfix PR not yet opened.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
