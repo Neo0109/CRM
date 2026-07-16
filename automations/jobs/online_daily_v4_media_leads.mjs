@@ -5,6 +5,7 @@ import {
   isDomesticMediaRescueSignal,
   isExpandedDomesticProductSignal,
   isGenericMediaProjectName,
+  isChinaJointMediaSourcingSignal,
   isProductSourcingSignal,
   isUnusableMediaProjectName,
   mediaSignalToLead
@@ -16,7 +17,6 @@ import { classifyMediaDisposition } from "./online_daily_v4_media_rules.mjs";
 
 export async function buildMediaLeadCandidates(items, existingIndex, context = {}) {
   const diagnostics = context.diagnostics ?? {};
-  const sourceCount = new Map();
   const dedupedItems = dedupeMediaSignals(items);
   for (const item of dedupedItems) {
     const disposition = classifyMediaDisposition(item).kind;
@@ -24,7 +24,7 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
     if (disposition === "reject") diagnostics.media_rejected = (diagnostics.media_rejected ?? 0) + 1;
   }
 
-  const strictSourceItems = dedupedItems.filter(isProductSourcingSignal);
+  const strictSourceItems = dedupedItems.filter((item) => isProductSourcingSignal(item) || isChinaJointMediaSourcingSignal(item));
   const strictLeadCandidates = strictSourceItems
     .map((item) => mediaSignalToLead(item, "strict", context))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
@@ -78,7 +78,7 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
   }
 
   finalizeSteamEvidenceAccounting(diagnostics);
-  const selected = selectBalancedMediaLeadCandidates(verifiedLeads, sourceCount, 30);
+  const selected = [...verifiedLeads];
   recordMediaLeadCandidates(diagnostics, selected);
   return selected;
 }

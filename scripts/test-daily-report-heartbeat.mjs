@@ -210,7 +210,7 @@ function reportJson({ push, watch }) {
 function sourcingCandidatesJson({ qualified }) {
   return json({
     report_date: "2026-07-09",
-    sourcing_rule_version: "sourcing-rules-v7.0-quality-gated-indie",
+    sourcing_rule_version: "sourcing-rules-v7.2-china-joint",
     scan_summary: {
       new_qualified_count: qualified,
       push_pool_count: qualified,

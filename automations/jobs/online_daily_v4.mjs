@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V7.0 indie admission.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V7.2 regular admission.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -29,7 +29,7 @@ import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
 const rootDir = process.cwd();
 const sourcingRuleVersion = RULE_VERSION;
-const generatorName = "online_daily_v4_sourcing_rules_v7_0_quality_gated_indie";
+const generatorName = "online_daily_v4_sourcing_rules_v7_2_china_joint";
 const args = parseArgs(process.argv.slice(2));
 const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
 validateDailyRules(dailyRules);

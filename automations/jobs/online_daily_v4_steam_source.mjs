@@ -13,6 +13,7 @@ import {
   daysUntil,
   decodeHtml,
   firstRealWebsite,
+  hasMatureChinaPartner,
   hasMaturePublisher,
   isDomesticDiscoveryQuery,
   isSteamStoreLike,
@@ -239,6 +240,7 @@ export async function enrichSteamCandidate(candidate, details, context = {}) {
   const strongGameplay = /co-op|multiplayer|strategy|simulation|management|automation|base building|colony|roguelike|deckbuilder|tactical|sandbox|survival|crafting|city builder|card game|tower defense|factory|physics|合作|多人|策略|模拟|经营|自动化|基地|殖民|城市|肉鸽|类Rogue|卡牌|构筑|战棋|沙盒|生存|建造|塔防|工厂|物理/i.test(lower);
   const highVisual = (details?.screenshots?.length ?? 0) >= 4 || (details?.movies?.length ?? 0) > 0;
   const publisherOccupied = hasMaturePublisher(publishers);
+  const chinaPartnerOccupied = hasMatureChinaPartner(publishers);
   const localizedTitleSignal = candidate.domesticLens && !candidate.domesticQuery ? "" : candidate.title;
   const domestic = looksDomestic([localizedTitleSignal, details?.name, ...developers, ...publishers, details?.website].join(" "));
   const strongData = hasStrongPublicData(candidate.reviewText, candidate.source, details);
@@ -284,6 +286,7 @@ export async function enrichSteamCandidate(candidate, details, context = {}) {
     validatedPcHit,
     mobileAdaptationPotential,
     publisherOccupied,
+    chinaPartnerOccupied,
     contactMethods,
     website: details?.website ?? null,
     hasDetails: Boolean(details),

@@ -10,6 +10,7 @@ import {
   INDIE_PRELAUNCH_GATE_IDS,
   INDIE_PRELAUNCH_RULE_VERSION
 } from "../jobs/online_daily_v7_indie_admission.mjs";
+import { REGULAR_SOURCING_RULE_VERSION } from "../jobs/online_daily_v7_2_regular_admission.mjs";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/v7-indie-admission.json", import.meta.url), "utf8"));
 const reportDate = "2026-07-16";
@@ -67,7 +68,7 @@ describe("V7.0 indie_prelaunch admission", () => {
       assert.deepEqual(pools.drop, []);
       assert.ok(pools.push.every((lead) => lead.priority === null));
       assert.ok(pools.push.every((lead) => lead.sourcing_lane === "indie_prelaunch"));
-      assert.ok(pools.push.every((lead) => lead.sourcing_rule_version === INDIE_PRELAUNCH_RULE_VERSION));
+      assert.ok(pools.push.every((lead) => lead.sourcing_rule_version === REGULAR_SOURCING_RULE_VERSION));
       assert.ok(pools.push.every((lead) => lead.sourcing_run_type === "scheduled"));
     });
   }

@@ -3,7 +3,8 @@ import { describe, it } from "node:test";
 import { dedupeByAppId, dedupeMediaSignals, selectDiverseMediaSignals } from "../jobs/online_daily_v4_dedupe.mjs";
 import { buildPools, scoreCandidate } from "../jobs/online_daily_v4_decision.mjs";
 import { validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
-import { evaluateSteamIndiePrelaunchAdmission, INDIE_PRELAUNCH_RULE_VERSION } from "../jobs/online_daily_v7_indie_admission.mjs";
+import { evaluateSteamIndiePrelaunchAdmission } from "../jobs/online_daily_v7_indie_admission.mjs";
+import { REGULAR_SOURCING_RULE_VERSION } from "../jobs/online_daily_v7_2_regular_admission.mjs";
 
 function candidate(overrides = {}) {
   return {
@@ -134,9 +135,9 @@ describe("online daily v4 decision helpers", () => {
     assert.equal(pools.push[0].stage, "new");
     assert.equal(pools.push[0].priority, null);
     assert.equal(pools.push[0].sourcing_lane, "indie_prelaunch");
-    assert.equal(pools.push[0].sourcing_rule_version, INDIE_PRELAUNCH_RULE_VERSION);
+    assert.equal(pools.push[0].sourcing_rule_version, REGULAR_SOURCING_RULE_VERSION);
     assert.equal("_class" in pools.push[0], false);
-    assert.equal("_indieAdmission" in pools.push[1], false);
+    assert.equal("_regularAdmission" in pools.push[1], false);
     assert.equal(pools.push[1].id, "lead_steam_100_2026-07-04");
     assert.equal(pools.push[1].first_seen, "2026-07-04");
   });

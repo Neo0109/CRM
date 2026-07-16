@@ -126,6 +126,44 @@ describe("online daily v4 media enrichment", () => {
     assert.equal(localDiagnostics.media_released_routed_to_drop, 1);
   });
 
+  it("keeps a released high-traction media project when every china_joint commercial gate passes", async () => {
+    const localDiagnostics = diagnostics();
+    const lead = {
+      ...baseLead({ diagnostics: localDiagnostics }),
+      project: "Global Strategy Hit",
+      steam_app_id: "7654321",
+      _officialSourceMatched: true,
+      _mediaItem: {
+        title: "Global Strategy Hit seeks a China publishing partner",
+        summary: "The developer is currently seeking China localization and marketing cooperation.",
+        link: "https://global-strategy.example/current-china-event"
+      }
+    };
+
+    const enriched = await enrichMediaLeadWithSteamContext(lead, {
+      reportDate: "2026-07-05",
+      diagnostics: localDiagnostics,
+      maxOfficialLookups: 0,
+      fetchAppDetailsImpl: async () => ({
+        name: "Global Strategy Hit",
+        developers: ["Global Strategy Studio"],
+        publishers: ["Devolver Digital"],
+        genres: [{ description: "Strategy" }],
+        categories: [{ description: "Single-player" }],
+        recommendations: { total: 5000 },
+        release_date: { coming_soon: false, date: "2026 年 6 月 1 日" },
+        website: "https://global-strategy.example",
+        support_info: {}
+      }),
+      collectContactMethodsImpl: async () => []
+    });
+
+    assert.equal(enriched._mediaDisposition, "lead_candidate");
+    assert.equal(enriched.bucket, "未处理");
+    assert.notEqual(enriched.stage, "rejected");
+    assert.equal(localDiagnostics.media_released_routed_to_drop, 0);
+  });
+
   it("routes near-launch Steam-enriched media leads to drop semantics", async () => {
     const localDiagnostics = diagnostics();
     const lead = {

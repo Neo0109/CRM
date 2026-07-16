@@ -2,7 +2,10 @@ const DEFAULT_OWNER = "Neo0109";
 const DEFAULT_REPO = "CRM";
 const DEFAULT_BRANCH = "main";
 const DEFAULT_WORKFLOW_FILE = "daily-report-watchdog.yml";
-const V7_RULE_VERSION = "sourcing-rules-v7.0-quality-gated-indie";
+const V7_RULE_VERSIONS = new Set([
+  "sourcing-rules-v7.0-quality-gated-indie",
+  "sourcing-rules-v7.2-china-joint",
+]);
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -210,7 +213,7 @@ async function inspectReportHealth({ config, reportPath, sourcingCandidatesPath,
   const recordedPushPoolCount = sourcingCandidates.scan_summary?.push_pool_count ?? null;
   const reasons = [];
   const warnings = [];
-  if (sourcingCandidates.sourcing_rule_version === V7_RULE_VERSION) {
+  if (V7_RULE_VERSIONS.has(sourcingCandidates.sourcing_rule_version)) {
     if (!Number.isInteger(newQualifiedCount)) reasons.push("V7 sourcing candidates missing new_qualified_count");
     if (!Number.isInteger(recordedPushPoolCount)) reasons.push("V7 sourcing candidates missing push_pool_count");
     if (newQualifiedCount !== recordedPushPoolCount) {

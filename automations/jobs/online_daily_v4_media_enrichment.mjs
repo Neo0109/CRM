@@ -9,6 +9,7 @@ import { normalizeDisplayText } from "./online_daily_v4_dedupe.mjs";
 import { collectContactMethods, fetchAppDetails, fetchSteamSearch } from "./online_daily_v4_steam_source.mjs";
 import { fetchOfficialBilibiliCandidates } from "./online_daily_v4_media_sources.mjs";
 import { collectMediaContactMethods, isGenericMediaProjectName, isUnusableMediaProjectName } from "./online_daily_v4_media_entities.mjs";
+import { evaluateMediaChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
 import {
   daysUntil,
   hasMaturePublisher,
@@ -88,7 +89,8 @@ export async function enrichMediaLeadWithSteamContext(lead, context = {}) {
   nextLead.contact = nextLead.contact_methods.map((method) => method.type + ": " + method.value).join("；") || null;
 
   const finalized = finalizeMediaLeadDecisionFields(nextLead, details, context);
-  if (alreadyReleased) {
+  const chinaJointAdmission = evaluateMediaChinaJointAdmission(finalized);
+  if (alreadyReleased && !chinaJointAdmission.qualified) {
     diagnostics.media_released_routed_to_drop = (diagnostics.media_released_routed_to_drop ?? 0) + 1;
     return mediaLeadToDrop(
       finalized,
@@ -96,7 +98,7 @@ export async function enrichMediaLeadWithSteamContext(lead, context = {}) {
       { disposition: "radar_only" }
     );
   }
-  if (publisherOccupied) {
+  if (publisherOccupied && !chinaJointAdmission.qualified) {
     diagnostics.media_publisher_occupied_routed_to_radar = (diagnostics.media_publisher_occupied_routed_to_radar ?? 0) + 1;
     return mediaLeadToDrop(
       finalized,
@@ -104,7 +106,7 @@ export async function enrichMediaLeadWithSteamContext(lead, context = {}) {
       { disposition: "radar_only" }
     );
   }
-  if (releaseTooSoon) {
+  if (releaseTooSoon && !chinaJointAdmission.qualified) {
     return mediaLeadToDrop(
       finalized,
       "B站/媒体线索补到 Steam AppID " + canonicalAppId + " 后交叉验证：距发售不足60天，合作窗口不合适",

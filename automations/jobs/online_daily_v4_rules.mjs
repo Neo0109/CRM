@@ -2,10 +2,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { INDIE_PRELAUNCH_RULE_VERSION } from "./online_daily_v7_indie_admission.mjs";
+import { REGULAR_SOURCING_RULE_VERSION } from "./online_daily_v7_2_regular_admission.mjs";
 
 const GENERATOR_REPO_PATH = "automations/jobs/online_daily_v4.mjs";
 export const QUALITY_QUARANTINE_RULE_VERSION = "sourcing-rules-v6.8-quality-quarantine";
-export const RULE_VERSION = INDIE_PRELAUNCH_RULE_VERSION;
+export const RULE_VERSION = REGULAR_SOURCING_RULE_VERSION;
 const ACTIVE_RULES_DOC = "docs/SOURCING_RULES_CURRENT.md";
 
 export function isQualityQuarantineRule(ruleVersion) {
@@ -13,7 +14,9 @@ export function isQualityQuarantineRule(ruleVersion) {
 }
 
 export function isLeadCountHealthEnabled(ruleVersion) {
-  return !isQualityQuarantineRule(ruleVersion) && ruleVersion !== INDIE_PRELAUNCH_RULE_VERSION;
+  return !isQualityQuarantineRule(ruleVersion)
+    && ruleVersion !== INDIE_PRELAUNCH_RULE_VERSION
+    && ruleVersion !== REGULAR_SOURCING_RULE_VERSION;
 }
 
 export function quarantineDailyLeadPools(pools, ruleVersion) {

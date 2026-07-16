@@ -10,6 +10,7 @@ function lead(overrides = {}) {
     bucket: "未处理",
     stage: "new",
     priority: "P2",
+    sourcing_lane: "indie_prelaunch",
     links: ["https://www.bilibili.com/video/BVdemo/"],
     contact_methods: [],
     gameplay: "Strategy",
@@ -40,7 +41,7 @@ describe("online daily v4 report builders", () => {
 
     assert.equal(report.report_date, "2026-07-04");
     assert.match(report.summary, /扫描 Steam 候选 5 条、富化 4 条/);
-    assert.match(report.summary, /国内媒体\/B站提取产品线索 2 条；B站探头候选 0 条、最终 0 条、官方源命中 1 条/);
+    assert.match(report.summary, /媒体\/B站提取产品线索 2 条；B站探头候选 0 条、最终 0 条、官方源命中 1 条/);
     assert.equal(report.push_pool, pools.push);
     assert.equal(report.watch_pool, pools.watch);
     assert.equal(report.drop_pool, pools.drop);
@@ -70,7 +71,7 @@ describe("online daily v4 report builders", () => {
     });
 
     assert.equal(report.report_date, "2026-07-05");
-    assert.match(report.summary, /Sourcing V7\.0 严格准入/);
+    assert.match(report.summary, /Sourcing V7\.2 严格准入/);
     assert.match(report.summary, /B站探头候选 12 条、最终 3 条、官方源命中 2 条/);
     assert.equal(report.push_pool[0].priority_reason, "保持人工可读");
     assert.equal(report.push_pool[0].notes, null);

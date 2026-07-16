@@ -1,0 +1,197 @@
+{
+  "report_date": "2026-07-16",
+  "china_joint_base": {
+    "project": "Qualified China Joint",
+    "steam_app_id": "9700001",
+    "dedupe_key": "steam:9700001",
+    "recommendation_count": 5000,
+    "review_rating": "positive",
+    "verified_major_title_records": [],
+    "current_official_product_events": [],
+    "china_opportunities": [
+      {
+        "type": "china_publishing",
+        "value": "The studio is currently seeking a China publishing partner.",
+        "url": "https://qualified-joint.example/china-publishing",
+        "current": true
+      }
+    ],
+    "china_opportunity_state": "present",
+    "china_partner_occupancy": "clear"
+  },
+  "traction_boundaries": [
+    {
+      "name": "5000 recommendations",
+      "patch": {
+        "recommendation_count": 5000,
+        "review_rating": "mixed"
+      },
+      "qualified": true
+    },
+    {
+      "name": "4999 recommendations without qualifying rating",
+      "patch": {
+        "recommendation_count": 4999,
+        "review_rating": "positive"
+      },
+      "qualified": false
+    },
+    {
+      "name": "1500 recommendations and Very Positive",
+      "patch": {
+        "recommendation_count": 1500,
+        "review_rating": "very_positive"
+      },
+      "qualified": true
+    },
+    {
+      "name": "1500 recommendations and Overwhelmingly Positive",
+      "patch": {
+        "recommendation_count": 1500,
+        "review_rating": "overwhelmingly_positive"
+      },
+      "qualified": true
+    },
+    {
+      "name": "1499 recommendations and Overwhelmingly Positive",
+      "patch": {
+        "recommendation_count": 1499,
+        "review_rating": "overwhelmingly_positive"
+      },
+      "qualified": false
+    },
+    {
+      "name": "1500 recommendations and ordinary Positive",
+      "patch": {
+        "recommendation_count": 1500,
+        "review_rating": "positive"
+      },
+      "qualified": false
+    },
+    {
+      "name": "verified major-title record and current official event",
+      "patch": {
+        "recommendation_count": 0,
+        "review_rating": "unknown",
+        "verified_major_title_records": [
+          {
+            "title": "Verified Major Hit",
+            "url": "https://verified-studio.example/major-hit",
+            "verified": true
+          }
+        ],
+        "current_official_product_events": [
+          {
+            "type": "official_game_announcement",
+            "value": "Official gameplay reveal",
+            "url": "https://verified-studio.example/current-game-event",
+            "official": true,
+            "current": true
+          }
+        ]
+      },
+      "qualified": true
+    },
+    {
+      "name": "major-title record without current official event",
+      "patch": {
+        "recommendation_count": 0,
+        "review_rating": "unknown",
+        "verified_major_title_records": [
+          {
+            "title": "Verified Major Hit",
+            "url": "https://verified-studio.example/major-hit",
+            "verified": true
+          }
+        ],
+        "current_official_product_events": []
+      },
+      "qualified": false
+    },
+    {
+      "name": "current official event without verified major-title record",
+      "patch": {
+        "recommendation_count": 0,
+        "review_rating": "unknown",
+        "verified_major_title_records": [],
+        "current_official_product_events": [
+          {
+            "type": "official_game_announcement",
+            "value": "Official gameplay reveal",
+            "url": "https://verified-studio.example/current-game-event",
+            "official": true,
+            "current": true
+          }
+        ]
+      },
+      "qualified": false
+    }
+  ],
+  "same_day": {
+    "indie_projects": [
+      { "project": "Qualified Indie 1", "steam_app_id": "9710001" },
+      { "project": "Qualified Indie 2", "steam_app_id": "9710002" },
+      { "project": "Qualified Indie 3", "steam_app_id": "9710003" },
+      { "project": "Qualified Indie 4", "steam_app_id": "9710004" },
+      { "project": "Qualified Indie 5", "steam_app_id": "9710005" }
+    ],
+    "china_joint_projects": [
+      {
+        "project": "Joint 5000",
+        "steam_app_id": "9720001",
+        "recommendation_count": 5000,
+        "review_rating": "mixed"
+      },
+      {
+        "project": "Joint Very Positive",
+        "steam_app_id": "9720002",
+        "recommendation_count": 1500,
+        "review_rating": "very_positive"
+      },
+      {
+        "project": "Joint Overwhelmingly Positive",
+        "steam_app_id": "9720003",
+        "recommendation_count": 1500,
+        "review_rating": "overwhelmingly_positive"
+      },
+      {
+        "project": "Joint Proven Team Event",
+        "steam_app_id": "9720004",
+        "recommendation_count": 0,
+        "review_rating": "unknown",
+        "verified_major_title_records": [
+          {
+            "title": "Verified Major Hit",
+            "url": "https://joint-team.example/major-hit",
+            "verified": true
+          }
+        ],
+        "current_official_product_events": [
+          {
+            "type": "official_game_announcement",
+            "value": "Current official product reveal",
+            "url": "https://joint-team.example/current-event",
+            "official": true,
+            "current": true
+          }
+        ]
+      }
+    ]
+  },
+  "excluded_projects": [
+    {
+      "project": "No Current China Need",
+      "steam_app_id": "9730001",
+      "china_opportunities": [],
+      "china_opportunity_state": "absent",
+      "china_partner_occupancy": "clear",
+      "expected_gate": "current_china_opportunity"
+    },
+    {
+      "project": "Mature China Partner Occupied",
+      "steam_app_id": "9730002",
+      "china_partner_occupancy": "occupied",
+      "expected_gate": "mature_china_partner_clear"
+    }
+  ]
+}
