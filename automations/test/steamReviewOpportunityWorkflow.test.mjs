@@ -48,12 +48,12 @@ describe("Steam review opportunity workflow contract", () => {
   it("keeps the sync shell parseable and retries an exact failed artifact without another scan", () => {
     const workflow = readRepoFile(".github/workflows/steam-review-opportunities.yml");
 
-    assert.match(workflow, /retry_from_slot:/);
-    assert.match(workflow, /steam_review_opportunity_delivery\.mjs retry/);
-    assert.match(workflow, /--failedSlot="\$RETRY_FROM_SLOT"/);
     const syncScript = readWorkflowRunScript(workflow, "Sync eligible opportunities with create-only import");
     const syntax = spawnSync("bash", ["-n"], { input: syncScript, encoding: "utf8" });
     assert.equal(syntax.status, 0, syntax.stderr);
+    assert.match(workflow, /retry_from_slot:/);
+    assert.match(workflow, /steam_review_opportunity_delivery\.mjs retry/);
+    assert.match(workflow, /--failedSlot="\$RETRY_FROM_SLOT"/);
   });
 
   it("commits separate audit/receipt paths and enforces the strict success receipt", () => {
