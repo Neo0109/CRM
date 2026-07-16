@@ -119,6 +119,8 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Strict `scan_complete`, no-sync-on-incomplete, create-only, `updated=0`, rule thresholds, both Daily workflows, and PR 7+ remain unchanged.
   - Machine rule and human rule/delivery entrypoints now record the active rate-limit policy.
 
+- Implementation-head Build `29473780474` ran 28 Steam opportunity tests: 27 passed and only the pre-hotfix artifact fixture expected `store_details_confirmed=4`. The new source correctly reports 3 because the non-EA `china_heat_ops` fixture no longer performs an irrelevant AppDetails lookup. Updated that exact expected count; no source behavior or success gate changed.
+
 ## Remaining
 
 - Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
@@ -130,7 +132,7 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
 
 ## Next Action
 
-Wait for the Build at the implementation head, inspect all test/check logs, and fix only PR 6 hotfix regressions until the focused suite is green. Then run the complete repository verification contract before marking PR #93 ready.
+Wait for the Build at the fixture-update head and require the complete focused suite to pass. Then run the complete repository verification contract before marking PR #93 ready.
 
 ## Git Status
 

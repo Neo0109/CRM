@@ -42,7 +42,7 @@ describe("Steam review opportunity audit artifact", () => {
       prefilter_matches: 4,
       records_total: 4,
       official_reviews_confirmed: 4,
-      store_details_confirmed: 4,
+      store_details_confirmed: 3,
       qualified: 3,
       not_qualified: 1,
       needs_evidence: 0,
