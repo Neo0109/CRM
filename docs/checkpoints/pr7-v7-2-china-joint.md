@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alongside `indie_prelaunch`, with locked evidence and commercial gates, then deliver and accept it through an isolated PR.
+Completed: PLAN.md PR 7 is merged, deployed, and accepted. The unbounded `china_joint` lane now runs alongside `indie_prelaunch` with the locked evidence and commercial gates; stop before PR 8.
 
 ## Overall Progress Checkpoint
 
@@ -76,20 +76,26 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
   - Cloudflare Pages preview passed;
   - GitHub reported the PR mergeable, with zero submitted reviews and zero unresolved review threads;
   - the remote 30-file diff is limited to PR 7 regular-lane source/decision/report integration, V7.2 machine and human rules, fixtures/tests, heartbeat compatibility, and this checkpoint; the independent PR 6 workflow, UI, API, database, and production data are absent.
+- PR 7 delivery and production acceptance completed:
+  - the final PR head `fe06ba24f2ea46093434f637a3d6a41371debdb4` passed push Build `29509896851`, pull-request Build `29509898724`, and Cloudflare Pages preview, then PR `#98` was squash-merged as `2a2ce87455975804257b2984b933396fff9d7027`;
+  - post-merge Build `29510066046` and Cloudflare Pages deployment `c02ec4d9-cf35-476c-9e88-2dcb62594824` both succeeded for exact main SHA `2a2ce87455975804257b2984b933396fff9d7027`;
+  - production `https://crm-pages.pages.dev/api/health` returned HTTP 200 with `ok=true` and `storage=supabase`;
+  - the final PR head and merged `main` have the identical tree `daa0c687892a7f1b60307a9e845c031cdb9b1dc4`, so the completed Daily V4 155/155, full repository verification, schema/contract checks, and typechecks cover the exact merged code and fixtures;
+  - remote `main` exposes machine rule `sourcing-rules-v7.2-china-joint`, canonical document `docs/SOURCING_RULES_V7_2.md`, all three locked data paths, the current-China-opportunity and mature-China-partner-clear gates, and null formal min/max limits;
+  - the remote fixed acceptance fixture contains exactly 5 qualified indie projects plus 4 qualified joint projects, while the focused contract proves all 9 are formal without truncation and separately excludes the no-current-China-need and occupied-China-partner cases;
+  - no Daily workflow was dispatched and no production data, database, UI, independent PR 6 workflow, credential, or permission was changed during PR 7 acceptance.
+- PR 7 is formally accepted. Do not enter PR 8.
 
 ## Remaining
 
-- Push this pre-merge checkpoint evidence, wait for the resulting final-head checks, then squash merge PR `#98`.
-- Verify post-merge Build, Cloudflare deployment, production `/api/health`, and PR 7 online acceptance; record final evidence and stop before PR 8.
+- None for PR 7. PR 8 remains explicitly out of scope.
 
 ## Next Action
 
-Push this pre-merge checkpoint evidence, wait for the final-head checks, then squash merge PR `#98` without entering PR 8.
+Stop. Do not start PR 8.
 
 ## Git Status
 
-- Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
-- Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
-- Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`, green decision `7019ed2`, and V7.2 activation `1701285`.
-- Validated assertion/checkpoint closeout commit: `ec76983`; PR `#98` is open and ready against `main`.
-- Delivery-state commit: `c5bd228`; expected uncommitted change before the pre-merge evidence commit is this checkpoint only.
+- Acceptance branch: `codex/pr7-final-acceptance`, based on merged `origin/main` at `2a2ce87455975804257b2984b933396fff9d7027`.
+- Acceptance worktree: `/Users/neo/Documents/GitHub/CRM-pr7-final-acceptance`.
+- Expected change: this final PR 7 checkpoint only; no code, workflow, rule, fixture, data, UI, API, or database file changes.
