@@ -85,18 +85,32 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Both existing Daily workflow files remain byte-unchanged from `origin/main`.
   - `PLAN.md` remains byte-identical to `/Users/neo/Downloads/PLAN.md`; both SHA-256 values remain `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
 
+- PR `#92` merge and post-merge production acceptance attempt completed:
+  - Squash merge succeeded at `eaff172d947f47bb23b454653e9a05e26c338957` on 2026-07-16.
+  - GitHub Build run `29471272866` completed successfully for the merge SHA.
+  - Cloudflare Pages deployment completed successfully for the merge SHA and for the later receipt-bearing main SHA.
+  - Production `https://crm-pages.pages.dev/api/health` returned HTTP 200 with `ok=true`, `storage=supabase`, and `crmUsersJsonStatus=valid`.
+  - The first production backfill was dispatched as run `29471392256` for `2026-07-16`, slot `pr6-acceptance`.
+  - The strict gate correctly failed at the generation/scan layer: Steam catalog returned `429 Too Many Requests` after 30 pages, so only 3,000 of the reported 164,918 catalog entries were seen and `scan_complete=false`.
+  - The committed receipt is `data/steam_review_opportunity_runs/2026-07-16-pr6-acceptance.json` on main `08ffd68c5143e952ce40c8c43dca3cbc91e9d2be`; it records `status=scan_incomplete`, `sync_response.synced=false`, `created_count=0`, and `updated_count=0`.
+  - The create-only CRM sync step was skipped, so this run made no Lead writes and existing Lead fields were not changed.
+  - PR 6 production acceptance is not complete because the required `scan_complete=true`, `status=success`, and `sync_response.synced=true` receipt does not yet exist.
+
+
 ## Remaining
 
-- Commit and push the fully verified review closure as one coherent change.
-- Wait for the new PR `#92` checks and resolve only the two addressed review threads after all checks pass. Do not merge or squash in this task.
+- PR 6 production acceptance remains incomplete at the catalog scan layer.
+- A narrow PR 6 recovery task must decide and implement a production-safe Steam catalog 429 pacing/backoff strategy without weakening the full-scan gate, changing create-only semantics, modifying existing Daily workflows, or entering PR 7.
+- After that approved recovery is delivered, run one backfill and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`.
 
 ## Next Action
 
-Commit the nine-file review closure and push `codex/pr6-v7-1-ea-cn-heat`, then wait for every new PR `#92` check before resolving the two addressed threads.
+Stop and wait for explicit approval of the narrow PR 6 catalog-rate-limit recovery task. Do not rerun the unchanged workflow and do not enter PR 7.
 
 ## Git Status
 
-- Branch: `codex/pr6-v7-1-ea-cn-heat`
-- Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Remote PR head: `9a2964ceb157c37b12e4ebaae45f4693a1a7ff00`.
-- Worktree: nine PR 6 implementation, rule, schema, test, workflow, documentation, and checkpoint files are uncommitted and ready to commit; no file outside the dedicated PR 6 worktree is in scope. Focused tests and two complete `verify:all` runs pass, while existing remote checks still cover only the prior head. `PLAN.md` remains unchanged.
+- PR `#92`: MERGED.
+- Squash merge SHA: `eaff172d947f47bb23b454653e9a05e26c338957`.
+- Current remote `main`: `08ffd68c5143e952ce40c8c43dca3cbc91e9d2be` after the scan artifact and failed strict receipt commits.
+- PR 6 branch implementation head before this checkpoint-only update: `b3de404fccab33ab4d271ff119c33ce8910eefb1`.
+- Dedicated PR 6 worktree was clean before the online checkpoint update; no implementation file was modified in this acceptance task.
