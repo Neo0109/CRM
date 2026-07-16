@@ -265,6 +265,25 @@ export type SourcingLearningSignalStats = {
   negative_rate: number;
 };
 
+export type SourcingPrecisionCohortKey = "regular" | "ea_mobile_high_traction" | "china_heat_ops" | "initial_backfill" | "unclassified";
+export type SourcingPrecisionStatus = "provisional" | "meets_target" | "below_target" | "observational";
+export type SourcingPrecisionAction = "collect_more_resolved_samples" | "monitor" | "tighten_misclassification_rules" | "observe_separately";
+
+export type SourcingPrecisionStats = {
+  sample_count: number;
+  resolved_samples: number;
+  excluded_samples: number;
+  positive: number;
+  negative: number;
+  precision: number | null;
+  target: number | null;
+  provisional: boolean;
+  target_met: boolean | null;
+  status: SourcingPrecisionStatus;
+  recommended_action: SourcingPrecisionAction;
+  automatic_rule_changes_allowed: false;
+};
+
 export type SourcingLearningReport = {
   generated_at: string;
   cohort: {
@@ -288,6 +307,27 @@ export type SourcingLearningReport = {
     by_region: Record<string, SourcingLearningSignalStats>;
     by_gameplay: Record<string, SourcingLearningSignalStats>;
     by_progress: Record<string, SourcingLearningSignalStats>;
+  };
+  precision: {
+    target: number;
+    minimum_resolved_samples: number;
+    denominator: {
+      included_outcomes: ["positive", "negative"];
+      excluded_outcomes: ["intermediate", "pending"];
+      excluded_states: ["未处理", "观察中", "未完成评测"];
+    };
+    cohorts: Record<SourcingPrecisionCohortKey, SourcingPrecisionStats>;
+    regular_by_rule_version: Record<string, SourcingPrecisionStats>;
+    guardrails: {
+      automatic_rule_changes_allowed: false;
+      below_target_action: "tighten_misclassification_rules";
+      forbidden_quantity_controls: [
+        "daily_recommendation_cap",
+        "minimum_recommendation_count",
+        "qualified_lead_truncation",
+        "backfill"
+      ];
+    };
   };
   recommendations_ready: boolean;
   learning_note: string;
