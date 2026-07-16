@@ -1,5 +1,4 @@
 import { fetchJson, fetchText } from "./online_daily_v4_network.mjs";
-import { fetchAppDetails } from "./online_daily_v4_steam_source.mjs";
 import { cleanExtractedText, decodeHtml, sleep, stripTags } from "./online_daily_v4_source_utils.mjs";
 
 export const STEAM_REVIEW_SOURCE_VERSION = "steam-schinese-reviews-v1";
@@ -25,6 +24,7 @@ export function parseSteamCatalogPage(value, options = {}) {
 
 export async function scanSteamPcCatalog(options = {}) {
   const fetchTextImpl = options.fetchTextImpl ?? fetchText;
+  const requestScheduler = options.requestScheduler ?? createSteamRequestScheduler(options);
   const pageSize = boundedInteger(options.pageSize, 50, 1, 100);
   const maxPages = options.maxPages === undefined
     ? Number.POSITIVE_INFINITY
@@ -41,10 +41,17 @@ export async function scanSteamPcCatalog(options = {}) {
     const url = buildSteamCatalogUrl({ start, count: pageSize });
     let parsed;
     try {
-      parsed = parseSteamCatalogPage(await fetchTextImpl(url, {
-        timeoutMs: options.timeoutMs ?? 15000,
-        accept: "application/json,text/html;q=0.9,*/*;q=0.8"
-      }), { start });
+      parsed = parseSteamCatalogPage(await requestSteamWithRetry(
+        () => fetchTextImpl(url, {
+          timeoutMs: options.timeoutMs ?? 15000,
+          accept: "application/json,text/html;q=0.9,*/*;q=0.8"
+        }),
+        {
+          ...options,
+          requestScheduler,
+          requestLabel: `catalog start=${start}`
+        }
+      ), { start });
     } catch (error) {
       sourceFailures.push(sourceFailure("catalog", null, error));
       break;
@@ -92,25 +99,47 @@ export function prefilterSteamReviewCandidates(candidates) {
 
 export async function fetchSteamReviewSummary(appId, context = {}) {
   const fetchJsonImpl = context.fetchJsonImpl ?? fetchJson;
-  const sleepImpl = context.sleepImpl ?? sleep;
   const logger = context.logger ?? console;
+  const requestScheduler = context.requestScheduler ?? createSteamRequestScheduler(context);
   const url = buildSteamReviewUrl(appId);
 
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    try {
-      const payload = await fetchJsonImpl(url);
-      return normalizeSteamReviewSummary(payload);
-    } catch (error) {
-      if (attempt < 3 && /429|too many requests/i.test(String(error?.message))) {
-        await sleepImpl(2000 * attempt);
-        continue;
+  try {
+    const payload = await requestSteamWithRetry(
+      () => fetchJsonImpl(url),
+      {
+        ...context,
+        requestScheduler,
+        requestLabel: `reviews appid=${appId}`
       }
-      logger.warn?.(`Steam simplified-Chinese review summary failed for ${appId}: ${error.message}`);
-      return unknownReviewSummary();
-    }
+    );
+    return normalizeSteamReviewSummary(payload);
+  } catch (error) {
+    logger.warn?.(`Steam simplified-Chinese review summary failed for ${appId}: ${error.message}`);
+    return unknownReviewSummary();
   }
+}
 
-  return unknownReviewSummary();
+async function fetchSteamOpportunityAppDetails(appId, context = {}) {
+  const fetchJsonImpl = context.fetchJsonImpl ?? fetchJson;
+  const logger = context.logger ?? console;
+  const requestScheduler = context.requestScheduler ?? createSteamRequestScheduler(context);
+  const url = `https://store.steampowered.com/api/appdetails?appids=${encodeURIComponent(String(appId))}&cc=us&l=english`;
+
+  try {
+    const payload = await requestSteamWithRetry(
+      () => fetchJsonImpl(url),
+      {
+        ...context,
+        requestScheduler,
+        requestLabel: `appdetails appid=${appId}`
+      }
+    );
+    const entry = payload?.[String(appId)];
+    return entry?.success && entry.data?.type === "game" ? entry.data : null;
+  } catch (error) {
+    logger.warn?.(`AppDetails failed for ${appId}: ${error.message}`);
+    return null;
+  }
 }
 
 export function normalizeSteamReviewSummary(payload) {
@@ -219,15 +248,15 @@ export function evaluateSteamReviewOpportunity({
 }
 
 export async function collectSteamReviewOpportunities(options = {}) {
-  const scanCatalogImpl = options.scanCatalogImpl ?? (() => scanSteamPcCatalog(options));
+  const requestScheduler = options.requestScheduler ?? createSteamRequestScheduler(options);
+  const sourceOptions = { ...options, requestScheduler };
+  const scanCatalogImpl = options.scanCatalogImpl ?? (() => scanSteamPcCatalog(sourceOptions));
   const fetchReviewSummaryImpl = options.fetchReviewSummaryImpl
-    ?? ((appId) => fetchSteamReviewSummary(appId, options));
+    ?? ((appId) => fetchSteamReviewSummary(appId, sourceOptions));
   const fetchAppDetailsImpl = options.fetchAppDetailsImpl
-    ?? ((appId) => fetchAppDetails(appId, options));
-  const sleepImpl = options.sleepImpl ?? sleep;
-  const requestDelayMs = Math.max(0, Number(options.requestDelayMs ?? 0));
+    ?? ((appId) => fetchSteamOpportunityAppDetails(appId, sourceOptions));
   const concurrency = boundedInteger(options.concurrency, 2, 1, 10);
-  const scan = await scanCatalogImpl(options);
+  const scan = await scanCatalogImpl(sourceOptions);
   const candidates = prefilterSteamReviewCandidates(scan.candidates ?? []);
   const opportunities = [];
   const sourceFailures = [...(scan.summary?.sourceFailures ?? [])];
@@ -235,20 +264,23 @@ export async function collectSteamReviewOpportunities(options = {}) {
   for (let index = 0; index < candidates.length; index += concurrency) {
     const chunk = candidates.slice(index, index + concurrency);
     const records = await Promise.all(chunk.map(async (candidate) => {
+      const storeEvidenceRequired = candidate.earlyAccessTag === true;
       const [reviewResult, detailsResult] = await Promise.all([
         safeSourceCall("reviews", candidate.appId, () => fetchReviewSummaryImpl(candidate.appId)),
-        safeSourceCall("appdetails", candidate.appId, () => fetchAppDetailsImpl(candidate.appId))
+        storeEvidenceRequired
+          ? safeSourceCall("appdetails", candidate.appId, () => fetchAppDetailsImpl(candidate.appId))
+          : Promise.resolve({ value: null, failure: null })
       ]);
       if (reviewResult.failure) sourceFailures.push(reviewResult.failure);
-      if (detailsResult.failure) sourceFailures.push(detailsResult.failure);
+      if (storeEvidenceRequired && detailsResult.failure) sourceFailures.push(detailsResult.failure);
       const reviewSummary = reviewResult.value ?? unknownReviewSummary();
       if (!reviewResult.failure && reviewSummary.status !== "available") {
         sourceFailures.push(sourceFailure("reviews", candidate.appId, "official review summary unavailable"));
       }
-      if (!detailsResult.failure && !detailsResult.value) {
+      if (storeEvidenceRequired && !detailsResult.failure && !detailsResult.value) {
         sourceFailures.push(sourceFailure("appdetails", candidate.appId, "official store details unavailable"));
       }
-      const storeEarlyAccess = officialStoreEarlyAccess(detailsResult.value);
+      const storeEarlyAccess = storeEvidenceRequired ? officialStoreEarlyAccess(detailsResult.value) : null;
       const evaluation = evaluateSteamReviewOpportunity({
         reviewSummary,
         catalogEarlyAccess: candidate.earlyAccessTag,
@@ -274,7 +306,6 @@ export async function collectSteamReviewOpportunities(options = {}) {
       };
     }));
     opportunities.push(...records);
-    if (requestDelayMs > 0 && index + concurrency < candidates.length) await sleepImpl(requestDelayMs);
   }
 
   const decisionCount = (decision) => opportunities.filter((item) => item.decision === decision).length;
@@ -382,6 +413,69 @@ function unknownReviewSummary() {
   };
 }
 
+export function createSteamRequestScheduler(options = {}) {
+  const sleepImpl = options.sleepImpl ?? sleep;
+  const minimumDelayMs = boundedInteger(options.requestDelayMs, 0, 0, 60000);
+  let tail = Promise.resolve();
+  let hasRun = false;
+
+  return {
+    async run(callback) {
+      const previous = tail;
+      let release;
+      tail = new Promise((resolve) => {
+        release = resolve;
+      });
+      await previous;
+      try {
+        if (hasRun && minimumDelayMs > 0) await sleepImpl(minimumDelayMs);
+        hasRun = true;
+        return await callback();
+      } finally {
+        release();
+      }
+    }
+  };
+}
+
+export async function requestSteamWithRetry(callback, options = {}) {
+  const requestScheduler = options.requestScheduler ?? createSteamRequestScheduler(options);
+  const sleepImpl = options.sleepImpl ?? sleep;
+  const logger = options.logger ?? console;
+  const maxAttempts = boundedInteger(options.retryMaxAttempts, 10, 1, 12);
+  const requestLabel = String(options.requestLabel ?? "Steam request");
+
+  return requestScheduler.run(async () => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        return await callback(attempt);
+      } catch (error) {
+        if (!isSteamRateLimitError(error) || attempt >= maxAttempts) throw error;
+        const delayMs = steamRetryDelayMs(error, attempt, options);
+        logger.warn?.(`Steam 429 for ${requestLabel}; retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxAttempts})`);
+        await sleepImpl(delayMs);
+      }
+    }
+    throw new Error(`${requestLabel} exhausted retries`);
+  });
+}
+
+export function steamRetryDelayMs(error, attempt, options = {}) {
+  const baseDelayMs = boundedInteger(options.retryBaseDelayMs, 2000, 1, 60000);
+  const maxDelayMs = boundedInteger(options.retryMaxDelayMs, 60000, baseDelayMs, 300000);
+  const retryAfterMs = Math.max(0, Number(error?.retryAfterMs ?? 0));
+  const exponentialDelayMs = Math.min(maxDelayMs, baseDelayMs * (2 ** Math.max(0, Number(attempt) - 1)));
+  const delayFloorMs = Math.max(retryAfterMs, exponentialDelayMs);
+  const jitterRatio = boundedNumber(options.retryJitterRatio, 0.25, 0, 1);
+  const randomImpl = options.randomImpl ?? Math.random;
+  const randomValue = boundedNumber(randomImpl(), 0, 0, 1);
+  return Math.round(delayFloorMs + (delayFloorMs * jitterRatio * randomValue));
+}
+
+export function isSteamRateLimitError(error) {
+  return Number(error?.status) === 429 || /(^|\D)429(\D|$)|too many requests/i.test(String(error?.message ?? error));
+}
+
 async function safeSourceCall(stage, appId, callback) {
   try {
     return { value: await callback(), failure: null };
@@ -408,6 +502,12 @@ function boundedInteger(value, fallback, min, max) {
   const number = Number(value ?? fallback);
   if (!Number.isFinite(number)) return fallback;
   return Math.min(max, Math.max(min, Math.trunc(number)));
+}
+
+function boundedNumber(value, fallback, min, max) {
+  const number = Number(value ?? fallback);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, number));
 }
 
 function roundRate(value) {

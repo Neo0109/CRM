@@ -334,7 +334,7 @@ function normalizeCollectOptions(value = {}) {
   return {
     pageSize: boundedInteger(value?.pageSize, 100, 1, 100),
     concurrency: boundedInteger(value?.concurrency, 2, 1, 10),
-    requestDelayMs: boundedInteger(value?.requestDelayMs, 250, 0, 10000)
+    requestDelayMs: boundedInteger(value?.requestDelayMs, 1000, 0, 10000)
   };
 }
 

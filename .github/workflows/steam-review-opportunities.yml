@@ -35,7 +35,7 @@ concurrency:
 jobs:
   scan-and-sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 360
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -108,7 +108,7 @@ jobs:
             --mode="$REQUESTED_MODE" \
             --pageSize=100 \
             --concurrency=2 \
-            --requestDelayMs=250 2>&1 | tee "$log_file"
+            --requestDelayMs=1000 2>&1 | tee "$log_file"
           status="${PIPESTATUS[0]}"
           set -e
 

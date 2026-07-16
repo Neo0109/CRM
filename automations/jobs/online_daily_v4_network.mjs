@@ -27,7 +27,7 @@ export async function fetchText(url, options = {}) {
       headers.Origin = "https://search.bilibili.com";
     }
     const response = await fetchImpl(url, { signal: controller.signal, headers });
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    if (!response.ok) throw httpStatusError(response);
     return await response.text();
   } catch (error) {
     if (isSteamUrl(url) && shouldUseCurlFallback(error)) {
@@ -38,6 +38,27 @@ export async function fetchText(url, options = {}) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+export function httpStatusError(response, nowMs = Date.now()) {
+  const status = Number(response?.status);
+  const statusText = String(response?.statusText ?? "").trim();
+  const message = [Number.isFinite(status) ? status : null, statusText].filter(Boolean).join(" ") || "HTTP request failed";
+  const error = new Error(message);
+  error.name = "HttpStatusError";
+  if (Number.isFinite(status)) error.status = status;
+  const retryAfterMs = parseRetryAfter(response?.headers?.get?.("retry-after"), nowMs);
+  if (retryAfterMs !== null) error.retryAfterMs = retryAfterMs;
+  return error;
+}
+
+export function parseRetryAfter(value, nowMs = Date.now()) {
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+  const seconds = Number(text);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds * 1000);
+  const timestamp = Date.parse(text);
+  return Number.isFinite(timestamp) ? Math.max(0, timestamp - Number(nowMs)) : null;
 }
 
 export function defaultHeaders(accept) {

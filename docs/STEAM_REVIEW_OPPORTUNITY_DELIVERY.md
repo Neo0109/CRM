@@ -32,6 +32,16 @@ The active Daily entrypoint remains `automations/jobs/online_daily_runner.mjs ->
 
 The production workflow never passes `maxPages`. Every production mode therefore scans until the public catalog reports its end. A bounded local source audit remains incomplete and can never reach CRM sync.
 
+## Steam Rate-Limit Policy
+
+The workflow applies a 1000ms minimum interval across one shared request scheduler for catalog pages, simplified-Chinese review summaries, and required AppDetails lookups. The scheduler serializes request series so concurrent candidate evaluation cannot create request bursts.
+
+HTTP 429 responses preserve the response status and parse `Retry-After` as either seconds or an HTTP date. A rate-limited request pauses the shared scheduler, then retries with the greater of the server cooldown or bounded exponential backoff, plus jitter. The retry budget is ten attempts and the exponential component is capped at 60 seconds; a longer server `Retry-After` is never shortened.
+
+AppDetails is requested only when the catalog identifies the candidate as Early Access, because store EA confirmation is required only for `ea_mobile_high_traction` (including dual-rule matches). A non-EA catalog candidate may still qualify through `china_heat_ops` from the official simplified-Chinese review summary, without an irrelevant AppDetails request. Any required official evidence that remains unavailable after retries still makes `scan_complete=false`.
+
+The job timeout is 360 minutes. This hotfix does not add bounded batches or continuation state because the rate-limited full scan remains a single strict artifact; if production evidence shows the safe scan cannot finish in that window, continuation must be added without allowing any partial artifact to sync.
+
 ## Selection And Import
 
 Every current artifact record with `decision=qualified` is eligible in initial backfill. There is no minimum, maximum, ranking cutoff, quota, or truncation.

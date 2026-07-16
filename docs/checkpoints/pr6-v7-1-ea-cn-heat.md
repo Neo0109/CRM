@@ -107,6 +107,18 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Workflow contract requires a 360-minute safety window, `concurrency=2`, and a 1000ms source-level minimum request interval.
   - The next Build is expected to fail these new assertions against the unchanged production code; no success claim is recorded until that red result is observed.
 
+- Fixed red evidence recorded before implementation:
+  - Push Build `29473546745` at `f9552ce81ed788cbb617835f5d099cc5d28b9bbd` failed in `Test Steam review opportunity source` with the four intended rate-limit contract failures.
+  - The failures were catalog pacing/retry, review Retry-After/backoff, conditional AppDetails lookup, and workflow timeout/request interval. Earlier frontend, typecheck, CRM core, and unrelated tests in the job passed.
+- Implemented the scoped PR 6 hotfix:
+  - HTTP errors now retain status and parsed `Retry-After` metadata without changing the existing error message or curl-fallback boundary.
+  - PR 6 catalog, review, and required AppDetails calls share one serialized scheduler with a 1000ms minimum interval.
+  - HTTP 429 uses up to ten attempts, honors a longer server cooldown, and otherwise uses 2s-to-60s bounded exponential backoff plus jitter while holding the shared scheduler.
+  - AppDetails is skipped only for non-EA catalog candidates, where store EA evidence cannot affect `ea_mobile_high_traction`; catalog-EA and dual-match candidates still require official store confirmation.
+  - Workflow timeout is 360 minutes. No batch or continuation state was added because the first safe full run will determine whether the longer strict single-artifact window is sufficient.
+  - Strict `scan_complete`, no-sync-on-incomplete, create-only, `updated=0`, rule thresholds, both Daily workflows, and PR 7+ remain unchanged.
+  - Machine rule and human rule/delivery entrypoints now record the active rate-limit policy.
+
 ## Remaining
 
 - Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
@@ -118,12 +130,12 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
 
 ## Next Action
 
-Open the scoped PR 6 hotfix PR at this red-test head, capture the expected failing Build evidence, then implement only the approved rate-limit recovery slice and make the same contracts green.
+Wait for the Build at the implementation head, inspect all test/check logs, and fix only PR 6 hotfix regressions until the focused suite is green. Then run the complete repository verification contract before marking PR #93 ready.
 
 ## Git Status
 
 - Remote branch: `codex/pr6-steam-429-hotfix`.
 - Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
-- Scope at this checkpoint: checkpoint plus fixed regression tests only; no production source or workflow implementation change has been made yet.
-- PR state: PR `#92` merged; unrelated PR `#71` remains open; hotfix PR not yet opened.
+- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only.
+- PR state: PR `#92` merged; draft hotfix PR `#93` is open; unrelated PR `#71` remains open.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
