@@ -194,22 +194,29 @@ Complete only PLAN.md PR 6 production acceptance by reusing the exact completed 
   - Push Build `29495663992` passed at exact head `8117663b965da3eb2cf16d70065fb1bcf2bb0fb9`, including CRM core, frontend and Functions type checks, all fixed Steam review opportunity tests, and frontend build.
   - Complete isolated `npm run verify:all` passed at the same head: frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 147/147, diagnostics, sourcing learning, heartbeat, all three typechecks, contracts, temporary production build, and diff-check. Final `git diff --check` passed and the validation copy had no tracked changes.
   - Both existing Daily workflow files remain untouched; no live Steam, CRM, workflow dispatch, secret, or production-data action occurred during implementation or verification.
+- PR 6 sync recovery delivery and final production acceptance completed:
+  - PR `#96` contained only the PR 6 exact-artifact retry path, sync shell repair, fixed tests, rule/delivery docs, and this checkpoint. Both Daily workflows, thresholds, UI, schema, auth configuration, database, and PR 7+ remained unchanged.
+  - PR `#96` was marked ready and squash-merged as `3311bd9ef3df30984ce3380ba7dd7eddcd2e0bbc` after both Build checks and Cloudflare Pages succeeded with no reviews or unresolved threads and `mergeStateStatus=CLEAN`.
+  - Post-merge Build `29496033831`, Cloudflare Pages deployment, and production `/api/health` all succeeded; production returned HTTP 200, `ok=true`, and `storage=supabase`.
+  - Sync-only recovery run `29496129758` completed successfully in 22 seconds from head `3311bd9e`. Its preparation log names `data/steam_review_opportunity_runs/2026-07-16-pr6-final-acceptance-hotfix.json` as the retry source, `collect_options=null`, and the scan-artifact commit step reported no artifact changes, proving no second Steam scan occurred.
+  - The successful receipt `data/steam_review_opportunity_runs/2026-07-16-pr6-final-acceptance-sync-recovery.json` matches artifact SHA-256 `d96326998d302139c20d24583f64dd44215d4b2446ef43e36a54b016daf7add7` and records `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`.
+  - All 366 import candidates reached the create-only boundary: 362 new Leads were created and 4 existing matches were skipped. `created_count + deduplicated_count = 366`; `updated=0`, every `updated_*` metric is zero, and existing Leads were neither overwritten nor rewritten.
+  - Remote `main=8e4a6da3fe66ba0d6d2c69ebe948f4c964bb3aae` contains the exact complete scan artifact and successful receipt. Production health remained HTTP 200 after sync.
+  - PR 6 is formally accepted. Stop here and do not enter PR 7.
 
 ## Remaining
 
-- Audit the final diff and Daily workflow immutability, open the PR 6 sync-resume hotfix PR, wait for every check, mark ready, and squash-merge when clean.
-- Verify post-merge Build, Cloudflare Pages, and production health, then dispatch one sync-only recovery against the already committed artifact. Do not run another full scan.
-- Require the recovery receipt to prove `scan_complete=true`, `status=success`, `sync_response.synced=true`, `updated_count=0`, and created-plus-deduplicated parity; update this checkpoint and stop before PR 7.
+- None for PR 6. PR 7 remains explicitly out of scope.
 
 ## Next Action
 
-Audit exact remote head `8117663b965da3eb2cf16d70065fb1bcf2bb0fb9`, then open and deliver the PR 6 sync-resume hotfix. Do not dispatch the recovery until merge, deployment, and production health are green.
+Stop. Do not start PR 7.
 
 ## Git Status
 
-- Remote branch: `codex/pr6-sync-resume-hotfix`.
-- Base: remote `main=89fa10122d3e509a4845adaf890ea5ec83f58881`, including the exact complete scan artifact and its pre-HTTP `sync_failed` receipt.
-- Scope: PR 6 exact-artifact sync resume, heredoc syntax repair, fixed tests/docs, and checkpoint only. No new scan, PR 7, Daily workflow, threshold, UI, schema relaxation, auth configuration, or non-create-only CRM behavior.
-- Remote head: `8117663b965da3eb2cf16d70065fb1bcf2bb0fb9`, with focused Build and complete isolated verification green.
-- PR state: PR `#92`, `#93`, `#94`, and `#95` are merged; unrelated PR `#71` remains untouched; sync-resume hotfix PR not yet opened.
+- Remote `main`: `8e4a6da3fe66ba0d6d2c69ebe948f4c964bb3aae`, including the successful final receipt.
+- Completed PRs: `#92`, `#93`, `#94`, `#95`, and `#96`. Unrelated PR `#71` remains untouched.
+- Final scan: run `29488582581`, exact committed artifact with `scan_complete=true`; no second scan was run.
+- Final sync: sync-only run `29496129758`, `status=success`, `sync_response.synced=true`, `updated_count=0`.
+- Scope status: PR 6 accepted; PR 7 not started.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
