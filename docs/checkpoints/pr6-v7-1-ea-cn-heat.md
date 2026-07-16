@@ -121,6 +121,12 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
 
 - Implementation-head Build `29473780474` ran 28 Steam opportunity tests: 27 passed and only the pre-hotfix artifact fixture expected `store_details_confirmed=4`. The new source correctly reports 3 because the non-EA `china_heat_ops` fixture no longer performs an irrelevant AppDetails lookup. Updated that exact expected count; no source behavior or success gate changed.
 
+- Focused hotfix verification is green at `47f1e12a9d4fce6581d3e7c2b657bc6d43bb0d65`:
+  - Push Build `29473861656` succeeded.
+  - PR Build `29473863025` succeeded.
+  - Both runs passed frontend tests, frontend typecheck, Functions typecheck, CRM core tests, all 28 Steam review opportunity tests, and the frontend production build.
+  - Cloudflare Pages preview remained in progress at this checkpoint; it is not treated as complete yet.
+
 ## Remaining
 
 - Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
@@ -132,12 +138,12 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
 
 ## Next Action
 
-Wait for the Build at the fixture-update head and require the complete focused suite to pass. Then run the complete repository verification contract before marking PR #93 ready.
+Run the complete repository verification contract against the exact remote PR #93 head in an isolated disposable validation copy, confirm no tracked output drift, then record the result before marking PR #93 ready.
 
 ## Git Status
 
 - Remote branch: `codex/pr6-steam-429-hotfix`.
 - Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
-- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only.
+- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only. Focused checks are green; full verify is pending.
 - PR state: PR `#92` merged; draft hotfix PR `#93` is open; unrelated PR `#71` remains open.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
