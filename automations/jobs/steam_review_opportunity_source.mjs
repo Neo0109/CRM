@@ -272,16 +272,23 @@ export async function collectSteamReviewOpportunities(options = {}) {
   for (let index = 0; index < candidates.length; index += concurrency) {
     const chunk = candidates.slice(index, index + concurrency);
     const records = await Promise.all(chunk.map(async (candidate) => {
-      const storeEvidenceRequired = candidate.earlyAccessTag === true;
-      const [reviewResult, detailsResult] = await Promise.all([
-        safeSourceCall("reviews", candidate.appId, () => fetchReviewSummaryImpl(candidate.appId)),
-        storeEvidenceRequired
-          ? safeSourceCall("appdetails", candidate.appId, () => fetchAppDetailsImpl(candidate.appId))
-          : Promise.resolve({ value: null, failure: null })
-      ]);
+      const reviewResult = await safeSourceCall(
+        "reviews",
+        candidate.appId,
+        () => fetchReviewSummaryImpl(candidate.appId)
+      );
       if (reviewResult.failure) sourceFailures.push(reviewResult.failure);
-      if (storeEvidenceRequired && detailsResult.failure) sourceFailures.push(detailsResult.failure);
       const reviewSummary = reviewResult.value ?? unknownReviewSummary();
+      const storeEvidenceRequired = candidate.earlyAccessTag === true
+        && evaluateSteamReviewOpportunity({
+          reviewSummary,
+          catalogEarlyAccess: true,
+          storeEarlyAccess: true
+        }).matchedRules.includes("ea_mobile_high_traction");
+      const detailsResult = storeEvidenceRequired
+        ? await safeSourceCall("appdetails", candidate.appId, () => fetchAppDetailsImpl(candidate.appId))
+        : { value: null, failure: null };
+      if (storeEvidenceRequired && detailsResult.failure) sourceFailures.push(detailsResult.failure);
       if (!reviewResult.failure && reviewSummary.status !== "available") {
         sourceFailures.push(sourceFailure("reviews", candidate.appId, "official review summary unavailable"));
       }
