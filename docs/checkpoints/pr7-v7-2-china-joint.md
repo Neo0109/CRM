@@ -59,21 +59,30 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
 - Updated only PR 7-scoped stale assertions for the active version, canonical document, reports, source mapping, and heartbeat fixture.
 - Narrow activation regression passed 62/62 across the new joint fixture, preserved indie contracts, activation, rules, reports, candidate audit, Steam source, media source, and media enrichment.
 - Additional media-lane regression passed 13/13, including global China-opportunity discovery and released high-traction joint qualification.
+- Resumed the interrupted PR 7 delivery from the isolated worktree without reimplementing or refactoring the completed V7.2 rule chain:
+  - confirmed `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint` on `codex/pr7-v7-2-china-joint` at `1701285` with `origin/main` still `99697feb3ba7b11d5af1265884bd42869845870c`;
+  - confirmed the only uncommitted files were two PR 7-scoped stale Daily V4 assertions for the active regular rule version/private admission field and V7.2 documentation/report copy;
+  - left the unrelated modified `codex/sourcing-rules-vnext` main checkout and open PR `#71` untouched;
+  - confirmed there were no queued or in-progress Actions before final validation.
+- Completed the full PR 7 local validation contract:
+  - `npm run test:daily-v4` passed 155/155;
+  - `npm run validate:daily -- --date=2026-07-15` passed the standalone Daily schema/contract check with no warnings;
+  - frontend, backend, and Functions typechecks all passed;
+  - `npm run verify:all` passed all repository tests, diagnostics, typechecks, sourcing/Daily contracts, temporary production frontend build, and its integrated diff check;
+  - standalone `git diff --check` passed.
 
 ## Remaining
 
-- Run focused tests and update this checkpoint at each verifiable step.
-- Run Daily V4, schema/contract, typecheck, `npm run verify:all`, and `git diff --check`.
 - Commit, push, open PR, wait for checks/reviews/mergeability, and squash merge.
 - Verify post-merge Build, Cloudflare deployment, production `/api/health`, and PR 7 online acceptance; record final evidence and stop before PR 8.
 
 ## Next Action
 
-Commit the V7.2 activation slice, then run the full focused Daily V4 suite and repository-required schema/contract/type checks before `verify:all`.
+Commit the two validated stale-assertion fixes plus this checkpoint, push the complete PR 7 branch, and open the ready PR against `main`.
 
 ## Git Status
 
 - Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
-- Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`, green decision `7019ed2`; the activation step is pending commit.
-- Expected change before the next commit: regular runtime/source activation, machine and human V7.2 rules, scoped contract/report/heartbeat assertions, and this checkpoint.
+- Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`, green decision `7019ed2`, and V7.2 activation `1701285`.
+- Expected uncommitted change before the final local commit: `automations/test/onlineDailyV4Decision.test.mjs`, `automations/test/onlineDailyV4QualityQuarantine.test.mjs`, and this checkpoint only.

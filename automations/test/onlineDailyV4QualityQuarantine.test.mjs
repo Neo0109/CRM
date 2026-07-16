@@ -29,7 +29,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.equal(machineRules.rule_version, RULE_VERSION);
     assert.equal("quality_quarantine" in machineRules, false);
     assert.match(currentRulesDoc, /Historical V6\.8 Quality Quarantine/);
-    assert.match(currentRulesDoc, /sourcing-rules-v7\.0-quality-gated-indie/);
+    assert.match(currentRulesDoc, /sourcing-rules-v7\.2-china-joint/);
     assert.match(generator, /const sourcingRuleVersion = RULE_VERSION/);
     assert.doesNotMatch(generator, /quarantineDailyLeadPools/);
     assert.doesNotMatch(contractValidator, /isLeadCountHealthEnabled\(RULE_VERSION\)/);
@@ -91,7 +91,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.deepEqual(report.push_pool, []);
     assert.deepEqual(report.watch_pool, []);
     assert.deepEqual(report.drop_pool, []);
-    assert.match(report.summary, /V7\.0 严格准入/);
+    assert.match(report.summary, /V7\.2 严格准入/);
     assert.equal(radar.items.length, 1);
     assert.ok(steamTrends.items.length >= 8);
     assert.ok(steamTrends.market_insights.length >= 3);
