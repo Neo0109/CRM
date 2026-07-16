@@ -19,6 +19,7 @@ import {
   looksLikeCommentaryVideoTitle
 } from "./online_daily_v4_media_rules.mjs";
 import { extractEmails, hashText, mergeContactMethods, mergeLinks } from "./online_daily_v4_source_utils.mjs";
+import { deriveChinaOpportunityEvidence } from "./online_daily_v7_2_china_joint_admission.mjs";
 
 export function isGenericMediaProjectName(value) {
   const text = normalizeDisplayText(value);
@@ -81,6 +82,21 @@ export function isProductSourcingSignal(item) {
   const hasDiscoverySignal = /新作|首曝|公布|发布|上线|定档|测试|试玩|demo|实机|pv|预告|steam|taptap|好游快爆|开发者|制作人|愿望单|商店页|b站|bilibili|版号|过审|获批|预约|肉鸽|卡牌|策略|模拟|经营|二次元|国风|武侠|修仙/i.test(text);
   const hasActionableFormat = /demo|试玩|测试|实机|pv|预告|商店页|愿望单|开发者|制作人|上线steam|开启预约|首曝|公布|版号|过审|获批|预约/i.test(text);
   return hasProductName && hasDomesticLeadContext && hasDiscoverySignal && hasActionableFormat;
+}
+
+export function isChinaJointMediaSourcingSignal(item) {
+  const disposition = classifyMediaDisposition(item);
+  if (["steam_store_claim_without_normalized_evidence", "cross_media_or_film", "non_game_animation_series", "non_game_approval_context"].includes(disposition.reason)) {
+    return false;
+  }
+  const text = `${item.title ?? ""} ${item.summary ?? ""} ${item.description ?? ""} ${item.source ?? ""}`;
+  const opportunities = deriveChinaOpportunityEvidence(text, item.link, isOfficialOrDeveloperBilibiliSignal(item));
+  if (!opportunities.length) return false;
+  const evidence = extractBilibiliEvidence(item);
+  const hasIdentity = /《[^》]{2,48}》/.test(text)
+    || hasConcreteMediaProductMarker(item)
+    || Boolean(item.steam_app_id ?? evidence.steam_app_id);
+  return hasIdentity;
 }
 
 export function isExpandedDomesticProductSignal(item) {

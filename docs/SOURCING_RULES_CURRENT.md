@@ -2,12 +2,12 @@
 
 Date: 2026-07-16
 
-The current daily report rule version is `sourcing-rules-v7.0-quality-gated-indie`.
+The current daily report rule version is `sourcing-rules-v7.2-china-joint`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V7_0.md
+docs/SOURCING_RULES_V7_2.md
 ```
 
 Machine-readable automation rule source:
@@ -24,7 +24,7 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V7.0 keeps broad discovery active and publishes every deduped `indie_prelaunch` project that passes all eleven mandatory gates to `push_pool` with `priority=null`. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V7.2 keeps broad discovery active and evaluates `indie_prelaunch` and `china_joint` in parallel. Every deduped project that completely passes either lane enters `push_pool` with `priority=null`; neither lane has a quota and the combined formal pool has no total cap. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 The standalone `steam-schinese-reviews-v1` audit source is not imported by the active Daily runner or either Daily workflow. V7.1 consumes its validated artifact and activates EA/high-traction and China-heat publication only through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
 
@@ -44,7 +44,7 @@ Every important output should answer:
 
 ## Inbox Rule
 
-Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that passes all V7.0 gates enters the formal `push_pool` and `未处理` inbox with `priority=null`.
+Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that completely passes either V7.2 lane enters the formal `push_pool` and `未处理` inbox with `priority=null`.
 
 The scan preserves all candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`. Failed or unknown candidates stay only there; the candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
 
@@ -56,9 +56,9 @@ Domestic media and Bilibili product signals are first-class discovery sources, n
 
 Bilibili search results must still be concrete games. Steam Next Fest signup tutorials, wishlist-growth data sharing, courses, or generic developer-experience videos are useful methodology references, but they should not be inserted into the lead queue as products.
 
-Already released projects must not enter formal V7.0 pools. They remain excluded in the candidate audit or may be used as market background unless a separate post-launch review is explicitly requested.
+Already released projects cannot enter `indie_prelaunch`. They may enter `china_joint` only when one locked data path, a current China opportunity, and a clear mature-China-partner state all pass.
 
-New candidates launching in fewer than 60 days must not enter formal V7.0 pools. Demo, playtest, or store-page-live signals only prove testability; they do not restore a meaningful BD cooperation window. Retain the failed window gate in the candidate audit or keep the project as market background unless it is already in a human-owned CRM workflow.
+New candidates launching in fewer than 60 days cannot enter `indie_prelaunch`. Demo, playtest, or store-page-live signals only prove testability for that lane. The independent `china_joint` lane does not use the prelaunch window gate, but it still requires its complete data and commercial qualification chain.
 
 For Bilibili video leads, the automation must do one more verification pass before creating a CRM candidate:
 
@@ -98,7 +98,7 @@ The online generator must preserve the product intent of these rules:
 - Domestic Steam keyword searches must use actual search-term filtering, not just China-locale generic popular lists.
 - The same Steam AppID should keep the strongest discovery source, especially domestic keyword, Demo, or Next Fest signals.
 - Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
-- V7.0 must keep scanning broad enough for source and evidence diagnostics, publish every and only fully qualified project, and never use a minimum or maximum recommendation count as a health signal.
+- V7.2 must keep scanning broad enough for source and evidence diagnostics, publish every and only fully qualified project across both regular lanes, and never use a lane quota or formal minimum/maximum as a health signal.
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 - Daily generation must write a schema-validated candidate audit with one deduped record per Steam AppID or normalized project key, explicit `formal | candidate | excluded` decisions, unknown evidence, matched rules, and exclusion reasons. Only the Daily report pools are eligible for CRM synchronization.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
@@ -215,6 +215,17 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - Every unqualified project remains only in the sourcing-candidate audit with missing gate IDs or hard exclusion reasons.
 - Automatic priority stays `null`, and `new_qualified_count === push_pool_count` is a blocking contract.
 - Formal Lead count has no minimum, maximum, cap, backfill, truncation, or health threshold.
+
+## V7.2 2A/3A China Joint Admission
+
+- The active canonical contract is `docs/SOURCING_RULES_V7_2.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
+- `indie_prelaunch` keeps its eleven V7.0 gates. `china_joint` adds four independent gates: identity/dedupe, one locked data path, a current China business opportunity, and confirmed absence of mature China-partner occupancy.
+- The three data paths are exactly: Steam recommendations `>=5000`; recommendations `>=1500` with `Very Positive` or `Overwhelmingly Positive`; or a verified major-title team record plus a current official product event.
+- Current China opportunity means verified publishing, license/版号, localization, marketing, mobile, or joint-operation need. No current China need and known mature China-partner occupancy are hard exclusions from `china_joint`; unknown evidence cannot pass.
+- Both lanes use the same dedupe/publication boundary. An already-qualified indie project keeps `indie_prelaunch`; otherwise a complete joint pass publishes as `china_joint`.
+- Every complete pass is formal. Ranking affects reading order only; neither lane nor their combined formal output has a quota, minimum, maximum, backfill, or cutoff.
+- Fixed acceptance requires the same-day 5-indie + 4-joint fixture to publish all 9 formal Leads, while no-demand and occupied-partner fixtures publish none.
+- The active provenance version is `sourcing-rules-v7.2-china-joint` for every regular formal Lead and candidate-audit record.
 
 ## PR 5 Steam Simplified-Chinese Review Audit Source
 

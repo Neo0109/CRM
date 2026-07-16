@@ -8,6 +8,7 @@ import {
   inferContactTypeFromLink,
   inferMediaGenre,
   isDomesticMediaRescueSignal,
+  isChinaJointMediaSourcingSignal,
   isExpandedDomesticProductSignal,
   isGenericMediaProjectName,
   isProductSourcingSignal,
@@ -76,6 +77,28 @@ describe("online daily v4 media entity extraction", () => {
     assert.equal(isProductSourcingSignal(tutorial), false);
     assert.equal(isExpandedDomesticProductSignal(expanded), true);
     assert.equal(isDomesticMediaRescueSignal(rescue), true);
+  });
+
+  it("admits a concrete global product signal with a current China joint-publishing need into regular enrichment", () => {
+    const currentChinaNeed = {
+      title: "《Global Strategy Hit》 seeks China mobile publishing partner",
+      summary: "The developer is currently seeking China localization, Android marketing, and joint operations cooperation.",
+      description: "Official product update with https://store.steampowered.com/app/7654321/",
+      source: "GamesIndustry.biz",
+      link: "https://example.com/global-strategy-hit-china-partner",
+      source_focus: ["business", "publishing"],
+      steam_app_id: "7654321"
+    };
+    const noChinaNeed = {
+      ...currentChinaNeed,
+      title: "《Global Strategy Hit》 publishes a routine product update",
+      summary: "The developer shared a current gameplay update.",
+      link: "https://example.com/global-strategy-hit-update"
+    };
+
+    assert.equal(isProductSourcingSignal(currentChinaNeed), false);
+    assert.equal(isChinaJointMediaSourcingSignal(currentChinaNeed), true);
+    assert.equal(isChinaJointMediaSourcingSignal(noChinaNeed), false);
   });
 
   it("rejects Steam store operations content without a concrete project or normalized app link", () => {

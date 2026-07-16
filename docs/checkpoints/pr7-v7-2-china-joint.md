@@ -49,10 +49,19 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
   - added a shared regular-lane selector used by both `buildPools` and candidate audit, preserving an already-qualified indie classification before admitting the new joint lane;
   - keeps the published union deduped and unbounded, with `priority=null` and one active V7.2 provenance version.
 - Focused green evidence: `node --test automations/test/onlineDailyV7ChinaJointAdmission.test.mjs` passes 6/6, including the required 9-formal fixture and both exclusion cases.
+- Activated the complete regular V7.2 chain:
+  - active runtime/machine version is `sourcing-rules-v7.2-china-joint`, with canonical `docs/SOURCING_RULES_V7_2.md` and the current-rule pointer updated;
+  - machine rules preserve all eleven indie gates and add the four joint gates, exact thresholds, allowed China-opportunity types, null priority, and null min/max formal limits;
+  - Daily/Radar/Steam Trends copy reports both lanes, while heartbeat parity accepts active V7.2 and historical V7.0 artifacts;
+  - Steam enrichment records mature-China-partner occupancy separately from general mature publishers;
+  - global media signals with a concrete current China cooperation need enter regular enrichment, and a released/near-window or globally published project is retained only when the full `china_joint` decision passes;
+  - removed the post-enrichment media candidate selection cap so no qualified project can be discarded by a per-source or total formal-output quota.
+- Updated only PR 7-scoped stale assertions for the active version, canonical document, reports, source mapping, and heartbeat fixture.
+- Narrow activation regression passed 62/62 across the new joint fixture, preserved indie contracts, activation, rules, reports, candidate audit, Steam source, media source, and media enrichment.
+- Additional media-lane regression passed 13/13, including global China-opportunity discovery and released high-traction joint qualification.
 
 ## Remaining
 
-- Activate the V7.2 machine/human rule chain and generator identity.
 - Run focused tests and update this checkpoint at each verifiable step.
 - Run Daily V4, schema/contract, typecheck, `npm run verify:all`, and `git diff --check`.
 - Commit, push, open PR, wait for checks/reviews/mergeability, and squash merge.
@@ -60,11 +69,11 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
 
 ## Next Action
 
-Commit the green decision slice, then activate V7.2 across the regular generator, machine rules, canonical/current documentation, Daily parity/heartbeat contracts, and source enrichment.
+Commit the V7.2 activation slice, then run the full focused Daily V4 suite and repository-required schema/contract/type checks before `verify:all`.
 
 ## Git Status
 
 - Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
-- Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`; the green decision step is pending commit.
-- Expected change before the next commit: two PR 7 admission modules, decision/audit integration, China-partner source helper, and this checkpoint.
+- Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`, green decision `7019ed2`; the activation step is pending commit.
+- Expected change before the next commit: regular runtime/source activation, machine and human V7.2 rules, scoped contract/report/heartbeat assertions, and this checkpoint.

@@ -30,10 +30,10 @@ describe("daily automation hardening contract", () => {
     assert.deepEqual(schema.$defs.reportLead.properties.drop_reason, { type: ["string", "null"] });
   });
 
-  it("keeps machine-readable sourcing rules aligned with V7 indie admission", () => {
+  it("keeps machine-readable sourcing rules aligned with both V7.2 regular lanes", () => {
     const rules = JSON.parse(readRepoFile("automations/rules/daily-report.json"));
 
-    assert.equal(rules.rule_version, "sourcing-rules-v7.0-quality-gated-indie");
+    assert.equal(rules.rule_version, "sourcing-rules-v7.2-china-joint");
     assert.equal("quality_quarantine" in rules, false);
     assert.deepEqual(rules.indie_prelaunch_admission, {
       active: true,
@@ -61,6 +61,17 @@ describe("daily automation hardening contract", () => {
       drop_pool_enabled: false,
       invariant: "new_qualified_count === push_pool_count"
     });
+    assert.deepEqual(rules.china_joint_admission.required_gate_ids, [
+      "identity_and_dedupe",
+      "traction_or_proven_team_event",
+      "current_china_opportunity",
+      "mature_china_partner_clear"
+    ]);
+    assert.equal(rules.china_joint_admission.data_paths[0].minimum_recommendations, 5000);
+    assert.equal(rules.china_joint_admission.data_paths[1].minimum_recommendations, 1500);
+    assert.deepEqual(rules.china_joint_admission.data_paths[1].accepted_ratings, ["very_positive", "overwhelmingly_positive"]);
+    assert.equal(rules.china_joint_admission.formal_lead_minimum, null);
+    assert.equal(rules.china_joint_admission.formal_lead_maximum, null);
   });
 
   it("records generation failures without treating them as successful receipts", () => {
