@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-在独立分支 `codex/pr8-sourcing-learning` 上完整实施 `PLAN.md` 的 PR 8：建立可验证的人工结果口径、分母边界与 cohort 独立统计，并提供 `test:sourcing-learning`，不通过数量上限、最低数量、截断或 backfill 达成精度目标。
+将已完成的 PR 8 功能合并与线上验收证据写回 checkpoint，并通过独立 checkpoint-only PR 交付；完成后停止，不进入 PR 9。
 
 ## Baseline
 
@@ -10,6 +10,10 @@
 - Worktree: `/Users/neo/Documents/GitHub/CRM-pr8-sourcing-learning`
 - Branch: `codex/pr8-sourcing-learning`
 - PR 7: 按用户提供的已完成状态作为边界；不重新检查、不修改、不重复实施。
+- Feature PR: [#100](https://github.com/Neo0109/CRM/pull/100)
+- Feature merge SHA: `c2a75272cc2ee634b5fff34786f0cc184f856d81`
+- Final-acceptance worktree: `/Users/neo/Documents/GitHub/CRM-pr8-final-acceptance`
+- Final-acceptance branch: `codex/pr8-final-acceptance`
 
 ## Completed
 
@@ -48,6 +52,19 @@
 - 已完成 diff 范围审计：仅 8 个 PR 8 文件（学习纯函数、前端类型/view/现有诊断块、对应测试和本 checkpoint）；没有 workflow、生成器、导入逻辑、schema、数据文件、PR 7 或 PR 9 修改。
 - 已推送 `codex/pr8-sourcing-learning` 并创建 ready PR [#100](https://github.com/Neo0109/CRM/pull/100)，base=`main`、head=`codex/pr8-sourcing-learning`。
 - 远端 PR diff 已复核为同一组 8 个 PR 8 文件；创建时 GitHub 报告 `mergeable=MERGEABLE`，Build / Cloudflare checks 正在运行。
+- PR #100 最终交付已完成：
+  - final head `aa3f1fc309c55972889b34b1471662bd3ca1b54f` 的两条 Build checks 和 Cloudflare Pages check 均为 success；review threads=0、reviews=0、mergeability=`CLEAN/MERGEABLE`。
+  - PR #100 于 `2026-07-17 00:56:02 Asia/Shanghai` squash merge，merge SHA=`c2a75272cc2ee634b5fff34786f0cc184f856d81`。
+- 合并后部署已验收：
+  - Build run [`29517658845`](https://github.com/Neo0109/CRM/actions/runs/29517658845) 针对 merge SHA 完成并 success。
+  - Cloudflare Pages deployment `e0c849fc-0856-4dd1-9c2e-fdb2f8c1562b` 针对同一 SHA 完成并 success；生产 preview 为 `https://e0c849fc.crm-pages.pages.dev`。
+  - `2026-07-17 00:57:20 Asia/Shanghai` 请求 `https://crm-pages.pages.dev/api/health` 返回 HTTP 200、`ok=true`、`storage=supabase`、用户配置状态 `valid`。
+- PR 8 线上契约验收通过：
+  - 未登录请求 `/api/sourcing-learning` 返回预期 HTTP 401 `CRM login required`，受保护路由存在且未放宽鉴权。
+  - 生产 HTML 标题为 `BD 决策工作台`，实际引用 `/assets/index.js?v=20260713-sourcing-evidence-integrity-v276`。
+  - 该生产 bundle 已包含 `精度与 cohort`、`常规 Sourcing`、`EA 高热`、`中文热度`、`initial_backfill`、`常规通道 provisional`、`未完成评测`、`不使用数量控制` 和禁止自动修改规则文案。
+  - 生产 bundle、同 SHA Cloudflare 成功部署、HTTP 200 health 与完整 CI/TDD 共同证明 PLAN.md PR 8 的 cohort 分离、分母边界、provisional 和 guardrail 已上线。
+  - 浏览器成功加载生产标题；受保护页面的深层 DOM/API 只读桥接连续超时，因此视觉细节验收记录为 incomplete，未冒充已读取真实生产样本。PLAN.md 未要求以真实样本量作为上线门槛，线上契约验收仍为 pass。
 
 ## Approved Implementation Slice
 
@@ -75,9 +92,8 @@
 
 ## Remaining
 
-- 等待并验收 PR #100 最终 head 的 CI、review threads、mergeability 和范围；满足条件后 squash merge。
-- squash merge 后验证 Build、Cloudflare Pages、生产 `/api/health` 和 PR 8 线上验收条件。
-- 更新 checkpoint 并完成 checkpoint 交付。
+- 提交、推送并合并本 checkpoint-only PR。
+- 验证 checkpoint merge 后的最终 `main`、Build、Cloudflare Pages 和生产 `/api/health`，随后停止。
 
 ## Explicitly Out of Scope
 
@@ -89,11 +105,11 @@
 
 ## Next Action
 
-提交并推送本次 PR 状态 checkpoint；随后等待 PR #100 新 head 的全部 checks 完成，检查 review threads 与 mergeability，满足条件后 squash merge。
+提交本最终验收记录，创建 checkpoint-only PR，检查其 CI/review/mergeability/diff 后 squash merge；验证最终 main 部署与 health 后停止，不进入 PR 9。
 
 ## Git Status
 
-- HEAD: `0382d7de9a31b186153e27630684115d6beeb19df`
-- Commits: `b6b97e8`, `94b3cd6`, `0504a29`, `0672ca8`，另有本 PR 状态 checkpoint 更新待提交。
-- Working tree: 仅本 checkpoint 的 PR 状态更新待提交；`node_modules` 为 ignored 安装产物。
-- PR: #100，open，ready，checks in progress。
+- HEAD: `c2a75272cc2ee634b5fff34786f0cc184f856d81`
+- Feature PR: #100 merged。
+- Working tree: 仅本 checkpoint 的最终验收更新待提交。
+- Checkpoint PR: 尚未创建。
