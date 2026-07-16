@@ -71,15 +71,20 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
   - `npm run verify:all` passed all repository tests, diagnostics, typechecks, sourcing/Daily contracts, temporary production frontend build, and its integrated diff check;
   - standalone `git diff --check` passed.
 - Committed the validated assertion/checkpoint closeout as `ec76983526065c23982ee3de1e273797321e70d3`, pushed `codex/pr7-v7-2-china-joint`, and opened ready PR `#98` against `main`: `https://github.com/Neo0109/CRM/pull/98`.
+- PR `#98` pre-merge gate passed at head `c5bd2283047f5a6c7a88d94eea04516bd374e8fa`:
+  - push Build `29509751681` and pull-request Build `29509757135` both passed;
+  - Cloudflare Pages preview passed;
+  - GitHub reported the PR mergeable, with zero submitted reviews and zero unresolved review threads;
+  - the remote 30-file diff is limited to PR 7 regular-lane source/decision/report integration, V7.2 machine and human rules, fixtures/tests, heartbeat compatibility, and this checkpoint; the independent PR 6 workflow, UI, API, database, and production data are absent.
 
 ## Remaining
 
-- Wait for PR `#98` checks, reviews, and mergeability; fix only PR 7-scoped failures, then squash merge.
+- Push this pre-merge checkpoint evidence, wait for the resulting final-head checks, then squash merge PR `#98`.
 - Verify post-merge Build, Cloudflare deployment, production `/api/health`, and PR 7 online acceptance; record final evidence and stop before PR 8.
 
 ## Next Action
 
-Push this checkpoint-only delivery update, then wait for the final PR `#98` head checks and inspect mergeability, unresolved review threads, and the complete remote file scope.
+Push this pre-merge checkpoint evidence, wait for the final-head checks, then squash merge PR `#98` without entering PR 8.
 
 ## Git Status
 
@@ -87,4 +92,4 @@ Push this checkpoint-only delivery update, then wait for the final PR `#98` head
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
 - Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`, green decision `7019ed2`, and V7.2 activation `1701285`.
 - Validated assertion/checkpoint closeout commit: `ec76983`; PR `#98` is open and ready against `main`.
-- Expected uncommitted change before the delivery-state commit: this checkpoint only.
+- Delivery-state commit: `c5bd228`; expected uncommitted change before the pre-merge evidence commit is this checkpoint only.
