@@ -32,6 +32,12 @@ The active Daily entrypoint remains `automations/jobs/online_daily_runner.mjs ->
 
 The production workflow never passes `maxPages`. Every production mode therefore scans until the public catalog reports its end. A bounded local source audit remains incomplete and can never reach CRM sync.
 
+### Exact-artifact sync retry
+
+The optional manual `retry_from_slot` input is a delivery-only recovery path. It never calls the Steam source audit or any Steam endpoint. It accepts a prior receipt only when that receipt has `status=sync_failed`, `scan_complete=true`, `sync_response.synced=false`, zero created/deduplicated/updated counts, and the same artifact path and SHA-256 as the committed complete artifact for the requested date. Candidate counts are rebuilt and must match the failed receipt before an import payload is written.
+
+The retry preserves the failed receipt's backfill or scheduled mode, writes a new slot-specific receipt, and still uses only the create-only CRM endpoint and the strict final gate. A missing, incomplete, already-synced, partially-written, count-mismatched, path-mismatched, or digest-mismatched receipt is rejected before CRM access. Scheduled runs and ordinary manual runs keep using a fresh full scan; the retry input is never set automatically.
+
 ## Steam Rate-Limit Policy
 
 The workflow applies a 2100ms minimum interval across one shared request scheduler for catalog pages, simplified-Chinese review summaries, and required AppDetails lookups. The scheduler serializes request series so concurrent candidate evaluation cannot create request bursts.
@@ -102,7 +108,7 @@ The workflow validates this receipt before committing it and repeats the same st
 
 ## Fixed Verification
 
-CI uses only fixed fixtures and static workflow contracts. It never runs a live Steam scan or calls production CRM.
+CI uses only fixed fixtures and static workflow contracts. It never runs a live Steam scan or calls production CRM. The workflow test also extracts the create-only sync shell and checks it with `bash -n`, protecting inline script delimiters before production.
 
 ```bash
 node --test automations/test/steamReviewOpportunityDelivery.test.mjs

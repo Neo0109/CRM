@@ -458,3 +458,5 @@ function assertValidSteamReceiptSchema(receipt) {
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   addFormats(ajv);
   const validate = ajv.compile(schema);
+  assert.equal(validate(receipt), true, ajv.errorsText(validate.errors));
+}
