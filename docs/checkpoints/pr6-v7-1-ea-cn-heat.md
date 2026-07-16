@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, deployment, and production acceptance.
+Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotfix, merge, deployment, a strict complete backfill, create-only CRM sync, and proof that existing Leads were not modified. Do not enter PR 7.
 
 ## Completed
 
@@ -85,18 +85,39 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Both existing Daily workflow files remain byte-unchanged from `origin/main`.
   - `PLAN.md` remains byte-identical to `/Users/neo/Downloads/PLAN.md`; both SHA-256 values remain `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
 
+- Post-merge production acceptance and Steam 429 diagnosis completed from remote truth:
+  - PR `#92` was squash-merged as `eaff172d947f47bb23b454653e9a05e26c338957`; current remote `main` at diagnosis is `26a2dfbb8db2b2f77cc2065186d4946111e8d07a`, and unrelated open PR `#71` remains untouched.
+  - Production acceptance run `29471392256` (`Steam review opportunities`, head `eaff172d`) ran from 2026-07-16 12:26 to 12:32 Asia/Shanghai and correctly failed its strict final gate.
+  - The committed receipt records `scan_complete=false`, `status=scan_incomplete`, `sync_response.synced=false`, `updated_count=0`; the create-only CRM sync step was skipped, so no Lead was written by the failed run.
+  - The scan stopped after 30 catalog pages: `catalog_entries_seen=3000`, `unique_apps_seen=2990`, while Steam reported `164918` catalog entries. The next catalog request returned HTTP 429.
+  - The partial catalog produced 437 prefilter candidates. The current candidate loop uses `concurrency=2`, but each candidate starts review-summary and AppDetails requests together, creating four-request bursts per chunk with only 250ms between chunks.
+  - AppDetails uses fixed 2.5s/5s 429 waits; review summaries use fixed 2s/4s waits. Neither path reads `Retry-After`, coordinates a shared cooldown, or adds jitter. The run logged 38 terminal AppDetails 429 failures from 12:29:04 through 12:32:21.
+  - Root-cause classification: current full-scan pacing is structurally unsafe, not a one-off cooldown-only failure. The unbounded catalog loop has no page delay, and the enrichment path can burst four requests while independent fixed retries continue traffic. Re-running unchanged after cooldown would risk repeating the same incomplete scan and is not accepted as a recovery.
+- PR 6 hotfix scope approved by the user's explicit continuation instruction:
+  - Preserve `scan_complete=true` as a non-negotiable sync gate and keep all incomplete scans unable to write CRM.
+  - Add source-level pacing that covers catalog, review-summary, and AppDetails requests; honor `Retry-After`; use bounded exponential backoff plus jitter and a coordinated cooldown after 429.
+  - Remove AppDetails requests only where store EA evidence is not required, without weakening either qualification rule or dual-match evidence.
+  - Add batch/checkpoint continuation only if the rate-limited full scan cannot finish safely within the workflow window.
+  - Keep both Daily workflows, business thresholds, schema success rules, create-only import, UI, database, secrets, PR 7+, and existing Lead mutation behavior unchanged.
+- Created remote-only branch `codex/pr6-steam-429-hotfix` from current `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`. The user's dirty local `codex/sourcing-rules-vnext` worktree remains read-only and untouched.
+
 ## Remaining
 
-- Commit and push the fully verified review closure as one coherent change.
-- Wait for the new PR `#92` checks and resolve only the two addressed review threads after all checks pass. Do not merge or squash in this task.
+- Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
+- Implement the smallest PR 6 source/network/workflow change that makes those tests green without weakening the strict scan or CRM write gates.
+- Run focused Steam opportunity tests, network/source contracts, schema/YAML checks, typechecks/builds, `npm run verify:all`, and diff-scope checks through the remote PR/Actions path.
+- Open and validate the PR 6 hotfix PR, close all review findings, squash-merge only after every required check is green, and verify deployment plus production `/api/health`.
+- Dispatch a fresh backfill, follow it to completion, and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; compare pre/post existing-Lead evidence so create-only delivery cannot hide a rewrite.
+- Update this checkpoint with the final main SHA, hotfix PR/run/deployment handles, receipt metrics, CRM sync result, and formal PR 6 acceptance; then stop before PR 7.
 
 ## Next Action
 
-Commit the nine-file review closure and push `codex/pr6-v7-1-ea-cn-heat`, then wait for every new PR `#92` check before resolving the two addressed threads.
+Add and commit the fixed red regression tests on `codex/pr6-steam-429-hotfix`, open the scoped hotfix PR so the red result is observable, then implement only the approved rate-limit recovery slice.
 
 ## Git Status
 
-- Branch: `codex/pr6-v7-1-ea-cn-heat`
-- Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Remote PR head: `9a2964ceb157c37b12e4ebaae45f4693a1a7ff00`.
-- Worktree: nine PR 6 implementation, rule, schema, test, workflow, documentation, and checkpoint files are uncommitted and ready to commit; no file outside the dedicated PR 6 worktree is in scope. Focused tests and two complete `verify:all` runs pass, while existing remote checks still cover only the prior head. `PLAN.md` remains unchanged.
+- Remote branch: `codex/pr6-steam-429-hotfix`.
+- Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
+- Scope at this checkpoint: this checkpoint update only; no source or workflow change has been made yet.
+- PR state: PR `#92` merged; unrelated PR `#71` remains open; hotfix PR not yet opened.
+- Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
