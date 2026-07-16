@@ -144,6 +144,58 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     assert.deepEqual(sleeps, [500, 200]);
   });
 
+  it("retries transient AppDetails logical payloads before declaring a source failure", async () => {
+    const appId = "1003";
+    const candidate = fixture.catalog_pages
+      .flatMap((page) => parseSteamCatalogPage(page.payload, { start: page.start }).candidates)
+      .find((item) => item.appId === appId);
+    let appDetailsCalls = 0;
+    const sleeps = [];
+    const result = await collectSteamReviewOpportunities({
+      scanCatalogImpl: async () => ({
+        summary: {
+          scanComplete: true,
+          pagesScanned: 1,
+          catalogEntriesSeen: 1,
+          uniqueAppsSeen: 1,
+          reportedTotal: 1,
+          sourceFailures: []
+        },
+        candidates: [candidate]
+      }),
+      fetchReviewSummaryImpl: async () => ({
+        status: "available",
+        text: "Very Positive",
+        positiveReviews: 800,
+        negativeReviews: 200,
+        totalReviews: 1000,
+        positiveRate: 80,
+        language: "schinese",
+        purchaseType: "all",
+        sourceStatus: "steam_appreviews"
+      }),
+      fetchJsonImpl: async (url) => {
+        assert.match(url, /api\/appdetails/);
+        appDetailsCalls += 1;
+        if (appDetailsCalls === 1) return { [appId]: { success: false } };
+        return { [appId]: { success: true, data: fixture.appdetails[appId] } };
+      },
+      requestDelayMs: 0,
+      retryBaseDelayMs: 100,
+      retryJitterRatio: 0,
+      sleepImpl: async (milliseconds) => {
+        sleeps.push(milliseconds);
+      },
+      logger: { warn() {} }
+    });
+
+    assert.equal(appDetailsCalls, 2);
+    assert.deepEqual(sleeps, [100]);
+    assert.equal(result.summary.scanComplete, true);
+    assert.deepEqual(result.summary.sourceFailures, []);
+    assert.equal(result.opportunities[0].earlyAccess.storeState, "yes");
+  });
+
   it("requires both the catalog tag and official store metadata for current EA", () => {
     assert.equal(officialStoreEarlyAccess(fixture.appdetails["1003"]), true);
     assert.equal(officialStoreEarlyAccess(fixture.appdetails["1004"]), false);
