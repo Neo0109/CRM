@@ -72,18 +72,22 @@ Implement PLAN.md PR 9 as an isolated `workflow_dispatch` visual-audit capabilit
 - Default artifact acceptance: artifact `8384960491` records `status=skipped`, `skip_reason=provider_disabled`, `real_ai_requests=0`, `crm_import_calls=0`, and zero Lead/priority/pool mutations.
 - Daily/CRM non-regression: the PR diff changed none of the Daily, watchdog, Steam opportunity, Radar, Steam Trends, CRM import/API, or data paths. The merge SHA triggered only Build plus the explicitly dispatched visual audit.
 - Current data evidence at 2026-07-17 01:54 Asia/Shanghai: remote `main` still contains the 2026-07-16 Daily, Radar, Steam Trends, and sourcing-candidate artifacts. The 2026-07-16 morning, afternoon, and watchdog receipts each have `status=success` and parsed `sync_response.synced=true`.
+- Acceptance checkpoint PR: #103 changed only this file and was squash-merged as `d944951b9c96c81f4608560346e3e7d2feac5794`.
+- Checkpoint merge Build: run `29522037320` succeeded, including the focused visual audit tests.
+- Checkpoint merge Cloudflare and health: production deployment succeeded; `/api/health` again returned HTTP 200 with `ok=true` and `storage=supabase`.
+- Automatic-trigger proof: the checkpoint merge triggered Build/Cloudflare only. The visual workflow run list still contains only the explicitly dispatched run `29521718797`.
+- Final receipt recheck: all three 2026-07-16 Daily automation receipts remain `status=success` with parsed `sync_response.synced=true`.
 
 ## Remaining
 
-- Publish and merge this checkpoint-only final-acceptance update.
-- Verify the checkpoint merge Build, Cloudflare deployment, final `main` SHA, and production `/api/health`.
+- None. PR 9 implementation, merge, deployment, zero-call acceptance, Daily/CRM non-regression, and checkpoint delivery are complete.
 
 ## Next Action
 
-Create `codex/pr9-final-acceptance` from feature merge SHA `7797ee37151586f6afb92781a306e385e2f6afdd`, publish only this checkpoint update, pass PR gates, squash merge, and perform final deployment/health verification.
+Stop after this checkpoint closure is merged and its Build, Cloudflare deployment, and production health are green. Do not enter another PLAN.md PR.
 
 ## Git Status
 
-- Remote feature main: `7797ee37151586f6afb92781a306e385e2f6afdd`
-- Local implementation HEAD before this checkpoint update: `71044db` (`docs: record PR 9 publication route`)
-- Working tree: final acceptance checkpoint update ready to commit; no implementation changes
+- Accepted remote main before closure: `d944951b9c96c81f4608560346e3e7d2feac5794`
+- Feature merge: `7797ee37151586f6afb92781a306e385e2f6afdd`
+- Working tree: checkpoint closure update only; no implementation changes
