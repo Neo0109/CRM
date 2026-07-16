@@ -40,6 +40,12 @@
 - 前端窄验证已通过：
   - `npx tsx --test app/frontend/test/sourcingLearningContract.test.mjs app/frontend/test/sourcingLearningView.test.mjs`（7/7 tests pass）
   - `npm run typecheck --workspace app/frontend`
+- 已完成最终本地验证：
+  - `npm run test:sourcing-learning`（9/9 tests pass）
+  - `npm run test:verify-all`（6/6 tests pass，确认 `sourcing-learning-test` 保持在完整验证入口）
+  - `npm run verify:all` 连续两次 exit 0；覆盖 frontend/backend/functions、Daily V4、automation diagnostics、lead assistant、sourcing learning、heartbeat、三套 typecheck、Sourcing V7.2/Bilibili 契约、日报契约、临时生产构建和 diff check。
+  - `git diff --check origin/main...HEAD`
+- 已完成 diff 范围审计：仅 8 个 PR 8 文件（学习纯函数、前端类型/view/现有诊断块、对应测试和本 checkpoint）；没有 workflow、生成器、导入逻辑、schema、数据文件、PR 7 或 PR 9 修改。
 
 ## Approved Implementation Slice
 
@@ -67,7 +73,6 @@
 
 ## Remaining
 
-- 运行窄测试、类型/契约检查、`verify:all` 和 `git diff --check`。
 - 提交、推送、创建并验收 PR；处理 CI、review threads、mergeability 和范围。
 - squash merge 后验证 Build、Cloudflare Pages、生产 `/api/health` 和 PR 8 线上验收条件。
 - 更新 checkpoint 并完成 checkpoint 交付。
@@ -82,10 +87,11 @@
 
 ## Next Action
 
-提交前端契约步骤；随后运行 PR 8 所有窄测试、完整前端测试、全 typecheck/build、`verify:all` 与 `git diff --check`，自行修复范围内失败。
+提交最终验证 checkpoint，推送 `codex/pr8-sourcing-learning`，创建以 `main` 为 base 的 PR，并检查 CI、review threads、mergeability 与远端 diff 范围。
 
 ## Git Status
 
 - HEAD: `0382d7de9a31b186153e27630684115d6beeb19df`
-- Working tree: 前端类型、view-model、诊断组件、测试和本 checkpoint 待提交；`node_modules` 为 ignored 安装产物。
+- Commits: `b6b97e8`, `94b3cd6`, `0504a29`，另有本 checkpoint 最终验证更新待提交。
+- Working tree: 仅本 checkpoint 的最终验证更新待提交；`node_modules` 为 ignored 安装产物。
 - PR: 尚未创建。
