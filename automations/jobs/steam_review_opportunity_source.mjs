@@ -126,16 +126,24 @@ async function fetchSteamOpportunityAppDetails(appId, context = {}) {
   const url = `https://store.steampowered.com/api/appdetails?appids=${encodeURIComponent(String(appId))}&cc=us&l=english`;
 
   try {
-    const payload = await requestSteamWithRetry(
-      () => fetchJsonImpl(url),
+    const entry = await requestSteamWithRetry(
+      async () => {
+        const payload = await fetchJsonImpl(url);
+        const candidate = payload?.[String(appId)];
+        if (candidate?.success !== true || !candidate.data) {
+          const error = new Error(`Steam AppDetails payload unavailable for ${appId}`);
+          error.steamRetryableResponse = true;
+          throw error;
+        }
+        return candidate;
+      },
       {
         ...context,
         requestScheduler,
         requestLabel: `appdetails appid=${appId}`
       }
     );
-    const entry = payload?.[String(appId)];
-    return entry?.success && entry.data?.type === "game" ? entry.data : null;
+    return entry.data?.type === "game" ? entry.data : null;
   } catch (error) {
     logger.warn?.(`AppDetails failed for ${appId}: ${error.message}`);
     return null;
@@ -450,9 +458,12 @@ export async function requestSteamWithRetry(callback, options = {}) {
       try {
         return await callback(attempt);
       } catch (error) {
-        if (!isSteamRateLimitError(error) || attempt >= maxAttempts) throw error;
+        const rateLimited = isSteamRateLimitError(error);
+        const transientResponse = error?.steamRetryableResponse === true;
+        if ((!rateLimited && !transientResponse) || attempt >= maxAttempts) throw error;
         const delayMs = steamRetryDelayMs(error, attempt, options);
-        logger.warn?.(`Steam 429 for ${requestLabel}; retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxAttempts})`);
+        const reason = rateLimited ? "Steam 429" : "Steam transient payload";
+        logger.warn?.(`${reason} for ${requestLabel}; retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxAttempts})`);
         await sleepImpl(delayMs);
       }
     }
