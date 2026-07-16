@@ -134,23 +134,37 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Final `git diff --check` passed and `git status --porcelain` was empty; the disposable copy was removed.
   - This validation is test evidence only. Remote GitHub checks, deployment, production health, and the final live backfill remain separate acceptance gates.
 
+
+- PR #93 hotfix delivery completed:
+  - Final head `2bc61ae21f48d3709d1bb3cdb447e16743faf8dc` passed Build, Cloudflare Pages, focused tests, and complete `npm run verify:all`.
+  - PR `#93` was squash-merged as `3216d0b5084f184594185c8dabe6658956fe5f90`; post-merge Build `29474233502`, Cloudflare Pages, and production `/api/health` all succeeded.
+- First post-hotfix full production acceptance run completed:
+  - Run `29474396300` at head `3216d0b` scanned all 1,650 catalog pages and saw 164,914 catalog entries.
+  - The catalog endpoint showed a structural cadence: about every 3,000 entries it returned HTTP 429. The shared scheduler plus exponential backoff/jitter recovered each catalog page; no terminal catalog failure remained.
+  - The run still ended `scan_complete=false`, `status=scan_incomplete`, and `sync_response.synced=false`; CRM sync was skipped and `updated_count=0`.
+  - The sole terminal source failure was AppDetails for Steam app `1630280`: the HTTP request completed but its payload was unavailable, so the current HTTP-only retry wrapper did not retry the logical empty response.
+  - A direct official AppDetails check immediately after the run returned HTTP 200 with `success=true` and valid game data, classifying this as a transient logical payload failure rather than a permanent missing store record.
+- Second PR 6 hotfix proposal is approved by the user's original autonomous hotfix authorization:
+  - Retry AppDetails HTTP-200 payloads when the app entry is missing, `success !== true`, or required `data` is absent, using the same shared scheduler, Retry-After when available, bounded exponential backoff, and jitter.
+  - Exhausted logical retries remain a terminal source failure; `scan_complete`, no-sync-on-incomplete, create-only import, `updated=0`, rules, Daily workflows, and PR 7+ remain unchanged.
+  - No batch/resume change is justified yet because the 78-minute single-artifact run completed within the 360-minute window.
+
 ## Remaining
 
-- Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
-- Implement the smallest PR 6 source/network/workflow change that makes those tests green without weakening the strict scan or CRM write gates.
-- Run focused Steam opportunity tests, network/source contracts, schema/YAML checks, typechecks/builds, `npm run verify:all`, and diff-scope checks through the remote PR/Actions path.
-- Open and validate the PR 6 hotfix PR, close all review findings, squash-merge only after every required check is green, and verify deployment plus production `/api/health`.
-- Dispatch a fresh backfill, follow it to completion, and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; compare pre/post existing-Lead evidence so create-only delivery cannot hide a rewrite.
-- Update this checkpoint with the final main SHA, hotfix PR/run/deployment handles, receipt metrics, CRM sync result, and formal PR 6 acceptance; then stop before PR 7.
+- Add a fixed red contract for transient AppDetails logical payload failure, then implement only the retry classification needed to make it green.
+- Run focused Steam source/delivery/workflow tests and complete `npm run verify:all`; audit diff scope and both Daily workflows.
+- Open, validate, and squash-merge the second PR 6 hotfix PR only after all required GitHub checks and review gates are green; verify post-merge deployment and production health.
+- Dispatch one fresh full backfill and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`.
+- Update this checkpoint with final production evidence, merge it through a documentation-only PR if needed, and stop before PR 7.
 
 ## Next Action
 
-Audit PR #93 diff scope, current main drift, review threads, mergeability, Build, and Cloudflare Pages. Resolve only hotfix findings, update the PR body, and mark the PR ready only when every pre-merge gate is green.
+Add the red AppDetails logical-payload retry test on remote-only branch `codex/pr6-steam-payload-retry-hotfix`, then deliver the smallest source hotfix.
 
 ## Git Status
 
-- Remote branch: `codex/pr6-steam-429-hotfix`.
-- Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
-- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only. Focused checks and full verify are green; final PR checks/review are pending.
-- PR state: PR `#92` merged; draft hotfix PR `#93` is open; unrelated PR `#71` remains open.
+- Remote branch: `codex/pr6-steam-payload-retry-hotfix`.
+- Base: remote `main=630fe9d4b4f7625f2199d3f7ee86d643417d32ce`, including the failed run's committed artifact and receipt.
+- Scope: PR 6 AppDetails logical-payload retry test/source change plus checkpoint only; no PR 7, Daily workflow, business-rule, UI, schema, auth, or CRM mutation changes.
+- PR state: PR `#92` and hotfix PR `#93` merged; unrelated PR `#71` remains untouched; second hotfix PR not yet opened.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
