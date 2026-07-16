@@ -186,23 +186,30 @@ Complete only PLAN.md PR 6 production acceptance by reusing the exact completed 
   - Correct the shell syntax and add a retry entrypoint that accepts only an exact prior `sync_failed` receipt whose `scan_complete=true`, `updated_count=0`, artifact path, and artifact SHA-256 match the committed complete artifact.
   - Rebuild the same unbounded create-only import payload from that immutable artifact and preserve the failed run's backfill/scheduled mode; do not call Steam or run the source audit again.
   - Keep all thresholds, create-only behavior, strict receipt parity, both Daily workflows, UI, schema, auth configuration, database, and PR 7+ unchanged.
+- Sync-resume hotfix implementation and verification completed:
+  - Fixed regression Build `29495312764` reproduced the production heredoc warning and `syntax error: unexpected end of file`; the exact-artifact retry export/path was also absent before implementation.
+  - Added `prepareSteamReviewOpportunityRetry` and CLI `retry`. It reads the committed dated artifact plus a named failed receipt, rejects anything except `sync_failed`, `scan_complete=true`, `synced=false`, zero CRM writes, matching run mode/counts/path/SHA-256, and rebuilds the create-only payload without importing or calling the Steam audit.
+  - Added optional manual workflow input `retry_from_slot`; scheduled and ordinary manual executions still run the unbounded full scan, while retry uses only the exact stored artifact. The sync heredoc terminator is now shell-valid.
+  - Added fixed delivery and workflow regressions, including `bash -n` over the extracted production sync script and SHA mismatch rejection. Focused delivery/workflow tests pass 14/14.
+  - Push Build `29495663992` passed at exact head `8117663b965da3eb2cf16d70065fb1bcf2bb0fb9`, including CRM core, frontend and Functions type checks, all fixed Steam review opportunity tests, and frontend build.
+  - Complete isolated `npm run verify:all` passed at the same head: frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 147/147, diagnostics, sourcing learning, heartbeat, all three typechecks, contracts, temporary production build, and diff-check. Final `git diff --check` passed and the validation copy had no tracked changes.
+  - Both existing Daily workflow files remain untouched; no live Steam, CRM, workflow dispatch, secret, or production-data action occurred during implementation or verification.
 
 ## Remaining
 
-- Add fixed red contracts for the current heredoc syntax failure and for an exact failed-receipt retry that reuses a complete artifact without calling the source audit.
-- Implement the smallest shell fix plus strict artifact-bound sync-resume preparation.
-- Run focused tests, complete `npm run verify:all`, audit diff/Daily workflow immutability, and deliver the PR 6 sync-resume hotfix through PR.
+- Audit the final diff and Daily workflow immutability, open the PR 6 sync-resume hotfix PR, wait for every check, mark ready, and squash-merge when clean.
 - Verify post-merge Build, Cloudflare Pages, and production health, then dispatch one sync-only recovery against the already committed artifact. Do not run another full scan.
 - Require the recovery receipt to prove `scan_complete=true`, `status=success`, `sync_response.synced=true`, `updated_count=0`, and created-plus-deduplicated parity; update this checkpoint and stop before PR 7.
 
 ## Next Action
 
-Add the two fixed sync-resume red contracts on remote-only branch `codex/pr6-sync-resume-hotfix`; do not dispatch any workflow during implementation.
+Audit exact remote head `8117663b965da3eb2cf16d70065fb1bcf2bb0fb9`, then open and deliver the PR 6 sync-resume hotfix. Do not dispatch the recovery until merge, deployment, and production health are green.
 
 ## Git Status
 
 - Remote branch: `codex/pr6-sync-resume-hotfix`.
 - Base: remote `main=89fa10122d3e509a4845adaf890ea5ec83f58881`, including the exact complete scan artifact and its pre-HTTP `sync_failed` receipt.
 - Scope: PR 6 exact-artifact sync resume, heredoc syntax repair, fixed tests/docs, and checkpoint only. No new scan, PR 7, Daily workflow, threshold, UI, schema relaxation, auth configuration, or non-create-only CRM behavior.
+- Remote head: `8117663b965da3eb2cf16d70065fb1bcf2bb0fb9`, with focused Build and complete isolated verification green.
 - PR state: PR `#92`, `#93`, `#94`, and `#95` are merged; unrelated PR `#71` remains untouched; sync-resume hotfix PR not yet opened.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
