@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
@@ -42,6 +43,17 @@ describe("Steam review opportunity workflow contract", () => {
     assert.match(workflow, /CRM_AUTOMATION_TOKEN is not configured/);
     assert.match(workflow, /sync_status=failed/);
     assert.doesNotMatch(workflow, /api\/reports\/sync/);
+  });
+
+  it("keeps the sync shell parseable and retries an exact failed artifact without another scan", () => {
+    const workflow = readRepoFile(".github/workflows/steam-review-opportunities.yml");
+
+    assert.match(workflow, /retry_from_slot:/);
+    assert.match(workflow, /steam_review_opportunity_delivery\.mjs retry/);
+    assert.match(workflow, /--failedSlot="\$RETRY_FROM_SLOT"/);
+    const syncScript = readWorkflowRunScript(workflow, "Sync eligible opportunities with create-only import");
+    const syntax = spawnSync("bash", ["-n"], { input: syncScript, encoding: "utf8" });
+    assert.equal(syntax.status, 0, syntax.stderr);
   });
 
   it("commits separate audit/receipt paths and enforces the strict success receipt", () => {
@@ -89,4 +101,17 @@ describe("Steam review opportunity workflow contract", () => {
 
 function readRepoFile(relativePath) {
   return readFileSync(path.join(repoRoot, relativePath), "utf8");
+}
+
+function readWorkflowRunScript(workflow, stepName) {
+  const start = workflow.indexOf(`      - name: ${stepName}`);
+  assert.notEqual(start, -1, `missing workflow step: ${stepName}`);
+  const next = workflow.indexOf("\n      - name:", start + 1);
+  const step = workflow.slice(start, next === -1 ? workflow.length : next);
+  const match = step.match(/\n        run: \|\n([\s\S]*)$/);
+  assert.ok(match, `missing run block: ${stepName}`);
+  return match[1]
+    .split("\n")
+    .map((line) => line.startsWith("          ") ? line.slice(10) : line)
+    .join("\n");
 }

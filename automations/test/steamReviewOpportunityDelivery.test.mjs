@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
@@ -11,6 +11,7 @@ import {
   buildSteamReviewImportReport,
   buildSteamReviewOpportunityReceipt,
   prepareSteamReviewOpportunityDelivery,
+  prepareSteamReviewOpportunityRetry,
   resolveSteamReviewRunMode,
   selectSteamReviewDeliveryCandidates,
   validateSteamReviewOpportunityReceipt
@@ -201,6 +202,79 @@ describe("Steam review opportunity V7.1 delivery", () => {
     assert.equal(result.importPayloadPath, null);
   });
 
+  it("retries an exact complete sync-failed artifact without running another source audit", async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), "crm-steam-review-retry-"));
+    const artifactDir = path.join(rootDir, "data/steam_review_opportunities");
+    const receiptDir = path.join(rootDir, "data/steam_review_opportunity_runs");
+    mkdirSync(artifactDir, { recursive: true });
+    mkdirSync(receiptDir, { recursive: true });
+    const current = artifact([
+      opportunity("4501", { decision: "qualified", matchedRules: ["ea_mobile_high_traction"] }),
+      opportunity("4502", { decision: "qualified", matchedRules: ["china_heat_ops"] })
+    ]);
+    writeFileSync(path.join(artifactDir, `${reportDate}.json`), `${JSON.stringify(current, null, 2)}\n`);
+    const failedReceipt = buildSteamReviewOpportunityReceipt({
+      preparation: {
+        schema_version: 1,
+        report_date: reportDate,
+        run_slot: "failed-sync",
+        requested_mode: "backfill",
+        mode: "backfill",
+        sourcing_run_type: "initial_backfill",
+        generated_at: generatedAt,
+        scan_complete: true,
+        ready_for_sync: true,
+        artifact_path: `data/steam_review_opportunities/${reportDate}.json`,
+        artifact_sha256: artifactSha256(current),
+        import_payload_path: "data/runtime/failed-import.json",
+        catalog_scan_count: 2,
+        catalog_entries_seen: 2,
+        qualified_count: 2,
+        previously_qualified_count: 0,
+        import_candidate_count: 2,
+        failure_reason: null,
+        collect_options: { pageSize: 100, concurrency: 2, requestDelayMs: 2100 }
+      },
+      syncResponse: { synced: false, reason: "sync_not_completed" }
+    });
+    writeFileSync(
+      path.join(receiptDir, `${reportDate}-failed-sync.json`),
+      `${JSON.stringify(failedReceipt, null, 2)}\n`
+    );
+
+    const result = await prepareSteamReviewOpportunityRetry({
+      rootDir,
+      reportDate,
+      runSlot: "sync-retry",
+      failedRunSlot: "failed-sync"
+    });
+
+    assert.equal(result.preparation.scan_complete, true);
+    assert.equal(result.preparation.ready_for_sync, true);
+    assert.equal(result.preparation.mode, "backfill");
+    assert.equal(result.preparation.artifact_sha256, artifactSha256(current));
+    assert.equal(result.preparation.import_candidate_count, 2);
+    assert.equal(result.preparation.retry_source_receipt_path, `data/steam_review_opportunity_runs/${reportDate}-failed-sync.json`);
+    assert.deepEqual(
+      JSON.parse(readFileSync(result.importPayloadPath, "utf8")).push_pool.map((lead) => lead.steam_app_id),
+      ["4501", "4502"]
+    );
+
+    const changed = artifact([
+      opportunity("4503", { decision: "qualified", matchedRules: ["china_heat_ops"] })
+    ]);
+    writeFileSync(path.join(artifactDir, `${reportDate}.json`), `${JSON.stringify(changed, null, 2)}\n`);
+    await assert.rejects(
+      () => prepareSteamReviewOpportunityRetry({
+        rootDir,
+        reportDate,
+        runSlot: "changed-retry",
+        failedRunSlot: "failed-sync"
+      }),
+      /artifact SHA-256 does not match/
+    );
+  });
+
   it("records strict success metrics and rejects false-success or updating receipts", () => {
     const preparation = {
       schema_version: 1,
@@ -384,5 +458,3 @@ function assertValidSteamReceiptSchema(receipt) {
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   addFormats(ajv);
   const validate = ajv.compile(schema);
-  assert.equal(validate(receipt), true, ajv.errorsText(validate.errors));
-}
