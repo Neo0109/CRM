@@ -31,5 +31,7 @@ jobs:
         run: npm run test:crm-core
       - name: Test Steam review opportunity source
         run: node --test automations/test/steamReviewOpportunity*.test.mjs
+      - name: Test visual AI manual audit
+        run: node --test automations/test/visualAi*.test.mjs
       - name: Build frontend
         run: npm run build --workspace app/frontend
