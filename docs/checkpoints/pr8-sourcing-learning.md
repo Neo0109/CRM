@@ -46,6 +46,8 @@
   - `npm run verify:all` 连续两次 exit 0；覆盖 frontend/backend/functions、Daily V4、automation diagnostics、lead assistant、sourcing learning、heartbeat、三套 typecheck、Sourcing V7.2/Bilibili 契约、日报契约、临时生产构建和 diff check。
   - `git diff --check origin/main...HEAD`
 - 已完成 diff 范围审计：仅 8 个 PR 8 文件（学习纯函数、前端类型/view/现有诊断块、对应测试和本 checkpoint）；没有 workflow、生成器、导入逻辑、schema、数据文件、PR 7 或 PR 9 修改。
+- 已推送 `codex/pr8-sourcing-learning` 并创建 ready PR [#100](https://github.com/Neo0109/CRM/pull/100)，base=`main`、head=`codex/pr8-sourcing-learning`。
+- 远端 PR diff 已复核为同一组 8 个 PR 8 文件；创建时 GitHub 报告 `mergeable=MERGEABLE`，Build / Cloudflare checks 正在运行。
 
 ## Approved Implementation Slice
 
@@ -73,7 +75,7 @@
 
 ## Remaining
 
-- 提交、推送、创建并验收 PR；处理 CI、review threads、mergeability 和范围。
+- 等待并验收 PR #100 最终 head 的 CI、review threads、mergeability 和范围；满足条件后 squash merge。
 - squash merge 后验证 Build、Cloudflare Pages、生产 `/api/health` 和 PR 8 线上验收条件。
 - 更新 checkpoint 并完成 checkpoint 交付。
 
@@ -87,11 +89,11 @@
 
 ## Next Action
 
-提交最终验证 checkpoint，推送 `codex/pr8-sourcing-learning`，创建以 `main` 为 base 的 PR，并检查 CI、review threads、mergeability 与远端 diff 范围。
+提交并推送本次 PR 状态 checkpoint；随后等待 PR #100 新 head 的全部 checks 完成，检查 review threads 与 mergeability，满足条件后 squash merge。
 
 ## Git Status
 
 - HEAD: `0382d7de9a31b186153e27630684115d6beeb19df`
-- Commits: `b6b97e8`, `94b3cd6`, `0504a29`，另有本 checkpoint 最终验证更新待提交。
-- Working tree: 仅本 checkpoint 的最终验证更新待提交；`node_modules` 为 ignored 安装产物。
-- PR: 尚未创建。
+- Commits: `b6b97e8`, `94b3cd6`, `0504a29`, `0672ca8`，另有本 PR 状态 checkpoint 更新待提交。
+- Working tree: 仅本 checkpoint 的 PR 状态更新待提交；`node_modules` 为 ignored 安装产物。
+- PR: #100，open，ready，checks in progress。
