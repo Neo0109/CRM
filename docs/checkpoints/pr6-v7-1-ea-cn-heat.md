@@ -150,22 +150,31 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Exhausted logical retries remain a terminal source failure; `scan_complete`, no-sync-on-incomplete, create-only import, `updated=0`, rules, Daily workflows, and PR 7+ remain unchanged.
   - No batch/resume change is justified yet because the 78-minute single-artifact run completed within the 360-minute window.
 
+
+- Second PR 6 hotfix implementation and verification completed:
+  - Red run `29478826374` failed exactly the intended contracts: transient AppDetails payload made only one call, workflow still used 1000ms, and the machine rule still recorded 1000ms.
+  - Production pacing is now 2100ms in the workflow, audit CLI default, delivery default, machine rule, and human rule/delivery entrypoints.
+  - AppDetails HTTP-200 responses retry when the app entry is absent, `success !== true`, or required `data` is missing. The retry uses the existing shared scheduler and bounded exponential backoff plus jitter; exhaustion still returns a terminal required-evidence failure.
+  - Push Build `29479030925` and PR Build `29479033524` passed at head `929906ba07563ac241a7d5e607d697c6defa1924`, including all 29 focused Steam contracts.
+  - Complete `npm run verify:all` passed against exact code head `929906b`: frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 144/144, diagnostics, sourcing learning, heartbeat, all three typechecks, contracts, temporary production build, and diff-check.
+  - The isolated validation copy had an empty `git status --porcelain`. The user's local CRM worktree remains untouched.
+
 ## Remaining
 
-- Add fixed red contracts for the 2100ms production interval and transient AppDetails logical payload failure, then implement only those two evidence-backed changes.
-- Run focused Steam source/delivery/workflow tests and complete `npm run verify:all`; audit diff scope and both Daily workflows.
-- Open, validate, and squash-merge the second PR 6 hotfix PR only after all required GitHub checks and review gates are green; verify post-merge deployment and production health.
-- Dispatch one fresh full backfill and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`.
-- Update this checkpoint with final production evidence, merge it through a documentation-only PR if needed, and stop before PR 7.
+- Finish PR #94 Cloudflare/check/review/diff-scope gates, mark ready, and squash-merge.
+- Verify post-merge Build, Cloudflare Pages, and production `/api/health`.
+- Dispatch one fresh full backfill only after deployment is healthy; require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`.
+- Update this checkpoint with final production evidence, merge the checkpoint if needed, and stop before PR 7.
 
 ## Next Action
 
-Add red tests for the 2100ms production interval and AppDetails logical-payload retry on remote-only branch `codex/pr6-steam-payload-retry-hotfix`, then deliver the smallest source/workflow hotfix.
+Audit PR #94 file scope, Daily workflow immutability, reviews, mergeability, Build, and Cloudflare Pages. Mark ready and merge only when every pre-merge gate is green.
 
 ## Git Status
 
 - Remote branch: `codex/pr6-steam-payload-retry-hotfix`.
-- Base: remote `main=630fe9d4b4f7625f2199d3f7ee86d643417d32ce`, including the failed run's committed artifact and receipt.
-- Scope: PR 6 2100ms production pacing plus AppDetails logical-payload retry, their fixed contracts/docs, and checkpoint only; no PR 7, Daily workflow, business-rule, UI, schema, auth, or CRM mutation changes.
-- PR state: PR `#92` and hotfix PR `#93` merged; unrelated PR `#71` remains untouched; second hotfix PR not yet opened.
+- Current head before this checkpoint update: `929906ba07563ac241a7d5e607d697c6defa1924`.
+- Base: remote `main=630fe9d4b4f7625f2199d3f7ee86d643417d32ce`.
+- PR state: draft PR `#94` is open and mergeable; final Build checks are green and Cloudflare Pages is pending. PR `#92` and hotfix PR `#93` are merged; unrelated PR `#71` remains untouched.
+- Scope: PR 6 2100ms production pacing, AppDetails logical-payload retry, fixed tests/docs, and checkpoint only. No PR 7, Daily workflow, business-rule threshold, UI, schema relaxation, auth, or CRM mutation change.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
