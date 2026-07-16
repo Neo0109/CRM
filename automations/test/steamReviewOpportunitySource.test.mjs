@@ -53,6 +53,40 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     assert.deepEqual(scan.candidates.map((candidate) => candidate.appId), ["1001", "1002", "1003", "1004", "1005"]);
   });
 
+  it("paces catalog pages and retries a 429 after the server cooldown", async () => {
+    const attempts = [];
+    const sleeps = [];
+    let firstAttempt = true;
+    const scan = await scanSteamPcCatalog({
+      pageSize: 2,
+      requestDelayMs: 100,
+      retryBaseDelayMs: 50,
+      retryJitterRatio: 0,
+      fetchTextImpl: async (url) => {
+        const start = Number(new URL(url).searchParams.get("start"));
+        attempts.push(start);
+        if (firstAttempt) {
+          firstAttempt = false;
+          const error = new Error("429 Too Many Requests");
+          error.status = 429;
+          error.retryAfterMs = 700;
+          throw error;
+        }
+        const page = fixture.catalog_pages.find((item) => item.start === start);
+        assert.ok(page, `unexpected catalog start ${start}`);
+        return JSON.stringify(page.payload);
+      },
+      sleepImpl: async (milliseconds) => {
+        sleeps.push(milliseconds);
+      }
+    });
+
+    assert.equal(scan.summary.scanComplete, true);
+    assert.deepEqual(attempts, [0, 0, 2, 4]);
+    assert.ok(sleeps.includes(700), `expected Retry-After wait, got ${sleeps.join(",")}`);
+    assert.ok(sleeps.filter((value) => value === 100).length >= 2);
+  });
+
   it("uses the localized catalog summary only to prefilter official lookups", () => {
     const candidates = fixture.catalog_pages.flatMap((page) => parseSteamCatalogPage(page.payload, { start: page.start }).candidates);
     const prefiltered = prefilterSteamReviewCandidates(candidates);
@@ -80,6 +114,34 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     assert.equal(summary.negativeReviews, 200);
     assert.equal(summary.totalReviews, 1000);
     assert.equal(summary.positiveRate, 80);
+  });
+
+  it("honors Retry-After before bounded exponential retry with deterministic jitter", async () => {
+    const sleeps = [];
+    let calls = 0;
+    const summary = await fetchSteamReviewSummary("1003", {
+      requestDelayMs: 0,
+      retryBaseDelayMs: 100,
+      retryMaxDelayMs: 1000,
+      retryJitterRatio: 0,
+      sleepImpl: async (milliseconds) => {
+        sleeps.push(milliseconds);
+      },
+      fetchJsonImpl: async () => {
+        calls += 1;
+        if (calls <= 2) {
+          const error = new Error("429 Too Many Requests");
+          error.status = 429;
+          if (calls === 1) error.retryAfterMs = 500;
+          throw error;
+        }
+        return fixture.review_responses["1003"];
+      }
+    });
+
+    assert.equal(summary.status, "available");
+    assert.equal(calls, 3);
+    assert.deepEqual(sleeps, [500, 200]);
   });
 
   it("requires both the catalog tag and official store metadata for current EA", () => {
@@ -171,7 +233,7 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     });
 
     assert.deepEqual(reviewCalls, ["1002", "1003", "1004", "1005"]);
-    assert.deepEqual(detailsCalls, reviewCalls);
+    assert.deepEqual(detailsCalls, ["1002", "1003", "1005"]);
     assert.equal(result.summary.prefilterMatches, 4);
     assert.equal(result.summary.officialReviewsConfirmed, 4);
     assert.equal(result.summary.qualified, 3);

@@ -59,6 +59,28 @@ describe("online daily v4 network boundary", () => {
     );
   });
 
+  it("preserves HTTP status and parses Retry-After for rate-limit policy", async () => {
+    let captured;
+    await assert.rejects(
+      () => fetchText("https://store.steampowered.com/search/results/?term=demo", {
+        fetchImpl: async () => ({
+          ok: false,
+          status: 429,
+          statusText: "Too Many Requests",
+          headers: { get: (name) => name.toLowerCase() === "retry-after" ? "7" : null },
+          text: async () => ""
+        })
+      }),
+      (error) => {
+        captured = error;
+        return /429 Too Many Requests/.test(error.message);
+      }
+    );
+
+    assert.equal(captured.status, 429);
+    assert.equal(captured.retryAfterMs, 7000);
+  });
+
   it("parses JSON through the same fetchText boundary", async () => {
     const payload = await fetchJson("https://example.com/data.json", {
       fetchImpl: async () => ({ ok: true, text: async () => "{\"ok\":true,\"count\":2}" })

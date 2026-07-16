@@ -15,11 +15,17 @@
       "simplified_chinese_positive_rate_minimum": 80
     },
     "china_heat_ops": {
-      "release_state": ["early_access", "released"],
+      "release_state": [
+        "early_access",
+        "released"
+      ],
       "simplified_chinese_reviews_minimum": 10000,
       "positive_rate_is_admission_gate": false
     },
-    "primary_lane_precedence": ["china_heat_ops", "ea_mobile_high_traction"],
+    "primary_lane_precedence": [
+      "china_heat_ops",
+      "ea_mobile_high_traction"
+    ],
     "preserve_all_matched_rules": true,
     "formal_lead_minimum": null,
     "formal_lead_maximum": null
@@ -29,7 +35,10 @@
     "scan_complete_required_before_sync": true,
     "crm_import_mode": "create-only",
     "existing_leads_may_be_updated": false,
-    "scheduled_delivery": ["new_discovery", "first_threshold_crossing"],
+    "scheduled_delivery": [
+      "new_discovery",
+      "first_threshold_crossing"
+    ],
     "suppression_history_requires_matching_success_receipt": true,
     "suppression_history_artifact_identity": "sha256",
     "failed_delivery_remains_retryable": true,
@@ -41,6 +50,15 @@
       "status=success",
       "sync_response.synced=true",
       "updated_count=0"
-    ]
+    ],
+    "rate_limit_policy": {
+      "minimum_request_interval_ms": 1000,
+      "maximum_retry_attempts": 10,
+      "retry_after_honored": true,
+      "exponential_backoff": true,
+      "jitter": true,
+      "catalog_page_pacing": true,
+      "appdetails_only_when_store_ea_evidence_required": true
+    }
   }
 }

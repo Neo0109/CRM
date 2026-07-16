@@ -45,7 +45,7 @@ Options:
   --pageSize=50
   --maxPages=N       Optional bounded scan; bounded output records scan_complete=false.
   --concurrency=2
-  --requestDelayMs=250`);
+  --requestDelayMs=1000`);
 }
 
 function todayInShanghai() {
@@ -85,7 +85,7 @@ async function main(argv) {
       pageSize: args.pageSize,
       maxPages: args.maxPages,
       concurrency: args.concurrency,
-      requestDelayMs: args.requestDelayMs ?? 250
+      requestDelayMs: args.requestDelayMs ?? 1000
     }
   });
   console.log(JSON.stringify({

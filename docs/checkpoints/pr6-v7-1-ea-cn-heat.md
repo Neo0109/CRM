@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, deployment, and production acceptance.
+Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotfix, merge, deployment, a strict complete backfill, create-only CRM sync, and proof that existing Leads were not modified. Do not enter PR 7.
 
 ## Completed
 
@@ -85,18 +85,72 @@ Deliver only PLAN.md PR 6: V7.1 EA / 中文热度全量通道, through merge, de
   - Both existing Daily workflow files remain byte-unchanged from `origin/main`.
   - `PLAN.md` remains byte-identical to `/Users/neo/Downloads/PLAN.md`; both SHA-256 values remain `bdcb4ff6c07ccb19ddfe4f261c4ea08bf0346bdcb762680c3bda7ef8aa053217`.
 
+- Post-merge production acceptance and Steam 429 diagnosis completed from remote truth:
+  - PR `#92` was squash-merged as `eaff172d947f47bb23b454653e9a05e26c338957`; current remote `main` at diagnosis is `26a2dfbb8db2b2f77cc2065186d4946111e8d07a`, and unrelated open PR `#71` remains untouched.
+  - Production acceptance run `29471392256` (`Steam review opportunities`, head `eaff172d`) ran from 2026-07-16 12:26 to 12:32 Asia/Shanghai and correctly failed its strict final gate.
+  - The committed receipt records `scan_complete=false`, `status=scan_incomplete`, `sync_response.synced=false`, `updated_count=0`; the create-only CRM sync step was skipped, so no Lead was written by the failed run.
+  - The scan stopped after 30 catalog pages: `catalog_entries_seen=3000`, `unique_apps_seen=2990`, while Steam reported `164918` catalog entries. The next catalog request returned HTTP 429.
+  - The partial catalog produced 437 prefilter candidates. The current candidate loop uses `concurrency=2`, but each candidate starts review-summary and AppDetails requests together, creating four-request bursts per chunk with only 250ms between chunks.
+  - AppDetails uses fixed 2.5s/5s 429 waits; review summaries use fixed 2s/4s waits. Neither path reads `Retry-After`, coordinates a shared cooldown, or adds jitter. The run logged 38 terminal AppDetails 429 failures from 12:29:04 through 12:32:21.
+  - Root-cause classification: current full-scan pacing is structurally unsafe, not a one-off cooldown-only failure. The unbounded catalog loop has no page delay, and the enrichment path can burst four requests while independent fixed retries continue traffic. Re-running unchanged after cooldown would risk repeating the same incomplete scan and is not accepted as a recovery.
+- PR 6 hotfix scope approved by the user's explicit continuation instruction:
+  - Preserve `scan_complete=true` as a non-negotiable sync gate and keep all incomplete scans unable to write CRM.
+  - Add source-level pacing that covers catalog, review-summary, and AppDetails requests; honor `Retry-After`; use bounded exponential backoff plus jitter and a coordinated cooldown after 429.
+  - Remove AppDetails requests only where store EA evidence is not required, without weakening either qualification rule or dual-match evidence.
+  - Add batch/checkpoint continuation only if the rate-limited full scan cannot finish safely within the workflow window.
+  - Keep both Daily workflows, business thresholds, schema success rules, create-only import, UI, database, secrets, PR 7+, and existing Lead mutation behavior unchanged.
+- Created remote-only branch `codex/pr6-steam-429-hotfix` from current `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`. The user's dirty local `codex/sourcing-rules-vnext` worktree remains read-only and untouched.
+
+- Added the PR 6 hotfix red regression contract without implementation:
+  - Network contract requires HTTP 429 errors to retain status and parsed `Retry-After`.
+  - Source contracts require catalog page pacing, retry after the server cooldown, bounded exponential retry with deterministic jitter, and no AppDetails request for a non-EA catalog candidate that already qualifies only through `china_heat_ops`.
+  - Workflow contract requires a 360-minute safety window, `concurrency=2`, and a 1000ms source-level minimum request interval.
+  - The next Build is expected to fail these new assertions against the unchanged production code; no success claim is recorded until that red result is observed.
+
+- Fixed red evidence recorded before implementation:
+  - Push Build `29473546745` at `f9552ce81ed788cbb617835f5d099cc5d28b9bbd` failed in `Test Steam review opportunity source` with the four intended rate-limit contract failures.
+  - The failures were catalog pacing/retry, review Retry-After/backoff, conditional AppDetails lookup, and workflow timeout/request interval. Earlier frontend, typecheck, CRM core, and unrelated tests in the job passed.
+- Implemented the scoped PR 6 hotfix:
+  - HTTP errors now retain status and parsed `Retry-After` metadata without changing the existing error message or curl-fallback boundary.
+  - PR 6 catalog, review, and required AppDetails calls share one serialized scheduler with a 1000ms minimum interval.
+  - HTTP 429 uses up to ten attempts, honors a longer server cooldown, and otherwise uses 2s-to-60s bounded exponential backoff plus jitter while holding the shared scheduler.
+  - AppDetails is skipped only for non-EA catalog candidates, where store EA evidence cannot affect `ea_mobile_high_traction`; catalog-EA and dual-match candidates still require official store confirmation.
+  - Workflow timeout is 360 minutes. No batch or continuation state was added because the first safe full run will determine whether the longer strict single-artifact window is sufficient.
+  - Strict `scan_complete`, no-sync-on-incomplete, create-only, `updated=0`, rule thresholds, both Daily workflows, and PR 7+ remain unchanged.
+  - Machine rule and human rule/delivery entrypoints now record the active rate-limit policy.
+
+- Implementation-head Build `29473780474` ran 28 Steam opportunity tests: 27 passed and only the pre-hotfix artifact fixture expected `store_details_confirmed=4`. The new source correctly reports 3 because the non-EA `china_heat_ops` fixture no longer performs an irrelevant AppDetails lookup. Updated that exact expected count; no source behavior or success gate changed.
+
+- Focused hotfix verification is green at `47f1e12a9d4fce6581d3e7c2b657bc6d43bb0d65`:
+  - Push Build `29473861656` succeeded.
+  - PR Build `29473863025` succeeded.
+  - Both runs passed frontend tests, frontend typecheck, Functions typecheck, CRM core tests, all 28 Steam review opportunity tests, and the frontend production build.
+  - Cloudflare Pages preview remained in progress at this checkpoint; it is not treated as complete yet.
+
+- Complete repository verification passed against exact remote head `4bd275a436a62b698e0a52a142decc15175ab6a4` in an isolated disposable validation copy:
+  - `npm install --no-package-lock` completed without creating a tracked lockfile.
+  - `npm run verify:all` passed frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 143/143, diagnostics, assistant model, sourcing learning, heartbeat, all three typechecks, sourcing/daily contracts, temporary production build, and final diff check.
+  - The new network Retry-After contract passed inside the full Daily/automation suite.
+  - Final `git diff --check` passed and `git status --porcelain` was empty; the disposable copy was removed.
+  - This validation is test evidence only. Remote GitHub checks, deployment, production health, and the final live backfill remain separate acceptance gates.
+
 ## Remaining
 
-- Commit and push the fully verified review closure as one coherent change.
-- Wait for the new PR `#92` checks and resolve only the two addressed review threads after all checks pass. Do not merge or squash in this task.
+- Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
+- Implement the smallest PR 6 source/network/workflow change that makes those tests green without weakening the strict scan or CRM write gates.
+- Run focused Steam opportunity tests, network/source contracts, schema/YAML checks, typechecks/builds, `npm run verify:all`, and diff-scope checks through the remote PR/Actions path.
+- Open and validate the PR 6 hotfix PR, close all review findings, squash-merge only after every required check is green, and verify deployment plus production `/api/health`.
+- Dispatch a fresh backfill, follow it to completion, and require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; compare pre/post existing-Lead evidence so create-only delivery cannot hide a rewrite.
+- Update this checkpoint with the final main SHA, hotfix PR/run/deployment handles, receipt metrics, CRM sync result, and formal PR 6 acceptance; then stop before PR 7.
 
 ## Next Action
 
-Commit the nine-file review closure and push `codex/pr6-v7-1-ea-cn-heat`, then wait for every new PR `#92` check before resolving the two addressed threads.
+Audit PR #93 diff scope, current main drift, review threads, mergeability, Build, and Cloudflare Pages. Resolve only hotfix findings, update the PR body, and mark the PR ready only when every pre-merge gate is green.
 
 ## Git Status
 
-- Branch: `codex/pr6-v7-1-ea-cn-heat`
-- Base: `origin/main` at `d98009bc5b8dad3ae81e304839fdc950a200248b`
-- Remote PR head: `9a2964ceb157c37b12e4ebaae45f4693a1a7ff00`.
-- Worktree: nine PR 6 implementation, rule, schema, test, workflow, documentation, and checkpoint files are uncommitted and ready to commit; no file outside the dedicated PR 6 worktree is in scope. Focused tests and two complete `verify:all` runs pass, while existing remote checks still cover only the prior head. `PLAN.md` remains unchanged.
+- Remote branch: `codex/pr6-steam-429-hotfix`.
+- Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
+- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only. Focused checks and full verify are green; final PR checks/review are pending.
+- PR state: PR `#92` merged; draft hotfix PR `#93` is open; unrelated PR `#71` remains open.
+- Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
