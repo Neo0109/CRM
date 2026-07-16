@@ -127,6 +127,13 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Both runs passed frontend tests, frontend typecheck, Functions typecheck, CRM core tests, all 28 Steam review opportunity tests, and the frontend production build.
   - Cloudflare Pages preview remained in progress at this checkpoint; it is not treated as complete yet.
 
+- Complete repository verification passed against exact remote head `4bd275a436a62b698e0a52a142decc15175ab6a4` in an isolated disposable validation copy:
+  - `npm install --no-package-lock` completed without creating a tracked lockfile.
+  - `npm run verify:all` passed frontend 112/112, backend 21/21, Functions 31/31, Daily/automation 143/143, diagnostics, assistant model, sourcing learning, heartbeat, all three typechecks, sourcing/daily contracts, temporary production build, and final diff check.
+  - The new network Retry-After contract passed inside the full Daily/automation suite.
+  - Final `git diff --check` passed and `git status --porcelain` was empty; the disposable copy was removed.
+  - This validation is test evidence only. Remote GitHub checks, deployment, production health, and the final live backfill remain separate acceptance gates.
+
 ## Remaining
 
 - Add fixed red tests for catalog pacing, Retry-After precedence, exponential backoff with deterministic jitter, shared cooldown, and conditional AppDetails fetching.
@@ -138,12 +145,12 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
 
 ## Next Action
 
-Run the complete repository verification contract against the exact remote PR #93 head in an isolated disposable validation copy, confirm no tracked output drift, then record the result before marking PR #93 ready.
+Audit PR #93 diff scope, current main drift, review threads, mergeability, Build, and Cloudflare Pages. Resolve only hotfix findings, update the PR body, and mark the PR ready only when every pre-merge gate is green.
 
 ## Git Status
 
 - Remote branch: `codex/pr6-steam-429-hotfix`.
 - Base: remote `main=26a2dfbb8db2b2f77cc2065186d4946111e8d07a`.
-- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only. Focused checks are green; full verify is pending.
+- Scope at this checkpoint: PR 6 network/source pacing, retry metadata/policy, workflow timing, fixed tests, active rule/docs, and checkpoint only. Focused checks and full verify are green; final PR checks/review are pending.
 - PR state: PR `#92` merged; draft hotfix PR `#93` is open; unrelated PR `#71` remains open.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
