@@ -70,19 +70,21 @@ Implement only PLAN.md PR 7: add the unbounded `china_joint` admission lane alon
   - frontend, backend, and Functions typechecks all passed;
   - `npm run verify:all` passed all repository tests, diagnostics, typechecks, sourcing/Daily contracts, temporary production frontend build, and its integrated diff check;
   - standalone `git diff --check` passed.
+- Committed the validated assertion/checkpoint closeout as `ec76983526065c23982ee3de1e273797321e70d3`, pushed `codex/pr7-v7-2-china-joint`, and opened ready PR `#98` against `main`: `https://github.com/Neo0109/CRM/pull/98`.
 
 ## Remaining
 
-- Commit, push, open PR, wait for checks/reviews/mergeability, and squash merge.
+- Wait for PR `#98` checks, reviews, and mergeability; fix only PR 7-scoped failures, then squash merge.
 - Verify post-merge Build, Cloudflare deployment, production `/api/health`, and PR 7 online acceptance; record final evidence and stop before PR 8.
 
 ## Next Action
 
-Commit the two validated stale-assertion fixes plus this checkpoint, push the complete PR 7 branch, and open the ready PR against `main`.
+Push this checkpoint-only delivery update, then wait for the final PR `#98` head checks and inspect mergeability, unresolved review threads, and the complete remote file scope.
 
 ## Git Status
 
 - Branch: `codex/pr7-v7-2-china-joint` tracking `origin/main`.
 - Worktree: isolated at `/Users/neo/Documents/GitHub/CRM-pr7-v7-2-china-joint`.
 - Commits on branch: setup `27ef1fc`, diagnosis `fe5cd0d`, red contract `436f863`, green decision `7019ed2`, and V7.2 activation `1701285`.
-- Expected uncommitted change before the final local commit: `automations/test/onlineDailyV4Decision.test.mjs`, `automations/test/onlineDailyV4QualityQuarantine.test.mjs`, and this checkpoint only.
+- Validated assertion/checkpoint closeout commit: `ec76983`; PR `#98` is open and ready against `main`.
+- Expected uncommitted change before the delivery-state commit: this checkpoint only.
