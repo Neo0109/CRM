@@ -21,6 +21,10 @@ on:
         required: false
         default: manual
         type: string
+      retry_from_slot:
+        description: Reuse the exact complete artifact from this sync-failed receipt slot without scanning Steam again.
+        required: false
+        type: string
   schedule:
     # Monday 03:23 Asia/Shanghai; isolated from both Daily automation windows.
     - cron: "23 19 * * 0"
@@ -75,9 +79,11 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             requested_mode="${{ inputs.mode }}"
             run_slot="${{ inputs.slot }}"
+            retry_from_slot="${{ inputs.retry_from_slot }}"
           else
             requested_mode="auto"
             run_slot="scheduled"
+            retry_from_slot=""
           fi
           requested_mode="${requested_mode:-auto}"
           run_slot="$(printf '%s' "${run_slot:-manual}" | tr '[:upper:] ' '[:lower:]-' | sed 's/[^a-z0-9_-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-40)"
@@ -91,24 +97,34 @@ jobs:
           echo "REPORT_DATE=$report_date" >> "$GITHUB_ENV"
           echo "REQUESTED_MODE=$requested_mode" >> "$GITHUB_ENV"
           echo "RUN_SLOT=$run_slot" >> "$GITHUB_ENV"
+          echo "RETRY_FROM_SLOT=$retry_from_slot" >> "$GITHUB_ENV"
           echo "PREPARATION_PATH=data/runtime/$report_date-$run_slot-steam-review-preparation.json" >> "$GITHUB_ENV"
           echo "IMPORT_PAYLOAD_PATH=data/runtime/$report_date-$run_slot-steam-review-import.json" >> "$GITHUB_ENV"
           echo "SYNC_RESPONSE_PATH=data/runtime/$report_date-$run_slot-steam-review-sync-response.json" >> "$GITHUB_ENV"
           echo "RECEIPT_PATH=data/steam_review_opportunity_runs/$report_date-$run_slot.json" >> "$GITHUB_ENV"
 
-      - name: Prepare full Steam review opportunity scan
+      - name: Prepare Steam review opportunity delivery
         id: prepare
         shell: bash
         run: |
           set +e
           log_file="$(mktemp)"
-          node automations/jobs/steam_review_opportunity_delivery.mjs prepare \
-            --date="$REPORT_DATE" \
-            --slot="$RUN_SLOT" \
-            --mode="$REQUESTED_MODE" \
-            --pageSize=100 \
-            --concurrency=2 \
-            --requestDelayMs=2100 2>&1 | tee "$log_file"
+          {
+            if [ -n "$RETRY_FROM_SLOT" ]; then
+              node automations/jobs/steam_review_opportunity_delivery.mjs retry \
+                --date="$REPORT_DATE" \
+                --slot="$RUN_SLOT" \
+                --failedSlot="$RETRY_FROM_SLOT"
+            else
+              node automations/jobs/steam_review_opportunity_delivery.mjs prepare \
+                --date="$REPORT_DATE" \
+                --slot="$RUN_SLOT" \
+                --mode="$REQUESTED_MODE" \
+                --pageSize=100 \
+                --concurrency=2 \
+                --requestDelayMs=2100
+            fi
+          } 2>&1 | tee "$log_file"
           status="${PIPESTATUS[0]}"
           set -e
 
@@ -206,7 +222,7 @@ jobs:
               payload = { synced: false, error: `CRM create-only import transport failed (curl ${process.env.CURL_STATUS})` };
             }
             fs.writeFileSync(process.env.SYNC_RESPONSE_PATH, `${JSON.stringify(payload, null, 2)}\n`);
-            NODE
+          NODE
 
             if node -e 'const r=require("./"+process.env.SYNC_RESPONSE_PATH); process.exit(r.synced === true && r.updated === 0 ? 0 : 1)'; then
               sync_status="success"

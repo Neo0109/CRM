@@ -89,49 +89,81 @@ export async function prepareSteamReviewOpportunityDelivery(options = {}) {
   });
   validateSteamReviewOpportunityArtifact(audit.artifact);
 
-  const artifactPath = relativeRepoPath(rootDir, audit.outputPath);
-  const artifactSha256 = steamReviewOpportunityArtifactSha256(audit.artifact);
-  const importPayloadFile = path.join(runtimeDir, `${reportDate}-${runSlot}-steam-review-import.json`);
-  const preparationFile = path.join(runtimeDir, `${reportDate}-${runSlot}-steam-review-preparation.json`);
-  let importPayloadPath = null;
-  let selection = { qualifiedCount: audit.artifact.scan_summary.qualified, previouslyQualifiedCount: 0, importCandidateCount: 0 };
+  return writeSteamReviewDeliveryPreparation({
+    rootDir,
+    artifact: audit.artifact,
+    artifactPath: relativeRepoPath(rootDir, audit.outputPath),
+    reportDate,
+    runSlot,
+    requestedMode,
+    mode,
+    priorArtifacts,
+    priorReceipts,
+    collectOptions
+  });
+}
 
-  if (audit.artifact.scan_summary.scan_complete === true) {
-    selection = selectSteamReviewDeliveryCandidates({ artifact: audit.artifact, priorArtifacts, priorReceipts, mode });
-    const report = buildSteamReviewImportReport({ artifact: audit.artifact, priorArtifacts, priorReceipts, mode });
-    await writeFile(importPayloadFile, serializeArtifact(report), "utf8");
-    importPayloadPath = relativeRepoPath(rootDir, importPayloadFile);
+export async function prepareSteamReviewOpportunityRetry(options = {}) {
+  const rootDir = path.resolve(options.rootDir ?? process.cwd());
+  const reportDate = requiredDate(options.reportDate);
+  const runSlot = safeSegment(options.runSlot ?? "retry");
+  const failedRunSlot = safeSegment(options.failedRunSlot ?? "");
+  const artifactFile = path.join(rootDir, `data/steam_review_opportunities/${reportDate}.json`);
+  const failedReceiptFile = path.join(rootDir, `data/steam_review_opportunity_runs/${reportDate}-${failedRunSlot}.json`);
+  const artifact = JSON.parse(await readFile(artifactFile, "utf8"));
+  const failedReceipt = JSON.parse(await readFile(failedReceiptFile, "utf8"));
+  validateSteamReviewOpportunityArtifact(artifact);
+  validateSteamReviewOpportunityReceipt(failedReceipt);
+
+  const artifactPath = relativeRepoPath(rootDir, artifactFile);
+  const artifactSha256 = steamReviewOpportunityArtifactSha256(artifact);
+  const retryErrors = [];
+  if (artifact.report_date !== reportDate) retryErrors.push("artifact report_date does not match retry date");
+  if (artifact.scan_summary.scan_complete !== true) retryErrors.push("retry requires a complete scan artifact");
+  if (failedReceipt.report_date !== reportDate) retryErrors.push("failed receipt report_date does not match retry date");
+  if (failedReceipt.status !== "sync_failed") retryErrors.push("retry source receipt must have status=sync_failed");
+  if (failedReceipt.scan_complete !== true) retryErrors.push("retry source receipt must have scan_complete=true");
+  if (failedReceipt.sync_response?.synced !== false) retryErrors.push("retry source receipt must prove sync_response.synced=false");
+  if (failedReceipt.created_count !== 0 || failedReceipt.deduplicated_count !== 0 || failedReceipt.updated_count !== 0) {
+    retryErrors.push("retry source receipt must prove zero CRM writes");
+  }
+  if (failedReceipt.artifact_path !== artifactPath) retryErrors.push("failed receipt artifact path does not match");
+  if (failedReceipt.artifact_sha256 !== artifactSha256) retryErrors.push("failed receipt artifact SHA-256 does not match");
+  if (failedReceipt.sourcing_run_type !== runTypeForMode(failedReceipt.mode)) {
+    retryErrors.push("failed receipt sourcing run type does not match mode");
+  }
+  if (retryErrors.length) {
+    throw new Error(`Steam review opportunity retry rejected:\n- ${retryErrors.join("\n- ")}`);
   }
 
-  const preparation = {
-    schema_version: STEAM_REVIEW_DELIVERY_SCHEMA_VERSION,
-    report_date: reportDate,
-    run_slot: runSlot,
-    requested_mode: requestedMode,
-    mode,
-    sourcing_run_type: runTypeForMode(mode),
-    generated_at: audit.artifact.generated_at,
-    scan_complete: audit.artifact.scan_summary.scan_complete === true,
-    ready_for_sync: audit.artifact.scan_summary.scan_complete === true,
-    artifact_path: artifactPath,
-    artifact_sha256: artifactSha256,
-    import_payload_path: importPayloadPath,
-    catalog_scan_count: audit.artifact.scan_summary.unique_apps_seen,
-    catalog_entries_seen: audit.artifact.scan_summary.catalog_entries_seen,
-    qualified_count: selection.qualifiedCount,
-    previously_qualified_count: selection.previouslyQualifiedCount,
-    import_candidate_count: selection.importCandidateCount,
-    failure_reason: audit.artifact.scan_summary.scan_complete === true ? null : "scan_incomplete",
-    collect_options: collectOptions
-  };
-  await writeFile(preparationFile, serializeArtifact(preparation), "utf8");
+  const artifactDir = path.join(rootDir, "data/steam_review_opportunities");
+  const receiptDir = path.join(rootDir, "data/steam_review_opportunity_runs");
+  const priorArtifacts = await readJsonDirectory(artifactDir);
+  const priorReceipts = await readJsonDirectory(receiptDir, { missingOk: true });
+  const mode = resolveSteamReviewRunMode(failedReceipt.mode, []);
+  const selection = selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts, priorReceipts, mode });
+  if (
+    failedReceipt.qualified_count !== selection.qualifiedCount
+    || failedReceipt.previously_qualified_count !== selection.previouslyQualifiedCount
+    || failedReceipt.import_candidate_count !== selection.importCandidateCount
+  ) {
+    throw new Error("Steam review opportunity retry rejected: failed receipt candidate counts do not match exact artifact");
+  }
 
-  return {
-    artifact: audit.artifact,
-    preparation,
-    preparationPath: preparationFile,
-    importPayloadPath: importPayloadPath ? importPayloadFile : null
-  };
+  await mkdir(path.join(rootDir, "data/runtime"), { recursive: true });
+  return writeSteamReviewDeliveryPreparation({
+    rootDir,
+    artifact,
+    artifactPath,
+    reportDate,
+    runSlot,
+    requestedMode: failedReceipt.requested_mode ?? failedReceipt.mode,
+    mode,
+    priorArtifacts,
+    priorReceipts,
+    collectOptions: null,
+    retrySourceReceiptPath: relativeRepoPath(rootDir, failedReceiptFile)
+  });
 }
 
 export function buildSteamReviewOpportunityReceipt({
@@ -457,6 +489,23 @@ async function main(argv) {
     return;
   }
 
+  if (args.command === "retry") {
+    const result = await prepareSteamReviewOpportunityRetry({
+      rootDir: process.cwd(),
+      reportDate: args.date,
+      runSlot: args.slot,
+      failedRunSlot: args.failedSlot
+    });
+    console.log(JSON.stringify({
+      ok: true,
+      retry_source_receipt_path: result.preparation.retry_source_receipt_path,
+      preparation_path: result.preparationPath,
+      import_payload_path: result.importPayloadPath,
+      preparation: result.preparation
+    }, null, 2));
+    return;
+  }
+
   if (args.command === "receipt") {
     const preparationPath = path.resolve(process.cwd(), args.preparation ?? "");
     const outputPath = path.resolve(process.cwd(), args.output ?? "");
@@ -479,6 +528,66 @@ async function main(argv) {
   }
 
   throw new Error(`Unknown command: ${args.command}`);
+}
+
+async function writeSteamReviewDeliveryPreparation({
+  rootDir,
+  artifact,
+  artifactPath,
+  reportDate,
+  runSlot,
+  requestedMode,
+  mode,
+  priorArtifacts,
+  priorReceipts,
+  collectOptions,
+  retrySourceReceiptPath = null
+}) {
+  const runtimeDir = path.join(rootDir, "data/runtime");
+  await mkdir(runtimeDir, { recursive: true });
+  const artifactSha256 = steamReviewOpportunityArtifactSha256(artifact);
+  const importPayloadFile = path.join(runtimeDir, `${reportDate}-${runSlot}-steam-review-import.json`);
+  const preparationFile = path.join(runtimeDir, `${reportDate}-${runSlot}-steam-review-preparation.json`);
+  let importPayloadPath = null;
+  let selection = { qualifiedCount: artifact.scan_summary.qualified, previouslyQualifiedCount: 0, importCandidateCount: 0 };
+
+  if (artifact.scan_summary.scan_complete === true) {
+    selection = selectSteamReviewDeliveryCandidates({ artifact, priorArtifacts, priorReceipts, mode });
+    const report = buildSteamReviewImportReport({ artifact, priorArtifacts, priorReceipts, mode });
+    await writeFile(importPayloadFile, serializeArtifact(report), "utf8");
+    importPayloadPath = relativeRepoPath(rootDir, importPayloadFile);
+  }
+
+  const preparation = {
+    schema_version: STEAM_REVIEW_DELIVERY_SCHEMA_VERSION,
+    report_date: reportDate,
+    run_slot: runSlot,
+    requested_mode: requestedMode,
+    mode,
+    sourcing_run_type: runTypeForMode(mode),
+    generated_at: artifact.generated_at,
+    scan_complete: artifact.scan_summary.scan_complete === true,
+    ready_for_sync: artifact.scan_summary.scan_complete === true,
+    artifact_path: artifactPath,
+    artifact_sha256: artifactSha256,
+    import_payload_path: importPayloadPath,
+    catalog_scan_count: artifact.scan_summary.unique_apps_seen,
+    catalog_entries_seen: artifact.scan_summary.catalog_entries_seen,
+    qualified_count: selection.qualifiedCount,
+    previously_qualified_count: selection.previouslyQualifiedCount,
+    import_candidate_count: selection.importCandidateCount,
+    failure_reason: artifact.scan_summary.scan_complete === true ? null : "scan_incomplete",
+    collect_options: collectOptions,
+    ...(retrySourceReceiptPath ? { retry_source_receipt_path: retrySourceReceiptPath } : {})
+  };
+  await writeFile(preparationFile, serializeArtifact(preparation), "utf8");
+
+  return {
+    artifact,
+    preparation,
+    preparationPath: preparationFile,
+    importPayloadPath: importPayloadPath ? importPayloadFile : null
+  };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
