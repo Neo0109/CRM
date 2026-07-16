@@ -108,7 +108,7 @@ jobs:
             --mode="$REQUESTED_MODE" \
             --pageSize=100 \
             --concurrency=2 \
-            --requestDelayMs=1000 2>&1 | tee "$log_file"
+            --requestDelayMs=2100 2>&1 | tee "$log_file"
           status="${PIPESTATUS[0]}"
           set -e
 

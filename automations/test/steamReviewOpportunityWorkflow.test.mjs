@@ -30,7 +30,7 @@ describe("Steam review opportunity workflow contract", () => {
     assert.match(workflow, /steam_review_opportunity_delivery\.mjs prepare/);
     assert.match(workflow, /timeout-minutes: 360/);
     assert.match(workflow, /--concurrency=2/);
-    assert.match(workflow, /--requestDelayMs=1000/);
+    assert.match(workflow, /--requestDelayMs=2100/);
     assert.match(workflow, /--mode="\$REQUESTED_MODE"/);
     assert.doesNotMatch(workflow, /--maxPages|--max-pages|max_pages/);
     assert.match(workflow, /ready_for_sync/);
@@ -73,7 +73,7 @@ describe("Steam review opportunity workflow contract", () => {
     assert.equal(machineRule.delivery_guardrails.bearer_secret, "CRM_AUTOMATION_TOKEN");
     assert.equal(machineRule.delivery_guardrails.crm_access_token_bearer_fallback, false);
     assert.equal(machineRule.delivery_guardrails.missing_bearer_secret_status, "sync_failed");
-    assert.equal(machineRule.delivery_guardrails.rate_limit_policy.minimum_request_interval_ms, 1000);
+    assert.equal(machineRule.delivery_guardrails.rate_limit_policy.minimum_request_interval_ms, 2100);
     assert.equal(machineRule.delivery_guardrails.rate_limit_policy.maximum_retry_attempts, 10);
     assert.equal(machineRule.delivery_guardrails.rate_limit_policy.retry_after_honored, true);
     assert.equal(machineRule.delivery_guardrails.rate_limit_policy.exponential_backoff, true);

@@ -238,7 +238,7 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - This workflow sends Bearer authentication only from `CRM_AUTOMATION_TOKEN`; it never falls back to `CRM_ACCESS_TOKEN`. A missing automation token produces an explicit failed sync response and `status=sync_failed` receipt, then fails the run.
 - Independent receipts under `data/steam_review_opportunity_runs/` record scan, qualification, prior-qualified suppression, import, dedupe, creation, update, and structured sync metrics.
 - Success requires `scan_complete=true`, `status=success`, `sync_response.synced=true`, `updated_count=0`, and created-plus-deduplicated parity with the import candidate count.
-- Production Steam requests share a 1000ms scheduler, honor `Retry-After`, and retry 429 with bounded exponential backoff plus jitter. AppDetails is fetched only when catalog EA evidence makes official store-state confirmation relevant; any still-missing required evidence keeps the scan incomplete.
+- Production Steam requests share a 2100ms scheduler, honor `Retry-After`, and retry 429 with bounded exponential backoff plus jitter. Required AppDetails HTTP-200 logical payload gaps use the same bounded retry policy. AppDetails is fetched only when catalog EA evidence makes official store-state confirmation relevant; any still-missing required evidence keeps the scan incomplete.
 
 ## Source Health And Calibration
 
