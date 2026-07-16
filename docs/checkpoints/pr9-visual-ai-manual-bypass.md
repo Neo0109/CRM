@@ -62,18 +62,28 @@ Implement PLAN.md PR 9 as an isolated `workflow_dispatch` visual-audit capabilit
 - Repository gate: `npm run verify:all` passes all configured tests, typechecks, contracts, temporary frontend build, and diff check.
 - Scope check: branch diff contains only the standalone visual audit workflow/modules/tests/schema/validator/docs/checkpoint, package script entries, and the Build fake-provider test step.
 - Publication routing: local `gh` push was rejected because its OAuth token lacks workflow-file scope. No remote branch or PR was created by that attempt. Per repository policy, publication is continuing through the installed GitHub App/API without changing credentials or permissions.
+- Feature PR: #102 (`Add manual visual AI audit bypass`) was published through the GitHub App with remote tree `b4b1f68a08fdca9c5e57a11c31f7320907da90f4`, exactly matching the locally verified tree.
+- PR gate evidence: both Build runs and Cloudflare preview succeeded; merge state was `CLEAN`/`MERGEABLE`; review decision was empty; review submissions and review threads were empty; the 14-file diff remained PR 9-only.
+- Feature merge: PR #102 was squash-merged as `7797ee37151586f6afb92781a306e385e2f6afdd` at 2026-07-17 01:51 Asia/Shanghai.
+- Post-merge Build: run `29521534703` succeeded for head SHA `7797ee37151586f6afb92781a306e385e2f6afdd`, including the focused visual AI test step.
+- Post-merge Cloudflare: production deployment check succeeded for head SHA `7797ee37151586f6afb92781a306e385e2f6afdd`.
+- Production health: `https://crm-pages.pages.dev/api/health` returned HTTP 200 with `ok=true` and `storage=supabase`.
+- Default zero-call acceptance: workflow run `29521718797` was dispatched without inputs from `main` and succeeded. Its runtime resolved `provider=disabled`, approval `false`, an empty distinct visual key/model, and all budgets `0`.
+- Default artifact acceptance: artifact `8384960491` records `status=skipped`, `skip_reason=provider_disabled`, `real_ai_requests=0`, `crm_import_calls=0`, and zero Lead/priority/pool mutations.
+- Daily/CRM non-regression: the PR diff changed none of the Daily, watchdog, Steam opportunity, Radar, Steam Trends, CRM import/API, or data paths. The merge SHA triggered only Build plus the explicitly dispatched visual audit.
+- Current data evidence at 2026-07-17 01:54 Asia/Shanghai: remote `main` still contains the 2026-07-16 Daily, Radar, Steam Trends, and sourcing-candidate artifacts. The 2026-07-16 morning, afternoon, and watchdog receipts each have `status=success` and parsed `sync_response.synced=true`.
 
 ## Remaining
 
-- Push, open the PR, wait for checks/reviews, confirm diff scope, and squash merge.
-- Verify Build, Cloudflare, production `/api/health`, default zero real AI requests, and unaffected daily/CRM paths.
-- Record final remote SHA and acceptance evidence.
+- Publish and merge this checkpoint-only final-acceptance update.
+- Verify the checkpoint merge Build, Cloudflare deployment, final `main` SHA, and production `/api/health`.
 
 ## Next Action
 
-Publish the verified final tree as one GitHub App commit on `codex/pr9-visual-ai-manual-bypass`, create the PR, and confirm the remote tree exactly matches the local verified tree.
+Create `codex/pr9-final-acceptance` from feature merge SHA `7797ee37151586f6afb92781a306e385e2f6afdd`, publish only this checkpoint update, pass PR gates, squash merge, and perform final deployment/health verification.
 
 ## Git Status
 
-- HEAD: `c7cb4cc` (`docs: record PR 9 verification`)
-- Working tree: publication-route checkpoint update ready to commit; implementation is otherwise clean
+- Remote feature main: `7797ee37151586f6afb92781a306e385e2f6afdd`
+- Local implementation HEAD before this checkpoint update: `71044db` (`docs: record PR 9 publication route`)
+- Working tree: final acceptance checkpoint update ready to commit; no implementation changes
