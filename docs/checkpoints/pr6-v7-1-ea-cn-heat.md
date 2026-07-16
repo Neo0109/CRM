@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotfix, merge, deployment, a strict complete backfill, create-only CRM sync, and proof that existing Leads were not modified. Do not enter PR 7.
+Complete only PLAN.md PR 6 production acceptance by reusing the exact completed scan artifact from run `29488582581` to recover its failed create-only sync. Do not run another scan and do not enter PR 7.
 
 ## Completed
 
@@ -173,22 +173,36 @@ Complete only PLAN.md PR 6 production acceptance through a scoped Steam 429 hotf
   - Any review failure, any required AppDetails failure for a still-eligible EA candidate, or any catalog failure remains terminal and prevents CRM sync.
   - No batch/continuation change is required because the strict single-artifact run completes within the 360-minute window; this evidence-ordering change also shortens enrichment.
 
+- PR `#95` evidence-relevance hotfix delivery completed:
+  - Final diff contained only the PR 6 AppDetails relevance source change, fixed source/artifact expectations, current-rule documentation, and this checkpoint. No workflow, Daily, threshold, UI, schema, auth, or CRM-mutation behavior changed.
+  - PR `#95` was marked ready and squash-merged as `096ad024c222746ae2ffcc0e24d0e0ae723ac25b` after both Build checks and Cloudflare Pages succeeded with `mergeable=MERGEABLE` and `mergeStateStatus=CLEAN`.
+  - Post-merge Build `29488448602`, Cloudflare Pages deployment, and production `https://crm-pages.pages.dev/api/health` all succeeded; health returned HTTP 200, `ok=true`, and `storage=supabase`.
+- The one authorized final complete scan ran exactly once as `29488582581` from merged head `096ad024`:
+  - The scan completed 1,650 catalog pages, saw 164,941 entries / 134,957 unique apps, confirmed all 708 official simplified-Chinese review summaries, required 19 AppDetails confirmations, and recorded 366 qualified plus 342 not-qualified opportunities with zero missing evidence and zero source failures.
+  - The committed artifact `data/steam_review_opportunities/2026-07-16.json` has `scan_complete=true` and SHA-256 `d96326998d302139c20d24583f64dd44215d4b2446ef43e36a54b016daf7add7`.
+  - Artifact validation and the scan gate passed. No second or concurrent Steam review scan was dispatched.
+  - The create-only sync step failed before its HTTP request because the inline Node heredoc terminator remained indented inside the shell loop. The receipt therefore records `status=sync_failed`, `sync_response.synced=false`, `created_count=0`, and `updated_count=0`; CRM was not written and existing Leads were not modified.
+- PR 6 sync-resume recovery scope is fixed without business re-planning:
+  - Correct the shell syntax and add a retry entrypoint that accepts only an exact prior `sync_failed` receipt whose `scan_complete=true`, `updated_count=0`, artifact path, and artifact SHA-256 match the committed complete artifact.
+  - Rebuild the same unbounded create-only import payload from that immutable artifact and preserve the failed run's backfill/scheduled mode; do not call Steam or run the source audit again.
+  - Keep all thresholds, create-only behavior, strict receipt parity, both Daily workflows, UI, schema, auth configuration, database, and PR 7+ unchanged.
+
 ## Remaining
 
-- Add a fixed red source contract proving that a below-80% EA-tagged candidate never calls AppDetails and remains a complete deterministic non-qualification.
-- Implement review-first, relevance-gated AppDetails lookup; update only affected fixed expectations and documentation.
-- Run focused tests, complete `npm run verify:all`, audit diff/Daily workflow scope, open and deliver the third PR 6 hotfix.
-- Verify post-merge Build, Cloudflare Pages, and production health, then dispatch one fresh full backfill.
-- Require `scan_complete=true`, `status=success`, `sync_response.synced=true`, and `updated_count=0`; update this checkpoint and stop before PR 7.
+- Add fixed red contracts for the current heredoc syntax failure and for an exact failed-receipt retry that reuses a complete artifact without calling the source audit.
+- Implement the smallest shell fix plus strict artifact-bound sync-resume preparation.
+- Run focused tests, complete `npm run verify:all`, audit diff/Daily workflow immutability, and deliver the PR 6 sync-resume hotfix through PR.
+- Verify post-merge Build, Cloudflare Pages, and production health, then dispatch one sync-only recovery against the already committed artifact. Do not run another full scan.
+- Require the recovery receipt to prove `scan_complete=true`, `status=success`, `sync_response.synced=true`, `updated_count=0`, and created-plus-deduplicated parity; update this checkpoint and stop before PR 7.
 
 ## Next Action
 
-Add the red evidence-relevance test on remote-only branch `codex/pr6-evidence-relevance-hotfix`, then implement the smallest review-first source change.
+Add the two fixed sync-resume red contracts on remote-only branch `codex/pr6-sync-resume-hotfix`; do not dispatch any workflow during implementation.
 
 ## Git Status
 
-- Remote branch: `codex/pr6-evidence-relevance-hotfix`.
-- Base: remote `main=68500448f2bf384261c71ac606521b8454afd17b`, including the failed final-run artifact and receipt.
-- Scope: PR 6 review-first AppDetails relevance gate, fixed tests/docs, and checkpoint only. No PR 7, Daily workflow, threshold, UI, schema relaxation, auth, or CRM mutation change.
-- PR state: PR `#92`, `#93`, and `#94` are merged; unrelated PR `#71` remains untouched; third hotfix PR not yet opened.
+- Remote branch: `codex/pr6-sync-resume-hotfix`.
+- Base: remote `main=89fa10122d3e509a4845adaf890ea5ec83f58881`, including the exact complete scan artifact and its pre-HTTP `sync_failed` receipt.
+- Scope: PR 6 exact-artifact sync resume, heredoc syntax repair, fixed tests/docs, and checkpoint only. No new scan, PR 7, Daily workflow, threshold, UI, schema relaxation, auth configuration, or non-create-only CRM behavior.
+- PR state: PR `#92`, `#93`, `#94`, and `#95` are merged; unrelated PR `#71` remains untouched; sync-resume hotfix PR not yet opened.
 - Local workspace: `/Users/neo/Documents/GitHub/CRM` remains on the user's dirty `codex/sourcing-rules-vnext` branch and has not been edited, staged, committed, switched, or used as production truth.
