@@ -328,7 +328,7 @@ describe("Steam simplified-Chinese review opportunity source", () => {
     });
 
     assert.deepEqual(reviewCalls, ["1002", "1003", "1004", "1005"]);
-    assert.deepEqual(detailsCalls, ["1002", "1003", "1005"]);
+    assert.deepEqual(detailsCalls, ["1003", "1005"]);
     assert.equal(result.summary.prefilterMatches, 4);
     assert.equal(result.summary.officialReviewsConfirmed, 4);
     assert.equal(result.summary.qualified, 3);
