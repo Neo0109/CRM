@@ -1,4 +1,4 @@
-import type { SourcingLearningReport, SourcingLearningSignalStats } from "./types";
+import type { SourcingLearningReport, SourcingLearningSignalStats, SourcingPrecisionCohortKey, SourcingPrecisionStats } from "./types";
 
 type OutcomeKey = "positive" | "negative" | "intermediate" | "pending";
 type Tone = "pass" | "fail" | "warn" | "unknown";
@@ -34,6 +34,19 @@ export type LearningSignalSection = {
   items: LearningSignalItem[];
 };
 
+export type LearningCohortItem = {
+  key: SourcingPrecisionCohortKey;
+  label: string;
+  resolvedSamples: number;
+  excludedSamples: number;
+  positive: number;
+  negative: number;
+  precisionLabel: string;
+  provisional: boolean;
+  helper: string;
+  tone: Tone;
+};
+
 export type SourcingLearningView = {
   sampleStatus: {
     ready: boolean;
@@ -47,22 +60,33 @@ export type SourcingLearningView = {
   negativeSamples: LearningViewMetric;
   gradeItems: LearningViewListItem[];
   dropReasonItems: LearningViewListItem[];
+  cohortItems: LearningCohortItem[];
   signalSections: LearningSignalSection[];
   emptyHints: string[];
 };
 
 const sampleThreshold = 30;
 const gradeOrder = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
+const cohortOrder: { key: SourcingPrecisionCohortKey; label: string }[] = [
+  { key: "regular", label: "常规 Sourcing" },
+  { key: "ea_mobile_high_traction", label: "EA 高热" },
+  { key: "china_heat_ops", label: "中文热度" },
+  { key: "initial_backfill", label: "initial_backfill" },
+  { key: "unclassified", label: "未分类旧样本" }
+];
 
 export function buildSourcingLearningView(report: SourcingLearningReport): SourcingLearningView {
-  const resolvedSamples = report.outcomes.positive + report.outcomes.negative;
-  const ready = resolvedSamples >= sampleThreshold || report.recommendations_ready;
+  const regular = report.precision.cohorts.regular;
+  const resolvedSamples = regular.resolved_samples;
+  const ready = !regular.provisional;
   const outcomeCards: LearningViewMetric[] = [
-    { key: "positive", label: "正向样本", value: report.outcomes.positive, helper: "跟进/推进或高评级", tone: "pass" },
-    { key: "negative", label: "负向样本", value: report.outcomes.negative, helper: "淘汰或低评级", tone: "fail" },
-    { key: "intermediate", label: "中间状态", value: report.outcomes.intermediate, helper: "待评测/测试/观察", tone: "warn" },
-    { key: "pending", label: "待定样本", value: report.outcomes.pending, helper: "未形成明确结果", tone: "unknown" }
+    { key: "positive", label: "正向样本", value: report.outcomes.positive, helper: "待评测/测试/跟进/推进或 B+ 以上", tone: "pass" },
+    { key: "negative", label: "负向样本", value: report.outcomes.negative, helper: "淘汰或 C+ 以下", tone: "fail" },
+    { key: "intermediate", label: "观察样本", value: report.outcomes.intermediate, helper: "观察中，不进入精度分母", tone: "warn" },
+    { key: "pending", label: "待定样本", value: report.outcomes.pending, helper: "未处理/未完成评测，不进入分母", tone: "unknown" }
   ];
+
+  const cohortItems = cohortOrder.map(({ key, label }) => buildCohortItem(key, label, report.precision.cohorts[key]));
 
   const gradeItems = Object.entries(report.grade_distribution)
     .map(([label, count]) => ({ label, count }))
@@ -84,20 +108,69 @@ export function buildSourcingLearningView(report: SourcingLearningReport): Sourc
     sampleStatus: {
       ready,
       resolvedSamples,
-      threshold: sampleThreshold,
-      label: ready ? "可做方向性复盘" : "样本积累中",
-      helper: ready
-        ? `已有 ${resolvedSamples} 个明确结果样本，可做方向性复盘。`
-        : `当前明确结果样本 ${resolvedSamples}/${sampleThreshold}，先看分布和重复模式。`
+      threshold: report.precision.minimum_resolved_samples ?? sampleThreshold,
+      label: sampleStatusLabel(regular),
+      helper: sampleStatusHelper(regular, report.precision.minimum_resolved_samples ?? sampleThreshold)
     },
     outcomeCards,
     positiveSamples: outcomeCards[0],
     negativeSamples: outcomeCards[1],
     gradeItems,
     dropReasonItems,
+    cohortItems,
     signalSections,
     emptyHints: buildEmptyHints({ gradeItems, dropReasonItems, signalSections })
   };
+}
+
+function buildCohortItem(key: SourcingPrecisionCohortKey, label: string, stats: SourcingPrecisionStats): LearningCohortItem {
+  return {
+    key,
+    label,
+    resolvedSamples: stats.resolved_samples,
+    excludedSamples: stats.excluded_samples,
+    positive: stats.positive,
+    negative: stats.negative,
+    precisionLabel: formatPrecision(stats.precision),
+    provisional: stats.provisional,
+    helper: cohortHelper(key, stats),
+    tone: cohortTone(stats)
+  };
+}
+
+function sampleStatusLabel(regular: SourcingPrecisionStats) {
+  if (regular.provisional) return "常规通道 provisional";
+  if (regular.status === "below_target") return "常规通道需收紧误判规则";
+  return "常规通道精度达标";
+}
+
+function sampleStatusHelper(regular: SourcingPrecisionStats, threshold: number) {
+  if (regular.provisional) {
+    return `常规通道已解决 ${regular.resolved_samples}/${threshold}，provisional；继续积累，不自动修改生产规则。`;
+  }
+  if (regular.status === "below_target") {
+    return `常规通道精度 ${formatPrecision(regular.precision)}，低于 ${formatPrecision(regular.target)}；定位并收紧误判规则，不使用数量控制。`;
+  }
+  return `常规通道精度 ${formatPrecision(regular.precision)}，达到 ${formatPrecision(regular.target)} 目标；继续监测且不自动修改生产规则。`;
+}
+
+function cohortHelper(key: SourcingPrecisionCohortKey, stats: SourcingPrecisionStats) {
+  const base = `已解决 ${stats.resolved_samples} · 正向 ${stats.positive} · 负向 ${stats.negative} · 排除 ${stats.excluded_samples}`;
+  if (key === "regular" && stats.status === "below_target") return `${base} · 收紧误判规则，不使用数量控制`;
+  if (stats.provisional) return `${base} · provisional`;
+  if (key === "regular") return `${base} · 80% 目标${stats.target_met ? "达标" : "未达标"}`;
+  return `${base} · 独立观察`;
+}
+
+function cohortTone(stats: SourcingPrecisionStats): Tone {
+  if (stats.status === "below_target") return "fail";
+  if (stats.status === "meets_target") return "pass";
+  if (stats.provisional) return "warn";
+  return "unknown";
+}
+
+function formatPrecision(value: number | null) {
+  return value === null ? "—" : `${Number((value * 100).toFixed(2))}%`;
 }
 
 function buildSignalSection(

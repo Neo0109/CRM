@@ -117,10 +117,18 @@ function SourcingLearningBlock({ report }: { report: SourcingLearningReport | nu
         <span>Sourcing 学习</span>
         <h3>人工决策复盘</h3>
       </div>
-      <strong>{`${view.sampleStatus.resolvedSamples}/${view.sampleStatus.threshold} 明确样本`}</strong>
+      <strong>{`${view.sampleStatus.resolvedSamples}/${view.sampleStatus.threshold} 常规样本`}</strong>
     </div>
     <>
       <p><b>{view.sampleStatus.label}</b>：{view.sampleStatus.helper}</p>
+      <h4>精度与 cohort</h4>
+      <div className="business-metric-grid">
+        {view.cohortItems.map((item) => <div className={`business-metric metric-status-${item.tone}`} key={item.key}>
+          <span>{item.label}</span>
+          <strong>{item.precisionLabel}</strong>
+          <small>{item.helper}</small>
+        </div>)}
+      </div>
       <h4>正向样本 / 负向样本</h4>
       <div className="business-metric-grid">
         {view.outcomeCards.map((card) => <div className={`business-metric metric-status-${card.tone}`} key={card.key}>

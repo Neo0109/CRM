@@ -32,6 +32,14 @@
   - `npm run test:sourcing-learning`（9/9 tests pass）
   - `npm run typecheck:functions`
   - 独立 worktree 初始缺少依赖，已用 `npm install --no-package-lock --ignore-scripts` 恢复本地依赖；未改依赖版本或锁文件。
+- 已完成前端 TDD 步骤：
+  - 先扩展 `sourcingLearningContract` / `sourcingLearningView` 测试，确认旧视图仍以全局样本判断 readiness 且没有 cohort 展示（7 tests 中 5 fail）。
+  - 已同步 API 类型，新增常规、EA 高热、中文热度、`initial_backfill`、未分类旧样本五个互斥 cohort 的精度卡片。
+  - 常规通道少于 30 个 resolved 样本显示 `provisional`；达到样本门槛后才显示 80% 达标或“收紧误判规则”。
+  - 正向/负向/观察/待定帮助文案已与分母边界一致，并明确低精度不使用数量控制。
+- 前端窄验证已通过：
+  - `npx tsx --test app/frontend/test/sourcingLearningContract.test.mjs app/frontend/test/sourcingLearningView.test.mjs`（7/7 tests pass）
+  - `npm run typecheck --workspace app/frontend`
 
 ## Approved Implementation Slice
 
@@ -59,7 +67,6 @@
 
 ## Remaining
 
-- 更新现有 Sourcing Learning 前端类型/视图，使 UI 不再混用全局样本 readiness，并展示互斥 cohort 与常规精度。
 - 运行窄测试、类型/契约检查、`verify:all` 和 `git diff --check`。
 - 提交、推送、创建并验收 PR；处理 CI、review threads、mergeability 和范围。
 - squash merge 后验证 Build、Cloudflare Pages、生产 `/api/health` 和 PR 8 线上验收条件。
@@ -75,10 +82,10 @@
 
 ## Next Action
 
-提交核心 TDD 步骤；随后以现有 view-model 测试保护前端精度/cohort 展示，运行前端窄测试与 typecheck。
+提交前端契约步骤；随后运行 PR 8 所有窄测试、完整前端测试、全 typecheck/build、`verify:all` 与 `git diff --check`，自行修复范围内失败。
 
 ## Git Status
 
 - HEAD: `0382d7de9a31b186153e27630684115d6beeb19df`
-- Working tree: 核心实现、学习测试和本 checkpoint 待提交；`node_modules` 为 ignored 安装产物。
+- Working tree: 前端类型、view-model、诊断组件、测试和本 checkpoint 待提交；`node_modules` 为 ignored 安装产物。
 - PR: 尚未创建。
