@@ -86,11 +86,19 @@ The watchdog checks:
 
 - Required files exist.
 - A successful sync receipt exists.
-- Formal Lead quantity has no minimum, maximum, or degraded threshold; zero qualified projects is healthy.
+- Formal Lead quantity has no minimum or maximum and never changes delivery health by itself.
 - V7 candidate-audit `new_qualified_count` and `push_pool_count` must match the Daily report, and any mismatch is blocking.
 - Radar, Steam Trends, Steam market insights, and Steam genre signals report degraded warnings when below their targets.
 
 Production dedupe can turn many daily candidates into updates instead of newly created leads. The watchdog records `created_unprocessed`, `updated_unprocessed_visible`, and `visible_unprocessed` for diagnosis, but none of those counts is a health gate. Missing/invalid files, V7 qualified/push mismatch, and missing successful sync receipts decide whether recovery is needed.
+
+Daily receipts separately record `business_liveness_status`, `new_lead_count`, `consecutive_zero_days`, and `top_blocking_gates`. The deterministic replay command is:
+
+```bash
+npm run replay:daily-leads-liveness -- --from=2026-07-15 --to=2026-07-29
+```
+
+Two consecutive complete zero-Lead days are `degraded`; three are `unhealthy-business-liveness`. This business status is observability only: it does not change V7.2 admission, request low-quality backfill, set watchdog `needs_run`, dispatch recovery, or alter CRM sync success.
 
 For source-quality diagnosis, inspect the generator's `diagnostics.media_source_health`, nested `diagnostics.bilibili_probe.source_health`, retry counters, and `release_window_health`. These distinguish an upstream fetch failure from aggressive filtering, duplicate removal, weak product conversion, and near-launch routing. A source with repeated cloud failures should be disabled or replaced in the rule file; do not raise a global publication threshold to compensate for one unhealthy source.
 
