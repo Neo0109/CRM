@@ -11,7 +11,7 @@
     "candidates"
   ],
   "properties": {
-    "schema_version": { "type": "integer", "enum": [1] },
+    "schema_version": { "type": "integer", "enum": [1, 2] },
     "report_date": { "type": "string", "format": "date" },
     "generated_at": { "type": "string", "format": "date-time" },
     "sourcing_rule_version": { "type": "string" },
@@ -44,7 +44,16 @@
         "candidate": { "type": "integer", "minimum": 0 },
         "excluded": { "type": "integer", "minimum": 0 },
         "new_qualified_count": { "type": "integer", "minimum": 0 },
-        "push_pool_count": { "type": "integer", "minimum": 0 }
+        "push_pool_count": { "type": "integer", "minimum": 0 },
+        "steam_candidates_scheduled": { "type": "integer", "minimum": 0 },
+        "steam_candidates_reused": { "type": "integer", "minimum": 0 },
+        "steam_candidates_fresh_success": { "type": "integer", "minimum": 0 },
+        "steam_candidates_failed": { "type": "integer", "minimum": 0 },
+        "steam_candidates_deferred": { "type": "integer", "minimum": 0 },
+        "steam_candidates_evaluated": { "type": "integer", "minimum": 0 },
+        "backlog_unenriched_count": { "type": "integer", "minimum": 0 },
+        "scheduler_lane_counts": { "$ref": "#/$defs/schedulerLaneCounts" },
+        "evidence_snapshot_rejections": { "type": "integer", "minimum": 0 }
       },
       "additionalProperties": false
     },
@@ -83,7 +92,38 @@
         "source_links": { "type": "array", "items": { "type": "string" } },
         "steam_review_summary": { "$ref": "#/$defs/steamReviewSummary" },
         "ea_state": { "type": "string", "enum": ["yes", "no", "unknown"] },
-        "visual_state": { "$ref": "#/$defs/visualState" }
+        "visual_state": { "$ref": "#/$defs/visualState" },
+        "first_seen": { "type": "string", "format": "date" },
+        "last_seen": { "type": "string", "format": "date" },
+        "enrichment_status": { "type": "string", "enum": ["pending", "success", "failed"] },
+        "enrichment_attempts": { "type": "integer", "minimum": 0 },
+        "last_attempted_at": { "type": ["string", "null"], "format": "date-time" },
+        "last_enriched_at": { "type": ["string", "null"], "format": "date-time" },
+        "next_retry_date": { "type": ["string", "null"], "format": "date" },
+        "scheduler_lane": { "type": ["string", "null"], "enum": ["new", "backlog", "retry_refresh", "reuse", null] },
+        "evidence_snapshot": { "$ref": "#/$defs/evidenceSnapshot" }
+      },
+      "additionalProperties": false
+    },
+    "schedulerLaneCounts": {
+      "type": "object",
+      "required": ["new", "backlog", "retry_refresh"],
+      "properties": {
+        "new": { "type": "integer", "minimum": 0 },
+        "backlog": { "type": "integer", "minimum": 0 },
+        "retry_refresh": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "evidenceSnapshot": {
+      "type": ["object", "null"],
+      "required": ["contract_version", "captured_at", "expires_on", "dedupe_key", "evidence"],
+      "properties": {
+        "contract_version": { "type": "integer", "enum": [1] },
+        "captured_at": { "type": "string", "format": "date-time" },
+        "expires_on": { "type": "string", "format": "date" },
+        "dedupe_key": { "type": "string", "minLength": 1 },
+        "evidence": { "type": "object" }
       },
       "additionalProperties": false
     },
