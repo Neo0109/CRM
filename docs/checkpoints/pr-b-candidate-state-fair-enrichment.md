@@ -64,10 +64,12 @@ Candidate lifecycle, cache validity, and lane scheduling become independently te
 - Confirmed RED from the exact GitHub API branch tarball: the focused test fails with `ERR_MODULE_NOT_FOUND` for `online_daily_v4_candidate_state.mjs`, before any implementation exists.
 - Implemented pure candidate state/evidence snapshot logic in `9ea66587af51cf6fbb0a897273b6a7cfda4fdbe3` and deterministic 4:3:2 scheduling in `c856f3b7c0c8ab1d3a5187b75b1553667df9908b`.
 - Focused core run on `929185824673ed352a2ea80039c282e00138f133` passed 7 of 8 contracts: valid TTL reuse, invalid snapshot recording, v1 no-reuse, same-day cooldown, exact 40/30/20 scheduling, work conservation, 260/260 three-run coverage, 86 duplicate-success reuse, and V7.2 audit parity. The sole expected failure is the still-v1-only schema/validator.
+- Added backward-compatible schema v2 in `5eea3629c4401a22618f81ab93ae8653d2ecf8e9` and v2 integrity validation in `b2775e4e2479b37f56ad4843ddd6791de9892e06` while preserving legacy v1 validation.
+- Exact API-tarball focused run on `b2775e4e2479b37f56ad4843ddd6791de9892e06` passed all 8 contracts.
 
 ## Remaining
 
-- Upgrade the candidate schema and Daily validator for backward-compatible v1/v2 contracts.
+- Wire history loading, cache reuse, fair scheduling, outcome merging, v2 artifact state, and observability into the Daily orchestrator/candidate audit.
 - Implement the smallest candidate-state and scheduler modules plus narrow orchestration/artifact wiring.
 - Run focused tests, Daily V4 tests, candidate validation, liveness replay, `verify:all`, and branch diff checks without running live generators or production writes.
 - Update this checkpoint with commits and validation evidence.
@@ -75,8 +77,8 @@ Candidate lifecycle, cache validity, and lane scheduling become independently te
 
 ## Next Action
 
-Upgrade the schema and validator, rerun the focused contract to full GREEN, and only then wire the orchestrator.
+Wire the orchestrator and candidate audit without changing V7.2 admission, then run focused and existing Daily tests.
 
 ## Git Status
 
-Remote branch `codex/pr-b-candidate-state-fair-enrichment` is at core-test head `929185824673ed352a2ea80039c282e00138f133` before this checkpoint update. All repository writes used GitHub App/API; focused runs used exact GitHub API tarballs outside every local CRM checkout/worktree.
+Remote branch `codex/pr-b-candidate-state-fair-enrichment` is at schema-green head `b2775e4e2479b37f56ad4843ddd6791de9892e06` before this checkpoint update. All repository writes used GitHub App/API; focused runs used exact GitHub API tarballs outside every local CRM checkout/worktree.
