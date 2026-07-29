@@ -322,6 +322,17 @@ describe("PR B candidate state and fair enrichment", () => {
     assert.equal(plan.scheduled.length, 90);
   });
 
+  it("wires candidate history, reuse, and fair scheduling into the Daily orchestrator", () => {
+    const source = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
+    assert.match(source, /loadSourcingCandidateHistory/);
+    assert.match(source, /reconstructSteamCandidateStates/);
+    assert.match(source, /scheduleSteamCandidateEnrichment/);
+    assert.match(source, /applySteamEnrichmentOutcomes/);
+    assert.match(source, /candidateStates:/);
+    assert.match(source, /steamEnrichmentMetrics:/);
+    assert.doesNotMatch(source, /prioritizeSteamCandidatesForReview\(rawCandidates[\s\S]*slice\(0, maxSteamDetails\)/);
+  });
+
   it("validates both legacy schema v1 and stateful schema v2 artifacts", () => {
     const rootDir = temporaryContractRoot();
     const legacy = JSON.parse(readFileSync(new URL("../../data/sourcing_candidates/2026-07-29.json", import.meta.url), "utf8"));
