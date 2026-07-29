@@ -33,5 +33,7 @@ jobs:
         run: node --test automations/test/steamReviewOpportunity*.test.mjs
       - name: Test visual AI manual audit
         run: node --test automations/test/visualAi*.test.mjs
+      - name: Test Daily Leads liveness replay
+        run: node --test automations/test/dailyLeadsLivenessReplay.test.mjs
       - name: Build frontend
         run: npm run build --workspace app/frontend
