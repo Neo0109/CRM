@@ -54,18 +54,19 @@ Business liveness becomes independently observable from technical delivery healt
 - Replay gate distribution is visible; the top three are `independent_quality_proof` (3017), `steam_review_summary` (3017), and `official_gameplay` (2943).
 - All non-git `verify:all` tasks passed from the exact GitHub API branch tarball. The tarball has no `.git`, so the final `git diff --check` task was delegated to Build CI through an explicit branch-diff step.
 - Build run `30473216862` passed on implementation SHA `fa840b8432d0c97d1775179c1c37502b9b796b06`, including the real replay test.
+- Opened draft PR `#105`.
+- PR-level Build run `30473758330` passed on head `83bccc51f26af0ac930c4bbdf48ffd651288af95`, including `Check branch diff` and `Test Daily Leads liveness replay`.
 
 ## Remaining
 
-- Commit this completed checkpoint.
-- Create the PR, wait for PR CI including branch-diff validation, and fix only PR A regressions if any.
-- Merge after CI.
+- Commit this PR/CI checkpoint update and wait for the final Build run.
+- Mark PR `#105` ready and merge after CI.
 - Verify merged `main`, production health, and production replay/business-liveness observability.
 
 ## Next Action
 
-Create the PR from `codex/pr-a-daily-leads-liveness`, wait for PR CI, then merge and perform PR A production acceptance.
+Wait for the checkpoint-update Build run, then mark PR `#105` ready, merge, and perform PR A production acceptance.
 
 ## Git Status
 
-Remote branch `codex/pr-a-daily-leads-liveness` at `17fbffefc6ad3dd5b8179e41057daab41b999d9e`; exact branch tarballs were used for tests and no local CRM checkout was used or modified.
+Remote branch `codex/pr-a-daily-leads-liveness` at `83bccc51f26af0ac930c4bbdf48ffd651288af95` before this checkpoint commit; exact branch tarballs were used for tests and no local CRM checkout was used or modified.
