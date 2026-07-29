@@ -69,19 +69,25 @@ Candidate lifecycle, cache validity, and lane scheduling become independently te
 - Added a dedicated orchestrator RED contract in `36fd40a3bbb732d92286ae7251c8e392589d0967`; it failed only because the old static slice still existed.
 - Wired v2 audit state in `bcb6b9aa80f090986440fbc9810275f02201dcb6` and the Daily history/scheduler/reuse/outcome path in `c257bede0cff01703f433f0721a7202f5fe35753`.
 - Exact API-tarball focused run on `c257bede0cff01703f433f0721a7202f5fe35753` passed all 9 contracts, including the orchestrator wiring contract.
+- Reconfirmed remote `main` at `bde5908f1e618ff33d3b5b724b52d09b87464380`, PR A #105 merged, the PR B branch at `18d2cbb848eb15b83a00f3296205734fa1627992`, and the unrelated open PR queue before final validation.
+- Installed all repository-declared npm workspace dependencies in an exact GitHub API head tarball under one-time `/tmp`; the previous missing `ajv` dependency was resolved.
+- The first complete validation reached the final diff task after all executable tests, typechecks, validators, liveness replay, and temporary frontend build passed; the only failure was environmental because an archive has no `.git` metadata.
+- Reconstructed an ephemeral Git baseline from exact API tarballs for remote `main` and PR B head, then reran `npm run verify:all`; the full command, including its internal `git diff --check`, exited 0.
+- Ran an independent `git diff --check` against the same remote-main baseline; it exited 0 with no output.
+- Final validation required no PR B code fix. No live generator, production write, local CRM checkout, or linked worktree was used.
 
 ## Remaining
 
-- Run focused and existing Daily tests, candidate validation, liveness replay, `verify:all`, and branch diff checks; fix only PR B regressions.
-- Implement the smallest candidate-state and scheduler modules plus narrow orchestration/artifact wiring.
-- Run focused tests, Daily V4 tests, candidate validation, liveness replay, `verify:all`, and branch diff checks without running live generators or production writes.
-- Update this checkpoint with commits and validation evidence.
-- Stop before PR creation.
+- Create the PR from `codex/pr-b-candidate-state-fair-enrichment` to `main` with the completed verification evidence.
+- Wait for required CI and fix only a demonstrated PR B regression if necessary.
+- Squash merge after all required checks pass.
+- Confirm the resulting remote `main` SHA and complete read-only online acceptance without a live generator or production-data write.
+- Stop after PR B; do not enter PR C.
 
 ## Next Action
 
-Run the complete approved validation matrix from the exact remote branch snapshot and inspect Build for the final branch head.
+Create the ready PR from the verified remote branch to `main`, then monitor required CI through squash merge and read-only online acceptance.
 
 ## Git Status
 
-Remote branch `codex/pr-b-candidate-state-fair-enrichment` is at integration-green head `c257bede0cff01703f433f0721a7202f5fe35753` before this checkpoint update. All repository writes used GitHub App/API; focused runs used exact GitHub API tarballs outside every local CRM checkout/worktree.
+Remote branch `codex/pr-b-candidate-state-fair-enrichment` was at verified integration head `18d2cbb848eb15b83a00f3296205734fa1627992` immediately before this checkpoint-only API commit. All repository writes used GitHub App/API; every validation run used exact GitHub API tarballs outside all local CRM checkouts/worktrees.
