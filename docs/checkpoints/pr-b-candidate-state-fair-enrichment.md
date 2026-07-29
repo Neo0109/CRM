@@ -59,12 +59,13 @@ Candidate lifecycle, cache validity, and lane scheduling become independently te
 - Created remote branch `codex/pr-b-candidate-state-fair-enrichment` from the exact baseline SHA.
 - Created this checkpoint before multi-file implementation.
 - No local CRM checkout or worktree was read, modified, checked out, or committed.
+- Read the exact remote orchestrator, Steam enrichment, candidate audit, schema, validator, Build, replay, and focused test boundaries.
+- Added the RED contract in `automations/test/onlineDailyV4CandidateStateScheduler.test.mjs` and wired it into Build; branch head is `df5eeb98c586436e6c56709c6fc2acfc36b90908`.
+- Confirmed RED from the exact GitHub API branch tarball: the focused test fails with `ERR_MODULE_NOT_FOUND` for `online_daily_v4_candidate_state.mjs`, before any implementation exists.
 
 ## Remaining
 
-- Read the exact remote implementation, schema, validator, and verification boundaries.
-- Add the RED contracts for state reconstruction, 7-day snapshot reuse, 4:3:2 work-conserving scheduling, production-distribution replay, V7.2 parity, invalid snapshot handling, and v1/v2 schema compatibility.
-- Confirm RED for missing implementation behavior.
+- Implement the pure candidate-state and fair-scheduler modules required by the RED contract.
 - Implement the smallest candidate-state and scheduler modules plus narrow orchestration/artifact wiring.
 - Run focused tests, Daily V4 tests, candidate validation, liveness replay, `verify:all`, and branch diff checks without running live generators or production writes.
 - Update this checkpoint with commits and validation evidence.
@@ -72,8 +73,8 @@ Candidate lifecycle, cache validity, and lane scheduling become independently te
 
 ## Next Action
 
-Read the exact files on this remote branch and commit the focused RED test contract before implementation.
+Implement the two pure modules, rerun the focused contract, and only then wire the orchestrator and artifact schema.
 
 ## Git Status
 
-Remote branch `codex/pr-b-candidate-state-fair-enrichment` is based on `bde5908f1e618ff33d3b5b724b52d09b87464380`. This file is the initial checkpoint commit; no local CRM checkout or worktree is used.
+Remote branch `codex/pr-b-candidate-state-fair-enrichment` is at RED head `df5eeb98c586436e6c56709c6fc2acfc36b90908` before this checkpoint update. All repository writes used GitHub App/API; the RED run used an exact GitHub API tarball outside every local CRM checkout/worktree.
