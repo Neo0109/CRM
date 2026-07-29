@@ -43,6 +43,7 @@ export function buildVerificationTasks({ tempRoot = defaultTempRoot } = {}) {
     task("backend-typecheck", "pnpm", ["--package=typescript@5.5.3", "dlx", "tsc", "-p", "app/backend/tsconfig.json", "--noEmit"]),
     task("functions-typecheck", "pnpm", ["--package=typescript@5.5.3", "dlx", "tsc", "-p", "functions/tsconfig.json", "--noEmit"]),
     task("sourcing-v6-4", "sh", ["-lc", "node scripts/test-sourcing-v6-3.mjs && node scripts/test-bilibili-probe.mjs"]),
+    task("daily-leads-liveness-replay", "node", ["scripts/replay-daily-leads-liveness.mjs", "--from=2026-07-15", "--to=2026-07-29"]),
     task("daily-contract", "node", ["scripts/validate-daily-contract.mjs", "--allowLowVolume"]),
     task("frontend-build-temp", "npm", ["exec", "--", "vite", "build", "--outDir", frontendDist, "--emptyOutDir"], { cwd: "app/frontend" }),
     task("diff-check", "git", ["diff", "--check"]),

@@ -224,7 +224,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           mkdir -p data/automation_runs
           node <<'NODE'
+          (async () => {
           const fs = require('node:fs');
+          const { analyzeDailyLeadsLivenessFromRepository } = await import('./automations/jobs/online_daily_leads_liveness.mjs');
           const response = Buffer.from(process.env.SYNC_RESPONSE_B64 || '', 'base64').toString('utf8');
           const generationLogTail = Buffer.from(process.env.GENERATION_LOG_B64 || '', 'base64').toString('utf8');
           const validationLogTail = Buffer.from(process.env.VALIDATION_LOG_B64 || '', 'base64').toString('utf8');
@@ -242,6 +244,19 @@ jobs:
           const steamEvidenceLost = generationStatus === 'success'
             ? reportPayload?.diagnostics?.steam_evidence_lost ?? null
             : failurePayload?.diagnostics?.steam_evidence_lost ?? null;
+          let businessLiveness = null;
+          let businessLivenessError = null;
+          if (generationStatus === 'success' && validationStatus === 'success') {
+            try {
+              businessLiveness = analyzeDailyLeadsLivenessFromRepository({
+                rootDir: process.cwd(),
+                endDate: reportDate,
+                days: 15
+              });
+            } catch (error) {
+              businessLivenessError = error instanceof Error ? error.message : String(error);
+            }
+          }
           let status = process.env.SYNC_STATUS || 'unknown';
           let failureStage = failurePayload?.failure_stage || process.env.FAILURE_STAGE || null;
           let failureReason = failurePayload?.failure_reason || process.env.FAILURE_REASON || null;
@@ -268,6 +283,12 @@ jobs:
             failure_reason: failureReason,
             volume_diagnostics: failurePayload?.volume_diagnostics ?? null,
             steam_evidence_lost: steamEvidenceLost,
+            business_liveness_status: businessLiveness?.business_liveness_status ?? 'unavailable',
+            business_liveness: businessLiveness,
+            business_liveness_error: businessLivenessError,
+            new_lead_count: businessLiveness?.current_day?.new_lead_count ?? null,
+            consecutive_zero_days: businessLiveness?.consecutive_zero_days ?? null,
+            top_blocking_gates: businessLiveness?.top_blocking_gates ?? [],
             generation_log_tail: generationLogTail,
             validation_log_tail: validationLogTail,
             watchdog_reasons: process.env.WATCHDOG_REASONS || '',
@@ -280,6 +301,10 @@ jobs:
             sync_response: response
           };
           fs.writeFileSync(`data/automation_runs/${reportDate}-watchdog.json`, `${JSON.stringify(payload, null, 2)}\n`);
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
           NODE
 
           git add "data/automation_runs/$REPORT_DATE-watchdog.json"

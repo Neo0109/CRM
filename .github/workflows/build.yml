@@ -15,6 +15,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check branch diff
+        run: git diff --check origin/main...HEAD
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -33,5 +37,7 @@ jobs:
         run: node --test automations/test/steamReviewOpportunity*.test.mjs
       - name: Test visual AI manual audit
         run: node --test automations/test/visualAi*.test.mjs
+      - name: Test Daily Leads liveness replay
+        run: node --test automations/test/dailyLeadsLivenessReplay.test.mjs
       - name: Build frontend
         run: npm run build --workspace app/frontend
