@@ -1,4 +1,5 @@
 import { hardDropReason } from "./online_daily_v4_decision.mjs";
+import { CANDIDATE_ARTIFACT_SCHEMA_VERSION, candidateStateForAudit } from "./online_daily_v4_candidate_state.mjs";
 import { normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
 import { isQualityQuarantineRule } from "./online_daily_v4_rules.mjs";
 import {
@@ -23,9 +24,12 @@ export function buildSourcingCandidateArtifact({
   mediaSignalsSeen = 0,
   mediaCandidates = [],
   candidatePools = emptyPools(),
-  publishedPools = emptyPools()
+  publishedPools = emptyPools(),
+  candidateStates = null,
+  steamEnrichmentMetrics = null
 }) {
   const poolIndex = buildPoolIndex(candidatePools, publishedPools);
+  const statefulArtifact = candidateStates instanceof Map && steamEnrichmentMetrics && typeof steamEnrichmentMetrics === "object";
   const rawSteamByKey = uniqueByDedupeKey(rawSteamCandidates, steamCandidateDedupeKey);
   const enrichedSteamByKey = uniqueByDedupeKey(enrichedSteamCandidates, steamCandidateDedupeKey);
   const records = new Map();
@@ -38,7 +42,8 @@ export function buildSourcingCandidateArtifact({
       raw,
       enriched,
       ruleVersion,
-      poolDecision: poolIndex.get(key)
+      poolDecision: poolIndex.get(key),
+      candidateState: statefulArtifact ? candidateStates.get(key) ?? null : null
     }));
   }
 
@@ -64,26 +69,27 @@ export function buildSourcingCandidateArtifact({
     : {};
 
   return {
-    schema_version: 1,
+    schema_version: statefulArtifact ? CANDIDATE_ARTIFACT_SCHEMA_VERSION : 1,
     report_date: reportDate,
     generated_at: capturedAt,
     sourcing_rule_version: ruleVersion,
     scan_summary: {
       steam_candidates_seen: rawSteamCandidates.length,
-      steam_candidates_enriched: enrichedSteamCandidates.length,
+      steam_candidates_enriched: statefulArtifact ? steamEnrichmentMetrics.steam_candidates_enriched : enrichedSteamCandidates.length,
       media_signals_seen: Number(mediaSignalsSeen) || 0,
       media_candidates_seen: mediaCandidates.length,
       records_total: candidates.length,
       formal: decisionCount("formal"),
       candidate: decisionCount("candidate"),
       excluded: decisionCount("excluded"),
-      ...v7Summary
+      ...v7Summary,
+      ...(statefulArtifact ? steamEnrichmentMetrics : {})
     },
     candidates
   };
 }
 
-function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }) {
+function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision, candidateState }) {
   const candidate = enriched ?? raw ?? {};
   const isV7 = isV7AdmissionRule(ruleVersion);
   const admission = steamAdmissionForRule(candidate, ruleVersion);
@@ -107,7 +113,7 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }
       : poolDecision?.decision ?? (fallbackExclusion ? "excluded" : "candidate");
   const matchedRules = [
     "steam_discovery",
-    enriched ? "steam_enriched" : null,
+    candidateState?.scheduler_lane === "reuse" ? "steam_evidence_reused" : enriched ? "steam_enriched" : null,
     poolDecision?.matchedRule,
     ...(admission?.matched_rules ?? []),
     isQualityQuarantineRule(ruleVersion) ? "quality_quarantine" : null
@@ -143,7 +149,8 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision }
     ]),
     steam_review_summary: reviewSummary,
     ea_state: eaState,
-    visual_state: visualState
+    visual_state: visualState,
+    ...(candidateState ? candidateStateForAudit(candidateState) : {})
   };
 }
 
