@@ -5,7 +5,13 @@ import path from "node:path";
 import { defaultBilibiliProbeDiagnostics } from "./bilibili_probe.mjs";
 import { serializeArtifact } from "./online_daily_v4_artifacts.mjs";
 import { buildSourcingCandidateArtifact } from "./online_daily_v4_candidate_audit.mjs";
+import {
+  applySteamEnrichmentOutcomes,
+  loadSourcingCandidateHistory,
+  reconstructSteamCandidateStates
+} from "./online_daily_v4_candidate_state.mjs";
 import { buildPools } from "./online_daily_v4_decision.mjs";
+import { scheduleSteamCandidateEnrichment } from "./online_daily_v4_enrichment_scheduler.mjs";
 import {
   dedupeByAppId,
   dedupeMediaSignals,
@@ -23,7 +29,7 @@ import {
   RULE_VERSION,
   validateDailyRules
 } from "./online_daily_v4_rules.mjs";
-import { buildSteamCandidateTasks, enrichSteamCandidates, prioritizeSteamCandidatesForReview } from "./online_daily_v4_steam_source.mjs";
+import { buildSteamCandidateTasks, enrichSteamCandidates, steamCandidateReviewWindowScore } from "./online_daily_v4_steam_source.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
 
@@ -93,8 +99,44 @@ const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).f
 const mediaSignals = await fetchMediaSignals(sourceContext);
 const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), ruleConfig.radarDiversity.limit, ruleConfig.radarDiversity);
 const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, sourceContext);
-const steamCandidatesForReview = prioritizeSteamCandidatesForReview(rawCandidates, sourceContext);
-const enrichedCandidates = await enrichSteamCandidates(steamCandidatesForReview.slice(0, maxSteamDetails), sourceContext);
+const candidateHistory = await loadSourcingCandidateHistory({
+  rootDir,
+  reportDate,
+  days: 7
+});
+const initialCandidateStates = reconstructSteamCandidateStates({
+  candidates: rawCandidates,
+  historicalArtifacts: candidateHistory,
+  reportDate
+});
+const enrichmentPlan = scheduleSteamCandidateEnrichment({
+  candidates: rawCandidates,
+  states: initialCandidateStates,
+  reportDate,
+  maxCandidates: maxSteamDetails,
+  reviewScore: (candidate) => steamCandidateReviewWindowScore(candidate, sourceContext)
+});
+const freshEnrichedCandidates = await enrichSteamCandidates(
+  enrichmentPlan.scheduled.map((item) => item.candidate),
+  sourceContext
+);
+const enrichmentOutcome = applySteamEnrichmentOutcomes({
+  states: initialCandidateStates,
+  scheduled: enrichmentPlan.scheduled,
+  reused: enrichmentPlan.reused,
+  deferred: enrichmentPlan.deferred,
+  snapshotRejections: enrichmentPlan.snapshot_rejections,
+  enrichedCandidates: freshEnrichedCandidates,
+  reportDate,
+  capturedAt
+});
+const candidateStates = enrichmentOutcome.states;
+const steamEnrichmentMetrics = enrichmentOutcome.metrics;
+const enrichedCandidates = enrichmentOutcome.evaluatedCandidates;
+sourcingDiagnostics.steam_enrichment = {
+  ...steamEnrichmentMetrics,
+  snapshot_rejections: enrichmentOutcome.snapshot_rejections
+};
 recordReleaseWindowHealth(sourcingDiagnostics, {
   steamCandidates: enrichedCandidates,
   mediaLeads: mediaLeadCandidates
@@ -150,14 +192,16 @@ const sourcingCandidateArtifact = buildSourcingCandidateArtifact({
   mediaSignalsSeen: mediaSignals.length,
   mediaCandidates: mediaLeadCandidates,
   candidatePools,
-  publishedPools: pools
+  publishedPools: pools,
+  candidateStates: candidateStates,
+  steamEnrichmentMetrics: steamEnrichmentMetrics
 });
 
 await writeJson(`data/sourcing_candidates/${reportDate}.json`, sourcingCandidateArtifact);
 await writeJson(`data/reports/${reportDate}.json`, buildDailyReport({
   pools,
   rawCount: rawCandidates.length,
-  enrichedCount: enrichedCandidates.length,
+  enrichedCount: steamEnrichmentMetrics.steam_candidates_enriched,
   mediaLeadCount: mediaLeadCandidates.length,
   reportDate,
   diagnostics: sourcingDiagnostics
@@ -183,7 +227,10 @@ console.log(JSON.stringify({
   rule_version: sourcingRuleVersion,
   report_date: reportDate,
   candidates_seen: rawCandidates.length,
-  candidates_enriched: enrichedCandidates.length,
+  candidates_enriched: steamEnrichmentMetrics.steam_candidates_enriched,
+  candidates_reused: steamEnrichmentMetrics.steam_candidates_reused,
+  candidates_evaluated: steamEnrichmentMetrics.steam_candidates_evaluated,
+  enrichment_scheduler_lanes: steamEnrichmentMetrics.scheduler_lane_counts,
   industry_signals: industrySignals.length,
   media_signals_seen: mediaSignals.length,
   media_lead_candidates: mediaLeadCandidates.length,
@@ -361,7 +408,7 @@ function generationFailurePayload({
     rule_version: sourcingRuleVersion,
     captured_at: capturedAt,
     candidates_seen: rawCandidates.length,
-    candidates_enriched: enrichedCandidates.length,
+    candidates_enriched: sourcingDiagnostics.steam_enrichment?.steam_candidates_enriched ?? enrichedCandidates.length,
     industry_signals: industrySignals.length,
     media_signals_seen: mediaSignals.length,
     media_lead_candidates: mediaLeadCandidates.length,

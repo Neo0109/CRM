@@ -192,6 +192,8 @@ function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
     }
   }
 
+  if (artifact.schema_version === 2) validateSourcingCandidateV2(artifact, candidates, errors);
+
   if (artifact.sourcing_rule_version === RULE_VERSION) {
     const newQualifiedCount = artifact.scan_summary?.new_qualified_count;
     const recordedPushPoolCount = artifact.scan_summary?.push_pool_count;
@@ -225,6 +227,94 @@ function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
   }
   for (const key of artifactFormalKeys) {
     if (!reportFormalKeys.has(key)) errors.push(`formal sourcing candidate missing from report pools: ${key}`);
+  }
+}
+
+function validateSourcingCandidateV2(artifact, candidates, errors) {
+  const summary = artifact.scan_summary ?? {};
+  const requiredSummaryFields = [
+    "steam_candidates_scheduled",
+    "steam_candidates_reused",
+    "steam_candidates_fresh_success",
+    "steam_candidates_failed",
+    "steam_candidates_deferred",
+    "steam_candidates_evaluated",
+    "backlog_unenriched_count",
+    "evidence_snapshot_rejections"
+  ];
+  for (const field of requiredSummaryFields) {
+    if (!Number.isInteger(summary[field]) || summary[field] < 0) {
+      errors.push("schema v2 scan_summary." + field + " must be a nonnegative integer");
+    }
+  }
+  const laneCounts = summary.scheduler_lane_counts;
+  for (const lane of ["new", "backlog", "retry_refresh"]) {
+    if (!Number.isInteger(laneCounts?.[lane]) || laneCounts[lane] < 0) {
+      errors.push("schema v2 scan_summary.scheduler_lane_counts." + lane + " must be a nonnegative integer");
+    }
+  }
+
+  if (summary.steam_candidates_enriched !== summary.steam_candidates_scheduled) {
+    errors.push("schema v2 steam_candidates_enriched must equal steam_candidates_scheduled");
+  }
+  if (summary.steam_candidates_scheduled !== summary.steam_candidates_fresh_success + summary.steam_candidates_failed) {
+    errors.push("schema v2 scheduled count must equal fresh success plus failed");
+  }
+  if (summary.steam_candidates_evaluated !== summary.steam_candidates_scheduled + summary.steam_candidates_reused) {
+    errors.push("schema v2 evaluated count must equal scheduled plus reused");
+  }
+  const laneTotal = ["new", "backlog", "retry_refresh"]
+    .reduce((sum, lane) => sum + Number(laneCounts?.[lane] ?? 0), 0);
+  if (laneTotal !== summary.steam_candidates_scheduled) {
+    errors.push("schema v2 scheduler lane counts must sum to steam_candidates_scheduled");
+  }
+  if (summary.steam_candidates_evaluated + summary.steam_candidates_deferred !== summary.steam_candidates_seen) {
+    errors.push("schema v2 evaluated plus deferred must equal steam_candidates_seen");
+  }
+  if (summary.backlog_unenriched_count > summary.steam_candidates_seen) {
+    errors.push("schema v2 backlog_unenriched_count cannot exceed steam_candidates_seen");
+  }
+
+  const requiredStateFields = [
+    "first_seen",
+    "last_seen",
+    "enrichment_status",
+    "enrichment_attempts",
+    "last_attempted_at",
+    "last_enriched_at",
+    "next_retry_date",
+    "scheduler_lane",
+    "evidence_snapshot"
+  ];
+  for (const candidate of candidates) {
+    if (!["steam", "multi_source"].includes(candidate?.source_type)) continue;
+    const key = String(candidate?.dedupe_key ?? "sourcing candidate");
+    for (const field of requiredStateFields) {
+      if (!(field in candidate)) errors.push(key + ": " + field + " is required for schema v2");
+    }
+    if (candidate.last_seen !== artifact.report_date) {
+      errors.push(key + ": last_seen must equal artifact report_date");
+    }
+    if (candidate.first_seen > candidate.last_seen) {
+      errors.push(key + ": first_seen cannot be after last_seen");
+    }
+    const snapshot = candidate.evidence_snapshot;
+    if (!snapshot) continue;
+    if (snapshot.contract_version !== 1) {
+      errors.push(key + ": evidence_snapshot contract_version must be 1");
+    }
+    if (snapshot.dedupe_key !== key) {
+      errors.push(key + ": evidence_snapshot dedupe_key must match candidate");
+    }
+    if (String(snapshot.evidence?.appId ?? "") !== String(candidate.steam_app_id ?? "")) {
+      errors.push(key + ": evidence_snapshot appId must match candidate");
+    }
+    if (snapshot.evidence?.hasDetails !== true) {
+      errors.push(key + ": evidence_snapshot must contain successful Steam details");
+    }
+    if (String(snapshot.captured_at ?? "").slice(0, 10) >= String(snapshot.expires_on ?? "")) {
+      errors.push(key + ": evidence_snapshot expires_on must be after captured_at");
+    }
   }
 }
 

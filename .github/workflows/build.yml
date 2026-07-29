@@ -39,5 +39,7 @@ jobs:
         run: node --test automations/test/visualAi*.test.mjs
       - name: Test Daily Leads liveness replay
         run: node --test automations/test/dailyLeadsLivenessReplay.test.mjs
+      - name: Test candidate state and fair enrichment
+        run: node --test automations/test/onlineDailyV4CandidateStateScheduler.test.mjs
       - name: Build frontend
         run: npm run build --workspace app/frontend
