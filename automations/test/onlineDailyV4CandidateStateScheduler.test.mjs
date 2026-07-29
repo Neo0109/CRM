@@ -14,7 +14,7 @@ import {
   reconstructSteamCandidateStates
 } from "../jobs/online_daily_v4_candidate_state.mjs";
 import { scheduleSteamCandidateEnrichment } from "../jobs/online_daily_v4_enrichment_scheduler.mjs";
-import { evaluateSteamRegularAdmission } from "../jobs/online_daily_v7_2_regular_admission.mjs";
+import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const validatorPath = fileURLToPath(new URL("../../scripts/validate-daily-contract.mjs", import.meta.url));
@@ -62,8 +62,8 @@ describe("PR B candidate state and fair enrichment", () => {
     assert.equal(plan.snapshot_rejections.length, 0);
     assert.deepEqual(plan.reused[0].enrichedCandidate, evidence);
     assert.deepEqual(
-      evaluateSteamRegularAdmission(plan.reused[0].enrichedCandidate),
-      evaluateSteamRegularAdmission(evidence)
+      admissionAudit(plan.reused[0].enrichedCandidate),
+      admissionAudit(evidence)
     );
   });
 
@@ -343,6 +343,31 @@ describe("PR B candidate state and fair enrichment", () => {
     assert.match(corruptResult.stdout + "\n" + corruptResult.stderr, /first_seen/);
   });
 });
+
+function admissionAudit(evidence) {
+  const artifact = buildSourcingCandidateArtifact({
+    reportDate: replayDate,
+    capturedAt: replayDate + "T12:00:00+08:00",
+    ruleVersion: "sourcing-rules-v7.2-china-joint",
+    rawSteamCandidates: [{
+      appId: evidence.appId,
+      title: evidence.title,
+      source: evidence.source,
+      reviewText: evidence.reviewText
+    }],
+    enrichedSteamCandidates: [evidence],
+    candidatePools: { push: [], watch: [], drop: [] },
+    publishedPools: { push: [], watch: [], drop: [] }
+  });
+  const record = artifact.candidates[0];
+  return {
+    decision: record.decision,
+    sourcing_lane: record.sourcing_lane,
+    matched_rules: record.matched_rules,
+    missing_evidence: record.missing_evidence,
+    exclusion_reasons: record.exclusion_reasons
+  };
+}
 
 function rawCandidate(index, overrides = {}) {
   return {
