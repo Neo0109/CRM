@@ -46,18 +46,26 @@ Business liveness becomes independently observable from technical delivery healt
 - Read the exact remote implementation boundaries for candidate audit, Daily validation, receipts, workflows, package verification, and adjacent tests.
 - Added the RED production-replay contract in commit `e472ca965a1e8cb77aa5570ecffac0cfc6a06608`.
 - Confirmed RED fails because `online_daily_leads_liveness.mjs` does not exist yet.
+- Implemented the pure analyzer and deterministic CLI, and added the fixed 2026-07-15 through 2026-07-29 replay to `verify:all`.
+- Wired the same analyzer into morning/afternoon and watchdog receipts with `business_liveness_status`, `new_lead_count`, `consecutive_zero_days`, and `top_blocking_gates`.
+- Kept delivery health and recovery independent: business liveness never changes V7.2 admission, sync status, watchdog `needs_run`, or workflow triggers.
+- Focused remote-snapshot tests passed: 4 liveness tests and 6 verification-contract tests.
+- Fixed production replay passed structurally and reported 15 consecutive zero-Lead days, rolling 7-day `0` nonzero days / `0` new Leads, and `unhealthy-business-liveness`.
+- Replay gate distribution is visible; the top three are `independent_quality_proof` (3017), `steam_review_summary` (3017), and `official_gameplay` (2943).
+- All non-git `verify:all` tasks passed from the exact GitHub API branch tarball. The tarball has no `.git`, so the final `git diff --check` task was delegated to Build CI through an explicit branch-diff step.
+- Build run `30473216862` passed on implementation SHA `fa840b8432d0c97d1775179c1c37502b9b796b06`, including the real replay test.
 
 ## Remaining
 
-- Implement the pure analyzer and CLI/repository verification wiring without changing admission.
-- Run focused tests and repository checks.
-- Update this checkpoint with evidence.
-- Create a draft PR and wait for CI.
+- Commit this completed checkpoint.
+- Create the PR, wait for PR CI including branch-diff validation, and fix only PR A regressions if any.
+- Merge after CI.
+- Verify merged `main`, production health, and production replay/business-liveness observability.
 
 ## Next Action
 
-Implement the pure analyzer and CLI, then wire the same result into Daily receipts without changing delivery-health recovery decisions.
+Create the PR from `codex/pr-a-daily-leads-liveness`, wait for PR CI, then merge and perform PR A production acceptance.
 
 ## Git Status
 
-Remote branch `codex/pr-a-daily-leads-liveness` at `e472ca965a1e8cb77aa5570ecffac0cfc6a06608`; local CRM checkout is not used or modified.
+Remote branch `codex/pr-a-daily-leads-liveness` at `17fbffefc6ad3dd5b8179e41057daab41b999d9e`; exact branch tarballs were used for tests and no local CRM checkout was used or modified.
