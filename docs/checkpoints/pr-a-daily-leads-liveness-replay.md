@@ -43,11 +43,12 @@ Business liveness becomes independently observable from technical delivery healt
 - Confirmed remote baseline, open PRs, empty Actions queue, and production health.
 - Created branch `codex/pr-a-daily-leads-liveness` from exact baseline SHA.
 - Created this checkpoint before multi-file implementation.
+- Read the exact remote implementation boundaries for candidate audit, Daily validation, receipts, workflows, package verification, and adjacent tests.
+- Added the RED production-replay contract in commit `e472ca965a1e8cb77aa5570ecffac0cfc6a06608`.
+- Confirmed RED fails because `online_daily_leads_liveness.mjs` does not exist yet.
 
 ## Remaining
 
-- Inspect current volume diagnostics, validator, receipt wiring, package scripts, and adjacent tests from the branch baseline.
-- Define the narrow RED contract for replay and liveness status.
 - Implement the pure analyzer and CLI/repository verification wiring without changing admission.
 - Run focused tests and repository checks.
 - Update this checkpoint with evidence.
@@ -55,8 +56,8 @@ Business liveness becomes independently observable from technical delivery healt
 
 ## Next Action
 
-Read the exact remote implementation boundaries and add the RED replay/liveness contract.
+Implement the pure analyzer and CLI, then wire the same result into Daily receipts without changing delivery-health recovery decisions.
 
 ## Git Status
 
-Remote branch `codex/pr-a-daily-leads-liveness` at the baseline; local CRM checkout is not used or modified.
+Remote branch `codex/pr-a-daily-leads-liveness` at `e472ca965a1e8cb77aa5570ecffac0cfc6a06608`; local CRM checkout is not used or modified.
