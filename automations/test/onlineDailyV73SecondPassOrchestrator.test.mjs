@@ -388,8 +388,8 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       false
     );
     assert.ok(patch.quality_proofs.some((item) => item.url === creatorPlaytest.link));
-    assert.ok(patch.quality_proofs.some((item) => item.url === mediaSignals[0].link));
-    assert.equal(patch.quality_proofs.some((item) => item.url === mediaSignals[1].link), false);
+    assert.ok(patch.quality_proofs.some((item) => item.url === mediaSignals[1].link));
+    assert.equal(patch.quality_proofs.some((item) => item.url === mediaSignals[2].link), false);
     assert.ok(patch.business_entrypoints.some((item) => item.value === officialBilibili.link));
     assert.match(patch.china_bilibili_value, /B站|社区|内容|玩法/);
 
