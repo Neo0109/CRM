@@ -3,10 +3,14 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
+import { buildPools } from "../jobs/online_daily_v4_decision.mjs";
 import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "../jobs/online_daily_v7_3_obtainable_evidence.mjs";
 
 const reportDate = "2026-07-30";
 const capturedAt = "2026-07-30T08:00:00+08:00";
+const chinaJointFixture = JSON.parse(
+  readFileSync(new URL("./fixtures/v7-2-china-joint-admission.json", import.meta.url), "utf8")
+);
 const firstQualityProof = {
   type: "official_festival_selection",
   source_id: "festival:indie-showcase",
@@ -93,6 +97,83 @@ describe("V7.3 candidate audit and schema contract", () => {
     ]);
   });
 
+
+  it("keeps a retained Steam china_joint formal Lead aligned with the V7.3 candidate audit", () => {
+    const jointCandidate = retainedJointSteamCandidate();
+    const pools = buildPools([jointCandidate], [], {
+      reportDate,
+      ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION
+    });
+    const jointArtifact = buildSourcingCandidateArtifact({
+      reportDate,
+      capturedAt,
+      ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
+      rawSteamCandidates: [jointCandidate],
+      enrichedSteamCandidates: [jointCandidate],
+      mediaSignalsSeen: 0,
+      mediaCandidates: [],
+      candidatePools: pools,
+      publishedPools: pools
+    });
+    const jointAudit = jointArtifact.candidates.find(
+      (item) => item.steam_app_id === jointCandidate.appId
+    );
+
+    assert.equal(pools.push.length, 1);
+    assert.equal(pools.new_qualified_count, 1);
+    assert.equal(pools.push[0].sourcing_lane, "china_joint");
+    assert.ok(jointAudit);
+    assert.equal(jointAudit.decision, "formal");
+    assert.equal(jointAudit.sourcing_lane, "china_joint");
+    assert.equal(
+      jointAudit.sourcing_rule_version,
+      V73_OBTAINABLE_EVIDENCE_RULE_VERSION
+    );
+    assert.deepEqual(jointAudit.failed_gate_details, []);
+    assert.deepEqual(jointAudit.next_evidence_actions, []);
+    assert.deepEqual(jointAudit.exclusion_reasons, []);
+    assert.equal(jointArtifact.scan_summary.new_qualified_count, 1);
+    assert.equal(jointArtifact.scan_summary.push_pool_count, 1);
+  });
+
+  it("keeps a retained media china_joint formal Lead aligned with the V7.3 candidate audit", () => {
+    const jointCandidate = retainedJointMediaCandidate();
+    const pools = buildPools([], [jointCandidate], {
+      reportDate,
+      ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION
+    });
+    const jointArtifact = buildSourcingCandidateArtifact({
+      reportDate,
+      capturedAt,
+      ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
+      rawSteamCandidates: [],
+      enrichedSteamCandidates: [],
+      mediaSignalsSeen: 1,
+      mediaCandidates: [jointCandidate],
+      candidatePools: pools,
+      publishedPools: pools
+    });
+    const jointAudit = jointArtifact.candidates.find(
+      (item) => item.steam_app_id === jointCandidate.steam_app_id
+    );
+
+    assert.equal(pools.push.length, 1);
+    assert.equal(pools.new_qualified_count, 1);
+    assert.equal(pools.push[0].sourcing_lane, "china_joint");
+    assert.ok(jointAudit);
+    assert.equal(jointAudit.decision, "formal");
+    assert.equal(jointAudit.sourcing_lane, "china_joint");
+    assert.equal(
+      jointAudit.sourcing_rule_version,
+      V73_OBTAINABLE_EVIDENCE_RULE_VERSION
+    );
+    assert.deepEqual(jointAudit.failed_gate_details, []);
+    assert.deepEqual(jointAudit.next_evidence_actions, []);
+    assert.deepEqual(jointAudit.exclusion_reasons, []);
+    assert.equal(jointArtifact.scan_summary.new_qualified_count, 1);
+    assert.equal(jointArtifact.scan_summary.push_pool_count, 1);
+  });
+
   it("emits schema version 3 for V7.3 while retaining PR B scan metrics", () => {
     assert.equal(artifact.schema_version, 3);
     assert.equal(artifact.scan_summary.steam_candidates_enriched, 1);
@@ -172,6 +253,98 @@ function steamCandidate(admissionEvidence) {
     movieCount: 1,
     score: 80,
     _indieAdmissionEvidence: admissionEvidence
+  };
+}
+
+
+function retainedJointSteamCandidate() {
+  const jointEvidence = retainedJointEvidence({
+    project: "V7.3 Retained Steam Joint",
+    steam_app_id: "9500002"
+  });
+  return {
+    appId: jointEvidence.steam_app_id,
+    title: jointEvidence.project,
+    source: "Steam retained china_joint audit fixture",
+    storeUrl: `https://store.steampowered.com/app/${jointEvidence.steam_app_id}/`,
+    steamDbUrl: `https://steamdb.info/app/${jointEvidence.steam_app_id}/`,
+    website: "https://retained-steam-joint.example",
+    hasDetails: true,
+    comingSoon: false,
+    releaseDate: "2026-06-01",
+    daysToRelease: -59,
+    alreadyReleased: true,
+    releaseTooSoon: false,
+    earlyAccess: false,
+    publisherOccupied: false,
+    chinaPartnerOccupied: false,
+    narrativeHeavy: false,
+    indiaTeam: false,
+    genres: ["Strategy", "Simulation"],
+    categories: ["Co-op"],
+    developers: ["Retained Steam Joint Studio"],
+    publishers: [],
+    contactMethods: [{ type: "Email", value: "bd@retained-steam-joint.example" }],
+    reviewText: "Positive",
+    recommendationCount: jointEvidence.recommendation_count,
+    screenshotCount: 6,
+    movieCount: 1,
+    score: 80,
+    chinaDemandEvidence: "The developer is currently seeking a China publishing partner.",
+    _indieAdmissionEvidence: releasedIndieEvidence(jointEvidence),
+    _chinaJointAdmissionEvidence: jointEvidence
+  };
+}
+
+function retainedJointMediaCandidate() {
+  const jointEvidence = retainedJointEvidence({
+    project: "V7.3 Retained Media Joint",
+    steam_app_id: "9500003"
+  });
+  return {
+    project: jointEvidence.project,
+    steam_app_id: jointEvidence.steam_app_id,
+    source: "Official media retained china_joint audit fixture",
+    links: ["https://retained-media-joint.example/current-event"],
+    risks: null,
+    bilibili_fit: "中国发行合作窗口明确。",
+    _officialSourceMatched: true,
+    _mediaItem: {
+      title: "V7.3 Retained Media Joint seeks a China publishing partner",
+      summary: "The developer is currently seeking China publishing cooperation.",
+      link: "https://retained-media-joint.example/current-event"
+    },
+    _steamEntityResolution: {
+      details: {
+        recommendations: { total: jointEvidence.recommendation_count },
+        publishers: [],
+        screenshots: [{ id: 1 }],
+        movies: [{ id: 1 }]
+      }
+    },
+    _indieAdmissionEvidence: releasedIndieEvidence(jointEvidence),
+    _chinaJointAdmissionEvidence: jointEvidence
+  };
+}
+
+function retainedJointEvidence({ project, steam_app_id }) {
+  return {
+    ...chinaJointFixture.china_joint_base,
+    project,
+    steam_app_id,
+    dedupe_key: `steam:${steam_app_id}`
+  };
+}
+
+function releasedIndieEvidence(jointEvidence) {
+  return {
+    ...evidence,
+    project: jointEvidence.project,
+    steam_app_id: jointEvidence.steam_app_id,
+    dedupe_key: jointEvidence.dedupe_key,
+    release_state: "released",
+    release_window: "too_soon",
+    official_demo_evidence: []
   };
 }
 
