@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 single-file sourcing compatibility migration and full verification complete; stopped at approved boundary
+Phase: Independent full-branch diff validation in progress; read-only review, no PR creation
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The explicitly approved single-file migration and bounded verification are complete at exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`. Syntax, the focused compatibility script, the exact `sourcing-v6-4` compatibility/Bilibili task, and all 16 tasks in the unmodified full `npm run verify:all` are GREEN from a one-time exact remote snapshot. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+Independently validate the complete PR C branch against the latest remote `main`: enumerate every changed file and commit, isolate the four-main-commit drift, inspect the V7.3 evidence/decision/orchestration/rule/schema/documentation/test ownership boundaries, and detect any out-of-scope or merge-blocking change. This phase is read-only except for checkpoint evidence. PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -214,6 +214,11 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- User said `继续`; this task interprets that as approval for the next safest separate phase: independent full-branch diff validation only, not PR creation.
+- Reconfirmed at phase start that remote `main` is `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch is `4c1f8d58e2f20df1d21f9045b5034c11bff8ece0`, and the only open PR remains unrelated `#71`.
+- Reopened the final single-file verification checkpoint and confirmed all 16 unmodified `verify:all` tasks are already GREEN at exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
+- No code, rule, test, workflow, production artifact, local CRM checkout/worktree, PR, or deployment was changed before beginning review.
+
 - Installed the repository's 201 declared packages only inside `/tmp/crm-v73-single-test.WQM7if/repo` with `npm install --no-audit --no-fund --package-lock=false`; no repository package lock was created.
 - Ran the unmodified `npm run verify:all` from exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; it exited 0 after all 16 tasks.
 - Full-suite counts were GREEN: frontend 114/114, backend 21/21, functions 31/31, Daily V4 204/204, sourcing learning 9/9, and Daily heartbeat 9/9. Automation diagnostics, Lead Assistant, all three typechecks, `sourcing-v6-4`, liveness replay, Daily contract, frontend temp build, and diff-check also passed.
@@ -314,18 +319,19 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Remaining
 
-- No work remains inside the approved single-file implementation and bounded-verification task.
-- Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases requiring their own boundary.
-- Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
+- Compare the complete branch with latest `main` and its merge base; enumerate branch-only and main-only commits and files.
+- Inspect every production/runtime/rule/schema/document/test change for approved PR C ownership, safety invariants, and out-of-scope overlap.
+- Determine whether the four main-only automation artifact commits overlap or conflict with PR C.
+- Record findings and stop at the PR creation boundary.
 
 ## Next Action
 
-Stop. Await a separately approved phase for independent full-branch validation or PR creation. Do not add another code change, create a PR, run live automation, or proceed to deployment in this task.
+Perform the remote full-branch diff validation. Do not modify implementation, create a PR, run live automation, merge, or deploy.
 
 ## Git Status
 
-The approved implementation remains exactly code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; all later branch commits are checkpoint evidence only. Before this final checkpoint update, the remote branch was `d80a51abb26a2c926f20c3e6cc95e20b29ea00a1`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+Before this validation-start checkpoint update, the remote PR C branch was `4c1f8d58e2f20df1d21f9045b5034c11bff8ece0`, remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR was unrelated `#71`. The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; later commits are checkpoint evidence only. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-The approved single-file compatibility migration is implemented, scope-checked, focused GREEN, and full-suite GREEN. This task stops at its approved verification boundary. No production generator, rule, other test, package script, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
+Independent full-branch validation has started; no conclusion is claimed yet. No implementation, machine rule, document, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed in this phase.
