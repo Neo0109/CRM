@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Independent full-branch diff validation in progress; two blocking consistency findings reproduced
+Phase: Independent full-branch diff validation complete; three blocking findings, no PR creation
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Independently validate the complete PR C branch against the latest remote `main`: enumerate every changed file and commit, isolate the four-main-commit drift, inspect the V7.3 evidence/decision/orchestration/rule/schema/documentation/test ownership boundaries, and detect any out-of-scope or merge-blocking change. This phase is read-only except for checkpoint evidence. PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+Independent full-branch validation is complete against remote `main` `166afdd759f5d3a4a6fff005e9293a906bda44d3`. The branch scope and three-way merge are clean, but three deterministic contract failures make PR C not ready for PR creation: retained-`china_joint` audit parity, independent-quality source classification, and schema-v3 validation enforcement. This phase made no fix and created no PR. Merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -214,6 +214,14 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- Confirmed test-ownership gaps: the V7.3 activation contract covers retained `china_joint` only through `buildPools`, while the candidate-audit contract covers only one `indie_prelaunch` near-miss; no test composes a retained-joint formal pool with the V7.3 candidate artifact.
+- Confirmed the second-pass provider test asserts creator and media proof inclusion but never requires official/developer self-evidence to be excluded from independent quality.
+- Reproduced schema-v3 validation bypass by changing the historical 282-record artifact to `schema_version=3` without adding any `failed_gate_details` or `next_evidence_actions`; `validate-daily-contract.mjs` returned `ok: true`.
+- Root cause of the validation bypass: `validateSchemaSubset` ignores JSON Schema `allOf/if/then`, and `validateSourcingCandidateIntegrity` calls the PR B state/scheduler/snapshot checker only when `schema_version === 2`, so v3 also skips inherited v2 integrity checks.
+- Performed an isolated bare-repository three-way merge check of current `main` and validation branch head after the first findings checkpoint. Merge base was `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; `git merge-tree --write-tree` completed cleanly with tree `c6b9375074499b86c3af85ba015fb11de8957824` and no conflict.
+- Confirmed the complete branch file list contains no workflow, package, UI/API, Supabase, production-data, sync/recovery, PR B candidate-state/scheduler, Steam review workflow, or secret-bearing change. Added provider code rejects URLs with embedded usernames/passwords and no credential literal was introduced.
+- Reconfirmed before final evidence update that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch was `9ca09a8fd41fef05e62dd5a142a27648eff3e5b9`, and the only open PR remained unrelated `#71`.
+
 - Compared merge base `71d0c2b2ff678cc73ba6704e949c0eae8177711d` to validation-start branch head `5cd7ca1426042af05fa25980bfed291d0ce46e6d`: 44 branch-only commits, 20 files, 2617 additions, 144 deletions; every GitHub compare patch is available. Compare payload SHA-256: `af37aee323d97039024398f516c7bfac27c352ed20d7a032ddc6a7d85d410935`.
 - Compared the same merge base to current `main`: its four branch-only commits add only six dated 2026-07-30 automation artifact/receipt files. They have zero path overlap with PR C's 20 files.
 - Reproduced a retained-`china_joint` audit inconsistency from the exact verified snapshot: `buildPools` publishes one formal `china_joint` Lead with `new_qualified_count=1`, while `buildSourcingCandidateArtifact` reports the same record as formal but `sourcing_lane=indie_prelaunch`, attaches a hard prelaunch exclusion, and emits `new_qualified_count=0` versus `push_pool_count=1`.
@@ -325,21 +333,44 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - Independently compared `7d4a84d0cd3074bd5cdd78a1b22189bb5e15a78a...c69a9ddf6ac743b78ef9f6c699d1234e4ab7b551`; this GREEN slice changes only the candidate-audit builder and sourcing-candidates schema.
 - No machine rule, orchestrator, workflow, generator entrypoint, current-rule document, or production behavior was changed. No local CRM checkout/worktree was read or modified.
 
+## Independent Full-Branch Validation Findings (Blocking)
+
+### 1. Retained china_joint decisions diverge between publication and candidate audit
+
+- Production pool decision: a fully qualified retained joint fixture publishes one formal Lead with `sourcing_lane=china_joint` and `new_qualified_count=1`.
+- Candidate artifact for the same object: `decision=formal`, but `sourcing_lane=indie_prelaunch`, a hard `prelaunch_window` exclusion, `new_qualified_count=0`, and `push_pool_count=1`.
+- Root cause: V7.3 candidate-audit admission calls only `evaluateV73IndiePrelaunchAdmission`; it does not compose the retained joint lane as `buildPools` does.
+- Impact: a legitimate retained-joint formal Lead makes the generated v3 audit internally contradictory and triggers the blocking qualified/push parity validator.
+
+### 2. Official/developer self-evidence can satisfy an independent-quality slot
+
+- The targeted provider passes every project-matching result from the broad “official lookup” into `qualityEvidenceFromSignals(officialSignals, "bilibili")`.
+- A developer's own official Bilibili Demo/playtest video is therefore emitted as a `bilibili_public_playtest` quality proof.
+- Deterministic reproduction with one official developer video plus one genuinely independent media preview produced two source IDs, passed `independent_quality_proof`, and returned `qualified=true`.
+- Impact: V7.3 can publish a formal Lead with only one genuinely independent public quality source, weakening the approved quality boundary.
+
+### 3. Production validation does not enforce schema v3 or inherited PR B integrity
+
+- The schema adds v3 candidate requirements through `allOf/if/then`, but the repository's `validateSchemaSubset` implementation does not evaluate those keywords.
+- `validateSourcingCandidateIntegrity` invokes `validateSourcingCandidateV2` only for exact schema version 2, so v3 skips inherited state, scheduler, snapshot, and summary consistency checks.
+- Deterministic reproduction relabeled a 282-candidate historical artifact as schema v3 while leaving all 282 records without both new actionable fields; the official Daily validator returned `ok: true`.
+- Impact: workflow validation can accept structurally incomplete v3 candidate audits and no longer protects the PR B lifecycle/snapshot contract after V7.3 activation.
+
 ## Remaining
 
-- Inspect the remaining new orchestrator, rule, schema, documentation, and changed-test ownership for additional findings.
-- Confirm that existing tests do not cover retained-`china_joint` candidate-audit parity or exclusion of official/developer self-evidence from independent quality.
-- Perform a read-only three-way merge check between latest `main` and the PR C branch.
-- Record final validation status and stop without fixes or PR creation.
+- No work remains inside the independent full-branch validation task.
+- PR C is not ready for PR creation despite clean mergeability and full-suite GREEN, because the three findings above are not covered by the current tests.
+- Each repair requires its own bounded Proposal -> Approval -> Implementation task; do not combine all three fixes or create a PR first.
+- Recommended order: candidate-audit two-lane parity, independent-quality source classification, then schema-v3/inherited-v2 validator enforcement.
 
 ## Next Action
 
-Complete the remaining independent review and mergeability checks. Do not repair either finding, change another file, create a PR, run live automation, merge, or deploy.
+Stop. Await explicit approval to enter a separate Phase 2 proposal for the first blocker: retained-`china_joint` candidate-audit parity. Do not edit code/tests, create a PR, run live automation, merge, or deploy in this task.
 
 ## Git Status
 
-Before this validation-start checkpoint update, the remote PR C branch was `4c1f8d58e2f20df1d21f9045b5034c11bff8ece0`, remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR was unrelated `#71`. The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; later commits are checkpoint evidence only. No local CRM checkout/worktree was read or modified.
+The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; subsequent branch commits are checkpoint evidence only. Before this final validation checkpoint update, the remote branch was `9ca09a8fd41fef05e62dd5a142a27648eff3e5b9`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Independent validation is still in progress, but the branch is not currently PR-ready because two deterministic contract inconsistencies have been reproduced. No fix, implementation, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed in this phase.
+Independent full-branch validation is complete. File scope and three-way mergeability are clean, but PR C is blocked by three reproduced contract failures. No repair, implementation, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed in this phase.
