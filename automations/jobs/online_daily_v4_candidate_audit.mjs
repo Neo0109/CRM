@@ -5,15 +5,22 @@ import { isQualityQuarantineRule } from "./online_daily_v4_rules.mjs";
 import {
   evaluateMediaIndiePrelaunchAdmission,
   evaluateSteamIndiePrelaunchAdmission,
-  INDIE_PRELAUNCH_RULE_VERSION
+  INDIE_PRELAUNCH_RULE_VERSION,
+  mediaIndieAdmissionEvidence,
+  steamIndieAdmissionEvidence
 } from "./online_daily_v7_indie_admission.mjs";
 import {
   evaluateMediaRegularAdmission,
   evaluateSteamRegularAdmission,
   REGULAR_SOURCING_RULE_VERSION
 } from "./online_daily_v7_2_regular_admission.mjs";
+import {
+  evaluateV73IndiePrelaunchAdmission,
+  V73_OBTAINABLE_EVIDENCE_RULE_VERSION
+} from "./online_daily_v7_3_obtainable_evidence.mjs";
 
 const DECISION_RANK = { excluded: 1, candidate: 2, formal: 3 };
+const V73_CANDIDATE_ARTIFACT_SCHEMA_VERSION = 3;
 
 export function buildSourcingCandidateArtifact({
   reportDate,
@@ -69,7 +76,11 @@ export function buildSourcingCandidateArtifact({
     : {};
 
   return {
-    schema_version: statefulArtifact ? CANDIDATE_ARTIFACT_SCHEMA_VERSION : 1,
+    schema_version: isV73AdmissionRule(ruleVersion)
+      ? V73_CANDIDATE_ARTIFACT_SCHEMA_VERSION
+      : statefulArtifact
+        ? CANDIDATE_ARTIFACT_SCHEMA_VERSION
+        : 1,
     report_date: reportDate,
     generated_at: capturedAt,
     sourcing_rule_version: ruleVersion,
@@ -132,6 +143,7 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision, 
     dedupe_key: key,
     sourcing_lane: isV7 ? admission.sourcing_lane : candidate.sourcing_lane ?? null,
     sourcing_rule_version: ruleVersion,
+    ...v73AuditFields(admission, ruleVersion),
     matched_rules: uniqueStrings(matchedRules),
     missing_evidence: uniqueStrings(missingEvidence),
     exclusion_reasons: uniqueStrings([
@@ -193,6 +205,7 @@ function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
     dedupe_key: key,
     sourcing_lane: isV7 ? admission.sourcing_lane : lead?.sourcing_lane ?? null,
     sourcing_rule_version: ruleVersion,
+    ...v73AuditFields(admission, ruleVersion),
     matched_rules: uniqueStrings([
       "media_discovery",
       lead?._confidence ? `media_${lead._confidence}` : null,
@@ -386,19 +399,43 @@ function emptyPools() {
 }
 
 function isV7AdmissionRule(ruleVersion) {
-  return ruleVersion === INDIE_PRELAUNCH_RULE_VERSION || ruleVersion === REGULAR_SOURCING_RULE_VERSION;
+  return ruleVersion === INDIE_PRELAUNCH_RULE_VERSION
+    || ruleVersion === REGULAR_SOURCING_RULE_VERSION
+    || isV73AdmissionRule(ruleVersion);
+}
+
+function isV73AdmissionRule(ruleVersion) {
+  return ruleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION;
 }
 
 function steamAdmissionForRule(candidate, ruleVersion) {
+  if (isV73AdmissionRule(ruleVersion)) {
+    return evaluateV73IndiePrelaunchAdmission(steamIndieAdmissionEvidence(candidate));
+  }
   if (ruleVersion === REGULAR_SOURCING_RULE_VERSION) return evaluateSteamRegularAdmission(candidate);
   if (ruleVersion === INDIE_PRELAUNCH_RULE_VERSION) return evaluateSteamIndiePrelaunchAdmission(candidate);
   return null;
 }
 
 function mediaAdmissionForRule(lead, ruleVersion) {
+  if (isV73AdmissionRule(ruleVersion)) {
+    return evaluateV73IndiePrelaunchAdmission(mediaIndieAdmissionEvidence(lead));
+  }
   if (ruleVersion === REGULAR_SOURCING_RULE_VERSION) return evaluateMediaRegularAdmission(lead);
   if (ruleVersion === INDIE_PRELAUNCH_RULE_VERSION) return evaluateMediaIndiePrelaunchAdmission(lead);
   return null;
+}
+
+function v73AuditFields(admission, ruleVersion) {
+  if (!isV73AdmissionRule(ruleVersion)) return {};
+  return {
+    failed_gate_details: Array.isArray(admission?.failed_gate_details)
+      ? admission.failed_gate_details.map((detail) => ({ ...detail }))
+      : [],
+    next_evidence_actions: Array.isArray(admission?.next_evidence_actions)
+      ? admission.next_evidence_actions.map((action) => ({ ...action }))
+      : []
+  };
 }
 
 function stripAuditPrivate(candidate) {
