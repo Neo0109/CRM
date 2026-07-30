@@ -1,7 +1,7 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 entry boundary; checkpoint established, implementation not started
+Phase: Phase 4 TDD; RED contract established, implementation not started
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
@@ -16,7 +16,8 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - Completed recovery slices: PR A `#105` added production-artifact replay and business-liveness observability; PR B `#106` added candidate research state, compatible evidence-snapshot reuse, and fair allocation of the unchanged Steam enrichment budget.
 - PR B merge state: squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; remote `main` is identical to that commit. PR-head Build run `30487695885` completed successfully.
 - Open PR queue: unrelated PR `#71` only.
-- No prior PR C branch, PR, commit, or checkpoint was found in current GitHub state.
+- No prior PR C branch, PR, commit, or checkpoint was found before this branch was created.
+- The first PR C RED contract is now committed; no PR C implementation exists yet.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
 
@@ -69,34 +70,34 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Completed
 
-- Reconfirmed the latest remote `main` and PR `#106` solely through the GitHub App/API.
-- Confirmed `main` is identical to PR B squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d`.
-- Confirmed PR `#106` is merged and its PR-head Build run succeeded.
-- Confirmed the only open PR is unrelated `#71`.
-- Recovered the approved PR C boundary from the current PR A/PR B checkpoints and the approved staged recovery handoff without reopening PR A or PR B design.
-- Confirmed no existing PR C branch, PR, commit, or checkpoint in current GitHub state.
-- Created remote branch `codex/pr-c-v7-3-obtainable-evidence` from the exact `main` baseline.
-- Created this checkpoint before reading or changing PR C business code.
-- No local CRM checkout/worktree was read or modified. No live generator ran and no production data was written.
+- Reconfirmed the latest remote `main`, the PR C branch head, open PR queue, and this checkpoint solely through the GitHub App/API.
+- Confirmed `main` remains identical to PR B squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d` and the only open PR remains unrelated `#71`.
+- Read the exact remote V7 indie admission, V7.2 regular selector, candidate audit, candidate schema, existing focused tests, `verify:all`, and Build boundaries required for the first PR C contract.
+- Confirmed the current V7 path requires Demo/Playtest, official gameplay, independent quality proof, and overseas China-demand wording as separate gates; candidate audit currently has `missing_evidence` but not `failed_gate_details` or `next_evidence_actions`.
+- Added `automations/test/onlineDailyV73ObtainableEvidence.test.mjs` in commit `9882fcfe555e877b05cf34f360bb9693d99fd205`.
+- The RED contract fixes the public pure-logic boundary for Demo-or-gameplay evidence, independent-source counting, actionable near-miss fields, hard-exclusion parity, and targeted evidence followed by the exact same evaluator.
+- Ran the focused test from the exact `9882fcfe555e877b05cf34f360bb9693d99fd205` GitHub API tarball under a one-time `/tmp` directory with Node `v22.23.1`.
+- RED was confirmed: the test failed only with `ERR_MODULE_NOT_FOUND` for `automations/jobs/online_daily_v7_3_obtainable_evidence.mjs`; no implementation file exists yet.
+- No existing business code, machine rule, schema, workflow, generator, or production behavior was changed. No local CRM checkout/worktree was read or modified.
 
 ## Remaining
 
 - In the next task, reconfirm remote `main`, this branch head, open PRs, and this checkpoint.
-- Read only the exact remote PR C machine-rule, decision, candidate-artifact, targeted-enrichment, replay, validator, and focused-test boundaries.
-- Add the first RED contract for the approved evidence alternatives, actionable near-miss classification, same-decision second pass, and hard-exclusion parity.
-- Implement the smallest GREEN slices, updating this checkpoint after each phase.
+- Implement the smallest pure `online_daily_v7_3_obtainable_evidence.mjs` GREEN slice required by the focused contract; do not wire candidate artifacts or the Daily orchestrator in the same phase.
+- Re-run the exact focused test from a one-time GitHub API tarball and update this checkpoint.
+- In later bounded phases, add candidate-audit/schema contracts, orchestrator RED/GREEN wiring, current-rule documentation, replay/legacy-weak-sample regression coverage, and full verification.
 - Validate from exact one-time GitHub API tarballs under `/tmp`, including focused contracts, schema/validator tests, replay, `npm run verify:all`, and an independent branch diff check.
 - Create one PR C pull request, wait for required CI, merge only after approval/checks, and perform read-only acceptance.
 - Stop after PR C; do not enter PR D or PR E.
 
 ## Next Action
 
-Resume from this checkpoint in a new task. Reconfirm the remote baseline and checkpoint, then inspect only the exact PR C implementation boundaries and add the first RED contract. Do not re-plan the approved product direction and do not begin PR D.
+Resume from this checkpoint in a new task. Reconfirm the remote baseline and checkpoint, then implement only the pure V7.3 obtainable-evidence module required to turn `onlineDailyV73ObtainableEvidence.test.mjs` GREEN. Do not wire artifacts, the orchestrator, PR D, or PR E in that task.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` was created from exact remote `main` SHA `71d0c2b2ff678cc73ba6704e949c0eae8177711d` immediately before this checkpoint-only GitHub API commit. All repository writes use GitHub App/API; any later read-only test checkout must be a one-time `/tmp` tarball outside every local CRM checkout/worktree.
+Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at RED contract commit `9882fcfe555e877b05cf34f360bb9693d99fd205` immediately before this checkpoint-only GitHub API commit. All repository writes use GitHub App/API; read-only tests use exact one-time `/tmp` GitHub API tarballs outside every local CRM checkout/worktree.
 
 ## Rollout Status
 
-Checkpoint only. No PR C business code, machine rule, generated artifact, workflow, deployment, or production behavior has changed. Current production sourcing behavior remains the verified behavior of remote `main` at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`.
+Checkpoint plus RED contract only. No PR C business implementation, machine rule, generated artifact, workflow, deployment, or production behavior has changed. Current production sourcing behavior remains the verified behavior of remote `main` at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`.
