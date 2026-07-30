@@ -42,6 +42,52 @@ describe("Replay Corpus Contract v1 schemas", () => {
     assert.equal(windowSchema.properties.contract_version.const, 1);
     assert.deepEqual(windowSchema.properties.status.enum, ["active", "failed", "complete"]);
   });
+
+  it("allows the replay corpus self binding to defer its Git blob SHA", () => {
+    const corpusSchema = readSchema("../../schemas/sourcing_replay_corpus.schema.json");
+    const replayBindingRef =
+      corpusSchema.$defs.artifactBindings.properties.replay_corpus.$ref;
+
+    assert.equal(replayBindingRef, "#/$defs/replayCorpusArtifactBinding");
+    assert.deepEqual(
+      corpusSchema.$defs.replayCorpusArtifactBinding.properties.git_blob_sha.oneOf,
+      [{ $ref: "#/$defs/gitSha" }, { type: "null" }]
+    );
+  });
+
+  it("models requested actions as closed gate/action records", () => {
+    const corpusSchema = readSchema("../../schemas/sourcing_replay_corpus.schema.json");
+    const requestedActionItems =
+      corpusSchema.$defs.transaction.properties.requested_actions.items;
+    const requestedAction = corpusSchema.$defs.requestedAction;
+
+    assert.equal(requestedActionItems.$ref, "#/$defs/requestedAction");
+    assert.equal(requestedAction.type, "object");
+    assert.deepEqual(requestedAction.required, ["gate_id", "action"]);
+    assert.equal(requestedAction.additionalProperties, false);
+    assert.deepEqual(requestedAction.properties.gate_id.enum, [
+      "identity_and_dedupe",
+      "prelaunch_window",
+      "publisher_china_capacity_clear",
+      "non_narrative_product",
+      "non_india_team",
+      "official_playable_or_gameplay",
+      "independent_quality_proof",
+      "non_steam_business_entry",
+      "concrete_china_bilibili_value"
+    ]);
+    assert.deepEqual(requestedAction.properties.action.enum, [
+      "resolve_project_identity",
+      "verify_prelaunch_window",
+      "verify_publisher_china_capacity",
+      "verify_product_focus",
+      "verify_team_region",
+      "fetch_official_playable_or_gameplay",
+      "fetch_independent_quality_evidence",
+      "fetch_non_steam_business_entry",
+      "research_china_bilibili_value"
+    ]);
+  });
 });
 
 describe("canonical JSON and SHA-256", () => {
@@ -110,6 +156,85 @@ describe("Replay corpus validator", () => {
       validateReplayCorpus(corpus),
       "SECOND_PASS_TRANSACTION_MISSING",
       "/second_pass/attempted_ids/0"
+    );
+  });
+
+  it("accepts an unavailable self Git blob SHA while preserving payload binding", () => {
+    const corpus = mutateCorpus((value) => {
+      value.artifact_bindings.replay_corpus.git_blob_sha = null;
+    });
+
+    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
+    assert.equal(
+      computeReplayCorpusPayloadSha256(corpus),
+      corpus.integrity.payload_sha256
+    );
+  });
+
+  it("accepts structured requested actions and rejects unsupported actions", () => {
+    const valid = mutateCorpus((value) => {
+      value.second_pass.transactions[0].requested_actions = [
+        {
+          gate_id: "official_playable_or_gameplay",
+          action: "fetch_official_playable_or_gameplay"
+        }
+      ];
+    });
+    assert.deepEqual(validateReplayCorpus(valid), { valid: true, errors: [] });
+
+    const invalid = mutateCorpus((value) => {
+      value.second_pass.transactions[0].requested_actions = [
+        {
+          gate_id: "official_playable_or_gameplay",
+          action: "fetch_everything"
+        }
+      ];
+    });
+    expectInvalid(
+      validateReplayCorpus(invalid),
+      "SCHEMA_ENUM",
+      "/second_pass/transactions/0/requested_actions/0/action"
+    );
+  });
+
+  it("rejects hard-excluded candidates from every second-pass admission set", () => {
+    const corpus = mutateCorpus((value) => {
+      Object.assign(
+        value.candidates[0].first_pass.indie_prelaunch.gate_results[0],
+        {
+          status: "fail",
+          hard_exclusion: true
+        }
+      );
+    });
+    const result = validateReplayCorpus(corpus);
+
+    for (const field of ["eligible_ids", "selected_ids", "attempted_ids"]) {
+      expectInvalid(
+        result,
+        "SECOND_PASS_HARD_EXCLUSION",
+        `/second_pass/${field}/0`
+      );
+    }
+  });
+
+  it("binds each attempted transaction reference to the same candidate", () => {
+    const corpus = mutateCorpus((value) => {
+      addSecondAttemptedCandidate(value);
+      value.candidates[0].second_pass.transaction_id = "transaction:two";
+      value.candidates[1].second_pass.transaction_id = "transaction:one";
+    });
+    const result = validateReplayCorpus(corpus);
+
+    expectInvalid(
+      result,
+      "SECOND_PASS_TRANSACTION_CANDIDATE_MISMATCH",
+      "/candidates/0/second_pass/transaction_id"
+    );
+    expectInvalid(
+      result,
+      "SECOND_PASS_TRANSACTION_CANDIDATE_MISMATCH",
+      "/candidates/1/second_pass/transaction_id"
     );
   });
 
@@ -329,6 +454,23 @@ describe("Replay window validator", () => {
       validateReplayWindow(gappedWindow),
       "WINDOW_DATE_GAP",
       "/dates/7/report_date"
+    );
+  });
+
+  it("rejects a complete window containing a non-canonical retained date", () => {
+    const windowManifest = mutateWindow((value) => {
+      value.dates[7].canonical = false;
+      value.dates[7].capture_status = "corrupt";
+      value.dates[7].receipt_binding.generation_status = "failed";
+      value.dates[7].receipt_binding.validation_status = "failed";
+      value.dates[7].receipt_binding.receipt_status = "failed";
+      value.dates[7].receipt_binding.synced = false;
+    });
+
+    expectInvalid(
+      validateReplayWindow(windowManifest),
+      "WINDOW_NON_CANONICAL_DATE",
+      "/dates/7/canonical"
     );
   });
 
@@ -649,6 +791,40 @@ function candidateFixture() {
       day_lead_count_used: false
     }
   };
+}
+
+function addSecondAttemptedCandidate(value) {
+  const candidate = structuredClone(value.candidates[0]);
+  candidate.candidate_id = "candidate:two";
+  candidate.project = "Game Two";
+  candidate.steam_app_id = "200";
+  candidate.dedupe_key = "steam:200";
+  candidate.origin_signal_ids = ["signal:steam:200", "signal:media:200"];
+  candidate.dedupe_boundary.audit_digest = SHA_B;
+  candidate.second_pass.transaction_id = "transaction:two";
+  value.candidates.push(candidate);
+
+  for (const field of ["eligible_ids", "selected_ids", "attempted_ids", "qualified_ids"]) {
+    value.second_pass[field].push("candidate:two");
+  }
+
+  const transaction = structuredClone(value.second_pass.transactions[0]);
+  transaction.transaction_id = "transaction:two";
+  transaction.candidate_id = "candidate:two";
+  value.second_pass.transactions.push(transaction);
+
+  value.budgets.usage.provider_requests = 2;
+  value.budgets.usage.provider_transaction_ids.push("transaction:two");
+  value.discovery_summary.decision_universe_count = 2;
+  value.discovery_summary.sources[0].raw_count = 2;
+  value.discovery_summary.sources[0].retained_count = 2;
+  value.summary.candidate_count = 2;
+  value.summary.second_pass_eligible_count = 2;
+  value.summary.second_pass_selected_count = 2;
+  value.summary.second_pass_attempted_count = 2;
+  value.summary.second_pass_qualified_count = 2;
+  value.summary.formal_count = 2;
+  value.summary.shadow_push_pool_count = 2;
 }
 
 function transactionFixture() {
