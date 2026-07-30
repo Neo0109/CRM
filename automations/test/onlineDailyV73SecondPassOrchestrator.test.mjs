@@ -4,7 +4,6 @@ import { describe, it } from "node:test";
 
 import { createEvidenceSnapshot } from "../jobs/online_daily_v4_candidate_state.mjs";
 import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
-import { REGULAR_SOURCING_RULE_VERSION } from "../jobs/online_daily_v7_2_regular_admission.mjs";
 import {
   V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
   evaluateV73IndiePrelaunchAdmission
@@ -284,15 +283,14 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     assert.deepEqual(Object.keys(qualityOnly), ["quality_proofs"]);
   });
 
-  it("wires the batch only behind the inactive V7.3 rule boundary before pool and artifact decisions", () => {
+  it("wires the batch behind the active V7.3 rule boundary before pool and artifact decisions", () => {
     const generator = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
     const machineRules = JSON.parse(
       readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8")
     );
 
-    assert.equal(RULE_VERSION, REGULAR_SOURCING_RULE_VERSION);
-    assert.equal(machineRules.rule_version, REGULAR_SOURCING_RULE_VERSION);
-    assert.notEqual(RULE_VERSION, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
+    assert.equal(RULE_VERSION, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
+    assert.equal(machineRules.rule_version, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
     assert.match(generator, /runV73TargetedCandidateSecondPasses/);
     assert.match(generator, /fetchV73TargetedEvidence/);
     assert.match(
@@ -422,4 +420,3 @@ assert.equal(
   1,
   "the RED fixture itself must remain a valid one-action V7.3 near-miss"
 );
-
