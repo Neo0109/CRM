@@ -11,7 +11,7 @@
     "candidates"
   ],
   "properties": {
-    "schema_version": { "type": "integer", "enum": [1, 2] },
+    "schema_version": { "type": "integer", "enum": [1, 2, 3] },
     "report_date": { "type": "string", "format": "date" },
     "generated_at": { "type": "string", "format": "date-time" },
     "sourcing_rule_version": { "type": "string" },
@@ -89,6 +89,14 @@
         "matched_rules": { "type": "array", "items": { "type": "string" } },
         "missing_evidence": { "type": "array", "items": { "type": "string" } },
         "exclusion_reasons": { "type": "array", "items": { "type": "string" } },
+        "failed_gate_details": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/failedGateDetail" }
+        },
+        "next_evidence_actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nextEvidenceAction" }
+        },
         "source_links": { "type": "array", "items": { "type": "string" } },
         "steam_review_summary": { "$ref": "#/$defs/steamReviewSummary" },
         "ea_state": { "type": "string", "enum": ["yes", "no", "unknown"] },
@@ -102,6 +110,26 @@
         "next_retry_date": { "type": ["string", "null"], "format": "date" },
         "scheduler_lane": { "type": ["string", "null"], "enum": ["new", "backlog", "retry_refresh", "reuse", null] },
         "evidence_snapshot": { "$ref": "#/$defs/evidenceSnapshot" }
+      },
+      "additionalProperties": false
+    },
+    "failedGateDetail": {
+      "type": "object",
+      "required": ["gate_id", "status", "hard_exclusion", "obtainable"],
+      "properties": {
+        "gate_id": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["fail", "unknown"] },
+        "hard_exclusion": { "type": "boolean" },
+        "obtainable": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "nextEvidenceAction": {
+      "type": "object",
+      "required": ["gate_id", "action"],
+      "properties": {
+        "gate_id": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 }
       },
       "additionalProperties": false
     },
@@ -166,5 +194,24 @@
       "additionalProperties": false
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": { "const": 3 }
+        },
+        "required": ["schema_version"]
+      },
+      "then": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "required": ["failed_gate_details", "next_evidence_actions"]
+            }
+          }
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }
