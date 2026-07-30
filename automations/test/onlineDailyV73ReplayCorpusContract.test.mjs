@@ -815,6 +815,7 @@ function addSecondAttemptedCandidate(value) {
 
   value.budgets.usage.provider_requests = 2;
   value.budgets.usage.provider_transaction_ids.push("transaction:two");
+  value.artifact_bindings.replay_corpus.record_count = 2;
   value.discovery_summary.decision_universe_count = 2;
   value.discovery_summary.sources[0].raw_count = 2;
   value.discovery_summary.sources[0].retained_count = 2;
