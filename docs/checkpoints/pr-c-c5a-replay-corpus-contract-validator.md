@@ -1,7 +1,7 @@
 # PR C5-A Replay Corpus Contract and Validator
 
 Date: 2026-07-30
-Phase: Phase 4 C5-A implementation complete; PR creation not authorized
+Phase: Phase 4 C5-A review repair in progress; PR #107 open
 Branch: codex/pr-c-c5a-replay-corpus-contract-validator
 Repository workflow: GitHub App/API only; no local CRM checkout/worktree read or write
 
@@ -100,3 +100,48 @@ Stop at the completed C5-A handoff. A later task may separately authorize PR cre
 - No `package.json`, `scripts/verify-all.mjs`, `package-lock.json`, workflow, existing schema, evaluator/provider/scheduler, rules, data, UI/API, or Supabase change exists.
 - No PR exists for this branch.
 - No merge, deployment, workflow, production artifact, or local checkout mutation occurred.
+
+
+## PR Review Repair Checkpoint — 2026-07-31
+
+### Current Goal
+
+Address all five user-approved, unresolved, non-outdated review findings on PR #107 while preserving Replay Corpus Contract v1 purity and the original five-path C5-A boundary.
+
+This repair remains limited to schema, pure validator, deterministic fixtures, and this checkpoint. It does not add a collector, generator/orchestrator wiring, replay harness, canonical-run selector, live providers, workflow changes, production data, CRM sync, UI/API/Supabase, Blocker 2/3 integration, merge, deployment, or activation.
+
+### Completed
+
+- User explicitly approved addressing all five review findings.
+- Rechecked PR #107 through the GitHub App/API: open, non-draft, mergeable without conflicts, base `codex/pr-c-c5-v73-replay-corpus-contract-v1` at `85fdc7e77c7bec879d2da65d9781b55bb09b670f`, head `feea0f62bc331326190d157d9fb1aa8a32ca5c86` before this checkpoint update.
+- Rechecked the Proposal-to-head compare: eight commits ahead, zero behind, exactly the original five approved paths.
+- Rechecked current `main`: `f93a937aaaa7e688f233ab4ba0b9a97930c7b0c7`; direct main integration remains out of scope.
+- Re-read thread-aware GraphQL state: five review threads are unresolved and non-outdated.
+- Confirmed the five actionable defects against the exact remote implementation and approved Proposal:
+  - complete windows do not require every retained date to be canonical and healthy;
+  - `requested_actions` is modeled as strings instead of the evaluator's `{ gate_id, action }` records;
+  - hard-excluded candidates are not rejected from second-pass eligibility/selection/attempt sets;
+  - replay-corpus self binding requires an impossible embedded Git blob SHA;
+  - attempted candidate transaction references are not bound to the same candidate.
+- Confirmed no GitHub Actions workflow run or commit status was attached to the pre-repair PR head; prior exact-snapshot verification remains evidence but is not represented as PR CI.
+- Made no local CRM checkout/worktree read or write.
+
+### Remaining
+
+- Add focused negative tests for all five findings and prove valid RED from an exact GitHub API snapshot.
+- Implement the minimal schema/validator/fixture changes and prove focused GREEN.
+- Run both schema parses, both required syntax checks, the focused suite, `npm run test:daily-v4`, `npm run verify:all`, and `git diff --check` from an exact disposable snapshot.
+- Update this checkpoint with final evidence.
+- Reply to and resolve all five review threads only after verification passes.
+
+### Next Action
+
+Modify only `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` to add five precise RED cases. Preserve the accepted positive fixture shape until the GREEN step so failures prove the missing review contracts rather than setup drift.
+
+### Git Status
+
+- Repair starting head: `feea0f62bc331326190d157d9fb1aa8a32ca5c86`.
+- PR: #107, open, no merge or deployment.
+- Approved Proposal base: `85fdc7e77c7bec879d2da65d9781b55bb09b670f`.
+- Allowed paths remain exactly the original five C5-A paths.
+- No collector, harness, workflow, rule, data, CRM/product, or production mutation is authorized.
