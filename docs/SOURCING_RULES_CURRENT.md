@@ -1,13 +1,13 @@
 # Current Daily Report Rules
 
-Date: 2026-07-16
+Date: 2026-07-30
 
-The current daily report rule version is `sourcing-rules-v7.2-china-joint`.
+The current daily report rule version is `sourcing-rules-v7.3-obtainable-evidence`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V7_2.md
+docs/SOURCING_RULES_V7_3.md
 ```
 
 Machine-readable automation rule source:
@@ -24,7 +24,7 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V7.2 keeps broad discovery active and evaluates `indie_prelaunch` and `china_joint` in parallel. Every deduped project that completely passes either lane enters `push_pool` with `priority=null`; neither lane has a quota and the combined formal pool has no total cap. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V7.3 keeps broad discovery active, evaluates `indie_prelaunch` with obtainable public evidence, and retains the independent `china_joint` lane. Every deduped project that completely passes either lane enters `push_pool` with `priority=null`; neither lane has a quota and the combined formal pool has no total cap. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A bounded second pass may fetch only the named missing public evidence and must call the same V7.3 decision again. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 The standalone `steam-schinese-reviews-v1` audit source is not imported by the active Daily runner or either Daily workflow. V7.1 consumes its validated artifact and activates EA/high-traction and China-heat publication only through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
 
@@ -44,7 +44,7 @@ Every important output should answer:
 
 ## Inbox Rule
 
-Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that completely passes either V7.2 lane enters the formal `push_pool` and `未处理` inbox with `priority=null`.
+Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that completely passes either V7.3 lane enters the formal `push_pool` and `未处理` inbox with `priority=null`.
 
 The scan preserves all candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`. Failed or unknown candidates stay only there; the candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
 
@@ -52,7 +52,7 @@ The default operating flow is efficiency-first: first test or inspect the game, 
 
 Contact methods must prefer real business touch points: official email, official site, official support URL, Discord, X/Twitter, or Bilibili. Steam store and SteamDB links belong in `links`, not `contact_methods`. A Steam community discussion URL may remain a discovery fallback, but it does not satisfy the V7.0 non-Steam business-entry gate; do not invent contact details.
 
-Domestic media and Bilibili product signals are first-class discovery sources, not only radar background. A named game or source label is never enough for formal publication: the normalized project must pass the same eleven V7.0 gates as a Steam candidate. A non-Steam project identity may be used for dedupe, but every other mandatory product, quality, contact, and China-value proof still applies.
+Domestic media and Bilibili product signals are first-class discovery sources, not only radar background. A named game or source label is never enough for formal publication: the normalized project must pass the same nine V7.3 `indie_prelaunch` gates as a Steam candidate, or the complete retained `china_joint` chain. A non-Steam project identity may be used for dedupe, but every other mandatory product, quality, contact, and China-value proof still applies.
 
 Bilibili search results must still be concrete games. Steam Next Fest signup tutorials, wishlist-growth data sharing, courses, or generic developer-experience videos are useful methodology references, but they should not be inserted into the lead queue as products.
 
@@ -73,7 +73,7 @@ For Bilibili video leads, the automation must do one more verification pass befo
 
 Domestic products are the default sourcing priority. Domestic developer Demo/test signals are useful only while there is still a real cooperation window, because cooperation, efficiency, visual/cultural fit, creator communication, and signing probability are materially better before the launch window closes.
 
-Overseas products require independent public-quality proof, a concrete China/Bilibili value case, and explicit official China demand. Creative novelty or a generic mobile-adaptation idea alone is not enough.
+Overseas products require quality proof from at least two independent public sources, a non-Steam business entry, and a concrete China/Bilibili value case. Explicit official China demand is a positive signal, not a mandatory V7.3 `indie_prelaunch` gate. Creative novelty or a generic mobile-adaptation idea alone is not enough.
 
 The 60-day window is a hard filter for fresh automation-sourced leads. Domestic products can be discovered earlier or over a longer horizon, but if the confirmed release date is fewer than 60 days away, the project remains outside formal pools and only its candidate-audit decision is retained.
 
@@ -98,7 +98,7 @@ The online generator must preserve the product intent of these rules:
 - Domestic Steam keyword searches must use actual search-term filtering, not just China-locale generic popular lists.
 - The same Steam AppID should keep the strongest discovery source, especially domestic keyword, Demo, or Next Fest signals.
 - Daily generation should dedupe against a meaningful recent history window so stale CRM items do not keep returning as "updates" and crowd out new discoveries.
-- V7.2 must keep scanning broad enough for source and evidence diagnostics, publish every and only fully qualified project across both regular lanes, and never use a lane quota or formal minimum/maximum as a health signal.
+- V7.3 must keep scanning broad enough for source and evidence diagnostics, publish every and only fully qualified project across both regular lanes, and never use a lane quota or formal minimum/maximum as a health signal.
 - Daily generation must log both Steam scan volume and media/Bilibili product-lead volume so a low-output day can be diagnosed quickly.
 - Daily generation must write a schema-validated candidate audit with one deduped record per Steam AppID or normalized project key, explicit `formal | candidate | excluded` decisions, unknown evidence, matched rules, and exclusion reasons. Only the Daily report pools are eligible for CRM synchronization.
 - Steam is not allowed to be a single point of failure. If Steam is temporarily unreachable but domestic media/Bilibili sources produce concrete product leads, the automation must still generate a useful report from those sources instead of leaving the day blank.
@@ -216,16 +216,28 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - Automatic priority stays `null`, and `new_qualified_count === push_pool_count` is a blocking contract.
 - Formal Lead count has no minimum, maximum, cap, backfill, truncation, or health threshold.
 
-## V7.2 2A/3A China Joint Admission
+## V7.3 Obtainable Evidence and Targeted Second Pass
 
-- The active canonical contract is `docs/SOURCING_RULES_V7_2.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
+- The active canonical contract is `docs/SOURCING_RULES_V7_3.md`, mirrored by `automations/rules/daily-report.json` and executed by the Daily V4 decision layer.
+- `indie_prelaunch` preserves identity/dedupe, prelaunch-window, publisher-capacity, non-narrative, and non-India hard boundaries.
+- Official Demo/Playtest and official gameplay form one `any_of` evidence family. Quality proof requires at least two independent public sources.
+- A non-Steam business entry and a concrete China/Bilibili value thesis remain mandatory. Explicit China demand is a positive signal rather than a mandatory wording gate.
+- A candidate with one to three named obtainable public-evidence gaps may enter the bounded second pass. At most 12 candidates are selected per run, only the named evidence actions may be fetched, and the same V7.3 decision function must run again.
+- Hard exclusions never advertise or receive a second-pass bypass. The second pass cannot lower a threshold, create a formal Lead floor, backfill the inbox, or invoke PR D AI editing.
+- The independent `china_joint` qualification chain remains unchanged and shares the same dedupe/publication boundary. A complete V7.3 indie pass keeps `indie_prelaunch`; otherwise a complete joint pass publishes as `china_joint`.
+- Every complete pass is formal. Ranking affects reading order only; neither lane nor their combined formal output has a quota, minimum, maximum, backfill, or cutoff.
+- The active provenance version is `sourcing-rules-v7.3-obtainable-evidence` for every formal Lead and candidate-audit record.
+
+## Historical V7.2 2A/3A China Joint Admission
+
+- The historical canonical contract is `docs/SOURCING_RULES_V7_2.md`; V7.3 retains its independent `china_joint` gate semantics.
 - `indie_prelaunch` keeps its eleven V7.0 gates. `china_joint` adds four independent gates: identity/dedupe, one locked data path, a current China business opportunity, and confirmed absence of mature China-partner occupancy.
 - The three data paths are exactly: Steam recommendations `>=5000`; recommendations `>=1500` with `Very Positive` or `Overwhelmingly Positive`; or a verified major-title team record plus a current official product event.
 - Current China opportunity means verified publishing, license/版号, localization, marketing, mobile, or joint-operation need. No current China need and known mature China-partner occupancy are hard exclusions from `china_joint`; unknown evidence cannot pass.
 - Both lanes use the same dedupe/publication boundary. An already-qualified indie project keeps `indie_prelaunch`; otherwise a complete joint pass publishes as `china_joint`.
 - Every complete pass is formal. Ranking affects reading order only; neither lane nor their combined formal output has a quota, minimum, maximum, backfill, or cutoff.
 - Fixed acceptance requires the same-day 5-indie + 4-joint fixture to publish all 9 formal Leads, while no-demand and occupied-partner fixtures publish none.
-- The active provenance version is `sourcing-rules-v7.2-china-joint` for every regular formal Lead and candidate-audit record.
+- The historical provenance version is `sourcing-rules-v7.2-china-joint`.
 
 ## PR 5 Steam Simplified-Chinese Review Audit Source
 
