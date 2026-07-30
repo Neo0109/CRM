@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 single-file sourcing compatibility focused verification GREEN; full verification pending
+Phase: Phase 4 single-file sourcing compatibility migration and full verification complete; stopped at approved boundary
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Verify the explicitly approved single-file migration at exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`. Syntax, the focused compatibility script, and the exact `sourcing-v6-4` compatibility/Bilibili task are GREEN from a one-time exact remote snapshot. The unmodified full `npm run verify:all` remains pending. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+The explicitly approved single-file migration and bounded verification are complete at exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`. Syntax, the focused compatibility script, the exact `sourcing-v6-4` compatibility/Bilibili task, and all 16 tasks in the unmodified full `npm run verify:all` are GREEN from a one-time exact remote snapshot. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -214,6 +214,15 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- Installed the repository's 201 declared packages only inside `/tmp/crm-v73-single-test.WQM7if/repo` with `npm install --no-audit --no-fund --package-lock=false`; no repository package lock was created.
+- Ran the unmodified `npm run verify:all` from exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; it exited 0 after all 16 tasks.
+- Full-suite counts were GREEN: frontend 114/114, backend 21/21, functions 31/31, Daily V4 204/204, sourcing learning 9/9, and Daily heartbeat 9/9. Automation diagnostics, Lead Assistant, all three typechecks, `sourcing-v6-4`, liveness replay, Daily contract, frontend temp build, and diff-check also passed.
+- The formerly blocked task 12 reported `sourcing-v6.3-compatibility`, `active_rule=sourcing-rules-v7.3-obtainable-evidence`, and `bilibili-probe-v1` successfully.
+- The fixed July 15-29 liveness replay remained the immutable historical baseline: 15 report days, 14 candidate-artifact days, 15 consecutive zero-Lead days, and `unhealthy-business-liveness`.
+- Daily contract validation passed for 2026-07-29 with 282 sourcing candidates, 15 Radar items, 12 Steam Trend items, and zero formal pools; frontend temporary build transformed 1634 modules; final `git diff --check` passed and no tracked snapshot change remained.
+- Full verification log: `/tmp/crm-v73-single-test.WQM7if/verify-all.log`, SHA-256 `e538b8e6c6ba98da93d20465d7f39a9983990d1e96b846a08bb8dc5932746ff8`.
+- Reconfirmed after verification that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch was `d80a51abb26a2c926f20c3e6cc95e20b29ea00a1`, and the only open PR remained unrelated `#71`.
+
 - Downloaded the exact `bb841ec81cafd9159131bd6d5ec822ca973f6b0c` GitHub API tarball to one-time snapshot `/tmp/crm-v73-single-test.WQM7if`; SHA-256 `c5332f45d933df3eaee679d161bce8a3deb9691c525f82f8b90f468b932d9f75`; Node `v22.23.1`, npm `10.9.8`, pnpm `11.9.0`.
 - `node --check scripts/test-sourcing-v6-3.mjs` passed.
 - The focused compatibility script passed and reported `active_rule=sourcing-rules-v7.3-obtainable-evidence`.
@@ -305,19 +314,18 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Remaining
 
-- Install declared dependencies only inside the one-time exact remote snapshot without creating a package lock.
-- Run the unmodified full `npm run verify:all` from exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
-- If a later failure appears, record it and stop without opportunistic repair.
-- Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases.
+- No work remains inside the approved single-file implementation and bounded-verification task.
+- Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases requiring their own boundary.
+- Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
 
 ## Next Action
 
-Run the approved unmodified full verification from the exact remote snapshot; do not modify another repository file or run live automation.
+Stop. Await a separately approved phase for independent full-branch validation or PR creation. Do not add another code change, create a PR, run live automation, or proceed to deployment in this task.
 
 ## Git Status
 
-The approved implementation is exactly code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; its parent `c08d3014d5687b6f408e0c0e335fe62172fc0660` is the Phase 2 proposal checkpoint. Before this implementation checkpoint update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The approved implementation remains exactly code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; all later branch commits are checkpoint evidence only. Before this final checkpoint update, the remote branch was `d80a51abb26a2c926f20c3e6cc95e20b29ea00a1`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-The single-file compatibility migration is implemented, scope-checked, and focused GREEN. Full verification is not yet claimed. No production generator, rule, other test, package script, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
+The approved single-file compatibility migration is implemented, scope-checked, focused GREEN, and full-suite GREEN. This task stops at its approved verification boundary. No production generator, rule, other test, package script, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
