@@ -31,16 +31,37 @@ This task may change only this proposal checkpoint. It does not implement a coll
 - Created this independent Phase 2 proposal branch from the exact replay diagnosis head.
 - Created this durable checkpoint before multi-file contract analysis.
 
+## Read-Only Contract Analysis Checkpoint
+
+The following frozen remote surfaces were inspected at exact SHAs:
+
+- Phase 1 replay diagnosis and its July 15-29 artifact inventory.
+- `docs/SOURCING_RULES_V7_3.md`, `docs/SOURCING_RULES_CURRENT.md`, and `automations/rules/daily-report.json`.
+- The pure V7.3 evaluator and shared regular-admission composition.
+- The targeted second-pass orchestrator at the frozen parent and the completed Blocker 2 source-role branch.
+- Candidate schema v3, candidate-audit builder, PR B candidate state/evidence snapshot, and completed Blocker 3 boundary.
+- The morning/afternoon workflow, repeated watchdog recovery window, one current afternoon receipt, and the existing Sourcing Learning provisional contract.
+
+Concrete findings:
+
+1. The current V7.3 authority is an official Demo/Playtest-or-gameplay gate plus two distinct independent public quality sources. The original two-evidence-family language describes a different population.
+2. Schema v3 records `failed_gate_details` and `next_evidence_actions`, but it does not persist the exact first-pass evidence pack, source roles/families, run-wide second-pass ordering, bounded provider signals, fetched patch/error, or final-pass transaction.
+3. PR B's lossless seven-day snapshot materially improves Steam evidence reuse, but it is a Steam candidate-state contract, not a full cross-source replay corpus; media signals and second-pass transactions remain absent.
+4. Blocker 2 prevents project-controlled or unclassified Bilibili evidence from consuming an independent-quality slot, but the replay corpus still needs explicit persisted `source_role` and `evidence_family` provenance.
+5. A replay of the regular formal output must retain both `indie_prelaunch` and `china_joint` inputs/results, the shared dedupe/publication boundary, and the privacy-safe pre-existing-match decision. Replaying only the indie evaluator would not reproduce the Daily formal pool.
+6. The scheduled afternoon run can execute materially after its nominal 14:17 Shanghai cron time; a fixed wall-clock cutoff would reject legitimate automatic runs. Canonical-day selection must use automatic run slots, terminal validation/sync receipts, and deterministic precedence instead.
+7. The old July 15-29 liveness result remains a historical baseline only. Any new acceptance window must use prospective immutable per-run corpus artifacts and must retain failed windows rather than excluding missing dates.
+8. Existing Sourcing Learning already treats fewer than 30 resolved samples as provisional and applies the 80% target only to a mature regular cohort; replay review must not create a competing precision denominator or automatic rule mutation.
+
 ## Remaining
 
-- Inspect the frozen remote rule, evaluator, second-pass, candidate-state/schema, and delivery contracts.
-- Compare the three evidence-authority policy options and recommend one for explicit approval.
-- Define the field-level replay corpus, privacy/integrity constraints, completeness states, acceptance window, validation contract, and later bounded TDD PR sequence.
+- Compare the three evidence-authority policy options and record one recommendation for explicit approval.
+- Define the field-level per-run corpus and window manifest, privacy/integrity constraints, completeness states, canonical-run selection, acceptance metrics, and later bounded TDD PR sequence.
 - Update this checkpoint with the complete Proposal, validate its exact remote head and one-file allowlist, then stop at the Phase 3 approval boundary.
 
 ## Next Action
 
-Read only the minimum frozen remote files needed to design the contract. Do not enter implementation.
+Complete the Phase 2 policy and contract design inside this checkpoint only. Do not enter implementation.
 
 ## Git Status
 
