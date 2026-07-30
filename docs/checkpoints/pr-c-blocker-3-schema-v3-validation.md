@@ -1,17 +1,17 @@
-# PR C Blocker 3 — Schema V3 and PR B Integrity Proposal
+# PR C Blocker 3 — Schema V3 Validation Implementation
 
 Date: 2026-07-30
-Phase: Phase 2 Proposal complete; awaiting explicit approval; no implementation, PR, merge, deployment, or live automation
+Phase: Phase 4 RED complete; GREEN implementation pending; no PR, merge, deployment, replay, integration, or live automation
 
 ## Current Goal
 
-Close only PR C blocker 3 at the validation boundary: make schema v3 inherit the complete PR B state, scheduler, snapshot, and summary integrity contract, and explicitly require `failed_gate_details` plus `next_evidence_actions` for every v3 candidate. This checkpoint is proposal evidence only.
+Close only PR C blocker 3 at the validation boundary: make schema v3 inherit the complete PR B state, scheduler, snapshot, and summary integrity contract, and explicitly require `failed_gate_details` plus `next_evidence_actions` for every v3 candidate. Phase 4 remains limited to the approved RED-to-GREEN validator and contract-test change.
 
 ## Overall Progress Checkpoint
 
-- Remote `main` was independently confirmed through the GitHub App/API as `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+- Phase 4 start gate found remote `main` at `f93a937aaaa7e688f233ab4ba0b9a97930c7b0c7` (`Record 2026-07-30 afternoon automation sync`); the proposal-time `166afdd759f5d3a4a6fff005e9293a906bda44d3` is historical and the implementation branch was not caught up to current `main`.
 - Frozen PR C parent `codex/pr-c-v7-3-obtainable-evidence` was independently confirmed as `e0d0b2ac71849ac135d68f124c17e7262772c144`; it was not moved or caught up.
-- Proposal branch `codex/pr-c-b3-schema-v3-validation` was created from that exact parent SHA and was `ahead=0`, `behind=0` before this checkpoint commit.
+- Phase 4 start gate independently reconfirmed proposal branch `codex/pr-c-b3-schema-v3-validation` at exact approved head `2902ad461bf40616aefbfe2593739f2699214397` before any implementation write.
 - The complete open-PR search returned only unrelated Weekly CSS PR `#71`.
 - PR B state, compatible snapshot reuse, retry, summary accounting, and fair scheduling already exist and are consumed as an inherited contract.
 - Blocker 1 owns V7.3 retained-`china_joint` publication/audit decision parity. Blocker 2 owns independent-quality source-role classification. Neither problem is reopened here.
@@ -172,6 +172,17 @@ Expected RED before validator implementation: case 1 GREEN; cases 2-6 fail becau
 
 Expected GREEN after the minimal validator change: all six new cases pass, existing v1/v2 behavior remains unchanged, and both focused files are fully GREEN.
 
+## Phase 4 RED Evidence
+
+- Test-only RED commit: `6354eee16107af8380d9e5c3bf63c4e924f86981`; it changed only `automations/test/onlineDailyV4CandidateStateScheduler.test.mjs`.
+- The test file adds one complete schema-v3 positive control and five independent negative cases: missing `failed_gate_details`, missing `next_evidence_actions`, missing inherited `first_seen`, scheduled-counter identity mismatch, and snapshot `dedupe_key` mismatch.
+- RED ran from a GitHub API tarball snapshot of that exact remote commit, not from a local CRM checkout/worktree.
+- `node --test automations/test/onlineDailyV4CandidateStateScheduler.test.mjs` produced exactly 15 tests: 10 passed and the five new negative cases failed.
+- The complete v3 positive control and all nine pre-existing scheduler/state tests passed, including the historical v1/v2 validator control.
+- Every negative failure was isolated to wrong acceptance: the validator subprocess returned exit status 0 and each assertion reported `validator wrongly accepted ...`; there was no syntax, fixture, import, schema-type, or existing-test failure.
+- The unchanged `node --test automations/test/onlineDailyV73CandidateAuditContract.test.mjs` control remained GREEN: 6 passed, 0 failed.
+- No validator, schema, generator, scheduler/state implementation, rule, workflow, production data, or other file was changed in RED.
+
 ## Acceptance Matrix
 
 ### RED proof
@@ -221,27 +232,28 @@ Expected GREEN after the minimal validator change: all six new cases pass, exist
 
 ## Completed
 
-- Confirmed remote `main`, frozen parent head, proposal-branch base, and the complete open-PR queue through the GitHub App/API.
-- Read every required source/test/validator surface at the exact frozen parent SHA.
-- Independently reproduced unsupported schema conditional execution, exact-v2 dispatch, actionable-field acceptance, PR B state/summary/snapshot acceptance, v2 controls, and the 282-record relabel boundary.
-- Compared generic schema-subset expansion with an explicit v3 validator and selected the smaller candidate-specific option.
-- Defined exact file allowlist, RED fixtures, focused/full acceptance matrix, compatibility rules, forbidden scope, and stop conditions.
-- Created no implementation, test, schema, PR, merge, deployment, or live-automation change.
+- Reconfirmed the frozen parent and approved proposal head through the GitHub App/API before the first write; open PRs remained unrelated `#71` only.
+- Read the complete approved checkpoint at exact proposal head `2902ad461bf40616aefbfe2593739f2699214397`.
+- Added and remotely committed only the approved complete-v3 control and five independent RED negatives.
+- Reproduced the exact expected RED boundary from remote commit `6354eee16107af8380d9e5c3bf63c4e924f86981`: positive and existing controls GREEN; five wrong-acceptance negatives RED.
+- Kept schema, generator, admission/evaluator/threshold, Blocker 2, second pass, scheduler/state semantics, rules, workflows, product, sync, and production data untouched.
 
 ## Remaining
 
-- No blocker 3 implementation is authorized.
-- Await explicit approval for only the bounded Phase 4 two-file RED-to-GREEN implementation and checkpoint updates.
-- PR C creation, merge, deployment, live generation, and production acceptance remain separate and out of scope.
+- Add only the approved Option B validator dispatch and small `validateSourcingCandidateV3` checker.
+- Run the complete focused and historical compatibility matrix.
+- Commit final checkpoint evidence, run `npm run test:daily-v4`, then run the unmodified `npm run verify:all` from a one-time snapshot of the final exact remote commit.
+- Confirm independent diff/allowlist evidence and stop before replay or integration.
 
 ## Next Action
 
-Stop. Wait for explicit user approval. Do not move from Proposal to Implementation.
+Implement the minimal GREEN validator change in `scripts/validate-daily-contract.mjs` only, then rerun the same RED fixture before any broader validation.
 
 ## Git Status
 
-- Remote `main`: `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
-- Frozen parent: `codex/pr-c-v7-3-obtainable-evidence` at `e0d0b2ac71849ac135d68f124c17e7262772c144`.
-- Proposal branch before this checkpoint commit: `codex/pr-c-b3-schema-v3-validation` at the exact parent SHA, clean remote diff.
-- The only branch change authorized and created in this task is this checkpoint file. The resulting checkpoint commit SHA is the GitHub contents-API response and is reported in the task handoff.
-- Open PRs: unrelated `#71` only.
+- Remote `main`: `f93a937aaaa7e688f233ab4ba0b9a97930c7b0c7` at Phase 4 start; not used as a new base.
+- Frozen parent: `codex/pr-c-v7-3-obtainable-evidence` remains `e0d0b2ac71849ac135d68f124c17e7262772c144`.
+- Approved proposal head: `2902ad461bf40616aefbfe2593739f2699214397`.
+- RED test commit before this checkpoint update: `6354eee16107af8380d9e5c3bf63c4e924f86981`.
+- Open PRs at Phase 4 start: unrelated `#71` only.
+- Remote changes since the proposal checkpoint are limited to the allowlisted test and this checkpoint; validator implementation is still absent at this stage.
