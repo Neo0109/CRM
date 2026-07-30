@@ -1,7 +1,278 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Sourcing Replay Window Contract v1 RED scaffold",
+  "$id": "https://github.com/Neo0109/CRM/schemas/sourcing_replay_window.schema.json",
+  "title": "Sourcing Replay Window Contract v1",
+  "description": "Static manifest contract for active, failed, or complete prospective replay windows. Canonical-run selection remains outside C5-A.",
   "type": "object",
-  "properties": {},
-  "additionalProperties": true
+  "required": [
+    "contract_version",
+    "window_id",
+    "timezone",
+    "start_date",
+    "end_date",
+    "status",
+    "corpus_contract_version",
+    "behavior_contract_sha256",
+    "dates",
+    "failure_date",
+    "failure_reasons",
+    "rejected_attempts",
+    "integrity"
+  ],
+  "properties": {
+    "contract_version": { "const": 1 },
+    "window_id": { "type": "string", "minLength": 1 },
+    "timezone": { "const": "Asia/Shanghai" },
+    "start_date": { "$ref": "#/$defs/date" },
+    "end_date": { "$ref": "#/$defs/date" },
+    "status": {
+      "type": "string",
+      "enum": ["active", "failed", "complete"]
+    },
+    "corpus_contract_version": { "const": 1 },
+    "behavior_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "dates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dateEntry" }
+    },
+    "failure_date": {
+      "oneOf": [
+        { "$ref": "#/$defs/date" },
+        { "type": "null" }
+      ]
+    },
+    "failure_reasons": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/failureReason" },
+      "uniqueItems": true
+    },
+    "rejected_attempts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rejectedAttempt" }
+    },
+    "integrity": { "$ref": "#/$defs/integrity" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "complete" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "dates": { "minItems": 15, "maxItems": 15 },
+          "failure_date": { "type": "null" },
+          "failure_reasons": { "maxItems": 0 },
+          "integrity": {
+            "properties": {
+              "status": { "const": "complete" },
+              "reason_codes": { "maxItems": 0 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "failed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "dates": { "maxItems": 15 },
+          "failure_date": { "$ref": "#/$defs/date" },
+          "failure_reasons": { "minItems": 1 },
+          "integrity": {
+            "properties": {
+              "status": {
+                "enum": ["incomplete", "corrupt", "unreplayable"]
+              },
+              "reason_codes": { "minItems": 1 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "active" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "dates": { "maxItems": 14 },
+          "failure_date": { "type": "null" },
+          "failure_reasons": { "maxItems": 0 },
+          "integrity": {
+            "properties": {
+              "status": { "const": "incomplete" }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "captureStatus": {
+      "type": "string",
+      "enum": ["complete", "incomplete", "corrupt", "unreplayable"]
+    },
+    "eventName": {
+      "type": "string",
+      "enum": ["schedule", "watchdog", "workflow_dispatch"]
+    },
+    "runSlot": {
+      "type": "string",
+      "enum": ["morning", "afternoon", "watchdog", "manual"]
+    },
+    "failureReason": {
+      "type": "string",
+      "enum": [
+        "missing_date",
+        "duplicate_date",
+        "date_gap",
+        "behavior_drift",
+        "corpus_contract_drift",
+        "manual_only",
+        "corpus_incomplete",
+        "receipt_unhealthy",
+        "payload_mismatch"
+      ]
+    },
+    "receiptBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "git_blob_sha",
+        "payload_sha256",
+        "generation_status",
+        "validation_status",
+        "receipt_status",
+        "synced"
+      ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "git_blob_sha": { "$ref": "#/$defs/gitSha" },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "generation_status": {
+          "type": "string",
+          "enum": ["success", "failed", "skipped"]
+        },
+        "validation_status": {
+          "type": "string",
+          "enum": ["success", "failed", "skipped"]
+        },
+        "receipt_status": {
+          "type": "string",
+          "enum": ["success", "failed", "missing"]
+        },
+        "synced": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "dateEntry": {
+      "type": "object",
+      "required": [
+        "report_date",
+        "corpus_id",
+        "event_name",
+        "run_slot",
+        "canonical",
+        "manual_only",
+        "capture_status",
+        "corpus_contract_version",
+        "behavior_contract_sha256",
+        "corpus_path",
+        "git_blob_sha",
+        "payload_sha256",
+        "receipt_binding"
+      ],
+      "properties": {
+        "report_date": { "$ref": "#/$defs/date" },
+        "corpus_id": { "type": "string", "minLength": 1 },
+        "event_name": { "$ref": "#/$defs/eventName" },
+        "run_slot": { "$ref": "#/$defs/runSlot" },
+        "canonical": { "type": "boolean" },
+        "manual_only": { "type": "boolean" },
+        "capture_status": { "$ref": "#/$defs/captureStatus" },
+        "corpus_contract_version": { "const": 1 },
+        "behavior_contract_sha256": { "$ref": "#/$defs/sha256" },
+        "corpus_path": { "type": "string", "minLength": 1 },
+        "git_blob_sha": { "$ref": "#/$defs/gitSha" },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "receipt_binding": { "$ref": "#/$defs/receiptBinding" }
+      },
+      "additionalProperties": false
+    },
+    "rejectedAttempt": {
+      "type": "object",
+      "required": [
+        "report_date",
+        "corpus_id",
+        "event_name",
+        "run_slot",
+        "reason_code"
+      ],
+      "properties": {
+        "report_date": { "$ref": "#/$defs/date" },
+        "corpus_id": { "type": "string", "minLength": 1 },
+        "event_name": { "$ref": "#/$defs/eventName" },
+        "run_slot": { "$ref": "#/$defs/runSlot" },
+        "reason_code": {
+          "type": "string",
+          "enum": [
+            "manual_only",
+            "morning_only",
+            "incomplete",
+            "corrupt",
+            "unreplayable",
+            "delivery_unhealthy",
+            "superseded_automatic_attempt"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "integrity": {
+      "type": "object",
+      "required": [
+        "canonical_json_version",
+        "payload_sha256",
+        "byte_size",
+        "inline_text_characters",
+        "status",
+        "reason_codes"
+      ],
+      "properties": {
+        "canonical_json_version": { "const": 1 },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "byte_size": { "type": "integer", "minimum": 0 },
+        "inline_text_characters": { "type": "integer", "minimum": 0 },
+        "status": {
+          "type": "string",
+          "enum": ["complete", "incomplete", "corrupt", "unreplayable"]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/failureReason" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
 }
