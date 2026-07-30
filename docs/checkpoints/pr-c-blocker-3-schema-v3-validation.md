@@ -1,7 +1,7 @@
 # PR C Blocker 3 — Schema V3 Validation Implementation
 
 Date: 2026-07-30
-Phase: Phase 4 RED complete; GREEN implementation pending; no PR, merge, deployment, replay, integration, or live automation
+Phase: Phase 4 GREEN implementation complete; implementation-SHA verification GREEN; final exact-head snapshot confirmation follows this evidence-only checkpoint commit; no PR, merge, deployment, replay, integration, or live automation
 
 ## Current Goal
 
@@ -183,6 +183,24 @@ Expected GREEN after the minimal validator change: all six new cases pass, exist
 - The unchanged `node --test automations/test/onlineDailyV73CandidateAuditContract.test.mjs` control remained GREEN: 6 passed, 0 failed.
 - No validator, schema, generator, scheduler/state implementation, rule, workflow, production data, or other file was changed in RED.
 
+## Phase 4 GREEN and Verification Evidence
+
+- GREEN implementation commit: `27857b1226cb49396a97d280f0796d0765b5cd93`.
+- Option B was implemented exactly: schema v2 still calls the unchanged `validateSourcingCandidateV2`; schema v3 calls a new 15-line `validateSourcingCandidateV3`; the v3 checker first invokes the complete v2 checker and then uses own-property checks for `failed_gate_details` and `next_evidence_actions`.
+- `validateSchemaSubset`, the JSON schema, candidate-audit generator, admission/evaluator/threshold code, Blocker 2, second pass, and PR B scheduler/state semantics were not changed.
+- Exact-implementation API snapshot checks were GREEN:
+  - `node --check scripts/validate-daily-contract.mjs`: exit 0.
+  - `node --test automations/test/onlineDailyV4CandidateStateScheduler.test.mjs`: 15 passed, 0 failed.
+  - `node --test automations/test/onlineDailyV73CandidateAuditContract.test.mjs`: 6 passed, 0 failed.
+  - Combined two-file run: 21 passed, 0 failed.
+  - Historical v1 Daily validator for 2026-07-29: `ok: true`, 282 sourcing candidates, no warnings.
+- The first `npm run test:daily-v4` snapshot attempt had no installed dependencies and exposed only two unrelated `ERR_MODULE_NOT_FOUND: ajv` errors; all Blocker 3 tests were already GREEN. The repository has no npm lockfile, so `npm ci` correctly returned its precondition error.
+- Installed the repository's 201 declared packages only inside the disposable snapshot with `npm install --no-audit --no-fund --package-lock=false`; no lockfile or remote change was created.
+- The required rerun of `npm run test:daily-v4` passed 212/212.
+- The unmodified `npm run verify:all` at exact implementation SHA `27857b1226cb49396a97d280f0796d0765b5cd93` exited 0 after all 16 tasks, including Daily V4 212/212, diagnostics, assistant model, sourcing learning 9/9, heartbeat 9/9, three typechecks, rule/probe compatibility, July 15-29 liveness replay, Daily contract, 1,634-module frontend build, and final `git diff --check`.
+- GitHub compare from approved proposal head `2902ad461bf40616aefbfe2593739f2699214397` to the implementation SHA was `ahead=3`, `behind=0`, with exactly three allowlisted files and no other path.
+- GitHub compare from frozen parent was `ahead=4`, `behind=0`; the parent branch itself remained unchanged.
+
 ## Acceptance Matrix
 
 ### RED proof
@@ -232,28 +250,33 @@ Expected GREEN after the minimal validator change: all six new cases pass, exist
 
 ## Completed
 
-- Reconfirmed the frozen parent and approved proposal head through the GitHub App/API before the first write; open PRs remained unrelated `#71` only.
-- Read the complete approved checkpoint at exact proposal head `2902ad461bf40616aefbfe2593739f2699214397`.
-- Added and remotely committed only the approved complete-v3 control and five independent RED negatives.
-- Reproduced the exact expected RED boundary from remote commit `6354eee16107af8380d9e5c3bf63c4e924f86981`: positive and existing controls GREEN; five wrong-acceptance negatives RED.
-- Kept schema, generator, admission/evaluator/threshold, Blocker 2, second pass, scheduler/state semantics, rules, workflows, product, sync, and production data untouched.
+- Reconfirmed every start gate through the GitHub App/API and preserved the frozen parent.
+- Completed the approved RED-only test commit and recorded exact wrong-acceptance evidence.
+- Completed the minimal Option B GREEN validator implementation without widening scope.
+- Passed every focused, combined, historical, Daily V4, and full 16-task verifier check at the exact implementation SHA.
+- Independently confirmed the remote changed-file allowlist contains only the approved validator, test, and checkpoint paths.
+- Created no PR, merge, deployment, replay, integration, workflow dispatch, provider/generator run, sync, production-data change, or local CRM checkout/worktree change.
 
 ## Remaining
 
-- Add only the approved Option B validator dispatch and small `validateSourcingCandidateV3` checker.
-- Run the complete focused and historical compatibility matrix.
-- Commit final checkpoint evidence, run `npm run test:daily-v4`, then run the unmodified `npm run verify:all` from a one-time snapshot of the final exact remote commit.
-- Confirm independent diff/allowlist evidence and stop before replay or integration.
+- After this evidence-only checkpoint commit moves the branch once, perform one read-only final exact-head API snapshot verification, independent `git diff --check`, and GitHub compare allowlist check.
+- Report that final exact SHA and stop. Do not create another checkpoint commit afterward, because doing so would move the SHA that was just verified.
+- Replay, integration into the frozen parent, PR creation, merge, and deployment remain explicitly outside this task.
 
 ## Next Action
 
-Implement the minimal GREEN validator change in `scripts/validate-daily-contract.mjs` only, then rerun the same RED fixture before any broader validation.
+Commit this checkpoint update, then validate that exact resulting remote head from a one-time GitHub API snapshot. If every required check is GREEN and the allowlist remains exact, report the result and stop.
 
 ## Git Status
 
-- Remote `main`: `f93a937aaaa7e688f233ab4ba0b9a97930c7b0c7` at Phase 4 start; not used as a new base.
+- Remote `main` observed at Phase 4 start: `f93a937aaaa7e688f233ab4ba0b9a97930c7b0c7`; not used as a new base.
 - Frozen parent: `codex/pr-c-v7-3-obtainable-evidence` remains `e0d0b2ac71849ac135d68f124c17e7262772c144`.
 - Approved proposal head: `2902ad461bf40616aefbfe2593739f2699214397`.
-- RED test commit before this checkpoint update: `6354eee16107af8380d9e5c3bf63c4e924f86981`.
-- Open PRs at Phase 4 start: unrelated `#71` only.
-- Remote changes since the proposal checkpoint are limited to the allowlisted test and this checkpoint; validator implementation is still absent at this stage.
+- RED test commit: `6354eee16107af8380d9e5c3bf63c4e924f86981`.
+- RED checkpoint commit: `3af137730aaf8dcbf8158cc72d2ca3dd3b2c2f4f`.
+- GREEN implementation head before this checkpoint update: `27857b1226cb49396a97d280f0796d0765b5cd93`.
+- Open PRs at Phase 4 start: unrelated `#71` only; no PR was created.
+- Changed files are exactly:
+  - `scripts/validate-daily-contract.mjs`
+  - `automations/test/onlineDailyV4CandidateStateScheduler.test.mjs`
+  - `docs/checkpoints/pr-c-blocker-3-schema-v3-validation.md`
