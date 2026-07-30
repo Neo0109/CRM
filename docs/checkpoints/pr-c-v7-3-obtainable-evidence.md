@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 bounded test-contract migration; focused verification GREEN, full verification pending
+Phase: Phase 4 bounded test-contract migration complete; verification stopped at the approved later-failure boundary
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The current single-task objective is to complete the explicitly approved three-test-file contract migration, run syntax plus the 32-test focused ownership matrix, then run the unmodified full `npm run verify:all` and record evidence. The three test edits are complete at exact remote commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; verification remains pending. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+The explicitly approved three-test-file contract migration and bounded verification are complete at their required stop condition. The three test edits are at exact remote code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; syntax and the focused 32-test ownership matrix are GREEN. The unmodified full `npm run verify:all` passed its first 11 tasks, including Daily V4 204/204, then stopped at the later `sourcing-v6-4` task because `scripts/test-sourcing-v6-3.mjs:71` still requires the historical V7.2 generator identity. That fourth test file was not modified. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -25,7 +25,7 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - The machine-rule activation and fixed-replay RED contract is committed at `3f0df5185586c96d5c61b0a197a5f1e4e77c829b`.
 - Minimal activation GREEN is complete at exact remote code head `182cfd0e60e0b0e1094a50178297ad489a82dc31`: runtime, machine rule, current-doc trace, rule-versioned pool decisions, Lead-count health, and reader-facing Daily output now agree on V7.3.
 - Full `npm run verify:all` has now been executed from that exact code commit. Frontend 114/114, backend 21/21, and functions 31/31 passed; Daily V4 passed 201/204 and stopped the fail-fast verifier on three historical V7.2-active contract findings. The 12 later verification tasks were not run.
-- Explicit approval was received. The three bounded test-contract migrations are complete at exact remote code head `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; syntax and the focused 32-test ownership matrix are GREEN, while full `verify:all` remains pending.
+- Explicit approval was received. The three bounded test-contract migrations are complete at exact remote code head `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; syntax and the focused 32-test ownership matrix are GREEN. Full `verify:all` advanced beyond Daily V4 and stopped at the separately owned stale V7.2 generator-identity assertion in `scripts/test-sourcing-v6-3.mjs:71`.
 - The V7.3 batch path remains guarded by `sourcingRuleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`; because that version is now active on this branch, the targeted second pass runs before the same rule-versioned pool and candidate-artifact decisions. Production `main` remains unchanged and still runs the merged PR B V7.2 baseline.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
@@ -148,6 +148,11 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 
 ## Completed
 
+- Installed 201 declared dependency packages only inside the one-time snapshot and ran the unmodified `npm run verify:all` from exact code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`.
+- Full verification passed tasks 1-11: frontend tests, backend tests, functions tests, Daily V4 tests 204/204, automation diagnostics, Lead Assistant, sourcing learning 9/9, Daily heartbeat 9/9, and frontend/backend/functions typechecks.
+- Fail-fast stopped at task 12, `sourcing-v6-4`, before `test-bilibili-probe.mjs` could run. `scripts/test-sourcing-v6-3.mjs:71` expected `/online_daily_v4_sourcing_rules_v7_2_china_joint/`, while the generator correctly exposes `online_daily_v4_sourcing_rules_v7_3_obtainable_evidence`; exit code 1.
+- Per the approved boundary, no fourth test file or implementation file was changed. The four later verifier tasks—liveness replay, Daily contract, frontend temp build, and diff-check—were not run.
+
 - Downloaded the exact `cf9b5dc9332b16c9b96b76a1a55c427275dae731` GitHub API tarball to one-time snapshot `/tmp/crm-v73-test-migration.yUEesg`; SHA-256 `277ad5b0704479bd3c0287714663e911f3920ad57ac2f1b063211b3478cdd29c`; Node `v22.23.1`, npm `10.9.8`.
 - All three edited test files passed `node --check`, and the five-file ownership matrix passed 32/32: hardening 6/6, V4 rules 7/7, V7.3 activation/replay 8/8, retained V7.2 compatibility 5/5, and V7.2 `china_joint` 6/6.
 
@@ -218,21 +223,19 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 
 ## Remaining
 
-- Install declared dependencies only inside the one-time exact remote snapshot, then run the unmodified full `npm run verify:all` and record the result.
-- If full verification reaches a new later failure, record it and stop rather than expanding scope.
-- Perform independent full-branch diff validation only after full verification is GREEN, in a separate task.
-- Create a PR, run PR CI, merge, deploy, and perform read-only acceptance only in their later approved phases.
+- No work remains inside the approved three-test-file implementation and bounded-verification task.
+- The stale V7.2 generator-identity assertion in `scripts/test-sourcing-v6-3.mjs` requires a separate Diagnosis -> Proposal -> Approval boundary before any edit.
+- Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
-- Stop after PR C; do not enter PR D or PR E.
 
 ## Next Action
 
-Inside `/tmp/crm-v73-test-migration.yUEesg`, install declared dependencies without changing the remote branch, run the unmodified full `npm run verify:all`, then record the exact task/test result and stop. If a later fail-fast task reveals a new failure, do not add opportunistic fixes.
+Stop. Await a separate user-approved phase for either the newly exposed stale `scripts/test-sourcing-v6-3.mjs` compatibility contract or independent full-branch validation. Do not modify the fourth test, create a PR, run remaining verifier tasks individually, or proceed to deployment.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` is exactly at approved three-test-file code head `cf9b5dc9332b16c9b96b76a1a55c427275dae731`. Remote `main` remains `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remains unrelated `#71`. No local CRM checkout/worktree was modified.
+The three approved test changes remain exactly at code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; later branch commits are checkpoint evidence only. Before this final evidence update, remote branch `codex/pr-c-v7-3-obtainable-evidence` was `2de83e529f6813882c8de0bef72052bbc0d50f6a`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was modified.
 
 ## Rollout Status
 
-The three approved activation-contract migrations are written remotely and the focused ownership matrix is GREEN; full verification is pending. No implementation, machine rule, source document, workflow, sync, production artifact, independent full-branch diff validation, PR/CI, merge, deployment, or production acceptance has started in this phase; production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+The approved three-test migration is implemented and its 32-test focused ownership matrix is GREEN. Full verification no longer fails on those three contracts and Daily V4 is 204/204; fail-fast instead exposed one separate stale V7.2 generator-identity assertion at `scripts/test-sourcing-v6-3.mjs:71`. The result is recorded and this task stops without scope expansion. No implementation, machine rule, rule document, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
