@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 2 single-file sourcing compatibility proposal recorded; approval required
+Phase: Phase 4 single-file sourcing compatibility implementation complete; focused verification pending
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Form and record an approval-ready, single-file migration for the stale compatibility contract in `scripts/test-sourcing-v6-3.mjs`. The proposal must preserve the V6.3 field-hygiene and quantity-safety assertions, remove this legacy script's independent ownership of the active sourcing version, and make its generator-label check consistent with the runtime `RULE_VERSION`. No test or implementation file has been changed in this phase. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+Implement and verify the explicitly approved single-file migration for `scripts/test-sourcing-v6-3.mjs`. The implementation is complete at exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`: the legacy suite now derives its generator identity from runtime `RULE_VERSION`, reports a stable compatibility label plus the active rule, and preserves the existing V6.3 field-hygiene and quantity-safety assertions. Focused and full verification remain pending. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -214,6 +214,12 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- Received explicit user approval for the single-file proposal and bounded verification.
+- Reconfirmed immediately before writing that remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch was `c08d3014d5687b6f408e0c0e335fe62172fc0660`, and the only open PR remained unrelated `#71`.
+- Updated only `scripts/test-sourcing-v6-3.mjs` through the GitHub App/API at exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
+- The implementation imports `RULE_VERSION`, verifies the generator runtime wiring, derives the expected generator label without a V7.2/V7.3 literal, and replaces the stale final log with `sourcing-v6.3-compatibility` plus `active_rule`.
+- Compared `c08d3014d5687b6f408e0c0e335fe62172fc0660...bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; the implementation commit changes only `scripts/test-sourcing-v6-3.mjs` with 17 additions and 2 deletions.
+
 - Reconfirmed remote `main` at `166afdd759f5d3a4a6fff005e9293a906bda44d3`, PR C branch at `fd611cb3b87bd8967442d50cc0e62b20873d2568`, and the open PR queue containing only unrelated `#71` before this proposal update.
 - Read the exact remote compatibility script, active generator header, runtime `RULE_VERSION`, package aliases, verifier task ordering, and checkpoint boundary needed for the single-file proposal.
 - Recorded the bounded single-file ownership migration above. No test, implementation, machine-rule, workflow, production artifact, or local CRM checkout/worktree was changed.
@@ -293,19 +299,19 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Remaining
 
-- Await explicit user approval for the single-file proposal above.
-- If approved, implement only `scripts/test-sourcing-v6-3.mjs` and run the bounded verification sequence exactly as specified.
+- Run syntax and the focused `sourcing-v6-4` compatibility/Bilibili task from exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
+- If focused GREEN, run the unmodified full `npm run verify:all` from the same exact remote code snapshot.
+- If a later failure appears, record it and stop without opportunistic repair.
 - Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases.
-- Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
 
 ## Next Action
 
-Stop. Await explicit user approval for the single-file `scripts/test-sourcing-v6-3.mjs` migration and bounded verification. Do not edit the test, create a PR, run remaining verifier tasks individually, or proceed to deployment before approval.
+Run the approved focused verification from exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; do not modify another file or run live automation.
 
 ## Git Status
 
-The three previously approved test changes remain exactly at code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; later branch commits are checkpoint evidence only. Before this proposal checkpoint update, remote branch `codex/pr-c-v7-3-obtainable-evidence` was `fd611cb3b87bd8967442d50cc0e62b20873d2568`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The approved implementation is exactly code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; its parent `c08d3014d5687b6f408e0c0e335fe62172fc0660` is the Phase 2 proposal checkpoint. Before this implementation checkpoint update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Phase 2 is complete: the stale single-file compatibility contract now has a bounded, approval-ready migration plan. No test, implementation, machine rule, rule document, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
+The single-file compatibility migration is implemented and scope-checked, but no verification result is claimed yet. No production generator, rule, other test, package script, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
