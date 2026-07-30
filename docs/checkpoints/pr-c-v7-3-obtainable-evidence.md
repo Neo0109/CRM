@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 4 implementation in progress; RED contract next
+Phase: Blocker 1 Phase 4 RED confirmed; GREEN implementation next
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Implement the explicitly approved blocker 1 four-file boundary using RED-to-GREEN TDD: add Steam/media retained-`china_joint` candidate-audit regressions, centralize V7.3 two-lane admission composition in one pure module, and make the formal-pool and audit consumers call it. Then run the approved focused matrix and full verifier from exact remote snapshots. Blockers 2 and 3, PR creation, merge, deployment, live generation, workflow/sync behavior, and every other module remain out of scope.
+The approved Steam/media retained-`china_joint` candidate-audit RED contract is confirmed at exact test commit `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`. Implement the GREEN boundary only: add one pure V7.3 two-lane admission-composition module, then make the formal-pool and candidate-audit consumers call it. Afterward run the approved focused matrix and full verifier from exact remote snapshots. Blockers 2 and 3, PR creation, merge, deployment, live generation, workflow/sync behavior, and every other module remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -213,6 +213,11 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Added only the approved Steam/media RED regressions in `automations/test/onlineDailyV73CandidateAuditContract.test.mjs` at exact commit `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`.
+- Downloaded that exact GitHub API tarball to one-time snapshot `/tmp/crm-v73-joint-red.lI3GVK`; tarball SHA-256 `b161de6ccba6cb0bccb1adcaf3bddf36dda37bfa879945713874420b46a4e6fc`.
+- `node --check` passed. The focused RED ran 6 tests: the existing 4 passed and the new Steam/media tests both failed at the intended assertion (`actual=indie_prelaunch`, `expected=china_joint`); exit status 1. No syntax, module-resolution, fixture, or unrelated assertion failure occurred.
+- Reconfirmed before GREEN that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the branch was `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`, and the only open PR remained unrelated `#71`.
 
 - Received explicit user approval for only the blocker 1 four-file Phase 4 implementation and the bounded verification plan.
 - Reconfirmed immediately before Phase 4 that remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the branch was `6d270e49d4cf1fdd490a16cbd59f30c1f55ce772`, and the only open PR remained unrelated `#71`.
@@ -466,19 +471,19 @@ No unresolved business-policy choice is encoded by this proposal. It restores co
 
 ## Remaining
 
-- Commit only the two approved RED regressions and confirm the existing implementation fails at the reproduced Steam/media lane, qualification, and parity boundary.
-- Implement only the approved shared V7.3 composition module and its two consumers, then run focused and full verification.
+- Add only `online_daily_v7_3_regular_admission.mjs`, then rewire only `online_daily_v4_decision.mjs` and `online_daily_v4_candidate_audit.mjs` to consume it.
+- Run syntax, the approved 31-test focused matrix, and full `npm run verify:all` from the exact GREEN commit.
 - Record exact commit, diff, and test evidence. Blockers 2 and 3 remain separate future tasks.
 - Stop before PR creation.
 
 ## Next Action
 
-Write only `automations/test/onlineDailyV73CandidateAuditContract.test.mjs` with the approved Steam/media RED regressions through the GitHub Contents API, reproduce the expected failures from that exact remote commit, update this checkpoint, and then proceed to the approved GREEN boundary.
+Through the GitHub Contents API, create only `automations/jobs/online_daily_v7_3_regular_admission.mjs`, then update only `online_daily_v4_decision.mjs` and `online_daily_v4_candidate_audit.mjs` to reuse its Steam/media evaluators. Do not edit the now-RED test, any rule threshold, schema, validator, workflow, or other module.
 
 ## Git Status
 
-Before Phase 4 started, the implementation remained exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; later branch commits were checkpoint evidence only. Remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `6d270e49d4cf1fdd490a16cbd59f30c1f55ce772`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The RED test commit is `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`; before it, the implementation remained exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`. Immediately before this RED evidence update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Blocker 1 Phase 4 implementation is explicitly approved and in progress. The next stage is the test-only RED contract. No production implementation, machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance has yet changed in this phase.
+Blocker 1 RED is confirmed: the original four candidate-audit/schema assertions pass, while the two new retained-joint assertions fail only because audit reports `indie_prelaunch` for Steam and media after `buildPools` correctly reports `china_joint`. GREEN implementation is next. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
