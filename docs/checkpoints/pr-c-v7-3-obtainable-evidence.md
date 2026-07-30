@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 2 proposal for bounded test-contract migration; approval pending, no test edits started
+Phase: Phase 4 bounded test-contract migration; three approved test edits complete, verification pending
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The completed single-task objective was to diagnose the three stale V7.2 activation-contract surfaces, define a bounded test-only migration with explicit ownership and verification, update this checkpoint, and stop for approval. Test edits, implementation changes, independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+The current single-task objective is to complete the explicitly approved three-test-file contract migration, run syntax plus the 32-test focused ownership matrix, then run the unmodified full `npm run verify:all` and record evidence. The three test edits are complete at exact remote commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; verification remains pending. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -25,7 +25,7 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - The machine-rule activation and fixed-replay RED contract is committed at `3f0df5185586c96d5c61b0a197a5f1e4e77c829b`.
 - Minimal activation GREEN is complete at exact remote code head `182cfd0e60e0b0e1094a50178297ad489a82dc31`: runtime, machine rule, current-doc trace, rule-versioned pool decisions, Lead-count health, and reader-facing Daily output now agree on V7.3.
 - Full `npm run verify:all` has now been executed from that exact code commit. Frontend 114/114, backend 21/21, and functions 31/31 passed; Daily V4 passed 201/204 and stopped the fail-fast verifier on three historical V7.2-active contract findings. The 12 later verification tasks were not run.
-- Diagnosis and the bounded three-test-file migration proposal are complete. No test or implementation edit has started; explicit approval is required before the existing RED contracts are migrated.
+- Explicit approval was received. The three bounded test-contract migrations are complete at exact remote code head `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; syntax, the focused 32-test ownership matrix, and full `verify:all` remain pending.
 - The V7.3 batch path remains guarded by `sourcingRuleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`; because that version is now active on this branch, the targeted second pass runs before the same rule-versioned pool and candidate-artifact decisions. Production `main` remains unchanged and still runs the merged PR B V7.2 baseline.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
@@ -148,6 +148,10 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 
 ## Completed
 
+- Received explicit user approval for only the three-test-file migration and bounded verification.
+- Updated `onlineDailyV4Rules.test.mjs` at `8567de27fc7e563d0d64f804168de35494ab2211`, `dailyAutomationHardening.test.mjs` at `6625b2856cd09057dc83869410946f163f37732f`, and `onlineDailyV7Activation.test.mjs` at exact remote code head `cf9b5dc9332b16c9b96b76a1a55c427275dae731`, exclusively through the GitHub App/API.
+- The edits separate current V7.3 ownership, stable version-neutral no-quota/no-bypass guardrails, and retained historical V7.2 compatibility. No implementation, machine rule, rule document, workflow, sync, production artifact, PR B, or PR D/E file changed.
+
 - Reconfirmed for this proposal that remote `main` remains `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch remains exactly `34a6ea31562c64852f58e00957552c9f3739bad9`, and the only open PR remains unrelated `#71`.
 - Read the exact remote versions of the three failing tests, the dedicated 8/8 V7.3 activation/replay owner, the retained 6/6 `china_joint` contract, runtime rule loader, decision defaults, report labeling behavior, machine rule, and current rules entrypoint.
 - Confirmed the ownership split: `onlineDailyV4Rules` should lock the runtime version; `dailyAutomationHardening` should assert version-neutral no-quota/no-bypass safety; `onlineDailyV7Activation` should preserve historical V7.2 compatibility; and the dedicated V7.3 contract should remain the sole exact active evidence/model/provenance owner.
@@ -211,9 +215,9 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 
 ## Remaining
 
-- Await explicit approval for the exact three-test-file migration described above.
-- After approval, implement only those test-contract changes, run syntax plus the focused 32-test ownership matrix, then run the unmodified full `npm run verify:all` from the exact remote result and record evidence.
-- If full verification reaches a new later failure, stop and record it rather than expanding scope.
+- Run syntax checks for the three edited files and the focused 32-test ownership matrix from the exact `cf9b5dc9332b16c9b96b76a1a55c427275dae731` remote snapshot.
+- If focused verification is GREEN, run the unmodified full `npm run verify:all` from the same exact snapshot and record the result.
+- If full verification reaches a new later failure, record it and stop rather than expanding scope.
 - Perform independent full-branch diff validation only after full verification is GREEN, in a separate task.
 - Create a PR, run PR CI, merge, deploy, and perform read-only acceptance only in their later approved phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
@@ -221,12 +225,12 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 
 ## Next Action
 
-Stop at this Phase 2 proposal boundary and wait for explicit approval. Approval authorizes only the three test files and bounded verification listed in `Test-Contract Migration Proposal`; it does not authorize independent full-branch diff validation, PR creation, merge, live generation, deployment, or PR D/E.
+Download the exact `cf9b5dc9332b16c9b96b76a1a55c427275dae731` GitHub API snapshot into a one-time `/tmp` directory, run syntax checks for the three edited tests, then run the defined 32-test focused ownership matrix. If it is GREEN, continue to the unmodified full `npm run verify:all`; otherwise record the bounded failure and stop.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` was exactly at evidence checkpoint head `34a6ea31562c64852f58e00957552c9f3739bad9` before this proposal-only GitHub API commit. The exact verified code head remains `182cfd0e60e0b0e1094a50178297ad489a82dc31`; remote `main` remains `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remains unrelated `#71`. No test or implementation file has changed in this proposal phase.
+Remote branch `codex/pr-c-v7-3-obtainable-evidence` is exactly at approved three-test-file code head `cf9b5dc9332b16c9b96b76a1a55c427275dae731`. Remote `main` remains `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remains unrelated `#71`. No local CRM checkout/worktree was modified.
 
 ## Rollout Status
 
-The three stale activation-contract surfaces are diagnosed and a bounded test-only migration is ready for approval. V7.3 focused behavior remains GREEN, full-suite status remains 367 passed and three currently exposed historical-contract failures before fail-fast stopped, and the 12 later tasks remain unexecuted. No implementation, independent full-branch diff validation, PR/CI, merge, deployment, or production acceptance has started; production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+The three approved activation-contract migrations are written remotely and verification is pending. No implementation, machine rule, source document, workflow, sync, production artifact, independent full-branch diff validation, PR/CI, merge, deployment, or production acceptance has started in this phase; production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
