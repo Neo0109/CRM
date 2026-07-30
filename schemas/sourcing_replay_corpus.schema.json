@@ -216,13 +216,39 @@
       },
       "additionalProperties": false
     },
+    "replayCorpusArtifactBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "git_blob_sha",
+        "payload_sha256",
+        "record_count",
+        "validation_status"
+      ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "git_blob_sha": {
+          "oneOf": [
+            { "$ref": "#/$defs/gitSha" },
+            { "type": "null" }
+          ]
+        },
+        "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "record_count": { "type": "integer", "minimum": 0 },
+        "validation_status": {
+          "type": "string",
+          "enum": ["valid", "invalid", "missing", "unavailable"]
+        }
+      },
+      "additionalProperties": false
+    },
     "artifactBindings": {
       "type": "object",
       "required": ["report", "sourcing_candidates", "replay_corpus", "receipt"],
       "properties": {
         "report": { "$ref": "#/$defs/artifactBinding" },
         "sourcing_candidates": { "$ref": "#/$defs/artifactBinding" },
-        "replay_corpus": { "$ref": "#/$defs/artifactBinding" },
+        "replay_corpus": { "$ref": "#/$defs/replayCorpusArtifactBinding" },
         "receipt": { "$ref": "#/$defs/artifactBinding" },
         "radar": { "$ref": "#/$defs/artifactBinding" },
         "steam_trends": { "$ref": "#/$defs/artifactBinding" }
@@ -622,6 +648,41 @@
       },
       "additionalProperties": false
     },
+    "requestedAction": {
+      "type": "object",
+      "required": ["gate_id", "action"],
+      "properties": {
+        "gate_id": {
+          "type": "string",
+          "enum": [
+            "identity_and_dedupe",
+            "prelaunch_window",
+            "publisher_china_capacity_clear",
+            "non_narrative_product",
+            "non_india_team",
+            "official_playable_or_gameplay",
+            "independent_quality_proof",
+            "non_steam_business_entry",
+            "concrete_china_bilibili_value"
+          ]
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "resolve_project_identity",
+            "verify_prelaunch_window",
+            "verify_publisher_china_capacity",
+            "verify_product_focus",
+            "verify_team_region",
+            "fetch_official_playable_or_gameplay",
+            "fetch_independent_quality_evidence",
+            "fetch_non_steam_business_entry",
+            "research_china_bilibili_value"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "transaction": {
       "type": "object",
       "required": [
@@ -649,7 +710,7 @@
           "type": "array",
           "minItems": 1,
           "maxItems": 3,
-          "items": { "type": "string", "minLength": 1 },
+          "items": { "$ref": "#/$defs/requestedAction" },
           "uniqueItems": true
         },
         "allowlisted_patch_fields": { "$ref": "#/$defs/stringArray" },

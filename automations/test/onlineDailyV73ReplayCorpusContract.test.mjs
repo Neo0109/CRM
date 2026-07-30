@@ -576,7 +576,7 @@ function completeCorpusFixture() {
       sourcing_candidates: binding("data/sourcing_candidates/2026-07-30.json", BLOB_B, SHA_B, 1),
       replay_corpus: binding(
         "data/sourcing_replay_corpus/2026-07-30/9001-1-afternoon.json",
-        BLOB_A,
+        null,
         "0".repeat(64),
         1
       ),
@@ -832,7 +832,12 @@ function transactionFixture() {
   return {
     transaction_id: "transaction:one",
     candidate_id: "candidate:one",
-    requested_actions: ["fetch_official_gameplay"],
+    requested_actions: [
+      {
+        gate_id: "official_playable_or_gameplay",
+        action: "fetch_official_playable_or_gameplay"
+      }
+    ],
     allowlisted_patch_fields: ["official_gameplay_evidence"],
     bounded_signals: [{ source_id: "steam:100", title: "Official gameplay" }],
     provider_contract_version: "public-second-pass-v1",

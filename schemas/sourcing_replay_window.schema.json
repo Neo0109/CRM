@@ -205,7 +205,7 @@
         "corpus_id": { "type": "string", "minLength": 1 },
         "event_name": { "$ref": "#/$defs/eventName" },
         "run_slot": { "$ref": "#/$defs/runSlot" },
-        "canonical": { "type": "boolean" },
+        "canonical": { "const": true },
         "manual_only": { "type": "boolean" },
         "capture_status": { "$ref": "#/$defs/captureStatus" },
         "corpus_contract_version": { "const": 1 },

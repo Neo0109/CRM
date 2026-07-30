@@ -20,6 +20,28 @@ const EVIDENCE_FAMILIES = [
   "team_execution",
   "user_feedback"
 ];
+const REQUESTED_ACTION_GATE_IDS = [
+  "identity_and_dedupe",
+  "prelaunch_window",
+  "publisher_china_capacity_clear",
+  "non_narrative_product",
+  "non_india_team",
+  "official_playable_or_gameplay",
+  "independent_quality_proof",
+  "non_steam_business_entry",
+  "concrete_china_bilibili_value"
+];
+const REQUESTED_ACTION_VALUES = [
+  "resolve_project_identity",
+  "verify_prelaunch_window",
+  "verify_publisher_china_capacity",
+  "verify_product_focus",
+  "verify_team_region",
+  "fetch_official_playable_or_gameplay",
+  "fetch_independent_quality_evidence",
+  "fetch_non_steam_business_entry",
+  "research_china_bilibili_value"
+];
 const INDEPENDENT_SOURCE_ROLES = new Set(["media", "trusted_creator"]);
 const CORPUS_REASON_CODES = [
   "capture_error",
@@ -564,11 +586,23 @@ function validateArtifactBindings(value, path, errors) {
     errors
   )) return;
   for (const key of allowed) {
-    if (Object.hasOwn(value, key)) validateArtifactBinding(value[key], appendPath(path, key), errors);
+    if (Object.hasOwn(value, key)) {
+      validateArtifactBinding(
+        value[key],
+        appendPath(path, key),
+        errors,
+        { allowUnavailableGitBlobSha: key === "replay_corpus" }
+      );
+    }
   }
 }
 
-function validateArtifactBinding(value, path, errors) {
+function validateArtifactBinding(
+  value,
+  path,
+  errors,
+  { allowUnavailableGitBlobSha = false } = {}
+) {
   if (!validateClosedObject(
     value,
     path,
@@ -577,7 +611,14 @@ function validateArtifactBinding(value, path, errors) {
     errors
   )) return;
   validateNonEmptyString(value.path, appendPath(path, "path"), errors);
-  validatePattern(value.git_blob_sha, GIT_SHA_PATTERN, appendPath(path, "git_blob_sha"), errors);
+  if (!(allowUnavailableGitBlobSha && value.git_blob_sha === null)) {
+    validatePattern(
+      value.git_blob_sha,
+      GIT_SHA_PATTERN,
+      appendPath(path, "git_blob_sha"),
+      errors
+    );
+  }
   validateSha256(value.payload_sha256, appendPath(path, "payload_sha256"), errors);
   validateInteger(value.record_count, appendPath(path, "record_count"), errors, 0);
   validateEnum(
@@ -997,6 +1038,50 @@ function validateRunSecondPass(value, path, errors) {
   });
 }
 
+function validateRequestedActions(value, path, errors) {
+  if (!validateArray(value, path, errors)) return;
+  if (value.length < 1) {
+    addError(errors, "SCHEMA_MIN_ITEMS", path, "requires at least 1 item");
+  }
+  if (value.length > 3) {
+    addError(errors, "SCHEMA_MAX_ITEMS", path, "allows at most 3 items");
+  }
+  const seen = new Set();
+  value.forEach((item, index) => {
+    const itemPath = appendPath(path, index);
+    if (!validateClosedObject(
+      item,
+      itemPath,
+      ["gate_id", "action"],
+      ["gate_id", "action"],
+      errors
+    )) return;
+    validateEnum(
+      item.gate_id,
+      REQUESTED_ACTION_GATE_IDS,
+      appendPath(itemPath, "gate_id"),
+      errors
+    );
+    validateEnum(
+      item.action,
+      REQUESTED_ACTION_VALUES,
+      appendPath(itemPath, "action"),
+      errors
+    );
+    const key = `${String(item.gate_id)}\u0000${String(item.action)}`;
+    if (seen.has(key)) {
+      addError(
+        errors,
+        "SCHEMA_UNIQUE_ITEMS",
+        itemPath,
+        "duplicate requested action"
+      );
+    } else {
+      seen.add(key);
+    }
+  });
+}
+
 function validateTransaction(value, path, errors) {
   const fields = [
     "transaction_id",
@@ -1019,12 +1104,10 @@ function validateTransaction(value, path, errors) {
   if (!validateClosedObject(value, path, fields, fields, errors)) return;
   validateNonEmptyString(value.transaction_id, appendPath(path, "transaction_id"), errors);
   validateNonEmptyString(value.candidate_id, appendPath(path, "candidate_id"), errors);
-  validateStringArray(
+  validateRequestedActions(
     value.requested_actions,
     appendPath(path, "requested_actions"),
-    errors,
-    null,
-    { min: 1, max: 3 }
+    errors
   );
   validateStringArray(
     value.allowlisted_patch_fields,
@@ -1139,7 +1222,13 @@ function validateWindowDates(value, path, errors) {
     validateNonEmptyString(item.corpus_id, appendPath(itemPath, "corpus_id"), errors);
     validateEnum(item.event_name, EVENT_NAMES, appendPath(itemPath, "event_name"), errors);
     validateEnum(item.run_slot, RUN_SLOTS, appendPath(itemPath, "run_slot"), errors);
-    validateBoolean(item.canonical, appendPath(itemPath, "canonical"), errors);
+    validateConst(
+      item.canonical,
+      true,
+      appendPath(itemPath, "canonical"),
+      errors,
+      "WINDOW_NON_CANONICAL_DATE"
+    );
     validateBoolean(item.manual_only, appendPath(itemPath, "manual_only"), errors);
     validateEnum(item.capture_status, CAPTURE_STATUSES, appendPath(itemPath, "capture_status"), errors);
     validateConst(
@@ -1587,6 +1676,19 @@ function validateEvidenceReferences(candidates, evidenceById, errors) {
   });
 }
 
+function hasHardExclusion(candidate) {
+  for (const lane of ["indie_prelaunch", "china_joint"]) {
+    const gates = candidate?.first_pass?.[lane]?.gate_results;
+    if (
+      Array.isArray(gates)
+      && gates.some((gate) => gate?.status === "fail" && gate?.hard_exclusion === true)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function validateSecondPassIntegrity(
   corpus,
   candidates,
@@ -1626,6 +1728,19 @@ function validateSecondPassIntegrity(
   const attempted = new Set(secondPass.attempted_ids ?? []);
   const failed = new Set(secondPass.failed_ids ?? []);
   const qualified = new Set(secondPass.qualified_ids ?? []);
+  for (const field of ["eligible_ids", "selected_ids", "attempted_ids"]) {
+    (secondPass[field] ?? []).forEach((candidateId, index) => {
+      const candidate = candidateById.get(candidateId);
+      if (candidate && hasHardExclusion(candidate)) {
+        addError(
+          errors,
+          "SECOND_PASS_HARD_EXCLUSION",
+          `/second_pass/${field}/${index}`,
+          "hard-excluded candidates cannot receive second pass"
+        );
+      }
+    });
+  }
   for (const candidateId of selected) {
     if (!eligible.has(candidateId)) {
       addError(
@@ -1784,16 +1899,23 @@ function validateSecondPassIntegrity(
         );
       }
     }
-    if (
-      candidateSecondPass.attempted === true
-      && !transactionById.has(candidateSecondPass.transaction_id)
-    ) {
-      addError(
-        errors,
-        "SECOND_PASS_TRANSACTION_REFERENCE_MISSING",
-        `/candidates/${index}/second_pass/transaction_id`,
-        "attempted candidate transaction_id must resolve"
-      );
+    if (candidateSecondPass.attempted === true) {
+      const referencedTransaction = transactionById.get(candidateSecondPass.transaction_id);
+      if (!referencedTransaction) {
+        addError(
+          errors,
+          "SECOND_PASS_TRANSACTION_REFERENCE_MISSING",
+          `/candidates/${index}/second_pass/transaction_id`,
+          "attempted candidate transaction_id must resolve"
+        );
+      } else if (referencedTransaction.candidate_id !== id) {
+        addError(
+          errors,
+          "SECOND_PASS_TRANSACTION_CANDIDATE_MISMATCH",
+          `/candidates/${index}/second_pass/transaction_id`,
+          "attempted candidate must reference its own transaction"
+        );
+      }
     }
     if (candidateSecondPass.attempted !== true && candidateSecondPass.transaction_id !== null) {
       addError(
@@ -2082,7 +2204,7 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "morning runs cannot be canonical"
       );
     }
-    if (entry?.canonical === true) validateCanonicalDateHealth(entry, index, errors);
+    validateCanonicalDateHealth(entry, index, errors);
   });
 
   for (let index = 1; index < dates.length; index += 1) {
