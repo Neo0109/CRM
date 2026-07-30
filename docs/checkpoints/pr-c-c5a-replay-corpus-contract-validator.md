@@ -1,7 +1,7 @@
 # PR C5-A Replay Corpus Contract and Validator
 
 Date: 2026-07-30
-Phase: Phase 4 C5-A review repair in progress; PR #107 open
+Phase: Phase 4 C5-A review repair complete; PR #107 open
 Branch: codex/pr-c-c5a-replay-corpus-contract-validator
 Repository workflow: GitHub App/API only; no local CRM checkout/worktree read or write
 
@@ -175,3 +175,42 @@ Modify only `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` to ad
 - Focused suite: PASS, 23/23.
 - Next action: run the required full regression and purity/scope checks from an exact GitHub API snapshot after this checkpoint update.
 - Branch head before this GREEN checkpoint update: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`; PR #107 remains open, unmerged, and undeployed.
+
+
+#### Review Repair Full Verification
+
+- Exact full-verification head: `bae54c9631a0f6e3181234a5f8e3d6d48c9b8e6d`.
+- The disposable repository was created under a fresh `mktemp` directory by committing the exact Proposal SHA `85fdc7e77c7bec879d2da65d9781b55bb09b670f` as the baseline and then overlaying the exact full-verification head.
+- Proposal-to-head changed-path guard: PASS, exactly the original five approved paths.
+- Proposal-to-head staged `git diff --check`: PASS.
+- Both schema `jq empty` checks: PASS.
+- Implementation and focused-test `node --check`: PASS.
+- The repository has no `package-lock.json`; `npm install --package-lock=false --no-audit --no-fund` installed the declared dependencies without generating one.
+- Focused contract suite: PASS, 23/23.
+- `npm run test:daily-v4`: PASS, 229/229.
+- `npm run verify:all`: PASS, including frontend/backend/functions tests, Daily V4, automation diagnostics, Lead Assistant, Sourcing Learning, Daily heartbeat, all typechecks, sourcing-v6-4 compatibility, July 15-29 liveness replay, Daily contract validation, temporary frontend build, and diff-check.
+- Explicit pure-module scan for filesystem/network/environment/current-time/locale/random dependencies: PASS.
+- Final working-tree `git diff --check`: PASS.
+- Final disposable snapshot status: clean.
+- `package-lock.json` absence after installation: PASS.
+- No local CRM checkout/worktree read or write occurred.
+
+### Review Repair Remaining
+
+- Reply to each of the five review threads with the implemented contract and validation evidence.
+- Resolve those five threads after the replies succeed.
+- Recheck PR head/base, thread state, changed paths, mergeability, workflow/status state, and no-merge/no-deployment boundary.
+
+### Review Repair Next Action
+
+Use the verified exact head to complete the authorized GitHub review-thread writes. Do not merge, retarget, deploy, activate, or start C5-B/C.
+
+### Review Repair Git Status
+
+- Repair-start checkpoint: `6fb9cad7d7d162bfb222db48bdd4674130724281`.
+- Valid RED: `abd89047daffc4cc90ec1940e3e1b2633987e9a2`.
+- RED checkpoint: `4e70ffee214b98976adbac736183bf8a84c0320b`.
+- Atomic GREEN: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`.
+- GREEN checkpoint and exact full-verification head: `bae54c9631a0f6e3181234a5f8e3d6d48c9b8e6d`.
+- This final checkpoint update changes only the already-approved checkpoint path; its exact commit is reported in the final handoff.
+- PR #107 remains open. No merge, deployment, workflow run, production artifact, or activation occurred.
