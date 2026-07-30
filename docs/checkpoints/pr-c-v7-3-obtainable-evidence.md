@@ -111,8 +111,6 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 - After an approved activation GREEN, update `docs/SOURCING_RULES_CURRENT.md` and the machine-readable rule trace together, then run the fixed July 15-29 replay and legacy weak-sample rejection regression.
 - Run full `npm run verify:all`, independent branch diff validation, PR CI, merge, and read-only acceptance only in their later bounded phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
-- Update current-rule documentation only after machine-rule activation and validation are complete.
-- Run fixed replay/legacy-weak-sample regression coverage, full `npm run verify:all`, independent branch diff validation, PR CI, merge, and read-only acceptance.
 - Stop after PR C; do not enter PR D or PR E.
 
 ## Next Action
@@ -125,4 +123,4 @@ Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at dormant-orchestrator 
 
 ## Rollout Status
 
-Targeted second-pass orchestrator GREEN complete and dormant. The provider and generator wiring now exist, but no machine-rule activation, workflow, deployment, live provider call, or production behavior has changed. Existing branch runtime behavior remains pure V7.3 module plus candidate-audit/schema GREEN only; current production sourcing code behavior remains the PR B baseline at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; current remote `main` is `f85b014b1160b81fc668c2ec523690a83d8434e7` after the 2026-07-30 Daily artifact commits.
+Targeted second-pass orchestrator GREEN complete and dormant. The provider and generator wiring now exist, but no machine-rule activation, workflow, deployment, live provider call, or production behavior has changed. The branch now contains the pure V7.3 module, candidate-audit/schema GREEN, and dormant orchestrator GREEN; active production sourcing behavior remains the PR B V7.2 baseline at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; current remote `main` is `f85b014b1160b81fc668c2ec523690a83d8434e7` after the 2026-07-30 Daily artifact commits.
