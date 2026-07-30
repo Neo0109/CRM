@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 TDD; minimal machine-rule activation GREEN complete, full verification not started
+Phase: Phase 4 verification; full verify:all executed with three stale V7.2 contract findings, no fixes started
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The completed single-task objective was to implement only the minimal V7.3 activation GREEN required by the existing activation/replay RED contract, verify it from the exact remote commit, update this checkpoint, and stop. Full `verify:all`, broad contract migration, independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+The completed single-task objective was to run only the full `npm run verify:all` command from the exact remote activation-GREEN commit, capture its complete fail-fast result, update this checkpoint, and stop. Test-contract migration, implementation fixes, independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -24,6 +24,7 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - The targeted second-pass orchestrator RED contract is committed at `e10c2d3cce9fc0126a267d7b74617b10b6f71395`; GREEN code is complete at `12ce6f3b303cb0072dfa16fec2bf3ab65edb267f`.
 - The machine-rule activation and fixed-replay RED contract is committed at `3f0df5185586c96d5c61b0a197a5f1e4e77c829b`.
 - Minimal activation GREEN is complete at exact remote code head `182cfd0e60e0b0e1094a50178297ad489a82dc31`: runtime, machine rule, current-doc trace, rule-versioned pool decisions, Lead-count health, and reader-facing Daily output now agree on V7.3.
+- Full `npm run verify:all` has now been executed from that exact code commit. Frontend 114/114, backend 21/21, and functions 31/31 passed; Daily V4 passed 201/204 and stopped the fail-fast verifier on three historical V7.2-active contract findings. The 12 later verification tasks were not run.
 - The V7.3 batch path remains guarded by `sourcingRuleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`; because that version is now active on this branch, the targeted second pass runs before the same rule-versioned pool and candidate-artifact decisions. Production `main` remains unchanged and still runs the merged PR B V7.2 baseline.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
@@ -77,6 +78,14 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Completed
 
+- Reconfirmed before verification that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch remained exactly `94da0a73ebf12e88f09f0ef770ae3f1c961cae63`, and the only open PR remained unrelated `#71`.
+- Downloaded the exact remote `182cfd0e60e0b0e1094a50178297ad489a82dc31` GitHub API tarball into a one-time `/tmp` directory. The captured tarball SHA-256 was `182125c18462c831bd7b72d8b1e3c05be26ea68d98887a57e0358726bca14325`; verification used Node `v22.23.1`, npm `10.9.8`, and pnpm `11.9.0`.
+- Confirmed the repository has no npm lockfile. `npm ci` therefore returned its expected `EUSAGE` precondition error; declared dependencies were installed only inside the isolated snapshot with `npm install --no-audit --no-fund`. This setup result is separate from the subsequent repository verification command.
+- Ran the unmodified `npm run verify:all`. Frontend tests passed 114/114, backend tests passed 21/21, functions tests passed 31/31, and Daily V4 passed 201/204. The verifier then stopped at `daily-v4-tests` by design, so its 12 later tasks were not run.
+- Recorded the three currently exposed failures: `dailyAutomationHardening.test.mjs` still expects the machine rule version and full indie lane to be V7.2; `onlineDailyV4Rules.test.mjs` still names and expects the locked active rule as V7.2; and the first `onlineDailyV7Activation.test.mjs` subtest still expects V7.2 across runtime, machine rules, current/canonical docs, and generator provenance. Each first equality expected `sourcing-rules-v7.2-china-joint` and received the intended active `sourcing-rules-v7.3-obtainable-evidence`.
+- Inspected those exact test bodies without editing them. Because the failing equality short-circuits later assertions, especially the full machine-rule and documentation assertions, a future contract migration must review each whole subtest and cannot be treated as three blind string replacements.
+- Confirmed within the same Daily V4 run that the V7.3 activation/fixed-replay contract passed 8/8, candidate-audit/schema passed 4/4, obtainable-evidence decision passed 5/5, targeted second-pass orchestration passed 6/6, PR B candidate-state/fair-enrichment passed 8/8, the July 15-29 replay remained GREEN, and all seven historical weak samples remained excluded.
+- No test, implementation, machine rule, source document, workflow, production artifact, or local CRM checkout/worktree was modified. No live generator, provider call, workflow dispatch, sync, PR, merge, deployment, independent full-branch diff validation, PR B scheduler change, or PR D/E work was performed.
 - Reconfirmed before writing that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch was exactly `aa926698833fd8da25c09fa6a4fef74dcda455cc`, and the only open PR remained unrelated `#71`.
 - Reproduced the activation contract from the exact `aa926698833fd8da25c09fa6a4fef74dcda455cc` GitHub API tarball with Node `v22.23.1`: the same six intended activation assertions were RED and the fixed July 15-29 replay plus seven historical weak-sample guardrails remained GREEN.
 - Added `docs/SOURCING_RULES_V7_3.md` and aligned `docs/SOURCING_RULES_CURRENT.md`, `automations/rules/daily-report.json`, and the runtime rule version to `sourcing-rules-v7.3-obtainable-evidence`.
@@ -127,21 +136,22 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Remaining
 
-- In a separate next task, run full `npm run verify:all` from the exact remote activation-GREEN commit and record the complete verification result. Broader historical activation/rules tests were deliberately not executed or rewritten in this minimal phase; any stale V7.2-active assertion must be treated as an explicit verification finding.
-- Perform independent full-branch diff validation only after the full verification result is known.
-- Update or add broader contracts only in a separately bounded, evidence-driven follow-up if full verification proves they still encode the superseded active V7.2 state; do not weaken V7.3 business guardrails to satisfy stale tests.
+- In a separate next task, inspect and propose a bounded migration for the three currently exposed historical activation contracts so they validate active V7.3 while preserving legitimate V7.2 lane-compatibility and legacy-default assertions.
+- Do not assume the result is three one-line edits: the first failing equality prevented later assertions in the same subtests from executing. Any test changes require a separately approved, evidence-driven scope before implementation.
+- After that separately approved migration, re-run the focused affected contracts and then the full `npm run verify:all` from the resulting exact remote commit.
+- Perform independent full-branch diff validation only after full verification is GREEN.
 - Create a PR, run PR CI, merge, deploy, and perform read-only acceptance only in their later approved phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
 - Stop after PR C; do not enter PR D or PR E.
 
 ## Next Action
 
-Stop at this verified activation GREEN boundary and wait for an explicit continuation. On the next `继续`, reconfirm remote state and scope only full `npm run verify:all` plus evidence capture; do not combine test fixes, independent full-branch diff validation, PR creation, merge, live generation, deployment, or PR D/E.
+Stop at this recorded full-verification RED boundary and wait for an explicit continuation. On the next `继续`, scope only the diagnosis/proposal for the three stale activation-contract surfaces; do not edit tests or implementation before approval, and do not combine independent full-branch diff validation, PR creation, merge, live generation, deployment, or PR D/E.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at exact activation GREEN code head `182cfd0e60e0b0e1094a50178297ad489a82dc31` immediately before this checkpoint-only GitHub API commit. Remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`; the only open PR remained unrelated `#71`. All repository writes use GitHub App/API; verification uses exact one-time `/tmp` GitHub API tarballs outside every local CRM checkout/worktree.
+Remote branch `codex/pr-c-v7-3-obtainable-evidence` was exactly at checkpoint head `94da0a73ebf12e88f09f0ef770ae3f1c961cae63` before this evidence-only GitHub API commit. The exact verified code head remains `182cfd0e60e0b0e1094a50178297ad489a82dc31`; remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. All repository writes use GitHub App/API; verification used an exact one-time `/tmp` GitHub API tarball outside every local CRM checkout/worktree.
 
 ## Rollout Status
 
-Minimal V7.3 activation GREEN is complete and exact-remote focused verification is GREEN. The branch now activates the obtainable-evidence rule, bounded second pass, rule-versioned pool selection with retained `china_joint`, candidate schema v3, V7.3 Daily provenance, and zero-Lead health separation while preserving the fixed historical replay, seven weak-sample exclusions, PR B state/scheduler contracts, and all explicit no-backfill/no-bypass boundaries. Full verification, broader contract migration if proven necessary, independent full-branch diff validation, PR/CI, merge, deployment, and production acceptance have not started. Production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+Minimal V7.3 activation remains GREEN in all focused and adjacent V7.3/PR B contracts, but the branch is not full-suite GREEN. The complete fail-fast `verify:all` result is 367 passed tests and three currently exposed failures before the verifier stopped: all three are historical contracts that still assert V7.2 as the active rule surface. The 12 later verification tasks did not run. No fixes, independent full-branch diff validation, PR/CI, merge, deployment, or production acceptance have started, and production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
