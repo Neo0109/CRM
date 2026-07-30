@@ -1,7 +1,7 @@
 # PR C5-A Replay Corpus Contract and Validator
 
 Date: 2026-07-30
-Phase: Phase 4 C5-A review repair complete; PR #107 open
+Phase: Phase 4 C5-A review repair complete; PR #107 open; review threads resolved
 Branch: codex/pr-c-c5a-replay-corpus-contract-validator
 Repository workflow: GitHub App/API only; no local CRM checkout/worktree read or write
 
@@ -174,7 +174,7 @@ Modify only `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` to ad
 - Implementation and focused-test `node --check`: PASS.
 - Focused suite: PASS, 23/23.
 - Next action: run the required full regression and purity/scope checks from an exact GitHub API snapshot after this checkpoint update.
-- Branch head before this GREEN checkpoint update: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`; PR #107 remains open, unmerged, and undeployed.
+- Branch head before this GREEN checkpoint update: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`; PR #107 remains open and unmerged. The connected Cloudflare integration later reported an automatic branch-preview deployment; no manual or production deployment was requested.
 
 
 #### Review Repair Full Verification
@@ -213,4 +213,17 @@ Use the verified exact head to complete the authorized GitHub review-thread writ
 - Atomic GREEN: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`.
 - GREEN checkpoint and exact full-verification head: `bae54c9631a0f6e3181234a5f8e3d6d48c9b8e6d`.
 - This final checkpoint update changes only the already-approved checkpoint path; its exact commit is reported in the final handoff.
-- PR #107 remains open. No merge, deployment, workflow run, production artifact, or activation occurred.
+- PR #107 remains open and unmerged. No GitHub Actions workflow run, production deployment, production artifact, or activation occurred. A connected Cloudflare integration automatically produced a branch preview, recorded below.
+
+
+#### Automatic Preview Deployment Observation
+
+- After the review threads were resolved, the PR timeline was re-read through the thread-aware GitHub GraphQL workflow.
+- The Cloudflare Pages integration comment reports a successful automatic preview deployment for commit `df3f3a88836ae4278094ffdfd3be091dc8357eb4`.
+- Preview URL: `https://079ed547.crm-pages.pages.dev`.
+- Branch preview URL: `https://codex-pr-c-c5a-replay-corpus.crm-pages.pages.dev`.
+- This preview was created by the repository's connected integration in response to PR branch updates; Codex did not call a deployment tool, merge `main`, change Cloudflare configuration, or request a production deployment.
+- The preview does not activate the replay contract, collector, workflow, CRM sync, or any production decision path.
+- Removing or changing the automatic preview integration is outside this task and was not attempted.
+- All five original review threads have one implementation-evidence reply and are resolved.
+- Final handoff must distinguish this automatic preview from production deployment and must not claim that no deployment of any kind occurred.
