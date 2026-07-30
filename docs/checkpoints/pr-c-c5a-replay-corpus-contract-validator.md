@@ -1,8 +1,8 @@
 # PR C5-A Replay Corpus Contract and Validator
 
-Date: 2026-07-30  
-Phase: Phase 4 C5-A implementation complete; PR creation not authorized  
-Branch: codex/pr-c-c5a-replay-corpus-contract-validator  
+Date: 2026-07-30
+Phase: Phase 4 C5-A implementation complete; PR creation not authorized
+Branch: codex/pr-c-c5a-replay-corpus-contract-validator
 Repository workflow: GitHub App/API only; no local CRM checkout/worktree read or write
 
 ## Current Goal
