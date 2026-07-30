@@ -14,37 +14,21 @@ import {
   RULE_VERSION
 } from "../jobs/online_daily_v4_rules.mjs";
 import { validateDailyVolume } from "../jobs/online_daily_v4_volume.mjs";
-import { INDIE_PRELAUNCH_GATE_IDS, INDIE_PRELAUNCH_RULE_VERSION } from "../jobs/online_daily_v7_indie_admission.mjs";
 import { CHINA_JOINT_GATE_IDS } from "../jobs/online_daily_v7_2_china_joint_admission.mjs";
 import { REGULAR_SOURCING_RULE_VERSION } from "../jobs/online_daily_v7_2_regular_admission.mjs";
 
 const emptyPools = () => ({ push: [], watch: [], drop: [], new_qualified_count: 0 });
 
-describe("online Daily V7.2 activation", () => {
-  it("uses one executable V7.2 rule across runtime, both lanes, machine rules, docs, and generator", () => {
+describe("online Daily retained V7.2 compatibility", () => {
+  it("keeps V7.2 historical while runtime follows the active machine rule", () => {
     const machineRules = JSON.parse(readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8"));
     const currentRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_CURRENT.md", import.meta.url), "utf8");
     const canonicalRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_V7_2.md", import.meta.url), "utf8");
     const generator = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
 
-    assert.equal(RULE_VERSION, REGULAR_SOURCING_RULE_VERSION);
-    assert.notEqual(RULE_VERSION, INDIE_PRELAUNCH_RULE_VERSION);
-    assert.equal(machineRules.rule_version, REGULAR_SOURCING_RULE_VERSION);
-    assert.equal(machineRules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2.md");
-    assert.deepEqual(machineRules.indie_prelaunch_admission, {
-      active: true,
-      sourcing_lane: "indie_prelaunch",
-      required_gate_ids: INDIE_PRELAUNCH_GATE_IDS,
-      all_gates_required: true,
-      qualified_route: "push_pool",
-      unqualified_route: "sourcing_candidates",
-      automatic_priority: null,
-      formal_lead_minimum: null,
-      formal_lead_maximum: null,
-      watch_pool_enabled: false,
-      drop_pool_enabled: false,
-      invariant: "new_qualified_count === push_pool_count"
-    });
+    assert.equal(machineRules.rule_version, RULE_VERSION);
+    assert.notEqual(RULE_VERSION, REGULAR_SOURCING_RULE_VERSION);
+    assert.notEqual(machineRules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2.md");
     assert.deepEqual(machineRules.china_joint_admission.required_gate_ids, CHINA_JOINT_GATE_IDS);
     assert.equal(machineRules.china_joint_admission.sourcing_lane, "china_joint");
     assert.equal(machineRules.china_joint_admission.automatic_priority, null);
@@ -62,7 +46,7 @@ describe("online Daily V7.2 activation", () => {
     assert.doesNotMatch(generator, /quarantineDailyLeadPools|minReviewLeads|minReviewBackfillScore|minMediaLeadsWhenHealthy/);
   });
 
-  it("leaves V6.8 quarantine historical while active V7.2 publishes its qualified pools", () => {
+  it("leaves V6.8 quarantine historical while the active rule publishes qualified pools", () => {
     const candidatePools = {
       push: [{ project: "Qualified" }],
       watch: [],
@@ -80,7 +64,7 @@ describe("online Daily V7.2 activation", () => {
     });
   });
 
-  it("keeps all three public report artifacts buildable when zero projects qualify", () => {
+  it("keeps the intentional no-ruleVersion legacy V7.2 report default buildable when zero projects qualify", () => {
     const pools = emptyPools();
     const report = buildDailyReport({
       pools,
@@ -167,7 +151,7 @@ describe("online Daily V7.2 activation", () => {
     }), /new_qualified_count=1.*push_pool_count=0/);
   });
 
-  it("passes the real Daily contract with zero formal Leads and explicit V7 parity counts", () => {
+  it("passes the real Daily contract with zero formal Leads and explicit qualified/push parity counts", () => {
     const date = "2026-07-16";
     const capturedAt = "2026-07-16T08:00:00+08:00";
     const rootDir = mkdtempSync(path.join(tmpdir(), "crm-v7-indie-contract-"));
