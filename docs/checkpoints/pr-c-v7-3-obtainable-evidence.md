@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 TDD; targeted second-pass orchestrator GREEN complete, machine-rule activation not started
+Phase: Phase 4 TDD; machine-rule activation and fixed-replay RED complete, activation GREEN not started
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The completed single-task objective was to implement only the minimal GREEN required by `onlineDailyV73SecondPassOrchestrator.test.mjs`, verify the focused contract and adjacent 24-test matrix, update this checkpoint, and stop. Machine-rule activation, workflow/sync behavior, PR B scheduling, live generation, PR D/E, full verification, and PR creation remain out of scope.
+The completed single-task objective was to add only the V7.3 machine-rule activation and fixed-replay RED contract, prove the expected business failures from an exact remote snapshot, keep the existing V7.3/PR B contracts GREEN, update this checkpoint, and stop. V7.3 activation, workflow/sync behavior, PR B scheduling, live generation, PR D/E, full verification, and PR creation remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -15,13 +15,14 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 ## Overall Progress Checkpoint
 
 - Approved PR C code baseline: `71d0c2b2ff678cc73ba6704e949c0eae8177711d`.
-- Current remote `main`: `f85b014b1160b81fc668c2ec523690a83d8434e7`; the two commits after the approved code baseline only generated and recorded the 2026-07-30 Daily artifacts.
+- Current remote `main`: `166afdd759f5d3a4a6fff005e9293a906bda44d3`; the four commits after the approved code baseline only generated and recorded 2026-07-30 Daily artifacts.
 - Completed recovery slices: PR A `#105` added production-artifact replay and business-liveness observability; PR B `#106` added candidate research state, compatible evidence-snapshot reuse, and fair allocation of the unchanged Steam enrichment budget.
 - PR B merge state: squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; PR-head Build run `30487695885` completed successfully.
 - Open PR queue: unrelated PR `#71` only.
 - The pure V7.3 evidence module is GREEN.
 - The candidate-audit/schema GREEN slice is complete: the audit builder recognizes V7.3, projects actionable near-miss fields, and emits schema version 3 with v3-only requirements.
 - The targeted second-pass orchestrator RED contract is committed at `e10c2d3cce9fc0126a267d7b74617b10b6f71395`; GREEN code is complete at `12ce6f3b303cb0072dfa16fec2bf3ab65edb267f`.
+- The machine-rule activation and fixed-replay RED contract is committed at `3f0df5185586c96d5c61b0a197a5f1e4e77c829b`; activation GREEN has not started.
 - The V7.3 batch path is connected to the Daily generator only behind `sourcingRuleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`; current code and machine rules remain V7.2, so the path is dormant and production behavior is unchanged.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
@@ -75,6 +76,13 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Completed
 
+- Added `automations/test/onlineDailyV73ActivationReplayContract.test.mjs` in `3f0df5185586c96d5c61b0a197a5f1e4e77c829b`; no runtime, machine rule, current-rule document, workflow, or production artifact was changed.
+- Ran syntax and the focused contract from the exact `3f0df5185586c96d5c61b0a197a5f1e4e77c829b` GitHub API tarball with Node `v22.23.1`: 2/8 guardrails passed and 6/8 assertions failed at the intended business boundaries.
+- The six RED boundaries are: active runtime/machine/doc trace remains V7.2; machine required gates still encode the V7.2 conjunction; no bounded second-pass machine policy exists; `buildPools` ignores explicit V7.3 and admits only the retained `china_joint` fixture; V7.3 is incorrectly treated as Lead-count health enabled; and reader-facing Daily text still claims V7.2.
+- The two GREEN guardrails in the same focused contract preserve the exact July 15-29 historical replay baseline and keep all seven historical weak samples out under the V7.3 decision.
+- Ran the pure V7.3, V7.3 candidate-audit/schema, existing candidate-audit, and PR B candidate-state/scheduler contracts from the same exact remote commit: 24/24 passed; the existing targeted second-pass orchestrator contract also passed 6/6.
+- Independently compared `9b3a4d5561c6bc0b86c2d25cde22c0fa2f292e6b...3f0df5185586c96d5c61b0a197a5f1e4e77c829b`; the phase diff adds only the 349-line RED contract test.
+- Reconfirmed through the GitHub App/API that the only open PR remains unrelated `#71`; remote `main` advanced from `f85b014b1160b81fc668c2ec523690a83d8434e7` to `166afdd759f5d3a4a6fff005e9293a906bda44d3` through two additional 2026-07-30 morning artifact commits only.
 - Added `automations/jobs/online_daily_v7_3_second_pass_orchestrator.mjs` in `bd1390b907d8b4e32088937d4f6fdfd6f3c48b8f`: deterministic one-to-three-action near-miss selection capped at 12, named public-evidence fetching, same V7.3 decision reuse, per-candidate provider failure isolation, normalized candidate writeback, PR B snapshot refresh without mutating lifecycle/scheduler fields, and run metrics.
 - Updated `automations/jobs/online_daily_v4.mjs` in `12ce6f3b303cb0072dfa16fec2bf3ab65edb267f` so the batch runs before pool/artifact decisions only when the V7.3 rule version is active; V7.2 follows the same candidate arrays, state map, diagnostics, and output behavior as before.
 - Ran syntax and the focused contract from the exact `12ce6f3b303cb0072dfa16fec2bf3ab65edb267f` GitHub API tarball with Node `v22.23.1`: 6/6 passed.
@@ -107,20 +115,20 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Remaining
 
-- In a separate next task, establish the RED contract for V7.3 machine-rule activation and fixed replay before changing the current rule source; do not combine activation, documentation, full verification, or PR creation into this completed orchestrator task.
-- After an approved activation GREEN, update `docs/SOURCING_RULES_CURRENT.md` and the machine-readable rule trace together, then run the fixed July 15-29 replay and legacy weak-sample rejection regression.
+- In a separate next task, implement only the minimal V7.3 activation GREEN required by `onlineDailyV73ActivationReplayContract.test.mjs`: align the active runtime/machine/current-doc trace, make pool decisions explicitly rule-versioned while retaining `china_joint`, keep zero Leads outside transport health, and remove stale V7.2 reader claims.
+- Re-run the focused activation contract, exact July 15-29 replay, seven historical weak-sample rejection guardrail, adjacent 24-test matrix, and existing 6-test orchestrator contract from the exact activation GREEN commit.
 - Run full `npm run verify:all`, independent branch diff validation, PR CI, merge, and read-only acceptance only in their later bounded phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
 - Stop after PR C; do not enter PR D or PR E.
 
 ## Next Action
 
-Stop at this verified dormant-orchestrator GREEN boundary and wait for an explicit continuation. On the next `继续`, reconfirm remote state and scope only the machine-rule activation RED contract; do not activate V7.3 in the same task.
+Stop at this verified activation RED boundary and wait for an explicit continuation. On the next `继续`, reconfirm remote state and scope only the minimal activation GREEN; do not combine full verification, PR creation, merge, live generation, or PR D/E.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at dormant-orchestrator GREEN code head `12ce6f3b303cb0072dfa16fec2bf3ab65edb267f` immediately before this checkpoint-only GitHub API commit. All repository writes use GitHub App/API; verification uses exact one-time `/tmp` GitHub API tarballs outside every local CRM checkout/worktree.
+Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at activation RED code head `3f0df5185586c96d5c61b0a197a5f1e4e77c829b` immediately before this checkpoint-only GitHub API commit. All repository writes use GitHub App/API; verification uses exact one-time `/tmp` GitHub API tarballs outside every local CRM checkout/worktree.
 
 ## Rollout Status
 
-Targeted second-pass orchestrator GREEN complete and dormant. The provider and generator wiring now exist, but no machine-rule activation, workflow, deployment, live provider call, or production behavior has changed. The branch now contains the pure V7.3 module, candidate-audit/schema GREEN, and dormant orchestrator GREEN; active production sourcing behavior remains the PR B V7.2 baseline at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; current remote `main` is `f85b014b1160b81fc668c2ec523690a83d8434e7` after the 2026-07-30 Daily artifact commits.
+Machine-rule activation and fixed-replay RED complete. The branch contains the pure V7.3 module, candidate-audit/schema GREEN, dormant orchestrator GREEN, and a focused activation contract that exposes six unimplemented production boundaries while preserving the historical replay and weak-sample guardrails. No machine-rule activation, workflow, deployment, live provider call, or production behavior has changed; active sourcing remains the PR B V7.2 baseline at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`. Current remote `main` is `166afdd759f5d3a4a6fff005e9293a906bda44d3` after the 2026-07-30 morning artifact commits.
