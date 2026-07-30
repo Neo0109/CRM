@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 4 RED confirmed; GREEN implementation next
+Phase: Blocker 1 Phase 4 GREEN focused verification complete; full verify next
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The approved Steam/media retained-`china_joint` candidate-audit RED contract is confirmed at exact test commit `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`. Implement the GREEN boundary only: add one pure V7.3 two-lane admission-composition module, then make the formal-pool and candidate-audit consumers call it. Afterward run the approved focused matrix and full verifier from exact remote snapshots. Blockers 2 and 3, PR creation, merge, deployment, live generation, workflow/sync behavior, and every other module remain out of scope.
+The approved blocker 1 GREEN boundary is implemented at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`: one pure V7.3 two-lane admission-composition module now serves both formal-pool and candidate-audit consumers. Four-file syntax and the approved 31-test focused matrix are GREEN. Run the unmodified full `npm run verify:all` from this exact remote snapshot, record the result, and stop before PR creation. Blockers 2 and 3, merge, deployment, live generation, workflow/sync behavior, and every other module remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -213,6 +213,13 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Added `automations/jobs/online_daily_v7_3_regular_admission.mjs` at `9ebb30c6642211636560a18756565e170fba0cf0`; it composes the V7.3 indie evaluator with the unchanged retained-joint evaluators through `selectRegularAdmission` and stamps V7.3 provenance.
+- Rewired only `online_daily_v4_decision.mjs` at `cbeff25425bcf87c2c8b144c2220ef9e387393a3` and `online_daily_v4_candidate_audit.mjs` at exact GREEN code head `c789f4efca8e9a33d0d419bfbe0a49215a243066`.
+- Compared `949237546d74b9cd095cb7b004de7daa9673846f...c789f4efca8e9a33d0d419bfbe0a49215a243066`: only the approved three production files changed (34-line new module; decision +12/-31; audit +7/-8).
+- Downloaded exact GREEN commit `c789f4e` to `/tmp/crm-v73-joint-green.iTPifD`; tarball SHA-256 `7fdc597eb7d4cb36e57885d89c964c05c7c5de574e7cdd368031545e37c97ecb`.
+- All four implementation files passed `node --check`. The approved five-file focused matrix passed 31/31: V7.3 candidate audit 6/6, activation/replay 8/8, obtainable evidence 5/5, retained V7.2 joint admission 6/6, and legacy candidate audit 6/6.
+- Reconfirmed before full verification that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the branch was exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`, and the only open PR remained unrelated `#71`.
 
 - Added only the approved Steam/media RED regressions in `automations/test/onlineDailyV73CandidateAuditContract.test.mjs` at exact commit `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`.
 - Downloaded that exact GitHub API tarball to one-time snapshot `/tmp/crm-v73-joint-red.lI3GVK`; tarball SHA-256 `b161de6ccba6cb0bccb1adcaf3bddf36dda37bfa879945713874420b46a4e6fc`.
@@ -471,19 +478,19 @@ No unresolved business-policy choice is encoded by this proposal. It restores co
 
 ## Remaining
 
-- Add only `online_daily_v7_3_regular_admission.mjs`, then rewire only `online_daily_v4_decision.mjs` and `online_daily_v4_candidate_audit.mjs` to consume it.
-- Run syntax, the approved 31-test focused matrix, and full `npm run verify:all` from the exact GREEN commit.
-- Record exact commit, diff, and test evidence. Blockers 2 and 3 remain separate future tasks.
+- Install declared dependencies only inside the existing one-time exact-code snapshot and run the unmodified full `npm run verify:all`.
+- Record the complete verifier result, exact implementation diff, and final remote baseline in this checkpoint.
+- Do not repair any unrelated failure or address blockers 2 and 3.
 - Stop before PR creation.
 
 ## Next Action
 
-Through the GitHub Contents API, create only `automations/jobs/online_daily_v7_3_regular_admission.mjs`, then update only `online_daily_v4_decision.mjs` and `online_daily_v4_candidate_audit.mjs` to reuse its Steam/media evaluators. Do not edit the now-RED test, any rule threshold, schema, validator, workflow, or other module.
+Inside `/tmp/crm-v73-joint-green.iTPifD/Neo0109-CRM-c789f4e`, install only declared dependencies and run the unmodified `npm run verify:all`. Record and stop on any failure; do not edit another file.
 
 ## Git Status
 
-The RED test commit is `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`; before it, the implementation remained exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`. Immediately before this RED evidence update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `f8ed7fae2b1ada6f0228af9fa87ab5a458264147`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The exact GREEN code commit is `c789f4efca8e9a33d0d419bfbe0a49215a243066`; its predecessor evidence checkpoint is `949237546d74b9cd095cb7b004de7daa9673846f`. The three GREEN commits change only the new shared module and its pool/audit consumers. Immediately before this focused evidence update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `c789f4efca8e9a33d0d419bfbe0a49215a243066`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Blocker 1 RED is confirmed: the original four candidate-audit/schema assertions pass, while the two new retained-joint assertions fail only because audit reports `indie_prelaunch` for Steam and media after `buildPools` correctly reports `china_joint`. GREEN implementation is next. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
+Blocker 1 GREEN is implemented and focused verification is complete. The shared pure evaluator restores Steam/media pool-audit lane and qualified-count parity without changing gates or quantity policy; syntax and 31/31 focused tests pass. Full verification is next. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
