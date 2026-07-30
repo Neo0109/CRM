@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Independent full-branch diff validation complete; three blocking findings, no PR creation
+Phase: Blocker 1 Phase 2 proposal in progress; no implementation or PR creation
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Independent full-branch validation is complete against remote `main` `166afdd759f5d3a4a6fff005e9293a906bda44d3`. The branch scope and three-way merge are clean, but three deterministic contract failures make PR C not ready for PR creation: retained-`china_joint` audit parity, independent-quality source classification, and schema-v3 validation enforcement. This phase made no fix and created no PR. Merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+Prepare a bounded Phase 2 proposal for the first independent-validation blocker only: retained-`china_joint` formal-pool and V7.3 candidate-audit parity. Reconfirm the remote baseline, identify the single admission-composition ownership boundary, define a RED-to-GREEN contract and explicit untouched scope, then stop for implementation approval. No code, test, machine-rule, workflow, production artifact, PR, merge, deployment, live generation, or sync change is authorized in this phase.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -365,12 +365,12 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Next Action
 
-Stop. Await explicit approval to enter a separate Phase 2 proposal for the first blocker: retained-`china_joint` candidate-audit parity. Do not edit code/tests, create a PR, run live automation, merge, or deploy in this task.
+Continue read-only analysis of the retained-`china_joint` pool/audit divergence, record one bounded Phase 2 proposal in this checkpoint, and stop at the Phase 3 implementation-approval boundary. Do not edit code/tests, create a PR, run live automation, merge, or deploy.
 
 ## Git Status
 
-The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; subsequent branch commits are checkpoint evidence only. Before this final validation checkpoint update, the remote branch was `9ca09a8fd41fef05e62dd5a142a27648eff3e5b9`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; subsequent branch commits are checkpoint evidence only. At Phase 2 start, remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `ffd3fa9bf32bdcc47a537eeb9755b9563f2c9a11`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Independent full-branch validation is complete. File scope and three-way mergeability are clean, but PR C is blocked by three reproduced contract failures. No repair, implementation, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed in this phase.
+Blocker 1 Phase 2 proposal work is in progress. The task is restricted to read-only ownership analysis plus this checkpoint evidence; no repair, implementation, test, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance is authorized.
