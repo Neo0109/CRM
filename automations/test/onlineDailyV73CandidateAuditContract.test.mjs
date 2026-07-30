@@ -1,0 +1,180 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+
+import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
+import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "../jobs/online_daily_v7_3_obtainable_evidence.mjs";
+
+const reportDate = "2026-07-30";
+const capturedAt = "2026-07-30T08:00:00+08:00";
+const firstQualityProof = {
+  type: "official_festival_selection",
+  source_id: "festival:indie-showcase",
+  value: "Selected for the official indie showcase",
+  url: "https://showcase.example/games/v73-audit-near-miss"
+};
+const evidence = {
+  project: "V7.3 Audit Near Miss",
+  steam_app_id: "9500001",
+  dedupe_key: "steam:9500001",
+  region: "overseas",
+  release_state: "prelaunch",
+  release_window: "over_60",
+  early_access_state: "no",
+  publisher_occupancy: "clear",
+  narrative_state: "no",
+  india_team_state: "no",
+  official_demo_evidence: [
+    {
+      type: "steam_demo",
+      value: "Official playable Demo",
+      url: "https://store.steampowered.com/app/9500001/"
+    }
+  ],
+  official_gameplay_evidence: [],
+  quality_proofs: [firstQualityProof],
+  business_entrypoints: [
+    {
+      type: "Email",
+      value: "bd@v73-audit-near-miss.example"
+    }
+  ],
+  china_bilibili_value: "系统型合作玩法可形成组队挑战、机制讲解和长期栏目，并以简中社区运营承接B站反馈。",
+  china_demand: null
+};
+
+const artifact = buildSourcingCandidateArtifact({
+  reportDate,
+  capturedAt,
+  ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
+  rawSteamCandidates: [steamCandidate(evidence)],
+  enrichedSteamCandidates: [steamCandidate(evidence)],
+  mediaSignalsSeen: 0,
+  mediaCandidates: [],
+  candidatePools: emptyPools(),
+  publishedPools: emptyPools(),
+  candidateStates: new Map(),
+  steamEnrichmentMetrics: {
+    steam_candidates_enriched: 1,
+    steam_candidates_scheduled: 1,
+    steam_candidates_reused: 0,
+    steam_candidates_fresh_success: 1,
+    steam_candidates_failed: 0,
+    steam_candidates_deferred: 0,
+    steam_candidates_evaluated: 1,
+    backlog_unenriched_count: 0,
+    scheduler_lane_counts: { new: 1, backlog: 0, retry_refresh: 0 },
+    evidence_snapshot_rejections: 0
+  }
+});
+const candidate = artifact.candidates.find((item) => item.dedupe_key === evidence.dedupe_key);
+const schema = JSON.parse(readFileSync(new URL("../../schemas/sourcing_candidates.schema.json", import.meta.url), "utf8"));
+
+describe("V7.3 candidate audit and schema contract", () => {
+  it("projects actionable near-miss details from the V7.3 decision into the candidate artifact", () => {
+    assert.ok(candidate);
+    assert.equal(candidate.decision, "candidate");
+    assert.equal(candidate.sourcing_lane, "indie_prelaunch");
+    assert.equal(candidate.sourcing_rule_version, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
+    assert.ok(candidate.missing_evidence.includes("independent_quality_proof"));
+    assert.deepEqual(candidate.failed_gate_details, [
+      {
+        gate_id: "independent_quality_proof",
+        status: "unknown",
+        hard_exclusion: false,
+        obtainable: true
+      }
+    ]);
+    assert.deepEqual(candidate.next_evidence_actions, [
+      {
+        gate_id: "independent_quality_proof",
+        action: "fetch_independent_quality_evidence"
+      }
+    ]);
+  });
+
+  it("emits schema version 3 for V7.3 while retaining PR B scan metrics", () => {
+    assert.equal(artifact.schema_version, 3);
+    assert.equal(artifact.scan_summary.steam_candidates_enriched, 1);
+    assert.equal(artifact.scan_summary.steam_candidates_scheduled, 1);
+    assert.equal(artifact.scan_summary.steam_candidates_fresh_success, 1);
+    assert.deepEqual(artifact.scan_summary.scheduler_lane_counts, {
+      new: 1,
+      backlog: 0,
+      retry_refresh: 0
+    });
+  });
+
+  it("declares schema v3 and typed actionable evidence fields", () => {
+    assert.deepEqual(schema.properties.schema_version.enum, [1, 2, 3]);
+    assert.deepEqual(schema.$defs.candidate.properties.failed_gate_details, {
+      type: "array",
+      items: { $ref: "#/$defs/failedGateDetail" }
+    });
+    assert.deepEqual(schema.$defs.candidate.properties.next_evidence_actions, {
+      type: "array",
+      items: { $ref: "#/$defs/nextEvidenceAction" }
+    });
+    assert.deepEqual(schema.$defs.failedGateDetail.required, [
+      "gate_id",
+      "status",
+      "hard_exclusion",
+      "obtainable"
+    ]);
+    assert.deepEqual(schema.$defs.failedGateDetail.properties.status.enum, ["fail", "unknown"]);
+    assert.equal(schema.$defs.failedGateDetail.properties.hard_exclusion.type, "boolean");
+    assert.equal(schema.$defs.failedGateDetail.properties.obtainable.type, "boolean");
+    assert.equal(schema.$defs.failedGateDetail.additionalProperties, false);
+    assert.deepEqual(schema.$defs.nextEvidenceAction.required, ["gate_id", "action"]);
+    assert.equal(schema.$defs.nextEvidenceAction.additionalProperties, false);
+  });
+
+  it("requires actionable fields only for schema v3 so historical v1/v2 candidates remain valid", () => {
+    const baseRequired = schema.$defs.candidate.required;
+    assert.equal(baseRequired.includes("failed_gate_details"), false);
+    assert.equal(baseRequired.includes("next_evidence_actions"), false);
+
+    const v3Conditional = (schema.allOf ?? []).find((item) => (
+      item?.if?.properties?.schema_version?.const === 3
+    ));
+    assert.ok(v3Conditional, "schema v3 must add a conditional candidate contract");
+    assert.deepEqual(
+      v3Conditional.then.properties.candidates.items.required,
+      ["failed_gate_details", "next_evidence_actions"]
+    );
+  });
+});
+
+function steamCandidate(admissionEvidence) {
+  return {
+    appId: admissionEvidence.steam_app_id,
+    title: admissionEvidence.project,
+    source: "Steam discovery V7.3 audit fixture",
+    storeUrl: `https://store.steampowered.com/app/${admissionEvidence.steam_app_id}/`,
+    steamDbUrl: `https://steamdb.info/app/${admissionEvidence.steam_app_id}/`,
+    website: "https://v73-audit-near-miss.example",
+    hasDetails: true,
+    comingSoon: true,
+    releaseDate: "2027-02-01",
+    daysToRelease: 186,
+    alreadyReleased: false,
+    releaseTooSoon: false,
+    earlyAccess: false,
+    publisherOccupied: false,
+    narrativeHeavy: false,
+    indiaTeam: false,
+    genres: ["Strategy", "Simulation"],
+    categories: ["Co-op"],
+    contactMethods: admissionEvidence.business_entrypoints,
+    reviewText: "Positive public response",
+    recommendationCount: 800,
+    screenshotCount: 6,
+    movieCount: 1,
+    score: 80,
+    _indieAdmissionEvidence: admissionEvidence
+  };
+}
+
+function emptyPools() {
+  return { push: [], watch: [], drop: [] };
+}
