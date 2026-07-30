@@ -41,31 +41,45 @@ This task is limited to C5-A. It does not implement the shadow collector, genera
   - `node --check automations/jobs/online_daily_v7_3_replay_corpus_contract.mjs`: PASS.
   - `node --check automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`: PASS.
   - `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`: expected FAIL, 16 tests failed and zero passed.
-- RED failures are contract-local and precise: schema closure/version enums; recursive canonical ordering; rejection of undefined/function/cycle/NaN/Infinity; corpus/window self-hash; provenance; second-pass transaction completeness; duplicate candidate/evidence/transaction IDs; privacy; summary/parity/evidence resolution; complete/incomplete state explanations; reused-budget accounting; 15-day window length/continuity; behavior drift; manual-only canonical selection.
+- RED failures were contract-local and precise: schema closure/version enums; recursive canonical ordering; rejection of undefined/function/cycle/NaN/Infinity; corpus/window self-hash; provenance; second-pass transaction completeness; duplicate candidate/evidence/transaction IDs; privacy; summary/parity/evidence resolution; complete/incomplete state explanations; reused-budget accounting; 15-day window length/continuity; behavior drift; manual-only canonical selection.
+- Minimal GREEN implementation commit: `c79b3fe9a7d7e7bd9317e4a32524c6ec3be58a70`.
+- GREEN implementation:
+  - adds strict per-run and window JSON Schemas with `contract_version=1`, closed contract objects, closed event/slot/status/role/family enums, and explicit normalized JSON payload zones;
+  - adds recursive canonical JSON with sorted object keys, preserved array order, and rejection of unsupported/non-finite/cyclic values;
+  - defines corpus self-hash exclusion at `integrity.payload_sha256` and `artifact_bindings.replay_corpus.payload_sha256`, and window self-hash exclusion at `integrity.payload_sha256`;
+  - adds pure behavior/payload SHA-256 and byte/text metrics;
+  - adds strict schema-shape, cross-record, evidence-role, second-pass, publication-parity, budget, privacy, integrity, and static window validators with stable error codes and JSON-pointer paths;
+  - imports only `node:crypto`; no filesystem, network, environment, current-time, locale, or random dependency.
+- Exact GREEN snapshot checks at `c79b3fe9a7d7e7bd9317e4a32524c6ec3be58a70`:
+  - both schema files parse with `jq empty`: PASS;
+  - both implementation/test `node --check` commands: PASS;
+  - `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`: PASS, 16 tests passed, zero failed.
 - Made no local CRM checkout/worktree reads or writes.
 
 ## Remaining
 
-- Implement the minimal strict schemas, canonicalizer, corpus validator, privacy validator, and window validator needed to satisfy the approved RED boundary.
-- Run focused GREEN validation from an exact remote implementation SHA.
-- Update this checkpoint with GREEN SHA and results.
-- Run the complete required verification from a disposable `mktemp` GitHub API snapshot of the exact implementation SHA.
-- Verify the final changed-path allowlist and update this checkpoint with exact evidence.
+- Run `npm run test:daily-v4` from a disposable exact-head GitHub API snapshot.
+- Run `npm run verify:all` from the same exact-head snapshot after installing declared dependencies.
+- Run the required focused syntax/test checks and `git diff --check` from that exact head.
+- Compare the branch to the exact Proposal head and prove the five-path allowlist.
+- Update this checkpoint with the full verification SHA, results, final scope, and handoff.
 
 ## Next Action
 
-Replace only the permissive C5-A schemas and validator scaffold with the minimal pure implementation required by the RED fixtures; do not add collector, selector, workflow, global test wiring, or production integration.
+Create a fresh disposable `mktemp` GitHub API snapshot of the exact branch head containing this GREEN checkpoint, install only repository-declared dependencies, and run the complete required verification without generating or committing production data.
 
 ## Git Status
 
 - Branch parent: `85fdc7e77c7bec879d2da65d9781b55bb09b670f`.
 - Initial checkpoint commit: `a21267d3eac1d40203c9bdfb49345077aa2fb72b`.
 - Valid RED commit: `7514af3628c43d4ae68109357e570edc558ea07a`.
+- GREEN implementation commit: `c79b3fe9a7d7e7bd9317e4a32524c6ec3be58a70`.
 - Allowed implementation paths:
   - `schemas/sourcing_replay_corpus.schema.json`
   - `schemas/sourcing_replay_window.schema.json`
   - `automations/jobs/online_daily_v7_3_replay_corpus_contract.mjs`
   - `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`
   - `docs/checkpoints/pr-c-c5a-replay-corpus-contract-validator.md`
+- No `package.json`, `scripts/verify-all.mjs`, `package-lock.json`, workflow, existing schema, evaluator/provider/scheduler, rules, data, UI/API, or Supabase change is intended.
 - No PR exists for this branch.
 - No merge, deployment, workflow, production artifact, or local checkout mutation is in scope.
