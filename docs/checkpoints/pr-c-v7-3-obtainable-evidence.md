@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 2 proposal in progress; no implementation or PR creation
+Phase: Blocker 1 Phase 2 proposal complete; implementation approval required
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Prepare a bounded Phase 2 proposal for the first independent-validation blocker only: retained-`china_joint` formal-pool and V7.3 candidate-audit parity. Reconfirm the remote baseline, identify the single admission-composition ownership boundary, define a RED-to-GREEN contract and explicit untouched scope, then stop for implementation approval. No code, test, machine-rule, workflow, production artifact, PR, merge, deployment, live generation, or sync change is authorized in this phase.
+The bounded Phase 2 proposal for the first independent-validation blocker is complete: make retained-`china_joint` formal-pool and V7.3 candidate-audit decisions consume one shared pure admission-composition boundary. The proposal defines deterministic RED contracts, a four-file implementation boundary, focused and full verification, and explicit untouched scope. No code, test, machine-rule, workflow, production artifact, PR, merge, deployment, live generation, or sync change was made in this phase.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -214,6 +214,12 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- Received explicit user confirmation to enter only blocker 1 Phase 2 proposal work.
+- Reconfirmed remote `main` at `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the proposal-start branch at `ffd3fa9bf32bdcc47a537eeb9755b9563f2c9a11`, and the open PR queue containing only unrelated `#71`.
+- Confirmed the exact ownership divergence: pool publication composes V7.3 indie plus retained joint, while V7.3 candidate audit calls only the indie evaluator; the pool-index formal override cannot repair qualification metrics, lane, or exclusion evidence.
+- Confirmed the test gap: activation/replay covers retained joint only through `buildPools`; candidate audit covers only an indie near-miss. Defined two deterministic cross-path RED fixtures and a four-file GREEN boundary.
+- Recorded the bounded proposal above. No implementation or test file, machine rule, workflow, production artifact, PR, merge, deployment, live generator, sync, or local CRM checkout/worktree was changed.
+
 - Confirmed test-ownership gaps: the V7.3 activation contract covers retained `china_joint` only through `buildPools`, while the candidate-audit contract covers only one `indie_prelaunch` near-miss; no test composes a retained-joint formal pool with the V7.3 candidate artifact.
 - Confirmed the second-pass provider test asserts creator and media proof inclusion but never requires official/developer self-evidence to be excluded from independent quality.
 - Reproduced schema-v3 validation bypass by changing the historical 282-record artifact to `schema_version=3` without adding any `failed_gate_details` or `next_evidence_actions`; `validate-daily-contract.mjs` returned `ok: true`.
@@ -333,6 +339,105 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - Independently compared `7d4a84d0cd3074bd5cdd78a1b22189bb5e15a78a...c69a9ddf6ac743b78ef9f6c699d1234e4ab7b551`; this GREEN slice changes only the candidate-audit builder and sourcing-candidates schema.
 - No machine rule, orchestrator, workflow, generator entrypoint, current-rule document, or production behavior was changed. No local CRM checkout/worktree was read or modified.
 
+## Retained china_joint Candidate-Audit Parity Proposal (Approval Required)
+
+### Overall progress checkpoint
+
+- Current remote `main`: `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+- Completed preceding modules: PR A `#105` production replay/liveness; PR B `#106` candidate state, compatible snapshot reuse, and fair scheduling; PR C V7.3 implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
+- Open PR queue: unrelated Weekly CSS PR `#71` only.
+- Current module: only the pure V7.3 rule-versioned composition that selects between the obtainable-evidence `indie_prelaunch` lane and the retained `china_joint` lane, as consumed by the formal pool and candidate audit.
+- This proposal does not revisit completed PR A/PR B modules or reopen V7.3 evidence thresholds, second-pass provider behavior, schemas, validators, reporting, or workflow ownership.
+
+### Concrete problem
+
+`online_daily_v4_decision.mjs` currently owns the correct V7.3 two-lane composition: it evaluates the V7.3 indie lane and retained V7.2 `china_joint` lane, then uses `selectRegularAdmission` to choose the qualifying result. `online_daily_v4_candidate_audit.mjs` independently routes rule versions and, for V7.3, calls only `evaluateV73IndiePrelaunchAdmission`.
+
+The pool index can overwrite the audit record's reader-facing decision to `formal`, but it cannot repair the independently computed qualification flag, lane, failed gates, missing evidence, or exclusion reasons. A retained-joint project can therefore be published as a formal `china_joint` Lead while the same v3 artifact records `indie_prelaunch`, an indie hard exclusion, `new_qualified_count=0`, and `push_pool_count=1`.
+
+Existing tests divide ownership without composing the two paths: the V7.3 activation contract proves `buildPools` retains `china_joint`, while the V7.3 candidate-audit contract covers only one indie near-miss.
+
+### Cost of inaction
+
+A legitimate retained-joint formal Lead can make the Daily candidate artifact internally contradictory and fail the blocking qualified/push parity validation. Even if a downstream consumer ignores that validator, diagnostics would misstate which lane qualified the project and why. Keeping separate admission composition in the pool and audit also makes the same drift likely on the next rule activation.
+
+### Why this operation is necessary
+
+This is not a new sourcing-policy decision. The retained `china_joint` lane and its gates are already approved, implemented, and tested; only the audit consumer fails to use the same composition.
+
+Do not fix the symptom by copying `china_joint` selection into the audit or by forcing `sourcing_lane` from the published pool. Either approach leaves two business-rule owners or hides a false `_admissionQualified` result behind corrected metadata. The smallest durable operation is to give both consumers one pure V7.3 composition function.
+
+### Engineering principle
+
+Use TDD and pure-logic ownership:
+
+1. Add deterministic RED coverage to the existing V7.3 candidate-audit contract for both Steam and media retained-joint formal candidates. Each fixture must pass `buildPools`, then be audited with those exact candidate and published pools.
+2. Add `automations/jobs/online_daily_v7_3_regular_admission.mjs`, mirroring the established V7.2 regular-admission boundary. It composes the V7.3 indie evaluator with the unchanged V7.2 `china_joint` evaluator through `selectRegularAdmission`, and stamps the selected result with the V7.3 rule version.
+3. Make both `online_daily_v4_decision.mjs` and `online_daily_v4_candidate_audit.mjs` consume the shared Steam/media V7.3 evaluators.
+4. Preserve the existing V7.0/V7.2 audit routes and every pool-selection, ordering, dedupe, evidence, and hard-exclusion rule.
+
+The candidate-audit builder remains responsible for projecting a decision into an artifact; it does not become a second admission authority.
+
+### Architecture benefit
+
+One pure module owns V7.3 lane composition for every consumer. Formal publication and diagnostic projection cannot silently choose different lanes, future V7.4 work has a clear rule-versioned seam, and network/orchestration code remains outside admission logic. The blast radius is limited to the composition boundary and two existing consumers; no schema, workflow, sync, UI, or production-data path changes.
+
+### Proposed implementation files
+
+1. `automations/test/onlineDailyV73CandidateAuditContract.test.mjs`
+   - First commit two RED regressions: one Steam and one media retained-joint candidate.
+   - Assert formal decision, `sourcing_lane=china_joint`, V7.3 provenance, empty contradictory indie exclusions/actions, and `new_qualified_count === push_pool_count === 1`.
+   - Preserve the existing indie near-miss and schema assertions unchanged.
+
+2. `automations/jobs/online_daily_v7_3_regular_admission.mjs` (new)
+   - Export pure Steam and media V7.3 regular-admission evaluators.
+   - Reuse `evaluateV73IndiePrelaunchAdmission`, the existing retained-joint evaluators, and `selectRegularAdmission`.
+   - Change no gate, threshold, evidence normalization, lane priority, or quantity policy.
+
+3. `automations/jobs/online_daily_v4_decision.mjs`
+   - Replace the local private V7.3 composition with calls to the shared pure evaluators.
+   - Leave pool filtering, dedupe, ordering, Lead shape, and legacy default behavior unchanged.
+
+4. `automations/jobs/online_daily_v4_candidate_audit.mjs`
+   - Route only V7.3 Steam/media audit evaluation through the same shared evaluators.
+   - Leave V7.0/V7.2 routing, schema selection, record merging, pool indexing, PR B state fields, and scan metrics unchanged.
+
+Checkpoint updates are evidence-only and are not part of the implementation boundary.
+
+### Bounded RED-to-GREEN and verification
+
+- Reconfirm remote `main`, branch head, and open PR queue before each write phase.
+- RED commit: change only the candidate-audit contract, then run it from the exact remote snapshot and confirm failures are limited to the reproduced lane/qualification/parity boundary.
+- GREEN commits: add the pure composition module, then rewire only the decision and candidate-audit consumers.
+- Run `node --check` on the four implementation files.
+- Run the focused 31-test matrix:
+  - `onlineDailyV73CandidateAuditContract.test.mjs` (expected 6 tests after RED additions);
+  - `onlineDailyV73ActivationReplayContract.test.mjs` (8);
+  - `onlineDailyV73ObtainableEvidence.test.mjs` (5);
+  - `onlineDailyV7ChinaJointAdmission.test.mjs` (6);
+  - `onlineDailyV4CandidateAudit.test.mjs` (6).
+- If focused GREEN, run the unmodified full `npm run verify:all` from the exact resulting remote code commit.
+- If any unrelated later task fails, record it and stop. Do not repair blocker 2, blocker 3, or another verifier surface opportunistically.
+- Stop after verification and checkpoint evidence. PR creation remains a separate task.
+
+### Acceptance invariants
+
+- For identical V7.3 inputs, formal-pool and candidate-audit consumers select the same qualified lane for Steam and media candidates.
+- A fully qualified retained-joint formal record has `decision=formal`, `sourcing_lane=china_joint`, V7.3 provenance, no contradictory indie hard exclusion, and candidate-audit qualified/push parity.
+- The existing V7.3 indie qualified and near-miss fixtures remain unchanged.
+- The retained `china_joint` gates, thresholds, evidence normalization, mature-partner exclusion, and selection priority remain unchanged.
+- Historical V7.0/V7.2 audit behavior and omitted-rule V7.2 defaults remain unchanged.
+- No quota floor, backfill, watch/drop formalization, threshold relaxation, or hard-exclusion bypass is introduced.
+- No live provider, generator, workflow dispatch, sync, production write, PR, merge, or deployment is used for verification.
+
+### Explicitly untouched
+
+Blocker 2 independent-quality source classification; blocker 3 schema-v3 and inherited PR B validator enforcement; V7.3 obtainable-evidence gates; targeted second-pass provider/orchestrator; machine rules and sourcing documents; candidate schema; PR B state/snapshot/scheduler; reports, Radar, Steam Trends, Lead-count health, CRM import/sync/recovery; workflows; UI/API; Supabase; production artifacts; PR D/E; existing Leads; quantity and priority policy.
+
+### Policy decision status
+
+No unresolved business-policy choice is encoded by this proposal. It restores consistency with the already-approved rule that V7.3 retains the independent V7.2 `china_joint` lane unchanged.
+
 ## Independent Full-Branch Validation Findings (Blocking)
 
 ### 1. Retained china_joint decisions diverge between publication and candidate audit
@@ -358,19 +463,19 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Remaining
 
-- No work remains inside the independent full-branch validation task.
-- PR C is not ready for PR creation despite clean mergeability and full-suite GREEN, because the three findings above are not covered by the current tests.
-- Each repair requires its own bounded Proposal -> Approval -> Implementation task; do not combine all three fixes or create a PR first.
-- Recommended order: candidate-audit two-lane parity, independent-quality source classification, then schema-v3/inherited-v2 validator enforcement.
+- No work remains inside blocker 1 Phase 2 proposal design.
+- Blocker 1 implementation is not authorized until the user approves the exact four-file boundary and verification plan above.
+- Blockers 2 and 3 remain separate future Proposal -> Approval -> Implementation tasks and must not be combined with blocker 1.
+- PR creation remains blocked until all three independent-validation findings are repaired and independently revalidated.
 
 ## Next Action
 
-Continue read-only analysis of the retained-`china_joint` pool/audit divergence, record one bounded Phase 2 proposal in this checkpoint, and stop at the Phase 3 implementation-approval boundary. Do not edit code/tests, create a PR, run live automation, merge, or deploy.
+Stop. Await explicit user approval to enter a separate Phase 4 implementation task for only the blocker 1 four-file boundary above. Do not edit code/tests, address blockers 2 or 3, create a PR, run live automation, merge, or deploy before that approval.
 
 ## Git Status
 
-The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; subsequent branch commits are checkpoint evidence only. At Phase 2 start, remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `ffd3fa9bf32bdcc47a537eeb9755b9563f2c9a11`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; subsequent branch commits are checkpoint evidence only. Immediately before this final proposal update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `8f515f2d3ef532d61604f5c716db2856b5ef601b`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Blocker 1 Phase 2 proposal work is in progress. The task is restricted to read-only ownership analysis plus this checkpoint evidence; no repair, implementation, test, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance is authorized.
+Blocker 1 Phase 2 proposal is complete and awaiting implementation approval. The exact plan centralizes V7.3 Steam/media lane composition in one pure module and rewires only its pool and audit consumers under two RED regressions. No repair, implementation, test, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed.
