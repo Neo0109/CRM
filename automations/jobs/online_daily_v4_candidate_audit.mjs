@@ -5,19 +5,18 @@ import { isQualityQuarantineRule } from "./online_daily_v4_rules.mjs";
 import {
   evaluateMediaIndiePrelaunchAdmission,
   evaluateSteamIndiePrelaunchAdmission,
-  INDIE_PRELAUNCH_RULE_VERSION,
-  mediaIndieAdmissionEvidence,
-  steamIndieAdmissionEvidence
+  INDIE_PRELAUNCH_RULE_VERSION
 } from "./online_daily_v7_indie_admission.mjs";
 import {
   evaluateMediaRegularAdmission,
   evaluateSteamRegularAdmission,
   REGULAR_SOURCING_RULE_VERSION
 } from "./online_daily_v7_2_regular_admission.mjs";
+import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "./online_daily_v7_3_obtainable_evidence.mjs";
 import {
-  evaluateV73IndiePrelaunchAdmission,
-  V73_OBTAINABLE_EVIDENCE_RULE_VERSION
-} from "./online_daily_v7_3_obtainable_evidence.mjs";
+  evaluateMediaV73RegularAdmission,
+  evaluateSteamV73RegularAdmission
+} from "./online_daily_v7_3_regular_admission.mjs";
 
 const DECISION_RANK = { excluded: 1, candidate: 2, formal: 3 };
 const V73_CANDIDATE_ARTIFACT_SCHEMA_VERSION = 3;
@@ -410,7 +409,7 @@ function isV73AdmissionRule(ruleVersion) {
 
 function steamAdmissionForRule(candidate, ruleVersion) {
   if (isV73AdmissionRule(ruleVersion)) {
-    return evaluateV73IndiePrelaunchAdmission(steamIndieAdmissionEvidence(candidate));
+    return evaluateSteamV73RegularAdmission(candidate);
   }
   if (ruleVersion === REGULAR_SOURCING_RULE_VERSION) return evaluateSteamRegularAdmission(candidate);
   if (ruleVersion === INDIE_PRELAUNCH_RULE_VERSION) return evaluateSteamIndiePrelaunchAdmission(candidate);
@@ -419,7 +418,7 @@ function steamAdmissionForRule(candidate, ruleVersion) {
 
 function mediaAdmissionForRule(lead, ruleVersion) {
   if (isV73AdmissionRule(ruleVersion)) {
-    return evaluateV73IndiePrelaunchAdmission(mediaIndieAdmissionEvidence(lead));
+    return evaluateMediaV73RegularAdmission(lead);
   }
   if (ruleVersion === REGULAR_SOURCING_RULE_VERSION) return evaluateMediaRegularAdmission(lead);
   if (ruleVersion === INDIE_PRELAUNCH_RULE_VERSION) return evaluateMediaIndiePrelaunchAdmission(lead);
