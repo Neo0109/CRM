@@ -32,24 +32,35 @@ This task is limited to C5-A. It does not implement the shadow collector, genera
 - Confirmed the Proposal branch is exactly three commits ahead of the replay diagnosis and changes one approved checkpoint path only.
 - Confirmed the repository does not contain `docs/CODEX_DELIVERY_WORKFLOW.md` at the approved head or current main; no `PLAN.md`-authorized PR creation is in scope.
 - Created this durable checkpoint before implementation multi-file analysis.
+- Read the exact-SHA `package.json`, `scripts/verify-all.mjs`, current candidate schema, and nearest V7.3 audit test/module conventions.
+- Confirmed `test:daily-v4` and `verify:all` already discover `automations/test/*.mjs`; no global test wiring change is needed.
+- Created a permissive schema/validator scaffold plus deterministic positive and negative fixtures.
+- Corrected one new-test schema path error before accepting RED evidence; the earlier `9a7164e480eb93aa8fdd5a09ca39e4e4581a68f5` run is not treated as valid RED.
+- Valid RED commit: `7514af3628c43d4ae68109357e570edc558ea07a`.
+- Exact RED snapshot checks:
+  - `node --check automations/jobs/online_daily_v7_3_replay_corpus_contract.mjs`: PASS.
+  - `node --check automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`: PASS.
+  - `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`: expected FAIL, 16 tests failed and zero passed.
+- RED failures are contract-local and precise: schema closure/version enums; recursive canonical ordering; rejection of undefined/function/cycle/NaN/Infinity; corpus/window self-hash; provenance; second-pass transaction completeness; duplicate candidate/evidence/transaction IDs; privacy; summary/parity/evidence resolution; complete/incomplete state explanations; reused-budget accounting; 15-day window length/continuity; behavior drift; manual-only canonical selection.
 - Made no local CRM checkout/worktree reads or writes.
 
 ## Remaining
 
-- Inspect the minimal exact-SHA repository surfaces needed to fit existing test and schema conventions.
-- Commit a meaningful RED test/scaffold boundary and record the precise failing assertions.
-- Implement the minimal pure schemas, canonicalizer, corpus validator, privacy validator, window validator, and fixed fixtures.
-- Run focused GREEN validation.
+- Implement the minimal strict schemas, canonicalizer, corpus validator, privacy validator, and window validator needed to satisfy the approved RED boundary.
+- Run focused GREEN validation from an exact remote implementation SHA.
+- Update this checkpoint with GREEN SHA and results.
 - Run the complete required verification from a disposable `mktemp` GitHub API snapshot of the exact implementation SHA.
 - Verify the final changed-path allowlist and update this checkpoint with exact evidence.
 
 ## Next Action
 
-Read only the minimum exact-SHA package/test/schema conventions required for C5-A, then create the RED commit without modifying global test wiring.
+Replace only the permissive C5-A schemas and validator scaffold with the minimal pure implementation required by the RED fixtures; do not add collector, selector, workflow, global test wiring, or production integration.
 
 ## Git Status
 
 - Branch parent: `85fdc7e77c7bec879d2da65d9781b55bb09b670f`.
+- Initial checkpoint commit: `a21267d3eac1d40203c9bdfb49345077aa2fb72b`.
+- Valid RED commit: `7514af3628c43d4ae68109357e570edc558ea07a`.
 - Allowed implementation paths:
   - `schemas/sourcing_replay_corpus.schema.json`
   - `schemas/sourcing_replay_window.schema.json`
