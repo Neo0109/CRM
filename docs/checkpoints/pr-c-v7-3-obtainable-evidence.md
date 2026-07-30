@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 2 proposal complete; implementation approval required
+Phase: Blocker 1 Phase 4 implementation in progress; RED contract next
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The bounded Phase 2 proposal for the first independent-validation blocker is complete: make retained-`china_joint` formal-pool and V7.3 candidate-audit decisions consume one shared pure admission-composition boundary. The proposal defines deterministic RED contracts, a four-file implementation boundary, focused and full verification, and explicit untouched scope. No code, test, machine-rule, workflow, production artifact, PR, merge, deployment, live generation, or sync change was made in this phase.
+Implement the explicitly approved blocker 1 four-file boundary using RED-to-GREEN TDD: add Steam/media retained-`china_joint` candidate-audit regressions, centralize V7.3 two-lane admission composition in one pure module, and make the formal-pool and audit consumers call it. Then run the approved focused matrix and full verifier from exact remote snapshots. Blockers 2 and 3, PR creation, merge, deployment, live generation, workflow/sync behavior, and every other module remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -213,6 +213,9 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Received explicit user approval for only the blocker 1 four-file Phase 4 implementation and the bounded verification plan.
+- Reconfirmed immediately before Phase 4 that remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the branch was `6d270e49d4cf1fdd490a16cbd59f30c1f55ce772`, and the only open PR remained unrelated `#71`.
 
 - Received explicit user confirmation to enter only blocker 1 Phase 2 proposal work.
 - Reconfirmed remote `main` at `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the proposal-start branch at `ffd3fa9bf32bdcc47a537eeb9755b9563f2c9a11`, and the open PR queue containing only unrelated `#71`.
@@ -463,19 +466,19 @@ No unresolved business-policy choice is encoded by this proposal. It restores co
 
 ## Remaining
 
-- No work remains inside blocker 1 Phase 2 proposal design.
-- Blocker 1 implementation is not authorized until the user approves the exact four-file boundary and verification plan above.
-- Blockers 2 and 3 remain separate future Proposal -> Approval -> Implementation tasks and must not be combined with blocker 1.
-- PR creation remains blocked until all three independent-validation findings are repaired and independently revalidated.
+- Commit only the two approved RED regressions and confirm the existing implementation fails at the reproduced Steam/media lane, qualification, and parity boundary.
+- Implement only the approved shared V7.3 composition module and its two consumers, then run focused and full verification.
+- Record exact commit, diff, and test evidence. Blockers 2 and 3 remain separate future tasks.
+- Stop before PR creation.
 
 ## Next Action
 
-Stop. Await explicit user approval to enter a separate Phase 4 implementation task for only the blocker 1 four-file boundary above. Do not edit code/tests, address blockers 2 or 3, create a PR, run live automation, merge, or deploy before that approval.
+Write only `automations/test/onlineDailyV73CandidateAuditContract.test.mjs` with the approved Steam/media RED regressions through the GitHub Contents API, reproduce the expected failures from that exact remote commit, update this checkpoint, and then proceed to the approved GREEN boundary.
 
 ## Git Status
 
-The implementation remains exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; subsequent branch commits are checkpoint evidence only. Immediately before this final proposal update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `8f515f2d3ef532d61604f5c716db2856b5ef601b`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+Before Phase 4 started, the implementation remained exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; later branch commits were checkpoint evidence only. Remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `6d270e49d4cf1fdd490a16cbd59f30c1f55ce772`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-Blocker 1 Phase 2 proposal is complete and awaiting implementation approval. The exact plan centralizes V7.3 Steam/media lane composition in one pure module and rewires only its pool and audit consumers under two RED regressions. No repair, implementation, test, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed.
+Blocker 1 Phase 4 implementation is explicitly approved and in progress. The next stage is the test-only RED contract. No production implementation, machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance has yet changed in this phase.
