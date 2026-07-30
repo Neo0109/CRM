@@ -1,7 +1,7 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Independent full-branch diff validation in progress; read-only review, no PR creation
+Phase: Independent full-branch diff validation in progress; two blocking consistency findings reproduced
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
@@ -214,6 +214,14 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- Compared merge base `71d0c2b2ff678cc73ba6704e949c0eae8177711d` to validation-start branch head `5cd7ca1426042af05fa25980bfed291d0ce46e6d`: 44 branch-only commits, 20 files, 2617 additions, 144 deletions; every GitHub compare patch is available. Compare payload SHA-256: `af37aee323d97039024398f516c7bfac27c352ed20d7a032ddc6a7d85d410935`.
+- Compared the same merge base to current `main`: its four branch-only commits add only six dated 2026-07-30 automation artifact/receipt files. They have zero path overlap with PR C's 20 files.
+- Reproduced a retained-`china_joint` audit inconsistency from the exact verified snapshot: `buildPools` publishes one formal `china_joint` Lead with `new_qualified_count=1`, while `buildSourcingCandidateArtifact` reports the same record as formal but `sourcing_lane=indie_prelaunch`, attaches a hard prelaunch exclusion, and emits `new_qualified_count=0` versus `push_pool_count=1`.
+- Root cause of that inconsistency: the V7.3 branches of `steamAdmissionForRule` and `mediaAdmissionForRule` call only `evaluateV73IndiePrelaunchAdmission`; unlike pool selection, they never combine the retained V7.2 `china_joint` decision.
+- Reproduced an independent-quality boundary violation: `fetchV73TargetedEvidence` converts a developer's own official Bilibili video into `bilibili_public_playtest` quality proof. With only one genuinely independent media preview, the evaluator counts two source IDs, passes `independent_quality_proof`, and returns `qualified=true`.
+- Root cause of that violation: `qualityEvidenceFromSignals(officialSignals, "bilibili")` does not distinguish official/developer self-evidence from independent creator evidence before the two-source gate.
+- No repository implementation or test file was modified; reproductions ran only against the previously verified one-time snapshot.
+
 - User said `继续`; this task interprets that as approval for the next safest separate phase: independent full-branch diff validation only, not PR creation.
 - Reconfirmed at phase start that remote `main` is `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch is `4c1f8d58e2f20df1d21f9045b5034c11bff8ece0`, and the only open PR remains unrelated `#71`.
 - Reopened the final single-file verification checkpoint and confirmed all 16 unmodified `verify:all` tasks are already GREEN at exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
@@ -319,14 +327,14 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Remaining
 
-- Compare the complete branch with latest `main` and its merge base; enumerate branch-only and main-only commits and files.
-- Inspect every production/runtime/rule/schema/document/test change for approved PR C ownership, safety invariants, and out-of-scope overlap.
-- Determine whether the four main-only automation artifact commits overlap or conflict with PR C.
-- Record findings and stop at the PR creation boundary.
+- Inspect the remaining new orchestrator, rule, schema, documentation, and changed-test ownership for additional findings.
+- Confirm that existing tests do not cover retained-`china_joint` candidate-audit parity or exclusion of official/developer self-evidence from independent quality.
+- Perform a read-only three-way merge check between latest `main` and the PR C branch.
+- Record final validation status and stop without fixes or PR creation.
 
 ## Next Action
 
-Perform the remote full-branch diff validation. Do not modify implementation, create a PR, run live automation, merge, or deploy.
+Complete the remaining independent review and mergeability checks. Do not repair either finding, change another file, create a PR, run live automation, merge, or deploy.
 
 ## Git Status
 
@@ -334,4 +342,4 @@ Before this validation-start checkpoint update, the remote PR C branch was `4c1f
 
 ## Rollout Status
 
-Independent full-branch validation has started; no conclusion is claimed yet. No implementation, machine rule, document, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed in this phase.
+Independent validation is still in progress, but the branch is not currently PR-ready because two deterministic contract inconsistencies have been reproduced. No fix, implementation, machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance was changed or performed in this phase.
