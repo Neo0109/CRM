@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 single-file sourcing compatibility implementation complete; focused verification pending
+Phase: Phase 4 single-file sourcing compatibility focused verification GREEN; full verification pending
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Implement and verify the explicitly approved single-file migration for `scripts/test-sourcing-v6-3.mjs`. The implementation is complete at exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`: the legacy suite now derives its generator identity from runtime `RULE_VERSION`, reports a stable compatibility label plus the active rule, and preserves the existing V6.3 field-hygiene and quantity-safety assertions. Focused and full verification remain pending. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+Verify the explicitly approved single-file migration at exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`. Syntax, the focused compatibility script, and the exact `sourcing-v6-4` compatibility/Bilibili task are GREEN from a one-time exact remote snapshot. The unmodified full `npm run verify:all` remains pending. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -214,6 +214,12 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Completed
 
+- Downloaded the exact `bb841ec81cafd9159131bd6d5ec822ca973f6b0c` GitHub API tarball to one-time snapshot `/tmp/crm-v73-single-test.WQM7if`; SHA-256 `c5332f45d933df3eaee679d161bce8a3deb9691c525f82f8b90f468b932d9f75`; Node `v22.23.1`, npm `10.9.8`, pnpm `11.9.0`.
+- `node --check scripts/test-sourcing-v6-3.mjs` passed.
+- The focused compatibility script passed and reported `active_rule=sourcing-rules-v7.3-obtainable-evidence`.
+- The exact task-12 command passed both halves: `sourcing-v6.3-compatibility` and `bilibili-probe-v1`.
+- No dependency installation, live provider, generator, workflow dispatch, sync, or production write was used for focused verification.
+
 - Received explicit user approval for the single-file proposal and bounded verification.
 - Reconfirmed immediately before writing that remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch was `c08d3014d5687b6f408e0c0e335fe62172fc0660`, and the only open PR remained unrelated `#71`.
 - Updated only `scripts/test-sourcing-v6-3.mjs` through the GitHub App/API at exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
@@ -299,14 +305,14 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 
 ## Remaining
 
-- Run syntax and the focused `sourcing-v6-4` compatibility/Bilibili task from exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
-- If focused GREEN, run the unmodified full `npm run verify:all` from the same exact remote code snapshot.
+- Install declared dependencies only inside the one-time exact remote snapshot without creating a package lock.
+- Run the unmodified full `npm run verify:all` from exact code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`.
 - If a later failure appears, record it and stop without opportunistic repair.
 - Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases.
 
 ## Next Action
 
-Run the approved focused verification from exact remote code commit `bb841ec81cafd9159131bd6d5ec822ca973f6b0c`; do not modify another file or run live automation.
+Run the approved unmodified full verification from the exact remote snapshot; do not modify another repository file or run live automation.
 
 ## Git Status
 
@@ -314,4 +320,4 @@ The approved implementation is exactly code commit `bb841ec81cafd9159131bd6d5ec8
 
 ## Rollout Status
 
-The single-file compatibility migration is implemented and scope-checked, but no verification result is claimed yet. No production generator, rule, other test, package script, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
+The single-file compatibility migration is implemented, scope-checked, and focused GREEN. Full verification is not yet claimed. No production generator, rule, other test, package script, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
