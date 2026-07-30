@@ -27,8 +27,8 @@ const EVALUATOR_SHA = "d".repeat(64);
 
 describe("Replay Corpus Contract v1 schemas", () => {
   it("declares closed, versioned corpus and window contracts", () => {
-    const corpusSchema = readSchema("../../../schemas/sourcing_replay_corpus.schema.json");
-    const windowSchema = readSchema("../../../schemas/sourcing_replay_window.schema.json");
+    const corpusSchema = readSchema("../../schemas/sourcing_replay_corpus.schema.json");
+    const windowSchema = readSchema("../../schemas/sourcing_replay_window.schema.json");
 
     assert.equal(corpusSchema.additionalProperties, false);
     assert.equal(corpusSchema.properties.contract_version.const, 1);
