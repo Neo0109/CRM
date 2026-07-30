@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 bounded test-contract migration complete; verification stopped at the approved later-failure boundary
+Phase: Phase 2 single-file sourcing compatibility proposal recorded; approval required
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The explicitly approved three-test-file contract migration and bounded verification are complete at their required stop condition. The three test edits are at exact remote code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; syntax and the focused 32-test ownership matrix are GREEN. The unmodified full `npm run verify:all` passed its first 11 tasks, including Daily V4 204/204, then stopped at the later `sourcing-v6-4` task because `scripts/test-sourcing-v6-3.mjs:71` still requires the historical V7.2 generator identity. That fourth test file was not modified. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+Form and record an approval-ready, single-file migration for the stale compatibility contract in `scripts/test-sourcing-v6-3.mjs`. The proposal must preserve the V6.3 field-hygiene and quantity-safety assertions, remove this legacy script's independent ownership of the active sourcing version, and make its generator-label check consistent with the runtime `RULE_VERSION`. No test or implementation file has been changed in this phase. Independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -134,6 +134,72 @@ This removes duplicate ownership of the active business rule, keeps historical V
 
 No changes to V7.3 evidence or second-pass implementation, machine rules, current/canonical rule documents, PR B state/snapshot/scheduler behavior, Daily generator, report/Radar/Steam Trend code, workflow triggers, sync/recovery, schemas, UI/API, Supabase, production artifacts, quantity policy, PR D, or PR E.
 
+## Single-File Sourcing Compatibility Proposal (Approval Required)
+
+### Current module problem
+
+`scripts/test-sourcing-v6-3.mjs` combines stable V6.3 compatibility checks with one version-following assertion. Line 71 still hard-codes `online_daily_v4_sourcing_rules_v7_2_china_joint`, and the final JSON log still reports `sourcing-v7.2-china-joint`. On this PR C branch, the generator correctly uses `RULE_VERSION = sourcing-rules-v7.3-obtainable-evidence` and emits `online_daily_v4_sourcing_rules_v7_3_obtainable_evidence`. Exact active-version ownership already belongs to `onlineDailyV4Rules.test.mjs` and `onlineDailyV73ActivationReplayContract.test.mjs`; this legacy script should protect consistency, not independently select the current rule.
+
+### Cost of inaction
+
+The unmodified `verify:all` remains fail-fast at task 12, `sourcing-v6-4`. The Bilibili probe half of that task and the four later tasks—Daily Leads liveness replay, Daily contract validation, frontend temporary build, and diff-check—remain unexecuted. Leaving the literal in place also guarantees the same false regression on the next rule activation even when runtime, machine rules, documentation, and the dedicated activation contract all agree.
+
+### Why this slice is next
+
+The first 11 verification tasks are GREEN, including Daily V4 204/204, and the stale line is the first exposed failure. The three previously approved test migrations are complete. Updating this one compatibility owner is therefore the smallest causal slice; changing production behavior, a second test, package aliases, or verifier ordering would exceed the observed failure.
+
+### Operation principle
+
+Use the existing RED result as the TDD start and separate exact-version ownership from version-neutral consistency:
+
+- import the runtime `RULE_VERSION` into the legacy script;
+- retain a source-level assertion that the generator assigns `sourcingRuleVersion` from `RULE_VERSION`;
+- extract the generator's declared `generatorName` and compare it with a name derived from `RULE_VERSION` by removing the `sourcing-rules-` prefix and normalizing dots and hyphens to underscores;
+- keep V7.2 and V7.3 literals out of this compatibility assertion, so a future rule bump fails only when runtime wiring and the emitted generator label diverge;
+- replace the outdated final log claim with a stable compatibility label plus the actual `active_rule: RULE_VERSION`.
+
+This remains a test-only migration. It does not rewrite the generator to satisfy the test and does not weaken the dedicated V7.3 contract.
+
+### Architecture benefit
+
+The active version keeps one authoritative runtime constant and one dedicated version-specific activation contract. The older V6.3 suite continues to guard field hygiene, no-backfill behavior, qualified/push parity, and absence of formal quantity targets, while its version-following check becomes reusable for V7.4 and later. This reduces duplicate ownership and prevents an obsolete compatibility test from forcing production back to a historical rule.
+
+### Proposed file change
+
+Change only `scripts/test-sourcing-v6-3.mjs`:
+
+1. Import `RULE_VERSION` from `automations/jobs/online_daily_v4_rules.mjs`.
+2. Replace the literal V7.2 generator-name regex with:
+   - a version-neutral assertion for `const sourcingRuleVersion = RULE_VERSION`;
+   - extraction of the quoted `generatorName`;
+   - equality against the generator label derived from the current `RULE_VERSION`.
+3. Change the final JSON output from the stale V7.2 claim to a stable `sourcing-v6.3-compatibility` check label and an explicit `active_rule` value.
+4. Leave every existing media-field, review-backfill, qualified/push parity, and no-quantity-target assertion unchanged.
+5. Keep the historical filename and the `test:sourcing-v6-3` / `test:sourcing-v6-4` package aliases unchanged to avoid an unrelated rename and verifier-structure change.
+
+### Bounded implementation and verification
+
+- Reconfirm remote `main`, branch head, and open PR queue before any write.
+- Update only `scripts/test-sourcing-v6-3.mjs` through the GitHub App/API; checkpoint updates remain evidence-only.
+- Run `node --check scripts/test-sourcing-v6-3.mjs`.
+- Run the focused script, then the exact task-12 command `node scripts/test-sourcing-v6-3.mjs && node scripts/test-bilibili-probe.mjs`.
+- If focused GREEN, download the exact resulting remote commit to a one-time snapshot and run the unmodified `npm run verify:all`.
+- If a later task exposes another failure, record it and stop. Do not repair it opportunistically.
+- Stop after verification and checkpoint evidence. Independent full-branch diff validation and PR creation remain separate phases.
+
+### Explicitly untouched
+
+No changes to production generator or rule modules, V7.3 evidence/second-pass logic, machine rules, current/canonical rule documents, the three already-migrated tests, package scripts, verifier ordering, PR B state/snapshot/scheduler behavior, workflow triggers, sync/recovery, schemas, UI/API, Supabase, generated production artifacts, quantity policy, PR D, or PR E.
+
+### Acceptance invariants
+
+- The only implementation file changed is `scripts/test-sourcing-v6-3.mjs`.
+- The script contains no assertion or final log that claims V7.2 is the active rule.
+- The script fails if `RULE_VERSION`, generator runtime wiring, and the emitted generator label diverge.
+- All existing V6.3 field-hygiene, no-backfill, parity, and no-quantity-target checks remain intact.
+- The exact `sourcing-v6-4` task runs both its compatibility and Bilibili probe halves successfully before full verification proceeds.
+- No production behavior, admission threshold, Lead quantity rule, workflow, sync, or data changes are introduced.
+
 ## Acceptance Invariants
 
 - Hard-excluded fixtures remain excluded before and after a second pass.
@@ -147,6 +213,10 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Reconfirmed remote `main` at `166afdd759f5d3a4a6fff005e9293a906bda44d3`, PR C branch at `fd611cb3b87bd8967442d50cc0e62b20873d2568`, and the open PR queue containing only unrelated `#71` before this proposal update.
+- Read the exact remote compatibility script, active generator header, runtime `RULE_VERSION`, package aliases, verifier task ordering, and checkpoint boundary needed for the single-file proposal.
+- Recorded the bounded single-file ownership migration above. No test, implementation, machine-rule, workflow, production artifact, or local CRM checkout/worktree was changed.
 
 - Installed 201 declared dependency packages only inside the one-time snapshot and ran the unmodified `npm run verify:all` from exact code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`.
 - Full verification passed tasks 1-11: frontend tests, backend tests, functions tests, Daily V4 tests 204/204, automation diagnostics, Lead Assistant, sourcing learning 9/9, Daily heartbeat 9/9, and frontend/backend/functions typechecks.
@@ -223,19 +293,19 @@ No changes to V7.3 evidence or second-pass implementation, machine rules, curren
 
 ## Remaining
 
-- No work remains inside the approved three-test-file implementation and bounded-verification task.
-- The stale V7.2 generator-identity assertion in `scripts/test-sourcing-v6-3.mjs` requires a separate Diagnosis -> Proposal -> Approval boundary before any edit.
+- Await explicit user approval for the single-file proposal above.
+- If approved, implement only `scripts/test-sourcing-v6-3.mjs` and run the bounded verification sequence exactly as specified.
 - Independent full-branch diff validation, PR creation, PR CI, merge, deployment, and read-only production acceptance remain separate later phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
 
 ## Next Action
 
-Stop. Await a separate user-approved phase for either the newly exposed stale `scripts/test-sourcing-v6-3.mjs` compatibility contract or independent full-branch validation. Do not modify the fourth test, create a PR, run remaining verifier tasks individually, or proceed to deployment.
+Stop. Await explicit user approval for the single-file `scripts/test-sourcing-v6-3.mjs` migration and bounded verification. Do not edit the test, create a PR, run remaining verifier tasks individually, or proceed to deployment before approval.
 
 ## Git Status
 
-The three approved test changes remain exactly at code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; later branch commits are checkpoint evidence only. Before this final evidence update, remote branch `codex/pr-c-v7-3-obtainable-evidence` was `2de83e529f6813882c8de0bef72052bbc0d50f6a`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was modified.
+The three previously approved test changes remain exactly at code commit `cf9b5dc9332b16c9b96b76a1a55c427275dae731`; later branch commits are checkpoint evidence only. Before this proposal checkpoint update, remote branch `codex/pr-c-v7-3-obtainable-evidence` was `fd611cb3b87bd8967442d50cc0e62b20873d2568`, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
 
 ## Rollout Status
 
-The approved three-test migration is implemented and its 32-test focused ownership matrix is GREEN. Full verification no longer fails on those three contracts and Daily V4 is 204/204; fail-fast instead exposed one separate stale V7.2 generator-identity assertion at `scripts/test-sourcing-v6-3.mjs:71`. The result is recorded and this task stops without scope expansion. No implementation, machine rule, rule document, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
+Phase 2 is complete: the stale single-file compatibility contract now has a bounded, approval-ready migration plan. No test, implementation, machine rule, rule document, workflow, sync, production artifact, PR B, PR D/E, independent full-branch diff validation, PR/CI, merge, deployment, live generation, or production acceptance was changed or performed.
