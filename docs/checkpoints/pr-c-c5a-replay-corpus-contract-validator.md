@@ -159,3 +159,19 @@ Modify only `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` to ad
 - No import, path, syntax, environment, or remaining fixture-setup failure exists in the accepted RED run.
 - Next action: implement the minimal schema/validator/positive-fixture changes, then rerun the exact focused suite for GREEN.
 - Branch head before this RED checkpoint update: `abd89047daffc4cc90ec1940e3e1b2633987e9a2`; PR #107 remains open and unmerged.
+
+
+#### Review Repair GREEN Evidence
+
+- Minimal atomic GREEN commit: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`.
+- GREEN changed only the two replay schemas, the pure replay-contract module, and the focused fixture test.
+- The corpus schema now gives the replay-corpus self binding a nullable Git blob SHA while retaining required canonical payload SHA-256, record count, and validation status; all non-self artifact bindings still require a Git blob SHA.
+- Requested actions are now closed `{ gate_id, action }` records with the exact evaluator gate and action enums, preserving the existing decision-path output without lossy conversion.
+- The pure validator rejects hard-excluded candidates from eligible, selected, and attempted second-pass sets; requires an attempted candidate to reference its own transaction; and requires every retained window date to be canonical and healthy.
+- The positive fixture now mirrors the real structured requested-action shape and uses an unavailable self Git blob SHA until a later window manifest binds the committed corpus blob.
+- Exact disposable GREEN snapshot source: GitHub API tarball for `d5879d9356c363a9c42d31ba3d73069fb0b08a45` under a fresh `mktemp` directory.
+- Both schema `jq empty` checks: PASS.
+- Implementation and focused-test `node --check`: PASS.
+- Focused suite: PASS, 23/23.
+- Next action: run the required full regression and purity/scope checks from an exact GitHub API snapshot after this checkpoint update.
+- Branch head before this GREEN checkpoint update: `d5879d9356c363a9c42d31ba3d73069fb0b08a45`; PR #107 remains open, unmerged, and undeployed.
