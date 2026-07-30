@@ -145,3 +145,17 @@ Modify only `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` to ad
 - Approved Proposal base: `85fdc7e77c7bec879d2da65d9781b55bb09b670f`.
 - Allowed paths remain exactly the original five C5-A paths.
 - No collector, harness, workflow, rule, data, CRM/product, or production mutation is authorized.
+
+
+#### Review Repair RED Evidence
+
+- The first RED commit `c3ac487caffc767db822f512b60d686c7843e3be` is not accepted as valid RED because the two-candidate transaction fixture left `artifact_bindings.replay_corpus.record_count` at one and produced an unrelated setup error.
+- Valid RED commit: `abd89047daffc4cc90ec1940e3e1b2633987e9a2`.
+- Exact disposable snapshot source: GitHub API tarball for that SHA under a fresh `mktemp` directory; no local CRM checkout/worktree read or write.
+- Both schema `jq empty` checks: PASS.
+- Implementation and focused-test `node --check`: PASS.
+- Focused suite: expected FAIL, 23 total, 16 passed and 7 failed.
+- The seven failures are contract-local and cover exactly the review gaps: self-binding schema, structured requested-action schema, nullable self Git blob SHA, structured action runtime validation, hard-exclusion second-pass rejection, candidate-specific transaction binding, and complete-window canonical enforcement.
+- No import, path, syntax, environment, or remaining fixture-setup failure exists in the accepted RED run.
+- Next action: implement the minimal schema/validator/positive-fixture changes, then rerun the exact focused suite for GREEN.
+- Branch head before this RED checkpoint update: `abd89047daffc4cc90ec1940e3e1b2633987e9a2`; PR #107 remains open and unmerged.
