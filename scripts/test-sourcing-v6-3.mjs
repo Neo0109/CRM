@@ -8,6 +8,7 @@ import {
   normalizeMediaLinks,
   steamAppIdFromLinks
 } from "../automations/jobs/sourcing_v6_3_quality.mjs";
+import { RULE_VERSION } from "../automations/jobs/online_daily_v4_rules.mjs";
 
 const recommendationVideo = {
   title: "误入仙途，当堆叠大陆遇上国风修仙《卡牌仙宗》demo试玩",
@@ -68,8 +69,22 @@ assert.equal(fields.notes, null, "notes should default empty unless there is imp
 
 const onlineDailySource = readFileSync(new URL("../automations/jobs/online_daily_v4.mjs", import.meta.url), "utf8");
 assert.doesNotMatch(onlineDailySource, /V6保底|低置信度国内保底|打开 Steam\/原始链接快速判断|补入未处理首轮 review/, "review backfill must not write automation bookkeeping into lead fields");
-assert.match(onlineDailySource, /online_daily_v4_sourcing_rules_v7_2_china_joint/, "online generator should publish the active V7.2 regular-lane identity");
+assert.match(onlineDailySource, /const sourcingRuleVersion = RULE_VERSION;/, "online generator should obtain its active sourcing rule from RULE_VERSION");
+const generatorIdentity = onlineDailySource.match(/const generatorName = "([^"]+)";/);
+assert.ok(generatorIdentity, "online generator should declare a generator identity");
+const normalizedRuleVersion = RULE_VERSION
+  .replace(/^sourcing-rules-/, "")
+  .replace(/[.-]/g, "_");
+assert.equal(
+  generatorIdentity[1],
+  `online_daily_v4_sourcing_rules_${normalizedRuleVersion}`,
+  "online generator identity should follow the active runtime rule version"
+);
 assert.match(onlineDailySource, /qualified_push_parity:\s*pools\.new_qualified_count === pools\.push\.length/, "online generator should publish the V7 qualified/push invariant");
 assert.doesNotMatch(onlineDailySource, /minReviewLeads|minMediaLeadsWhenHealthy|minReviewBackfillScore/, "online generator must not restore formal Lead quantity targets");
 
-console.log(JSON.stringify({ ok: true, checked: "sourcing-v7.2-china-joint" }, null, 2));
+console.log(JSON.stringify({
+  ok: true,
+  checked: "sourcing-v6.3-compatibility",
+  active_rule: RULE_VERSION
+}, null, 2));
