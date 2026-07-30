@@ -1,12 +1,14 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 4 implementation complete and fully verified; no PR creation
+Phase: Blocker 2 Phase 2 proposal complete; awaiting approval; no implementation or PR creation
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-Blocker 1 is implemented and fully verified at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`. The shared pure V7.3 evaluator now makes Steam/media formal-pool and candidate-audit consumers select the same retained `china_joint` lane and qualification result. Four-file syntax, the approved 31-test matrix, and the complete unmodified `npm run verify:all` are GREEN from exact remote snapshots. This task created no PR; blockers 2 and 3 remain separate blocking findings.
+Blocker 1 is implemented and fully verified at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`. The shared pure V7.3 evaluator now makes Steam/media formal-pool and candidate-audit consumers select the same retained `china_joint` lane and qualification result. Four-file syntax, the approved 31-test matrix, and the complete unmodified `npm run verify:all` are GREEN from exact remote snapshots.
+
+Blocker 2 now has a bounded Phase 2 proposal. The targeted provider must keep project-controlled official/developer/publisher evidence in the official playable/gameplay and business-entry channels, while only positively classified independent media or creator signals may enter `quality_proofs`. The two-independent-source minimum, evaluator, hard exclusions, and all quantity boundaries remain unchanged. No blocker 2 implementation is authorized yet; blocker 3 remains separate.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -19,6 +21,8 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - Completed recovery slices: PR A `#105` added production-artifact replay and business-liveness observability; PR B `#106` added candidate research state, compatible evidence-snapshot reuse, and fair allocation of the unchanged Steam enrichment budget.
 - PR B merge state: squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; PR-head Build run `30487695885` completed successfully.
 - Open PR queue: unrelated PR `#71` only.
+- Blocker 1 is closed at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`.
+- Blocker 2 Phase 2 is now bounded to the targeted provider source-role projection and its focused contract; no evaluator, threshold, machine-rule, or schema redesign is proposed.
 - The pure V7.3 evidence module is GREEN.
 - The candidate-audit/schema GREEN slice is complete: the audit builder recognizes V7.3, projects actionable near-miss fields, and emits schema version 3 with v3-only requirements.
 - The targeted second-pass orchestrator RED contract is committed at `e10c2d3cce9fc0126a267d7b74617b10b6f71395`; GREEN code is complete at `12ce6f3b303cb0072dfa16fec2bf3ab65edb267f`.
@@ -213,6 +217,13 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Entered only blocker 2 Phase 2 proposal work after the user supplied the final blocker 1 completion checkpoint.
+- Reconfirmed proposal-start remote state through the GitHub App/API: `main=166afdd759f5d3a4a6fff005e9293a906bda44d3`, branch=`c156039da6df08d14c26f6d61eb3fc70ded227dd`, and the only open PR is unrelated `#71`.
+- Downloaded that exact branch commit to one disposable GitHub API snapshot and reran the four directly relevant existing contracts: V7.3 second-pass orchestrator 6/6, obtainable evidence 5/5, media source 8/8, and Steam source 8/8; baseline total 27/27 GREEN.
+- Reproduced blocker 2 from the exact snapshot without live network: one project developer's official Bilibili Demo/playtest plus one genuinely independent media preview produced two `quality_proofs`, passed `independent_quality_proof`, and returned `qualified=true`.
+- Confirmed the source data already exposes the required role boundary: Bilibili probe signals carry `official`, `developer`, `publisher`, `media`, `trusted_creator`, or `keyword`; broad official lookup origin is not proof of independence.
+- Recorded the bounded blocker 2 proposal below. No implementation/test file, evaluator, threshold, machine rule, sourcing rule document, schema, workflow, production artifact, PR, merge, deployment, live generator, sync, or local CRM checkout/worktree was changed.
 
 - Created one-time Git verification clone `/tmp/crm-v73-joint-git.dV6Gsd/repo`, detached exactly at `c789f4efca8e9a33d0d419bfbe0a49215a243066`, and installed 201 declared packages only there. `npm install` created an untracked temporary `package-lock.json`; both tracked and staged diffs remained empty.
 - Reran the unmodified `npm run verify:all` successfully from that exact Git-backed snapshot. Frontend passed 114/114, backend 21/21, Functions 31/31, Daily V4 206/206, sourcing learning 9/9, and Daily heartbeat 9/9.
@@ -488,21 +499,122 @@ No unresolved business-policy choice is encoded by this proposal. It restores co
 - Deterministic reproduction relabeled a 282-candidate historical artifact as schema v3 while leaving all 282 records without both new actionable fields; the official Daily validator returned `ok: true`.
 - Impact: workflow validation can accept structurally incomplete v3 candidate audits and no longer protects the PR B lifecycle/snapshot contract after V7.3 activation.
 
+## Independent-Quality Source Classification Proposal (Approval Required)
+
+### Overall progress checkpoint
+
+- Current remote `main`: `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+- Completed preceding modules: PR A `#105` production replay/liveness; PR B `#106` candidate state, compatible snapshot reuse, and fair scheduling; blocker 1 shared V7.3 two-lane composition at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`.
+- Proposal-start branch head: `c156039da6df08d14c26f6d61eb3fc70ded227dd`.
+- Open PR queue: unrelated Weekly CSS PR `#71` only.
+- Current module: only the targeted second-pass provider's projection of public signals into the independent `quality_proofs` channel.
+- This proposal does not revisit blocker 1, implement blocker 3, or reopen the V7.3 minimum, evaluator, official playable/gameplay family, hard exclusions, second-pass selection cap, or PR B scheduler/state contracts.
+
+### Concrete problem
+
+`fetchV73TargetedEvidence` gathers a broad project-matching `officialSignals` set and the run's matching `mediaSignals`. When `fetch_independent_quality_evidence` is requested, it sends both collections through `qualityEvidenceFromSignals`.
+
+That helper checks only hands-on/playtest/preview/review wording and a public URL. It does not classify the signal's relationship to the project. The V7.3 evaluator then correctly deduplicates the emitted proof source IDs, but it has no source-role information with which to distinguish a project-controlled citation from an independent one.
+
+The current branch therefore converts an official developer Bilibili Demo/playtest into `bilibili_public_playtest`. In an exact-commit deterministic reproduction, that self-evidence plus one genuine independent media preview produced two source IDs and returned `qualified=true`.
+
+The repository already has the relevant source-role vocabulary. Bilibili probe signals expose `bilibili_probe.source_kind` as `official`, `developer`, `publisher`, `media`, `trusted_creator`, or `keyword`. Broad official-lookup results do not carry positive independent provenance.
+
+### Cost of inaction
+
+A candidate can satisfy the two-source gate with only one genuinely independent quality source. The formal Lead may still look structurally valid, so replay, artifact validation, and sync can all succeed while the approved quality boundary has already been weakened. Any future official/developer search expansion would enlarge the false-positive surface because relevance wording, not independence, currently decides admission into `quality_proofs`.
+
+### Why this operation is necessary and next
+
+Blocker 1 restored publication/audit decision parity without changing sourcing policy. Blocker 2 is the next independent full-branch finding and directly affects whether V7.3 can publish a false formal Lead. It must be closed before blocker 3 or PR creation.
+
+This repair does not lower or raise the existing minimum. It restores the approved meaning of the word “independent” by requiring positive source-role evidence before a Bilibili signal consumes a quality slot.
+
+### Engineering principle
+
+Keep source classification at the provider boundary, where origin and `source_kind` are available, and keep the pure V7.3 evaluator responsible only for deduplicating and counting already-normalized independent proofs.
+
+Use disjoint evidence channels:
+
+1. Broad official lookup results may support official Demo/Playtest, official gameplay, non-Steam business entry, and China/Bilibili value research. They must never be projected into `quality_proofs`.
+2. Non-Bilibili signals from the configured media collection may be projected as independent media evidence after the existing project-match, public-URL, and quality-content checks.
+3. Bilibili signals may consume an independent-quality slot only when `bilibili_probe.source_kind` positively identifies `media` or `trusted_creator`.
+4. `official`, `developer`, and `publisher` are project-controlled for this boundary. `keyword`, missing, or otherwise unclassified Bilibili roles do not count as independent merely because no self-ownership keyword was detected.
+5. Keep the existing source-ID deduplication and two-source evaluator unchanged. Content relevance proves that an item discusses hands-on quality; it does not prove independence.
+
+### Architecture benefit
+
+The provider becomes an explicit trust boundary instead of letting search origin and content wording silently define independence. Official evidence remains available for the gates it is qualified to prove, independent evidence remains separately countable, and the pure evaluator avoids Bilibili-specific ownership heuristics. Future providers get a clear contract: classify provenance before writing `quality_proofs`.
+
+The blast radius is one provider module and its public contract test. No machine rule, artifact schema, candidate lifecycle, report, sync, UI, or workflow path changes.
+
+### Proposed implementation files
+
+1. `automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs`
+   - First commit two deterministic RED regressions using injected fixtures only.
+   - Prove that an official/developer/publisher Bilibili signal can still support requested official evidence but contributes zero independent-quality proofs.
+   - Prove that one genuine independent media proof plus any number of project-controlled proofs remains below the two-source minimum.
+   - Prove that two distinct positively classified independent signals—such as one `trusted_creator` Bilibili playtest plus one external media preview—can satisfy the unchanged gate when every other gate passes.
+   - Preserve the six existing second-pass selection, snapshot, failure-isolation, provider, and wiring subtests.
+
+2. `automations/jobs/online_daily_v7_3_second_pass_orchestrator.mjs`
+   - Stop passing `officialSignals` into independent-quality projection.
+   - Add a small pure source-role filter for `matchingMediaSignals`.
+   - Admit external non-Bilibili media plus Bilibili `media`/`trusted_creator`; reject Bilibili `official`/`developer`/`publisher` and unclassified/`keyword` roles from `quality_proofs`.
+   - Leave official playable/gameplay, business-entry, China/Bilibili value, action allowlisting, candidate selection, snapshot writeback, and provider failure isolation unchanged.
+
+Checkpoint updates are evidence-only and are not part of the implementation boundary.
+
+### Bounded RED-to-GREEN and verification
+
+- Reconfirm remote `main`, branch head, and open PR queue before each write phase.
+- RED commit: change only `onlineDailyV73SecondPassOrchestrator.test.mjs`; run it from the exact remote snapshot and confirm the new failures are limited to self-evidence occupying an independent slot.
+- GREEN commit: change only `online_daily_v7_3_second_pass_orchestrator.mjs`.
+- Run `node --check` on the test and provider modules.
+- Run the focused 29-test matrix after the two RED additions:
+  - `onlineDailyV73SecondPassOrchestrator.test.mjs` (8);
+  - `onlineDailyV73ObtainableEvidence.test.mjs` (5);
+  - `onlineDailyV4MediaSource.test.mjs` (8);
+  - `onlineDailyV4SteamSource.test.mjs` (8).
+- If focused GREEN, run the unmodified full `npm run verify:all` from the exact resulting remote code commit.
+- If any unrelated later task fails, record it and stop. Do not repair blocker 3 or another verifier surface opportunistically.
+- Stop after verification and checkpoint evidence. PR creation remains a separate task.
+
+### Acceptance invariants
+
+- The V7.3 independent-quality minimum remains exactly two distinct public sources.
+- One independent source plus any number of project official/developer/publisher sources never passes `independent_quality_proof`.
+- Official/developer/publisher evidence remains usable for the existing official playable/gameplay and business-entry actions when otherwise valid.
+- External media and positively classified Bilibili `media`/`trusted_creator` signals remain eligible; source-ID deduplication still prevents duplicate pages or citations from filling two slots.
+- Bilibili `keyword`, missing, or unclassified roles do not consume an independent slot.
+- Existing Steam recommendation and Metacritic public-quality proofs remain unchanged.
+- Hard exclusions, same-evaluator second pass, 12-candidate cap, one-to-three action bound, candidate snapshot semantics, and provider-failure isolation remain unchanged.
+- No quota floor, backfill, threshold relaxation, alternate decision path, live provider, generator, workflow dispatch, sync, production write, PR, merge, or deployment is introduced.
+
+### Explicitly untouched
+
+The pure V7.3 evaluator and its two-source threshold; blocker 1 shared regular-admission composition; blocker 3 schema-v3 and inherited PR B validation; V7.3 machine rules and sourcing documents; candidate schema; PR B state/snapshot/scheduler; pool selection and candidate audit; reports, Radar, Steam Trends, Lead-count health, CRM import/sync/recovery; workflows; UI/API; Supabase; production artifacts; PR D/E; existing Leads; quantity and priority policy.
+
+### Policy decision status
+
+No lower-quality exception is proposed. Treating project official/developer/publisher channels as non-independent and requiring positive provenance for Bilibili independent evidence is the conservative enforcement of the already-approved two-independent-source rule.
+
 ## Remaining
 
 - No work remains inside blocker 1 implementation or verification.
-- Blocker 2 independent-quality source classification and blocker 3 schema-v3/inherited-PR-B validator enforcement remain unresolved and still block PR C creation.
-- Each remaining repair must enter its own bounded Proposal -> Approval -> Implementation task.
+- Blocker 2 Phase 2 proposal is complete; its two-file RED-to-GREEN implementation is not authorized until explicit user approval.
+- Blocker 3 schema-v3/inherited-PR-B validator enforcement remains unresolved and must stay in its own later Proposal -> Approval -> Implementation task.
+- Blockers 2 and 3 still block PR C creation.
 - PR creation, merge, deployment, live generation, and production acceptance remain out of scope.
 
 ## Next Action
 
-Stop. Await explicit user approval to enter a separate Phase 2 proposal for blocker 2: preventing official/developer self-evidence from satisfying an independent-quality slot. Do not edit another code/test file, address blocker 3, create a PR, merge, deploy, or run live automation in this task.
+Stop. Await explicit user approval for only the blocker 2 two-file Phase 4 implementation and bounded verification above. Do not edit an implementation/test file, address blocker 3, create a PR, merge, deploy, or run live automation before that approval.
 
 ## Git Status
 
-The exact blocker 1 code commit is `c789f4efca8e9a33d0d419bfbe0a49215a243066`. RED changed only `onlineDailyV73CandidateAuditContract.test.mjs`; GREEN changed only `online_daily_v7_3_regular_admission.mjs`, `online_daily_v4_decision.mjs`, and `online_daily_v4_candidate_audit.mjs`. Immediately before this final evidence update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `923ae2b141caf8d05b79e25e47720bfe5582b1ce`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified; verification used disposable exact-commit `/tmp` snapshots only.
+The exact blocker 1 code commit remains `c789f4efca8e9a33d0d419bfbe0a49215a243066`. Immediately before this blocker 2 proposal checkpoint update, remote `main` was `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `c156039da6df08d14c26f6d61eb3fc70ded227dd`, and the only open PR was unrelated `#71`. Blocker 2 implementation/test files remain unchanged. Proposal inspection and reproduction used only a disposable exact-commit GitHub API snapshot; the dirty local CRM checkout/worktree was not modified.
 
 ## Rollout Status
 
-Blocker 1 implementation is complete and fully GREEN. A git-backed exact-commit rerun passed the entire unmodified verifier including final `git diff --check`; tracked verification state remained clean. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
+Blocker 1 implementation is complete and fully GREEN. Blocker 2 now has a concrete two-file Phase 2 proposal, but no RED, GREEN, or full verification has been authorized or performed for that repair. Blocker 3 remains unresolved. No machine rule, workflow, sync, production artifact, PR B, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
