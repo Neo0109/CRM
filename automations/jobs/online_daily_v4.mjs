@@ -1,4 +1,4 @@
-// Online CRM generator v4 runtime, currently executing Sourcing Rules V7.2 regular admission.
+// Online CRM generator v4 runtime, currently executing Sourcing Rules V7.3 obtainable-evidence admission.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -40,7 +40,7 @@ import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "./online_daily_v7_3_obtain
 
 const rootDir = process.cwd();
 const sourcingRuleVersion = RULE_VERSION;
-const generatorName = "online_daily_v4_sourcing_rules_v7_2_china_joint";
+const generatorName = "online_daily_v4_sourcing_rules_v7_3_obtainable_evidence";
 const args = parseArgs(process.argv.slice(2));
 const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
 validateDailyRules(dailyRules);
@@ -185,7 +185,7 @@ v73SecondPass.steam_candidates.sort((a, b) => b.score - a.score);
 const candidatePools = buildPools(
   v73SecondPass.steam_candidates,
   v73SecondPass.media_candidates,
-  { reportDate }
+  { reportDate, ruleVersion: sourcingRuleVersion }
 );
 const pools = candidatePools;
 let volumeDiagnostics;
@@ -239,6 +239,7 @@ await writeJson(`data/reports/${reportDate}.json`, buildDailyReport({
   enrichedCount: steamEnrichmentMetrics.steam_candidates_enriched,
   mediaLeadCount: v73SecondPass.media_candidates.length,
   reportDate,
+  ruleVersion: sourcingRuleVersion,
   diagnostics: sourcingDiagnostics
 }));
 await writeJson(`data/radar/${reportDate}.json`, buildRadarReport({
