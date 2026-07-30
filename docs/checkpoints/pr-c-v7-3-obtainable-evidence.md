@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 4 GREEN focused verification complete; full verify next
+Phase: Blocker 1 Phase 4 full verify retry on git-backed exact snapshot
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The approved blocker 1 GREEN boundary is implemented at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`: one pure V7.3 two-lane admission-composition module now serves both formal-pool and candidate-audit consumers. Four-file syntax and the approved 31-test focused matrix are GREEN. Run the unmodified full `npm run verify:all` from this exact remote snapshot, record the result, and stop before PR creation. Blockers 2 and 3, merge, deployment, live generation, workflow/sync behavior, and every other module remain out of scope.
+The approved blocker 1 GREEN boundary remains exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`; syntax and 31/31 focused tests are GREEN. The first unmodified full verifier attempt passed every task through frontend build, then failed only because the GitHub API tarball has no `.git` for the final `git diff --check`. Repeat the same unmodified verifier from a one-time read-only Git clone detached at the same exact code commit, record the result, and stop before PR creation. No code change is authorized for this verification-carrier issue.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -213,6 +213,11 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Installed 201 declared packages only inside `/tmp/crm-v73-joint-green.iTPifD/Neo0109-CRM-c789f4e` and ran the unmodified full `npm run verify:all`.
+- The verifier passed frontend tests, backend tests, Functions tests, all Daily V4 tests, automation diagnostics, Lead Assistant, sourcing learning, Daily heartbeat, all three typechecks, sourcing-v6-4 including Bilibili probe, fixed liveness replay, Daily contract, and frontend temporary build.
+- Only final task `git diff --check` failed with exit 129 and `Not a git repository`, because the exact GitHub API tarball intentionally contains no `.git`; verifier log SHA-256 `a71b3def7e45f8caf25d9ba2cc2b66e133404d4021c746f6b00158df59e61f0b`.
+- Per scope, no tracked file was edited to work around the verification environment. A one-time read-only Git clone at the same exact code commit will be used for the final unmodified rerun.
 
 - Added `automations/jobs/online_daily_v7_3_regular_admission.mjs` at `9ebb30c6642211636560a18756565e170fba0cf0`; it composes the V7.3 indie evaluator with the unchanged retained-joint evaluators through `selectRegularAdmission` and stamps V7.3 provenance.
 - Rewired only `online_daily_v4_decision.mjs` at `cbeff25425bcf87c2c8b144c2220ef9e387393a3` and `online_daily_v4_candidate_audit.mjs` at exact GREEN code head `c789f4efca8e9a33d0d419bfbe0a49215a243066`.
@@ -485,7 +490,7 @@ No unresolved business-policy choice is encoded by this proposal. It restores co
 
 ## Next Action
 
-Inside `/tmp/crm-v73-joint-green.iTPifD/Neo0109-CRM-c789f4e`, install only declared dependencies and run the unmodified `npm run verify:all`. Record and stop on any failure; do not edit another file.
+Create a one-time `/tmp` Git clone, detach it at exact remote code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`, install only declared dependencies there, and rerun the unmodified `npm run verify:all`. Do not edit or commit any tracked file in that verification clone.
 
 ## Git Status
 
@@ -493,4 +498,4 @@ The exact GREEN code commit is `c789f4efca8e9a33d0d419bfbe0a49215a243066`; its p
 
 ## Rollout Status
 
-Blocker 1 GREEN is implemented and focused verification is complete. The shared pure evaluator restores Steam/media pool-audit lane and qualified-count parity without changing gates or quantity policy; syntax and 31/31 focused tests pass. Full verification is next. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
+Blocker 1 GREEN and focused verification remain complete. The first full verifier attempt passed all repository tasks except its final Git-repository precondition: the tarball lacks `.git`, so `git diff --check` exited 129. A git-backed exact-snapshot rerun is next; no source failure or code change has been introduced. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
