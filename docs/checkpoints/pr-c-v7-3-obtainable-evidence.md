@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Blocker 1 Phase 4 full verify retry on git-backed exact snapshot
+Phase: Blocker 1 Phase 4 implementation complete and fully verified; no PR creation
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The approved blocker 1 GREEN boundary remains exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`; syntax and 31/31 focused tests are GREEN. The first unmodified full verifier attempt passed every task through frontend build, then failed only because the GitHub API tarball has no `.git` for the final `git diff --check`. Repeat the same unmodified verifier from a one-time read-only Git clone detached at the same exact code commit, record the result, and stop before PR creation. No code change is authorized for this verification-carrier issue.
+Blocker 1 is implemented and fully verified at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`. The shared pure V7.3 evaluator now makes Steam/media formal-pool and candidate-audit consumers select the same retained `china_joint` lane and qualification result. Four-file syntax, the approved 31-test matrix, and the complete unmodified `npm run verify:all` are GREEN from exact remote snapshots. This task created no PR; blockers 2 and 3 remain separate blocking findings.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -213,6 +213,13 @@ No changes to production generator or rule modules, V7.3 evidence/second-pass lo
 - No live generator, workflow dispatch, production write, or production-data mutation is used for PR verification.
 
 ## Completed
+
+- Created one-time Git verification clone `/tmp/crm-v73-joint-git.dV6Gsd/repo`, detached exactly at `c789f4efca8e9a33d0d419bfbe0a49215a243066`, and installed 201 declared packages only there. `npm install` created an untracked temporary `package-lock.json`; both tracked and staged diffs remained empty.
+- Reran the unmodified `npm run verify:all` successfully from that exact Git-backed snapshot. Frontend passed 114/114, backend 21/21, Functions 31/31, Daily V4 206/206, sourcing learning 9/9, and Daily heartbeat 9/9.
+- Automation diagnostics, Lead Assistant, all three typechecks, sourcing-v6-4 plus Bilibili probe, fixed July 15-29 liveness replay, Daily contract, 1634-module frontend temporary build, and final `git diff --check` all passed.
+- Final full-verifier log SHA-256: `438554b571f10e93b06ac098303f19392e6ec54ea4a9ae1dff6d7b88236f7415`.
+- Reconfirmed final remote baseline before this checkpoint update: `main=166afdd759f5d3a4a6fff005e9293a906bda44d3`, branch=`923ae2b141caf8d05b79e25e47720bfe5582b1ce`, open PR queue contains only unrelated `#71`.
+- Blocker 1 is closed at exact code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`. No PR was created because blockers 2 and 3 remain unresolved.
 
 - Installed 201 declared packages only inside `/tmp/crm-v73-joint-green.iTPifD/Neo0109-CRM-c789f4e` and ran the unmodified full `npm run verify:all`.
 - The verifier passed frontend tests, backend tests, Functions tests, all Daily V4 tests, automation diagnostics, Lead Assistant, sourcing learning, Daily heartbeat, all three typechecks, sourcing-v6-4 including Bilibili probe, fixed liveness replay, Daily contract, and frontend temporary build.
@@ -483,19 +490,19 @@ No unresolved business-policy choice is encoded by this proposal. It restores co
 
 ## Remaining
 
-- Install declared dependencies only inside the existing one-time exact-code snapshot and run the unmodified full `npm run verify:all`.
-- Record the complete verifier result, exact implementation diff, and final remote baseline in this checkpoint.
-- Do not repair any unrelated failure or address blockers 2 and 3.
-- Stop before PR creation.
+- No work remains inside blocker 1 implementation or verification.
+- Blocker 2 independent-quality source classification and blocker 3 schema-v3/inherited-PR-B validator enforcement remain unresolved and still block PR C creation.
+- Each remaining repair must enter its own bounded Proposal -> Approval -> Implementation task.
+- PR creation, merge, deployment, live generation, and production acceptance remain out of scope.
 
 ## Next Action
 
-Create a one-time `/tmp` Git clone, detach it at exact remote code commit `c789f4efca8e9a33d0d419bfbe0a49215a243066`, install only declared dependencies there, and rerun the unmodified `npm run verify:all`. Do not edit or commit any tracked file in that verification clone.
+Stop. Await explicit user approval to enter a separate Phase 2 proposal for blocker 2: preventing official/developer self-evidence from satisfying an independent-quality slot. Do not edit another code/test file, address blocker 3, create a PR, merge, deploy, or run live automation in this task.
 
 ## Git Status
 
-The exact GREEN code commit is `c789f4efca8e9a33d0d419bfbe0a49215a243066`; its predecessor evidence checkpoint is `949237546d74b9cd095cb7b004de7daa9673846f`. The three GREEN commits change only the new shared module and its pool/audit consumers. Immediately before this focused evidence update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `c789f4efca8e9a33d0d419bfbe0a49215a243066`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified.
+The exact blocker 1 code commit is `c789f4efca8e9a33d0d419bfbe0a49215a243066`. RED changed only `onlineDailyV73CandidateAuditContract.test.mjs`; GREEN changed only `online_daily_v7_3_regular_admission.mjs`, `online_daily_v4_decision.mjs`, and `online_daily_v4_candidate_audit.mjs`. Immediately before this final evidence update, remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, this branch was `923ae2b141caf8d05b79e25e47720bfe5582b1ce`, and the only open PR remained unrelated `#71`. No local CRM checkout/worktree was read or modified; verification used disposable exact-commit `/tmp` snapshots only.
 
 ## Rollout Status
 
-Blocker 1 GREEN and focused verification remain complete. The first full verifier attempt passed all repository tasks except its final Git-repository precondition: the tarball lacks `.git`, so `git diff --check` exited 129. A git-backed exact-snapshot rerun is next; no source failure or code change has been introduced. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
+Blocker 1 implementation is complete and fully GREEN. A git-backed exact-commit rerun passed the entire unmodified verifier including final `git diff --check`; tracked verification state remained clean. No machine rule, workflow, sync, production artifact, PR B, blocker 2/3, PR D/E, PR creation, merge, deployment, live generation, or production acceptance changed.
