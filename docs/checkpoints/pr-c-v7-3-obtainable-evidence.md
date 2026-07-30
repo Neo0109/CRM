@@ -1,12 +1,12 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 verification; full verify:all executed with three stale V7.2 contract findings, no fixes started
+Phase: Phase 2 proposal for bounded test-contract migration; approval pending, no test edits started
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
 
-The completed single-task objective was to run only the full `npm run verify:all` command from the exact remote activation-GREEN commit, capture its complete fail-fast result, update this checkpoint, and stop. Test-contract migration, implementation fixes, independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
+The completed single-task objective was to diagnose the three stale V7.2 activation-contract surfaces, define a bounded test-only migration with explicit ownership and verification, update this checkpoint, and stop for approval. Test edits, implementation changes, independent full-branch diff validation, PR creation, merge, deployment, live generation, workflow/sync behavior, PR B scheduling changes, and PR D/E remain out of scope.
 
 Implement the already-approved PR C slice: make the V7.3 Daily evidence model reflect evidence that can actually be obtained for unreleased projects, expose actionable near-miss evidence gaps, and run a targeted second evidence pass before applying the same admission decision again.
 
@@ -25,6 +25,7 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - The machine-rule activation and fixed-replay RED contract is committed at `3f0df5185586c96d5c61b0a197a5f1e4e77c829b`.
 - Minimal activation GREEN is complete at exact remote code head `182cfd0e60e0b0e1094a50178297ad489a82dc31`: runtime, machine rule, current-doc trace, rule-versioned pool decisions, Lead-count health, and reader-facing Daily output now agree on V7.3.
 - Full `npm run verify:all` has now been executed from that exact code commit. Frontend 114/114, backend 21/21, and functions 31/31 passed; Daily V4 passed 201/204 and stopped the fail-fast verifier on three historical V7.2-active contract findings. The 12 later verification tasks were not run.
+- Diagnosis and the bounded three-test-file migration proposal are complete. No test or implementation edit has started; explicit approval is required before the existing RED contracts are migrated.
 - The V7.3 batch path remains guarded by `sourcingRuleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`; because that version is now active on this branch, the targeted second pass runs before the same rule-versioned pool and candidate-artifact decisions. Production `main` remains unchanged and still runs the merged PR B V7.2 baseline.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
@@ -64,6 +65,75 @@ Use TDD with fixed fixtures and the existing production replay. Keep evidence no
 
 The Daily orchestrator can request a narrow evidence action without owning admission logic. Rule changes remain traceable from the human-readable current-rules entry to the machine rule and focused contracts. Blast radius stays within the evidence/decision boundary, while future source additions can satisfy a named evidence action without rewriting candidate scheduling, sync, or product UI.
 
+## Test-Contract Migration Proposal (Approval Required)
+
+### Current module problem
+
+Three test surfaces still encode V7.2 as the active rule after the approved V7.3 activation:
+
+- `automations/test/onlineDailyV4Rules.test.mjs` is the unit owner of the runtime `RULE_VERSION`, but its locked literal and title still name V7.2.
+- `automations/test/dailyAutomationHardening.test.mjs` duplicates the entire former V7.2 `indie_prelaunch_admission` object plus retained `china_joint` values. That duplicates version-specific business ownership already covered by the dedicated V7.3 activation/evidence contracts.
+- `automations/test/onlineDailyV7Activation.test.mjs` still claims V7.2 owns active runtime, machine rules, current docs, and generator provenance. Its first equality now fails before the rest of the subtest runs, even though `onlineDailyV73ActivationReplayContract.test.mjs` already owns and passes that current-version boundary.
+
+The remaining four subtests in `onlineDailyV7Activation.test.mjs` are not obsolete: they protect V6.8 quarantine history, the intentional V7.2 default when report builders are called without `ruleVersion`, zero-Lead artifact buildability, and qualified/push parity.
+
+### Cost of inaction
+
+The branch cannot pass `verify:all`, and fail-fast hides the 12 later verification tasks. More importantly, overlapping current-version ownership makes a future activation likely to repeat the same stale-contract failure or tempt a false fix that reverts V7.3 behavior to satisfy historical tests. Blind string replacement would also miss the later V7.2 object, documentation, and generator assertions currently short-circuited by the first failure.
+
+### Why this slice is next
+
+The exact V7.3 implementation contracts are already GREEN: activation/replay 8/8, candidate audit/schema 4/4, obtainable evidence 5/5, second-pass orchestration 6/6, and PR B candidate-state/fair-enrichment 8/8. The only currently exposed blocker is test-contract ownership, so a test-only migration is the smallest causal slice before any independent full-branch diff or PR work.
+
+### Operation principle
+
+Use the existing RED full-suite result as the TDD starting point. Assign one owner to each contract:
+
+- active runtime version: `onlineDailyV4Rules.test.mjs` plus the dedicated V7.3 activation contract;
+- version-neutral automation safety: `dailyAutomationHardening.test.mjs`;
+- retained V7.2 compatibility and historical trace: `onlineDailyV7Activation.test.mjs`;
+- exact V7.3 evidence, machine rule, current-doc, generator, and replay semantics: the already-GREEN `onlineDailyV73ActivationReplayContract.test.mjs`.
+
+Do not change production code or weaken any V7.3 assertion to make the old tests pass.
+
+### Architecture benefit
+
+This removes duplicate ownership of the active business rule, keeps historical V7.2 behavior explicitly testable, and makes hardening assertions survive future rule-version changes. A later V7.4 activation should need to update its version-specific contract and the runtime-version unit, not rewrite generic workflow safety or historical compatibility tests.
+
+### Proposed file changes
+
+1. `automations/test/onlineDailyV4Rules.test.mjs`
+   - Rename the locked-version subtest to V7.3 obtainable evidence.
+   - Change only its expected literal from `sourcing-rules-v7.2-china-joint` to `sourcing-rules-v7.3-obtainable-evidence`.
+   - Leave loader validation, defaults, source normalization, runner wiring, and orchestrator wiring unchanged.
+
+2. `automations/test/dailyAutomationHardening.test.mjs`
+   - Replace the copied full V7.2 indie rule with version-neutral safety assertions.
+   - Preserve checks that `quality_quarantine` is absent; both lanes have `priority=null`, no formal minimum/maximum, no watch/drop backfill, and qualified/push parity; the targeted second pass cannot bypass hard exclusions or backfill formal Leads.
+   - Move exact active evidence-model ownership to the existing V7.3 contract instead of duplicating it here.
+
+3. `automations/test/onlineDailyV7Activation.test.mjs`
+   - Keep the filename to avoid a noisy rename, but rename the suite and labels around retained-rule compatibility.
+   - Rewrite only the first subtest so V7.2 is historical rather than active: machine rule version must equal `RULE_VERSION`, `RULE_VERSION` must differ from the historical V7.2 regular version, V7.2 must not be the active canonical doc, and the current doc must retain an explicit historical V7.2 reference.
+   - Preserve the unchanged `china_joint` gate IDs, data-path thresholds, rating values, no-quota fields, historical V7.2 canonical fixture, generator `RULE_VERSION` wiring, and no-backfill/no-quarantine guardrails.
+   - Remove only the now-unused V7.0 indie imports.
+   - Rename the remaining passing labels so the active-rule safety test is version-neutral and the no-`ruleVersion` report test is explicitly described as intentional legacy V7.2 default compatibility. Do not change report, Radar, Steam Trend, volume, or validator implementation.
+
+### Bounded implementation and verification
+
+- Reconfirm remote `main`, branch head, and open PR queue before any write.
+- Update only the three test files above through the GitHub App/API; checkpoint updates remain evidence-only.
+- Run syntax checks for the three edited files.
+- Run the focused 32-test ownership matrix:
+  `dailyAutomationHardening.test.mjs`, `onlineDailyV4Rules.test.mjs`, `onlineDailyV7Activation.test.mjs`, `onlineDailyV73ActivationReplayContract.test.mjs`, and `onlineDailyV7ChinaJointAdmission.test.mjs`.
+- If focused GREEN, run the unmodified full `npm run verify:all` from the exact resulting remote commit.
+- If a later fail-fast task reveals another failure, record it and stop; do not add opportunistic fixes in the same task.
+- Stop after verification and checkpoint evidence. Independent full-branch diff validation and PR creation remain separate later phases.
+
+### Explicitly untouched
+
+No changes to V7.3 evidence or second-pass implementation, machine rules, current/canonical rule documents, PR B state/snapshot/scheduler behavior, Daily generator, report/Radar/Steam Trend code, workflow triggers, sync/recovery, schemas, UI/API, Supabase, production artifacts, quantity policy, PR D, or PR E.
+
 ## Acceptance Invariants
 
 - Hard-excluded fixtures remain excluded before and after a second pass.
@@ -78,6 +148,11 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Completed
 
+- Reconfirmed for this proposal that remote `main` remains `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch remains exactly `34a6ea31562c64852f58e00957552c9f3739bad9`, and the only open PR remains unrelated `#71`.
+- Read the exact remote versions of the three failing tests, the dedicated 8/8 V7.3 activation/replay owner, the retained 6/6 `china_joint` contract, runtime rule loader, decision defaults, report labeling behavior, machine rule, and current rules entrypoint.
+- Confirmed the ownership split: `onlineDailyV4Rules` should lock the runtime version; `dailyAutomationHardening` should assert version-neutral no-quota/no-bypass safety; `onlineDailyV7Activation` should preserve historical V7.2 compatibility; and the dedicated V7.3 contract should remain the sole exact active evidence/model/provenance owner.
+- Confirmed that omitted `ruleVersion` intentionally preserves V7.2 defaults in `buildPools` and `buildDailyReport`, while the active generator passes V7.3 explicitly. The passing legacy-default test must therefore be relabeled, not converted into an active-generator claim.
+- Defined a bounded three-test-file RED-to-GREEN migration and a 32-test focused ownership matrix. No test, implementation, machine rule, rule document, workflow, production artifact, or local CRM checkout/worktree was modified.
 - Reconfirmed before verification that remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, the PR C branch remained exactly `94da0a73ebf12e88f09f0ef770ae3f1c961cae63`, and the only open PR remained unrelated `#71`.
 - Downloaded the exact remote `182cfd0e60e0b0e1094a50178297ad489a82dc31` GitHub API tarball into a one-time `/tmp` directory. The captured tarball SHA-256 was `182125c18462c831bd7b72d8b1e3c05be26ea68d98887a57e0358726bca14325`; verification used Node `v22.23.1`, npm `10.9.8`, and pnpm `11.9.0`.
 - Confirmed the repository has no npm lockfile. `npm ci` therefore returned its expected `EUSAGE` precondition error; declared dependencies were installed only inside the isolated snapshot with `npm install --no-audit --no-fund`. This setup result is separate from the subsequent repository verification command.
@@ -136,22 +211,22 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Remaining
 
-- In a separate next task, inspect and propose a bounded migration for the three currently exposed historical activation contracts so they validate active V7.3 while preserving legitimate V7.2 lane-compatibility and legacy-default assertions.
-- Do not assume the result is three one-line edits: the first failing equality prevented later assertions in the same subtests from executing. Any test changes require a separately approved, evidence-driven scope before implementation.
-- After that separately approved migration, re-run the focused affected contracts and then the full `npm run verify:all` from the resulting exact remote commit.
-- Perform independent full-branch diff validation only after full verification is GREEN.
+- Await explicit approval for the exact three-test-file migration described above.
+- After approval, implement only those test-contract changes, run syntax plus the focused 32-test ownership matrix, then run the unmodified full `npm run verify:all` from the exact remote result and record evidence.
+- If full verification reaches a new later failure, stop and record it rather than expanding scope.
+- Perform independent full-branch diff validation only after full verification is GREEN, in a separate task.
 - Create a PR, run PR CI, merge, deploy, and perform read-only acceptance only in their later approved phases.
 - Do not change workflow/sync behavior or PR B scheduling, run a live generator, or enter PR D/E.
 - Stop after PR C; do not enter PR D or PR E.
 
 ## Next Action
 
-Stop at this recorded full-verification RED boundary and wait for an explicit continuation. On the next `继续`, scope only the diagnosis/proposal for the three stale activation-contract surfaces; do not edit tests or implementation before approval, and do not combine independent full-branch diff validation, PR creation, merge, live generation, deployment, or PR D/E.
+Stop at this Phase 2 proposal boundary and wait for explicit approval. Approval authorizes only the three test files and bounded verification listed in `Test-Contract Migration Proposal`; it does not authorize independent full-branch diff validation, PR creation, merge, live generation, deployment, or PR D/E.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` was exactly at checkpoint head `94da0a73ebf12e88f09f0ef770ae3f1c961cae63` before this evidence-only GitHub API commit. The exact verified code head remains `182cfd0e60e0b0e1094a50178297ad489a82dc31`; remote `main` remained `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remained unrelated `#71`. All repository writes use GitHub App/API; verification used an exact one-time `/tmp` GitHub API tarball outside every local CRM checkout/worktree.
+Remote branch `codex/pr-c-v7-3-obtainable-evidence` was exactly at evidence checkpoint head `34a6ea31562c64852f58e00957552c9f3739bad9` before this proposal-only GitHub API commit. The exact verified code head remains `182cfd0e60e0b0e1094a50178297ad489a82dc31`; remote `main` remains `166afdd759f5d3a4a6fff005e9293a906bda44d3`, and the only open PR remains unrelated `#71`. No test or implementation file has changed in this proposal phase.
 
 ## Rollout Status
 
-Minimal V7.3 activation remains GREEN in all focused and adjacent V7.3/PR B contracts, but the branch is not full-suite GREEN. The complete fail-fast `verify:all` result is 367 passed tests and three currently exposed failures before the verifier stopped: all three are historical contracts that still assert V7.2 as the active rule surface. The 12 later verification tasks did not run. No fixes, independent full-branch diff validation, PR/CI, merge, deployment, or production acceptance have started, and production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
+The three stale activation-contract surfaces are diagnosed and a bounded test-only migration is ready for approval. V7.3 focused behavior remains GREEN, full-suite status remains 367 passed and three currently exposed historical-contract failures before fail-fast stopped, and the 12 later tasks remain unexecuted. No implementation, independent full-branch diff validation, PR/CI, merge, deployment, or production acceptance has started; production `main` remains the PR B V7.2 baseline at `166afdd759f5d3a4a6fff005e9293a906bda44d3`.
