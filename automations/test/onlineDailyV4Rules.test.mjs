@@ -22,8 +22,8 @@ const validRuleHeader = {
 };
 
 describe("online daily v4 rule config", () => {
-  it("exposes the locked V7.2 regular-lane rule version", () => {
-    assert.equal(RULE_VERSION, "sourcing-rules-v7.2-china-joint");
+  it("exposes the locked V7.3 obtainable-evidence rule version", () => {
+    assert.equal(RULE_VERSION, "sourcing-rules-v7.3-obtainable-evidence");
   });
 
   it("loads the current daily rules into machine-readable runtime config", async () => {
