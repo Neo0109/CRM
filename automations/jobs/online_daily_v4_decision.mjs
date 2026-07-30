@@ -1,24 +1,18 @@
 import { normalizeDisplayText, normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
 import {
   deriveConcreteChinaBilibiliValue,
-  evaluateSteamIndiePrelaunchAdmission,
-  mediaIndieAdmissionEvidence,
-  steamIndieAdmissionEvidence
+  evaluateSteamIndiePrelaunchAdmission
 } from "./online_daily_v7_indie_admission.mjs";
 import {
   evaluateMediaRegularAdmission,
   evaluateSteamRegularAdmission,
-  REGULAR_SOURCING_RULE_VERSION,
-  selectRegularAdmission
+  REGULAR_SOURCING_RULE_VERSION
 } from "./online_daily_v7_2_regular_admission.mjs";
+import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "./online_daily_v7_3_obtainable_evidence.mjs";
 import {
-  evaluateMediaChinaJointAdmission,
-  evaluateSteamChinaJointAdmission
-} from "./online_daily_v7_2_china_joint_admission.mjs";
-import {
-  evaluateV73IndiePrelaunchAdmission,
-  V73_OBTAINABLE_EVIDENCE_RULE_VERSION
-} from "./online_daily_v7_3_obtainable_evidence.mjs";
+  evaluateMediaV73RegularAdmission,
+  evaluateSteamV73RegularAdmission
+} from "./online_daily_v7_3_regular_admission.mjs";
 
 export function scoreCandidate(input) {
   let score = 0;
@@ -185,30 +179,17 @@ function toQualifiedMediaLead(lead, context) {
 }
 
 function evaluateSteamAdmissionForRule(candidate, ruleVersion) {
-  if (ruleVersion !== V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
-    return evaluateSteamRegularAdmission(candidate);
+  if (ruleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
+    return evaluateSteamV73RegularAdmission(candidate);
   }
-  return activateV73Admission(
-    evaluateV73IndiePrelaunchAdmission(steamIndieAdmissionEvidence(candidate)),
-    evaluateSteamChinaJointAdmission(candidate)
-  );
+  return evaluateSteamRegularAdmission(candidate);
 }
 
 function evaluateMediaAdmissionForRule(lead, ruleVersion) {
-  if (ruleVersion !== V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
-    return evaluateMediaRegularAdmission(lead);
+  if (ruleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
+    return evaluateMediaV73RegularAdmission(lead);
   }
-  return activateV73Admission(
-    evaluateV73IndiePrelaunchAdmission(mediaIndieAdmissionEvidence(lead)),
-    evaluateMediaChinaJointAdmission(lead)
-  );
-}
-
-function activateV73Admission(indieAdmission, chinaJointAdmission) {
-  return {
-    ...selectRegularAdmission(indieAdmission, chinaJointAdmission),
-    sourcing_rule_version: V73_OBTAINABLE_EVIDENCE_RULE_VERSION
-  };
+  return evaluateMediaRegularAdmission(lead);
 }
 
 export function hardDropReason(candidate) {
