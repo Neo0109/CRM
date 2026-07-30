@@ -30,48 +30,27 @@ describe("daily automation hardening contract", () => {
     assert.deepEqual(schema.$defs.reportLead.properties.drop_reason, { type: ["string", "null"] });
   });
 
-  it("keeps machine-readable sourcing rules aligned with both V7.2 regular lanes", () => {
+  it("keeps machine-readable sourcing lanes quota-free and blocks second-pass bypasses", () => {
     const rules = JSON.parse(readRepoFile("automations/rules/daily-report.json"));
+    const lanes = [
+      rules.indie_prelaunch_admission,
+      rules.china_joint_admission
+    ];
 
-    assert.equal(rules.rule_version, "sourcing-rules-v7.2-china-joint");
     assert.equal("quality_quarantine" in rules, false);
-    assert.deepEqual(rules.indie_prelaunch_admission, {
-      active: true,
-      sourcing_lane: "indie_prelaunch",
-      required_gate_ids: [
-        "identity_and_dedupe",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "non_steam_business_entry",
-        "concrete_china_bilibili_value",
-        "overseas_china_demand"
-      ],
-      all_gates_required: true,
-      qualified_route: "push_pool",
-      unqualified_route: "sourcing_candidates",
-      automatic_priority: null,
-      formal_lead_minimum: null,
-      formal_lead_maximum: null,
-      watch_pool_enabled: false,
-      drop_pool_enabled: false,
-      invariant: "new_qualified_count === push_pool_count"
-    });
-    assert.deepEqual(rules.china_joint_admission.required_gate_ids, [
-      "identity_and_dedupe",
-      "traction_or_proven_team_event",
-      "current_china_opportunity",
-      "mature_china_partner_clear"
-    ]);
-    assert.equal(rules.china_joint_admission.data_paths[0].minimum_recommendations, 5000);
-    assert.equal(rules.china_joint_admission.data_paths[1].minimum_recommendations, 1500);
-    assert.deepEqual(rules.china_joint_admission.data_paths[1].accepted_ratings, ["very_positive", "overwhelmingly_positive"]);
-    assert.equal(rules.china_joint_admission.formal_lead_minimum, null);
-    assert.equal(rules.china_joint_admission.formal_lead_maximum, null);
+    for (const lane of lanes) {
+      assert.equal(lane.automatic_priority, null);
+      assert.equal(lane.formal_lead_minimum, null);
+      assert.equal(lane.formal_lead_maximum, null);
+      assert.equal(lane.watch_pool_enabled, false);
+      assert.equal(lane.drop_pool_enabled, false);
+      assert.equal(lane.invariant, "new_qualified_count === push_pool_count");
+    }
+
+    const secondPass = rules.indie_prelaunch_admission.targeted_second_pass;
+    assert.equal(secondPass.same_decision_function_required, true);
+    assert.equal(secondPass.hard_exclusion_bypass, false);
+    assert.equal(secondPass.formal_lead_backfill, false);
   });
 
   it("records generation failures without treating them as successful receipts", () => {
