@@ -32,6 +32,11 @@ import {
 import { buildSteamCandidateTasks, enrichSteamCandidates, steamCandidateReviewWindowScore } from "./online_daily_v4_steam_source.mjs";
 import { looseChineseProjectKey } from "./online_daily_v4_source_utils.mjs";
 import { validateDailyVolume } from "./online_daily_v4_volume.mjs";
+import {
+  fetchV73TargetedEvidence,
+  runV73TargetedCandidateSecondPasses
+} from "./online_daily_v7_3_second_pass_orchestrator.mjs";
+import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "./online_daily_v7_3_obtainable_evidence.mjs";
 
 const rootDir = process.cwd();
 const sourcingRuleVersion = RULE_VERSION;
@@ -137,30 +142,60 @@ sourcingDiagnostics.steam_enrichment = {
   ...steamEnrichmentMetrics,
   snapshot_rejections: enrichmentOutcome.snapshot_rejections
 };
+let v73SecondPass = {
+  steam_candidates: enrichedCandidates,
+  media_candidates: mediaLeadCandidates,
+  candidate_states: candidateStates,
+  metrics: {
+    eligible_count: 0,
+    selected_count: 0,
+    attempted_count: 0,
+    qualified_count: 0,
+    failed_count: 0
+  },
+  results: []
+};
+if (sourcingRuleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
+  v73SecondPass = await runV73TargetedCandidateSecondPasses({
+    steamCandidates: enrichedCandidates,
+    mediaCandidates: mediaLeadCandidates,
+    candidateStates,
+    capturedAt,
+    maxCandidates: 12,
+    fetchEvidence: fetchV73TargetedEvidence,
+    mediaSignals,
+    context: sourceContext
+  });
+  sourcingDiagnostics.v7_3_second_pass = v73SecondPass.metrics;
+}
 recordReleaseWindowHealth(sourcingDiagnostics, {
-  steamCandidates: enrichedCandidates,
-  mediaLeads: mediaLeadCandidates
+  steamCandidates: v73SecondPass.steam_candidates,
+  mediaLeads: v73SecondPass.media_candidates
 });
 
-if (!rawCandidates.length && !mediaLeadCandidates.length) {
+if (!rawCandidates.length && !v73SecondPass.media_candidates.length) {
   throw new Error("No Steam candidates or domestic media/Bilibili product leads were fetched; refusing to overwrite daily reports with an empty run.");
 }
 
-if (!enrichedCandidates.length && !mediaLeadCandidates.length) {
+if (!v73SecondPass.steam_candidates.length && !v73SecondPass.media_candidates.length) {
   throw new Error("No Steam candidates were enriched and no media/Bilibili product leads survived filtering; refusing to overwrite daily reports with an empty run.");
 }
 
-enrichedCandidates.sort((a, b) => b.score - a.score);
-const candidatePools = buildPools(enrichedCandidates, mediaLeadCandidates, { reportDate });
+v73SecondPass.steam_candidates.sort((a, b) => b.score - a.score);
+const candidatePools = buildPools(
+  v73SecondPass.steam_candidates,
+  v73SecondPass.media_candidates,
+  { reportDate }
+);
 const pools = candidatePools;
 let volumeDiagnostics;
 try {
   volumeDiagnostics = validateDailyVolume({
     pools,
     mediaSignals,
-    mediaLeadCandidates,
+    mediaLeadCandidates: v73SecondPass.media_candidates,
     rawCandidateCount: rawCandidates.length,
-    enrichedCandidateCount: enrichedCandidates.length,
+    enrichedCandidateCount: v73SecondPass.steam_candidates.length,
     diagnostics: sourcingDiagnostics,
     newQualifiedCount: pools.new_qualified_count
   });
@@ -170,10 +205,10 @@ try {
     reportDate,
     capturedAt,
     rawCandidates,
-    enrichedCandidates,
+    enrichedCandidates: v73SecondPass.steam_candidates,
     industrySignals,
     mediaSignals,
-    mediaLeadCandidates,
+    mediaLeadCandidates: v73SecondPass.media_candidates,
     pools,
     sourcingDiagnostics
   });
@@ -188,12 +223,12 @@ const sourcingCandidateArtifact = buildSourcingCandidateArtifact({
   capturedAt,
   ruleVersion: sourcingRuleVersion,
   rawSteamCandidates: rawCandidates,
-  enrichedSteamCandidates: enrichedCandidates,
+  enrichedSteamCandidates: v73SecondPass.steam_candidates,
   mediaSignalsSeen: mediaSignals.length,
-  mediaCandidates: mediaLeadCandidates,
+  mediaCandidates: v73SecondPass.media_candidates,
   candidatePools,
   publishedPools: pools,
-  candidateStates: candidateStates,
+  candidateStates: v73SecondPass.candidate_states,
   steamEnrichmentMetrics: steamEnrichmentMetrics
 });
 
@@ -202,12 +237,12 @@ await writeJson(`data/reports/${reportDate}.json`, buildDailyReport({
   pools,
   rawCount: rawCandidates.length,
   enrichedCount: steamEnrichmentMetrics.steam_candidates_enriched,
-  mediaLeadCount: mediaLeadCandidates.length,
+  mediaLeadCount: v73SecondPass.media_candidates.length,
   reportDate,
   diagnostics: sourcingDiagnostics
 }));
 await writeJson(`data/radar/${reportDate}.json`, buildRadarReport({
-  candidates: enrichedCandidates,
+  candidates: v73SecondPass.steam_candidates,
   pools,
   industrySignals,
   reportDate,
@@ -215,7 +250,7 @@ await writeJson(`data/radar/${reportDate}.json`, buildRadarReport({
   mediaSignalToRadarItem
 }));
 await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport({
-  candidates: enrichedCandidates,
+  candidates: v73SecondPass.steam_candidates,
   pools,
   reportDate,
   capturedAt
@@ -233,7 +268,7 @@ console.log(JSON.stringify({
   enrichment_scheduler_lanes: steamEnrichmentMetrics.scheduler_lane_counts,
   industry_signals: industrySignals.length,
   media_signals_seen: mediaSignals.length,
-  media_lead_candidates: mediaLeadCandidates.length,
+  media_lead_candidates: v73SecondPass.media_candidates.length,
   sourcing_candidate_records: sourcingCandidateArtifact.scan_summary.records_total,
   sourcing_candidate_decisions: {
     formal: sourcingCandidateArtifact.scan_summary.formal,
