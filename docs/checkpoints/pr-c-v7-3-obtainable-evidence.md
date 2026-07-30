@@ -1,7 +1,7 @@
 # PR C V7.3 Obtainable Evidence and Targeted Second Pass Checkpoint
 
 Date: 2026-07-30
-Phase: Phase 4 TDD; pure evidence module GREEN, production path not wired
+Phase: Phase 4 TDD; candidate-audit/schema RED established, integration not started
 Approved proposal: CRM Daily Leads Liveness V7.3, PR C only
 
 ## Current Goal
@@ -16,7 +16,8 @@ PR C may change the approved evidence model and its targeted evidence orchestrat
 - Completed recovery slices: PR A `#105` added production-artifact replay and business-liveness observability; PR B `#106` added candidate research state, compatible evidence-snapshot reuse, and fair allocation of the unchanged Steam enrichment budget.
 - PR B merge state: squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d`; remote `main` is identical to that commit. PR-head Build run `30487695885` completed successfully.
 - Open PR queue: unrelated PR `#71` only.
-- The first PR C RED contract and its smallest pure GREEN implementation are complete.
+- The pure V7.3 evidence module is GREEN.
+- The candidate-audit/schema RED contract is now established; its production integration has not started.
 - V7.3 is not connected to candidate artifacts, schemas, the Daily orchestrator, machine-rule activation, or production behavior.
 - This branch is for PR C only.
 - Explicitly out of scope: reopening PR A replay/liveness work; rewriting PR B candidate state, snapshot TTL, or 4:3:2 scheduling; PR D AI editing or paid-provider work; PR E seven-day observation/calibration; UI/API, Supabase, existing Leads, CRM import/sync/recovery semantics, Radar, Steam Trends, Steam review workflow, workflow triggers, production data, quantity floors, review backfill, and legacy P2 cleanup.
@@ -72,19 +73,21 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 - Reconfirmed the latest remote `main`, the PR C branch head, open PR queue, and this checkpoint solely through the GitHub App/API.
 - Confirmed `main` remains identical to PR B squash merge `71d0c2b2ff678cc73ba6704e949c0eae8177711d` and the only open PR remains unrelated `#71`.
-- Added the RED contract `automations/test/onlineDailyV73ObtainableEvidence.test.mjs` in `9882fcfe555e877b05cf34f360bb9693d99fd205`; exact API-tarball execution failed only because the implementation module was absent.
-- Added the pure module `automations/jobs/online_daily_v7_3_obtainable_evidence.mjs` in `9d22ae074c3bd982b12e1e84fd0774a8592972fc`.
-- The pure module reuses current V7 evidence normalization and hard-gate results while exposing a distinct V7.3 rule version, a Demo/Playtest-or-gameplay evidence family, two-source public quality evidence, explicit near-miss details/actions, and an injected same-evaluator second pass.
-- Targeted patches are restricted to fields authorized by named evidence actions; array evidence is merged without mutating the first-pass input. Confirmed hard exclusions never fetch or re-evaluate.
-- Exact `9d22ae074c3bd982b12e1e84fd0774a8592972fc` GitHub API tarball focused run passed all 5 V7.3 contracts with Node `v22.23.1`.
-- Adjacent exact-tarball run passed all 14 contracts: 5 V7.3 plus 9 existing V7.0 admission contracts, including rejection of all seven historical weak samples and no quantity truncation/backfill.
-- No existing business module, machine rule, candidate artifact, schema, workflow, generator, or production behavior was changed. No local CRM checkout/worktree was read or modified.
+- Added the pure module `automations/jobs/online_daily_v7_3_obtainable_evidence.mjs` in `9d22ae074c3bd982b12e1e84fd0774a8592972fc`; focused and adjacent exact-tarball tests passed 14/14.
+- Read the exact remote candidate-audit builder, schema v1/v2 contract, PR B candidate-state schema version, and existing candidate-audit test boundary needed for this phase.
+- Added `automations/test/onlineDailyV73CandidateAuditContract.test.mjs` in commit `6e8f279fb7d69b8ae11b31e63eddaa985ed1a304` without modifying candidate-audit or schema implementation.
+- The RED contract requires V7.3 near-miss fields to be projected into the candidate artifact, V7.3 artifacts to emit schema version 3 while retaining PR B scan metrics, typed schema definitions for both actionable fields, and v3-only conditional requirements so historical v1/v2 candidates remain compatible.
+- Ran the focused test from the exact `6e8f279fb7d69b8ae11b31e63eddaa985ed1a304` GitHub API tarball under a one-time `/tmp` directory with Node `v22.23.1`.
+- RED was confirmed through four expected business assertions: V7.3 lane remained `null`, artifact schema remained `2`, schema enum remained `[1, 2]`, and no v3 conditional candidate contract existed.
+- The RED run had no module-resolution, dependency, fixture, or syntax failure.
+- No candidate-audit implementation, schema, machine rule, orchestrator, workflow, generator, or production behavior was changed. No local CRM checkout/worktree was read or modified.
 
 ## Remaining
 
 - In the next task, reconfirm remote `main`, this branch head, open PRs, and this checkpoint.
-- Add a candidate-audit/schema RED contract for V7.3 `failed_gate_details` and `next_evidence_actions`; do not activate V7.3 or wire the Daily orchestrator in that RED phase.
-- Implement the smallest candidate-audit/schema GREEN slice in a later bounded phase while preserving schema v1/v2 compatibility and PR B state fields.
+- Implement only the smallest candidate-audit/schema GREEN slice: recognize the V7.3 evaluator, project `failed_gate_details` and `next_evidence_actions`, emit schema version 3 for V7.3 artifacts, and add typed v3-only schema requirements.
+- Preserve schema v1/v2 validity, PR B candidate-state fields, scan metrics, snapshot contract, and all existing candidate-audit behavior.
+- Re-run the new focused contract plus existing candidate-audit and candidate-state contracts from exact one-time API tarballs, then update this checkpoint.
 - Add a separate orchestrator RED/GREEN phase for targeted second-pass wiring, without changing workflow triggers, sync, or PR B scheduling.
 - Update current-rule documentation only after machine-rule activation and validation are complete.
 - Run fixed replay/legacy-weak-sample regression coverage, full `npm run verify:all`, independent branch diff validation, PR CI, merge, and read-only acceptance.
@@ -92,12 +95,12 @@ The Daily orchestrator can request a narrow evidence action without owning admis
 
 ## Next Action
 
-Resume from this checkpoint in a new task. Reconfirm the remote baseline and checkpoint, then add only the candidate-audit/schema RED contract for V7.3 actionable evidence fields. Do not modify candidate-audit implementation, schema, the Daily orchestrator, PR D, or PR E in that task.
+Resume from this checkpoint in a new task. Reconfirm the remote baseline and checkpoint, then implement only the candidate-audit/schema GREEN slice required by `onlineDailyV73CandidateAuditContract.test.mjs`. Do not wire the Daily orchestrator, machine-rule activation, PR D, or PR E in that task.
 
 ## Git Status
 
-Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at pure-module GREEN commit `9d22ae074c3bd982b12e1e84fd0774a8592972fc` immediately before this checkpoint-only GitHub API commit. All repository writes use GitHub App/API; read-only tests use exact one-time `/tmp` GitHub API tarballs outside every local CRM checkout/worktree.
+Remote branch `codex/pr-c-v7-3-obtainable-evidence` was at candidate-audit/schema RED commit `6e8f279fb7d69b8ae11b31e63eddaa985ed1a304` immediately before this checkpoint-only GitHub API commit. All repository writes use GitHub App/API; read-only tests use exact one-time `/tmp` GitHub API tarballs outside every local CRM checkout/worktree.
 
 ## Rollout Status
 
-Pure V7.3 module and focused tests only. No candidate-artifact contract, schema, machine-rule activation, orchestrator, workflow, deployment, or production behavior has changed. Current production sourcing behavior remains the verified behavior of remote `main` at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`.
+Pure V7.3 module plus RED contracts only. No candidate-audit/schema GREEN integration, machine-rule activation, orchestrator, workflow, deployment, or production behavior has changed. Current production sourcing behavior remains the verified behavior of remote `main` at `71d0c2b2ff678cc73ba6704e949c0eae8177711d`.
