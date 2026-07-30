@@ -207,6 +207,124 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     );
   });
 
+  it("keeps project-controlled and unclassified Bilibili signals out of independent quality", async () => {
+    const evidence = nearMissEvidence(45, {
+      official_demo_evidence: [],
+      official_gameplay_evidence: [],
+      quality_proofs: []
+    });
+    const candidate = steamCandidate(evidence);
+    const rejectedKinds = ["official", "developer", "publisher", "keyword", null];
+
+    for (const sourceKind of rejectedKinds) {
+      const label = sourceKind ?? "missing";
+      const signal = {
+        title: `${evidence.project} ${label} Demo 实机`,
+        summary: `UP主：${label}Channel ${evidence.project} hands-on playtest gameplay`,
+        source: "B站官方复核",
+        link: `https://www.bilibili.com/video/BV1Rejected${label}/`,
+        ...(sourceKind ? { bilibili_probe: { source_kind: sourceKind } } : {})
+      };
+      const patch = await fetchV73TargetedEvidence({
+        candidate,
+        source_type: "steam",
+        actions: [
+          {
+            gate_id: "official_playable_or_gameplay",
+            action: "fetch_official_playable_or_gameplay"
+          },
+          {
+            gate_id: "independent_quality_proof",
+            action: "fetch_independent_quality_evidence"
+          }
+        ],
+        evidence,
+        mediaSignals: [],
+        context: { fetchOfficialBilibiliCandidatesImpl: async () => [signal] }
+      });
+
+      if (["official", "developer", "publisher"].includes(sourceKind)) {
+        assert.equal(patch.official_demo_evidence.length, 1, label);
+        assert.equal(patch.official_gameplay_evidence.length, 1, label);
+      }
+      assert.deepEqual(
+        patch.quality_proofs,
+        [],
+        `${label} Bilibili evidence must not consume an independent-quality slot`
+      );
+    }
+  });
+
+  it("keeps one independent source below the unchanged gate and accepts two classified sources", async () => {
+    const evidence = nearMissEvidence(46, { quality_proofs: [] });
+    const candidate = steamCandidate(evidence);
+    const officialSelfEvidence = {
+      title: `${evidence.project} developer Demo playtest`,
+      summary: `UP主：FixtureStudio ${evidence.project} hands-on gameplay`,
+      source: "B站官方复核",
+      link: "https://www.bilibili.com/video/BV1DeveloperSelf/",
+      bilibili_probe: { source_kind: "developer" }
+    };
+    const externalMedia = {
+      title: `${evidence.project} hands-on preview`,
+      summary: "Independent media played the public demo",
+      source: "Trusted Games Media",
+      link: "https://media.example/previews/independent-quality-fixture"
+    };
+    const bilibiliMedia = {
+      title: `${evidence.project} 独立媒体试玩评测`,
+      summary: `UP主：IndependentBiliMedia ${evidence.project} hands-on playtest`,
+      source: "B站媒体复核",
+      link: "https://www.bilibili.com/video/BV1IndependentMedia/",
+      bilibili_probe: { source_kind: "media" }
+    };
+    const actions = [{
+      gate_id: "independent_quality_proof",
+      action: "fetch_independent_quality_evidence"
+    }];
+
+    const oneSourcePatch = await fetchV73TargetedEvidence({
+      candidate,
+      source_type: "steam",
+      actions,
+      evidence,
+      mediaSignals: [externalMedia],
+      context: {
+        fetchOfficialBilibiliCandidatesImpl: async () => [officialSelfEvidence]
+      }
+    });
+    assert.deepEqual(
+      oneSourcePatch.quality_proofs.map((item) => item.url),
+      [externalMedia.link]
+    );
+    const oneSourceDecision = evaluateV73IndiePrelaunchAdmission({
+      ...evidence,
+      quality_proofs: oneSourcePatch.quality_proofs
+    });
+    assert.equal(oneSourceDecision.qualified, false);
+    assert.ok(oneSourceDecision.failed_gates.includes("independent_quality_proof"));
+
+    const twoSourcePatch = await fetchV73TargetedEvidence({
+      candidate,
+      source_type: "steam",
+      actions,
+      evidence,
+      mediaSignals: [externalMedia, bilibiliMedia],
+      context: {
+        fetchOfficialBilibiliCandidatesImpl: async () => [officialSelfEvidence]
+      }
+    });
+    assert.deepEqual(
+      new Set(twoSourcePatch.quality_proofs.map((item) => item.url)),
+      new Set([externalMedia.link, bilibiliMedia.link])
+    );
+    const twoSourceDecision = evaluateV73IndiePrelaunchAdmission({
+      ...evidence,
+      quality_proofs: twoSourcePatch.quality_proofs
+    });
+    assert.equal(twoSourceDecision.qualified, true);
+  });
+
   it("materializes only requested normalized public evidence with source URLs", async () => {
     const evidence = nearMissEvidence(50, {
       official_demo_evidence: [],
@@ -220,15 +338,17 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       title: `${evidence.project} 官方 Demo 实机演示`,
       summary: `UP主：ExampleStudio ${evidence.project} Playtest gameplay`,
       source: "B站官方复核",
-      link: "https://www.bilibili.com/video/BV1OfficialFixture/"
+      link: "https://www.bilibili.com/video/BV1OfficialFixture/",
+      bilibili_probe: { source_kind: "developer" }
     };
     const creatorPlaytest = {
       title: `${evidence.project} 独立试玩测评`,
       summary: `UP主：TrustedCreator ${evidence.project} hands-on playtest`,
       source: "B站官方复核",
-      link: "https://www.bilibili.com/video/BV1CreatorFixture/"
+      link: "https://www.bilibili.com/video/BV1CreatorFixture/",
+      bilibili_probe: { source_kind: "trusted_creator" }
     };
-    const mediaSignals = [{
+    const mediaSignals = [creatorPlaytest, {
       title: `${evidence.project} hands-on preview`,
       summary: "Independent media played the public demo",
       source: "Trusted Games Media",
@@ -255,7 +375,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       context: {
         fetchOfficialBilibiliCandidatesImpl: async () => {
           lookupCount += 1;
-          return [officialBilibili, creatorPlaytest];
+          return [officialBilibili];
         }
       }
     });
@@ -263,6 +383,10 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     assert.equal(lookupCount, 1);
     assert.ok(patch.official_demo_evidence.some((item) => item.url === officialBilibili.link));
     assert.ok(patch.official_gameplay_evidence.some((item) => item.url === officialBilibili.link));
+    assert.equal(
+      patch.quality_proofs.some((item) => item.url === officialBilibili.link),
+      false
+    );
     assert.ok(patch.quality_proofs.some((item) => item.url === creatorPlaytest.link));
     assert.ok(patch.quality_proofs.some((item) => item.url === mediaSignals[0].link));
     assert.equal(patch.quality_proofs.some((item) => item.url === mediaSignals[1].link), false);
@@ -278,7 +402,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       }],
       evidence,
       mediaSignals,
-      context: { fetchOfficialBilibiliCandidatesImpl: async () => [creatorPlaytest] }
+      context: { fetchOfficialBilibiliCandidatesImpl: async () => [officialBilibili] }
     });
     assert.deepEqual(Object.keys(qualityOnly), ["quality_proofs"]);
   });
