@@ -263,23 +263,58 @@ function addOrMergeRecord(records, incoming) {
     return;
   }
 
-  const incomingDecisionWins = DECISION_RANK[incoming.decision] > DECISION_RANK[current.decision];
+  const admissionWinner = selectAdmissionWinner(current, incoming);
   records.set(incoming.dedupe_key, {
     ...current,
-    _admissionQualified: current._admissionQualified || incoming._admissionQualified,
-    decision: incomingDecisionWins ? incoming.decision : current.decision,
+    ...admissionStateFrom(admissionWinner),
     source_type: current.source_type === incoming.source_type ? current.source_type : "multi_source",
     project: current.source_type === "steam" ? current.project : incoming.project || current.project,
     steam_app_id: current.steam_app_id ?? incoming.steam_app_id,
-    sourcing_lane: current.sourcing_lane ?? incoming.sourcing_lane,
     matched_rules: uniqueStrings([...current.matched_rules, ...incoming.matched_rules]),
-    missing_evidence: current.missing_evidence.filter((item) => incoming.missing_evidence.includes(item)),
-    exclusion_reasons: uniqueStrings([...current.exclusion_reasons, ...incoming.exclusion_reasons]),
     source_links: normalizedLinks([...current.source_links, ...incoming.source_links]),
     steam_review_summary: preferReviewSummary(current.steam_review_summary, incoming.steam_review_summary),
     ea_state: preferKnownState(current.ea_state, incoming.ea_state),
     visual_state: preferVisualState(current.visual_state, incoming.visual_state)
   });
+}
+
+function selectAdmissionWinner(current, incoming) {
+  const currentQualified = current._admissionQualified === true;
+  const incomingQualified = incoming._admissionQualified === true;
+  if (currentQualified !== incomingQualified) {
+    return incomingQualified ? incoming : current;
+  }
+
+  const currentRank = DECISION_RANK[current.decision] ?? 0;
+  const incomingRank = DECISION_RANK[incoming.decision] ?? 0;
+  return incomingRank > currentRank ? incoming : current;
+}
+
+function admissionStateFrom(record) {
+  const state = {
+    _admissionQualified: record._admissionQualified === true,
+    decision: record.decision,
+    sourcing_lane: record.sourcing_lane ?? null,
+    sourcing_rule_version: record.sourcing_rule_version,
+    missing_evidence: Array.isArray(record.missing_evidence)
+      ? [...record.missing_evidence]
+      : [],
+    exclusion_reasons: Array.isArray(record.exclusion_reasons)
+      ? [...record.exclusion_reasons]
+      : []
+  };
+
+  if (Object.hasOwn(record, "failed_gate_details")) {
+    state.failed_gate_details = Array.isArray(record.failed_gate_details)
+      ? record.failed_gate_details.map((detail) => ({ ...detail }))
+      : [];
+  }
+  if (Object.hasOwn(record, "next_evidence_actions")) {
+    state.next_evidence_actions = Array.isArray(record.next_evidence_actions)
+      ? record.next_evidence_actions.map((action) => ({ ...action }))
+      : [];
+  }
+  return state;
 }
 
 function uniqueByDedupeKey(items, keyForItem) {
