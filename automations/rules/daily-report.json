@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v7.2-china-joint",
-  "updated_at": "2026-07-16",
+  "rule_version": "sourcing-rules-v7.3-obtainable-evidence",
+  "updated_at": "2026-07-30",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
-  "canonical_rules_doc": "docs/SOURCING_RULES_V7_2.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V7_3.md",
   "compatible_generators": [
     "automations/jobs/online_daily_v4.mjs"
   ],
@@ -12,7 +12,7 @@
     "job_to_be_done": "Decide whether a game project deserves BD attention and what to do next."
   },
   "report_contract": {
-    "daily_report": "Scan indie_prelaunch and china_joint in parallel, publish every deduped project that passes one complete V7.2 lane to push_pool with priority=null, apply no lane quota or total formal limit, and keep every failed or unknown candidate only in the sourcing-candidate audit.",
+    "daily_report": "Scan the V7.3 obtainable-evidence indie_prelaunch lane and the retained china_joint lane in parallel, publish every deduped project that passes one complete V7.3 lane to push_pool with priority=null, apply no lane quota or total formal limit, and keep every failed or unknown candidate only in the sourcing-candidate audit.",
     "steam_trends": "Output Steam market-board intelligence, not sourcing-rule notes. It must cover category risers, Steam/Next Fest or demo windows, publisher/developer slate signals, public data quality, and concrete BD implications.",
     "industry_radar": "Use real external media, company, legal, platform, or community signals. 行业新闻 is macro only; concrete games, recommendations, fun products, IP/company/legal gossip, and former 发行八卦 items belong in 今日亮点. Never use internal CRM notes as industry news."
   },
@@ -25,13 +25,45 @@
       "publisher_china_capacity_clear",
       "non_narrative_product",
       "non_india_team",
-      "official_demo_or_playtest",
-      "official_gameplay",
+      "official_playable_or_gameplay",
       "independent_quality_proof",
       "non_steam_business_entry",
-      "concrete_china_bilibili_value",
-      "overseas_china_demand"
+      "concrete_china_bilibili_value"
     ],
+    "evidence_model": {
+      "official_playable_or_gameplay": {
+        "combination": "any_of",
+        "minimum_required": 1,
+        "accepted_evidence_ids": [
+          "official_demo_or_playtest",
+          "official_gameplay"
+        ]
+      },
+      "independent_quality_proof": {
+        "minimum_independent_public_sources": 2
+      },
+      "explicit_china_demand": {
+        "required": false,
+        "treatment": "positive_signal"
+      }
+    },
+    "targeted_second_pass": {
+      "enabled": true,
+      "eligible_missing_action_count": {
+        "minimum": 1,
+        "maximum": 3
+      },
+      "max_candidates_per_run": 12,
+      "allowed_public_actions": [
+        "fetch_official_playable_or_gameplay",
+        "fetch_independent_quality_evidence",
+        "fetch_non_steam_business_entry",
+        "research_china_bilibili_value"
+      ],
+      "same_decision_function_required": true,
+      "hard_exclusion_bypass": false,
+      "formal_lead_backfill": false
+    },
     "all_gates_required": true,
     "qualified_route": "push_pool",
     "unqualified_route": "sourcing_candidates",
@@ -109,13 +141,13 @@
   ],
   "source_strategy": [
     "Expand domestic discovery through Chinese game/business media, domestic indie/developer communities, Bilibili video/search API signals, indienova, TapTap-style developer signals, and official studio posts.",
-    "Concrete products found through media or Bilibili must continue through discovery and the applicable V7.2 lane gates; source labels and scores cannot publish them into formal Lead pools.",
+    "Concrete products found through media or Bilibili must continue through discovery and the applicable V7.3 lane gates; source labels and scores cannot publish them into formal Lead pools.",
     "Domestic media items containing a named game plus signals such as edition approval, first reveal, playtest, demo, trailer, store page, reservation, or domestic studio/publisher context should be treated as sourcing leads even when Steam data is missing.",
     "Bilibili search results must point to a concrete game/project. Tutorial, wishlist-growth, Steam Next Fest signup, course, or generic developer-experience videos are research material, not CRM leads.",
     "Standalone animation, anime, comic, series, season, broadcast, dubbing, or voice-cast signals must remain radar_only unless independent game-product evidence exists. A sourcing-source label, quoted title, PV/trailer, new-work, launch, reservation, or official-source status alone is not game evidence.",
     "A valid first-pass lead does not require a Steam AppID. Bilibili videos, media articles, official sites, TapTap, indienova, or developer posts can be the first verification link.",
     "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
-    "Daily sourcing coverage must not depend on Steam alone. Retain scan and conversion diagnostics while publishing only projects that pass one complete V7.2 lane.",
+    "Daily sourcing coverage must not depend on Steam alone. Retain scan and conversion diagnostics while publishing only projects that pass one complete V7.3 lane.",
     "Expanded domestic media/Bilibili candidates remain in the sourcing-candidate audit until identity and every other mandatory gate are complete.",
     "If Steam search or AppDetails is unavailable, the report must transparently continue with domestic media/Bilibili market signals and any independently qualified projects rather than manufacture a token queue.",
     "Bilibili expansion must filter stale videos, generic recommendation collections, mature blockbuster chatter, rant/review filler, and other non-actionable content.",
@@ -132,7 +164,7 @@
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
     "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
     "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",
-    "V7.2 must not restore quantity backfill, P3-to-P2 promotion, lane quotas, or a total formal limit; every and only fully qualified project is published.",
+    "V7.3 must not restore quantity backfill, P3-to-P2 promotion, lane quotas, or a total formal limit; every and only fully qualified project is published.",
     "Full Bilibili video details must be converted into one structured BilibiliEvidence object before summary truncation or display-field formatting.",
     "When Bilibili evidence contains a Steam Store, Steam Community app, or SteamDB app URL, the final lead must carry the resolved full-game AppID plus Store and SteamDB links; otherwise block Lead sync and record steam_evidence_lost.",
     "Steam demo AppIDs must resolve through fullgame.appid before release-window classification; a demo release date must never be treated as the full game's release date.",
@@ -234,7 +266,7 @@
     "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
     "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources.",
     "The generator must report both Steam candidate counts and media/Bilibili product-lead counts so low daily volume is diagnosable.",
-    "Formal Lead count must not trigger failure or degraded status; Daily, Radar, Steam Trends, and the candidate audit still require valid artifacts, and V7.2 qualified/push parity is blocking.",
+    "Formal Lead count must not trigger failure or degraded status; Daily, Radar, Steam Trends, and the candidate audit still require valid artifacts, and V7.3 qualified/push parity is blocking.",
     "Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to a Steam-only report.",
     "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries.",
     "The generator must inspect Bilibili video descriptions for Steam/contact links before deciding whether a Bilibili item is a new lead.",

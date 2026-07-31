@@ -8,6 +8,11 @@ import {
   evaluateSteamRegularAdmission,
   REGULAR_SOURCING_RULE_VERSION
 } from "./online_daily_v7_2_regular_admission.mjs";
+import { V73_OBTAINABLE_EVIDENCE_RULE_VERSION } from "./online_daily_v7_3_obtainable_evidence.mjs";
+import {
+  evaluateMediaV73RegularAdmission,
+  evaluateSteamV73RegularAdmission
+} from "./online_daily_v7_3_regular_admission.mjs";
 
 export function scoreCandidate(input) {
   let score = 0;
@@ -38,13 +43,14 @@ export function scoreCandidate(input) {
 
 export function buildPools(candidates, mediaLeads = [], options = {}) {
   const context = {
-    reportDate: options.reportDate ?? new Date().toISOString().slice(0, 10)
+    reportDate: options.reportDate ?? new Date().toISOString().slice(0, 10),
+    ruleVersion: options.ruleVersion ?? REGULAR_SOURCING_RULE_VERSION
   };
   const steamLeads = candidates
     .map((candidate) => toLead(candidate, context))
     .filter((lead) => lead._regularAdmission.qualified);
   const qualifiedMediaLeads = mediaLeads
-    .map((lead) => toQualifiedMediaLead(lead))
+    .map((lead) => toQualifiedMediaLead(lead, context))
     .filter((lead) => lead._regularAdmission.qualified);
   const used = new Set();
   const mediaPush = selectUniqueLeads(qualifiedMediaLeads, used);
@@ -92,7 +98,7 @@ function looseChineseProjectKey(value) {
 }
 
 function toLead(candidate, context) {
-  const admission = evaluateSteamRegularAdmission(candidate);
+  const admission = evaluateSteamAdmissionForRule(candidate, context.ruleVersion);
   const genre = candidate.genres.join(" / ") || null;
   return {
     _class: admission.qualified ? "push" : "candidate",
@@ -110,13 +116,13 @@ function toLead(candidate, context) {
     stage: "new",
     priority: null,
     sourcing_lane: admission.sourcing_lane,
-    sourcing_rule_version: REGULAR_SOURCING_RULE_VERSION,
+    sourcing_rule_version: context.ruleVersion,
     sourcing_run_type: "scheduled",
     drop_reason: null,
     priority_reason: null,
     rule_fit: admission.qualified
-      ? admissionSuccessText(admission.sourcing_lane)
-      : admissionFailureText(admission),
+      ? admissionSuccessText(admission.sourcing_lane, context.ruleVersion)
+      : admissionFailureText(admission, context.ruleVersion),
     genre,
     gameplay: candidate.shortDescription || `${genre ?? "玩法待复核"}。需要打开 Steam 页面确认实机画面、玩法循环、Demo/愿望单信号和中文计划。`,
     progress: `Steam ${candidate.source}；发售窗口：${candidate.releaseDate}${candidate.hasDemoSignal ? "；Demo/试玩信号需优先复核" : ""}`,
@@ -137,8 +143,8 @@ function toLead(candidate, context) {
     exposure_trail: buildExposureTrail(candidate, context.reportDate),
     bilibili_fit: admission.evidence.china_bilibili_value ?? buildBilibiliFit(candidate),
     amplification: buildAmplification(candidate),
-    risks: admission.qualified ? buildRisks(candidate, null) : admissionFailureText(admission),
-    verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane) : "",
+    risks: admission.qualified ? buildRisks(candidate, null) : admissionFailureText(admission, context.ruleVersion),
+    verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane, context.ruleVersion) : "",
     next_action: null,
     owner: null,
     due_date: null,
@@ -147,8 +153,8 @@ function toLead(candidate, context) {
   };
 }
 
-function toQualifiedMediaLead(lead) {
-  const admission = evaluateMediaRegularAdmission(lead);
+function toQualifiedMediaLead(lead, context) {
+  const admission = evaluateMediaAdmissionForRule(lead, context.ruleVersion);
   return {
     ...lead,
     _class: admission.qualified ? "push" : "candidate",
@@ -157,19 +163,33 @@ function toQualifiedMediaLead(lead) {
     stage: "new",
     priority: null,
     sourcing_lane: admission.sourcing_lane,
-    sourcing_rule_version: REGULAR_SOURCING_RULE_VERSION,
+    sourcing_rule_version: context.ruleVersion,
     sourcing_run_type: "scheduled",
     drop_reason: null,
     priority_reason: null,
     rule_fit: admission.qualified
-      ? admissionSuccessText(admission.sourcing_lane)
-      : admissionFailureText(admission),
+      ? admissionSuccessText(admission.sourcing_lane, context.ruleVersion)
+      : admissionFailureText(admission, context.ruleVersion),
     bilibili_fit: admission.evidence.china_bilibili_value ?? lead.bilibili_fit,
-    risks: admission.qualified ? lead.risks : admissionFailureText(admission),
-    verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane) : "",
+    risks: admission.qualified ? lead.risks : admissionFailureText(admission, context.ruleVersion),
+    verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane, context.ruleVersion) : "",
     next_action: null,
     notes: null
   };
+}
+
+function evaluateSteamAdmissionForRule(candidate, ruleVersion) {
+  if (ruleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
+    return evaluateSteamV73RegularAdmission(candidate);
+  }
+  return evaluateSteamRegularAdmission(candidate);
+}
+
+function evaluateMediaAdmissionForRule(lead, ruleVersion) {
+  if (ruleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION) {
+    return evaluateMediaV73RegularAdmission(lead);
+  }
+  return evaluateMediaRegularAdmission(lead);
 }
 
 export function hardDropReason(candidate) {
@@ -226,26 +246,33 @@ function buildRisks(candidate, dropReason) {
   return risks.length ? risks.join("；") : "需要人工确认团队地区、中文计划、发行占位和商务合作意愿。";
 }
 
-function admissionFailureText(admission) {
+function admissionFailureText(admission, ruleVersion = REGULAR_SOURCING_RULE_VERSION) {
   const missing = admission.missing_evidence.length
     ? `缺少证据：${admission.missing_evidence.join("、")}`
     : null;
   const excluded = admission.exclusion_reasons.length
     ? `排除原因：${admission.exclusion_reasons.join("；")}`
     : null;
-  return [missing, excluded].filter(Boolean).join("；") || "未通过 V7.2 常规业务通道准入。";
+  return [missing, excluded].filter(Boolean).join("；")
+    || `未通过 ${ruleLabel(ruleVersion)} 常规业务通道准入。`;
 }
 
-function admissionSuccessText(lane) {
+function admissionSuccessText(lane, ruleVersion = REGULAR_SOURCING_RULE_VERSION) {
+  const label = ruleLabel(ruleVersion);
   return lane === "china_joint"
-    ? "V7.2 2A/3A 中国联合发行数据门与商业资格门全部通过；排序只影响阅读顺序，不影响推荐资格。"
-    : "V7.2 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。";
+    ? `${label} 2A/3A 中国联合发行数据门与商业资格门全部通过；排序只影响阅读顺序，不影响推荐资格。`
+    : `${label} 独立游戏前置发行全部准入门已通过；排序只影响阅读顺序，不影响推荐资格。`;
 }
 
-function admissionVerdict(lane) {
+function admissionVerdict(lane, ruleVersion = REGULAR_SOURCING_RULE_VERSION) {
+  const label = ruleLabel(ruleVersion);
   return lane === "china_joint"
-    ? "符合 V7.2 china_joint 正式准入；建议按人工优先级流程评估中国合作窗口并触达。"
-    : "符合 V7.2 indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。";
+    ? `符合 ${label} china_joint 正式准入；建议按人工优先级流程评估中国合作窗口并触达。`
+    : `符合 ${label} indie_prelaunch 正式准入；建议按人工优先级流程评估并触达。`;
+}
+
+function ruleLabel(ruleVersion) {
+  return ruleVersion === V73_OBTAINABLE_EVIDENCE_RULE_VERSION ? "V7.3" : "V7.2";
 }
 
 function buildVerdict(className, dropReason) {

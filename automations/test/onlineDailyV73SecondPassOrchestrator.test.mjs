@@ -1,0 +1,422 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+
+import { createEvidenceSnapshot } from "../jobs/online_daily_v4_candidate_state.mjs";
+import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
+import {
+  V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
+  evaluateV73IndiePrelaunchAdmission
+} from "../jobs/online_daily_v7_3_obtainable_evidence.mjs";
+
+const orchestratorUrl = new URL(
+  "../jobs/online_daily_v7_3_second_pass_orchestrator.mjs",
+  import.meta.url
+);
+const orchestratorModule = existsSync(orchestratorUrl)
+  ? await import(orchestratorUrl)
+  : {};
+const runV73TargetedCandidateSecondPasses =
+  orchestratorModule.runV73TargetedCandidateSecondPasses
+  ?? missingSecondPassOrchestrator;
+const fetchV73TargetedEvidence =
+  orchestratorModule.fetchV73TargetedEvidence
+  ?? missingTargetedEvidenceProvider;
+
+const reportDate = "2026-07-30";
+const capturedAt = "2026-07-30T08:00:00+08:00";
+const firstQualityProof = {
+  type: "official_festival_selection",
+  source_id: "festival:indie-showcase",
+  value: "Selected for the official indie showcase",
+  url: "https://showcase.example/games/orchestrator-fixture"
+};
+const secondQualityProof = {
+  type: "trusted_creator_playtest",
+  source_id: "creator:trusted-playtester",
+  value: "Independent hands-on playtest",
+  url: "https://creator.example/reviews/orchestrator-fixture"
+};
+
+describe("V7.3 targeted second-pass Daily orchestration", () => {
+  it("exposes a bounded batch orchestrator and a source-constrained evidence provider", () => {
+    assert.equal(
+      typeof orchestratorModule.runV73TargetedCandidateSecondPasses,
+      "function",
+      "the Daily second-pass batch orchestrator must be implemented"
+    );
+    assert.equal(
+      typeof orchestratorModule.fetchV73TargetedEvidence,
+      "function",
+      "the targeted public-evidence provider must be implemented"
+    );
+  });
+
+  it("selects at most twelve deterministic near-misses with one to three supported actions", async () => {
+    const nearMisses = Array.from({ length: 14 }, (_, index) => {
+      const evidence = nearMissEvidence(index + 1);
+      return steamCandidate(evidence, { score: 100 - index });
+    });
+    const hardExcludedEvidence = nearMissEvidence(90, { release_state: "released" });
+    const wideGapEvidence = nearMissEvidence(91, {
+      official_demo_evidence: [],
+      official_gameplay_evidence: [],
+      quality_proofs: [],
+      business_entrypoints: [],
+      china_bilibili_value: null
+    });
+    const fetchCalls = [];
+    const fetchEvidence = async (request) => {
+      fetchCalls.push(structuredClone(request));
+      return { quality_proofs: [secondQualityProof] };
+    };
+
+    const forward = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [
+        ...nearMisses,
+        steamCandidate(hardExcludedEvidence),
+        steamCandidate(wideGapEvidence)
+      ],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 12,
+      fetchEvidence
+    });
+    const reverse = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [
+        steamCandidate(wideGapEvidence),
+        steamCandidate(hardExcludedEvidence),
+        ...nearMisses.toReversed()
+      ],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 12,
+      fetchEvidence: async () => ({ quality_proofs: [secondQualityProof] })
+    });
+
+    assert.equal(forward.metrics.eligible_count, 14);
+    assert.equal(forward.metrics.selected_count, 12);
+    assert.equal(forward.metrics.attempted_count, 12);
+    assert.equal(forward.metrics.qualified_count, 12);
+    assert.equal(fetchCalls.length, 12);
+    assert.ok(fetchCalls.every((call) => call.source_type === "steam"));
+    assert.ok(fetchCalls.every((call) => call.actions.length >= 1 && call.actions.length <= 3));
+    assert.ok(fetchCalls.every((call) => call.actions.every((item) => (
+      item.action === "fetch_independent_quality_evidence"
+    ))));
+    assert.deepEqual(
+      forward.results.map((item) => item.dedupe_key),
+      reverse.results.map((item) => item.dedupe_key),
+      "selection must not depend on discovery array order"
+    );
+    assert.equal(
+      forward.results.some((item) => item.dedupe_key === hardExcludedEvidence.dedupe_key),
+      false
+    );
+    assert.equal(
+      forward.results.some((item) => item.dedupe_key === wideGapEvidence.dedupe_key),
+      false
+    );
+  });
+
+  it("writes normalized second-pass evidence back to the candidate snapshot without changing PR B state semantics", async () => {
+    const evidence = nearMissEvidence(30);
+    const candidate = steamCandidate(evidence);
+    const originalSnapshot = createEvidenceSnapshot(candidate, { capturedAt });
+    const originalState = {
+      first_seen: reportDate,
+      last_seen: reportDate,
+      enrichment_status: "success",
+      enrichment_attempts: 1,
+      last_attempted_at: capturedAt,
+      last_enriched_at: capturedAt,
+      next_retry_date: null,
+      scheduler_lane: "new",
+      evidence_snapshot: originalSnapshot
+    };
+    const states = new Map([[evidence.dedupe_key, originalState]]);
+    let requested = null;
+
+    const outcome = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [candidate],
+      mediaCandidates: [],
+      candidateStates: states,
+      capturedAt,
+      maxCandidates: 12,
+      fetchEvidence: async (request) => {
+        requested = structuredClone(request);
+        return { quality_proofs: [secondQualityProof] };
+      }
+    });
+
+    const updatedCandidate = outcome.steam_candidates[0];
+    const updatedState = outcome.candidate_states.get(evidence.dedupe_key);
+    assert.deepEqual(requested?.actions, [{
+      gate_id: "independent_quality_proof",
+      action: "fetch_independent_quality_evidence"
+    }]);
+    assert.equal(outcome.results[0].first_pass.qualified, false);
+    assert.equal(outcome.results[0].final_pass.qualified, true);
+    assert.equal(updatedCandidate._indieAdmissionEvidence.quality_proofs.length, 2);
+    assert.equal(
+      updatedState.evidence_snapshot.evidence._indieAdmissionEvidence.quality_proofs.length,
+      2
+    );
+    assert.equal(updatedState.first_seen, originalState.first_seen);
+    assert.equal(updatedState.last_seen, originalState.last_seen);
+    assert.equal(updatedState.enrichment_status, originalState.enrichment_status);
+    assert.equal(updatedState.enrichment_attempts, originalState.enrichment_attempts);
+    assert.equal(updatedState.last_enriched_at, originalState.last_enriched_at);
+    assert.equal(updatedState.scheduler_lane, originalState.scheduler_lane);
+    assert.equal(states.get(evidence.dedupe_key).evidence_snapshot, originalSnapshot);
+    assert.equal("steam_candidates_scheduled" in outcome.metrics, false);
+  });
+
+  it("isolates provider failures and never converts a hard exclusion into a fetch attempt", async () => {
+    const nearMiss = steamCandidate(nearMissEvidence(40));
+    const excluded = steamCandidate(nearMissEvidence(41, { early_access_state: "yes" }));
+    let fetchCount = 0;
+
+    const outcome = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [nearMiss, excluded],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 12,
+      fetchEvidence: async () => {
+        fetchCount += 1;
+        throw new Error("targeted source unavailable");
+      }
+    });
+
+    assert.equal(fetchCount, 1);
+    assert.equal(outcome.metrics.selected_count, 1);
+    assert.equal(outcome.metrics.attempted_count, 1);
+    assert.equal(outcome.metrics.qualified_count, 0);
+    assert.equal(outcome.metrics.failed_count, 1);
+    assert.equal(outcome.results[0].error, "targeted source unavailable");
+    assert.deepEqual(
+      outcome.steam_candidates[0]._indieAdmissionEvidence,
+      nearMiss._indieAdmissionEvidence
+    );
+    assert.equal(
+      outcome.results.some((item) => item.dedupe_key === excluded._indieAdmissionEvidence.dedupe_key),
+      false
+    );
+  });
+
+  it("materializes only requested normalized public evidence with source URLs", async () => {
+    const evidence = nearMissEvidence(50, {
+      official_demo_evidence: [],
+      official_gameplay_evidence: [],
+      business_entrypoints: [],
+      china_bilibili_value: null
+    });
+    const candidate = steamCandidate(evidence);
+    let lookupCount = 0;
+    const officialBilibili = {
+      title: `${evidence.project} 官方 Demo 实机演示`,
+      summary: `UP主：ExampleStudio ${evidence.project} Playtest gameplay`,
+      source: "B站官方复核",
+      link: "https://www.bilibili.com/video/BV1OfficialFixture/"
+    };
+    const creatorPlaytest = {
+      title: `${evidence.project} 独立试玩测评`,
+      summary: `UP主：TrustedCreator ${evidence.project} hands-on playtest`,
+      source: "B站官方复核",
+      link: "https://www.bilibili.com/video/BV1CreatorFixture/"
+    };
+    const mediaSignals = [{
+      title: `${evidence.project} hands-on preview`,
+      summary: "Independent media played the public demo",
+      source: "Trusted Games Media",
+      link: "https://media.example/previews/orchestrator-fixture"
+    }, {
+      title: "Unrelated project preview",
+      summary: "Not the requested project",
+      source: "Other Media",
+      link: "https://other.example/unrelated"
+    }];
+    const actions = [
+      { gate_id: "official_playable_or_gameplay", action: "fetch_official_playable_or_gameplay" },
+      { gate_id: "independent_quality_proof", action: "fetch_independent_quality_evidence" },
+      { gate_id: "non_steam_business_entry", action: "fetch_non_steam_business_entry" },
+      { gate_id: "concrete_china_bilibili_value", action: "research_china_bilibili_value" }
+    ];
+
+    const patch = await fetchV73TargetedEvidence({
+      candidate,
+      source_type: "steam",
+      actions,
+      evidence,
+      mediaSignals,
+      context: {
+        fetchOfficialBilibiliCandidatesImpl: async () => {
+          lookupCount += 1;
+          return [officialBilibili, creatorPlaytest];
+        }
+      }
+    });
+
+    assert.equal(lookupCount, 1);
+    assert.ok(patch.official_demo_evidence.some((item) => item.url === officialBilibili.link));
+    assert.ok(patch.official_gameplay_evidence.some((item) => item.url === officialBilibili.link));
+    assert.ok(patch.quality_proofs.some((item) => item.url === creatorPlaytest.link));
+    assert.ok(patch.quality_proofs.some((item) => item.url === mediaSignals[0].link));
+    assert.equal(patch.quality_proofs.some((item) => item.url === mediaSignals[1].link), false);
+    assert.ok(patch.business_entrypoints.some((item) => item.value === officialBilibili.link));
+    assert.match(patch.china_bilibili_value, /B站|社区|内容|玩法/);
+
+    const qualityOnly = await fetchV73TargetedEvidence({
+      candidate,
+      source_type: "steam",
+      actions: [{
+        gate_id: "independent_quality_proof",
+        action: "fetch_independent_quality_evidence"
+      }],
+      evidence,
+      mediaSignals,
+      context: { fetchOfficialBilibiliCandidatesImpl: async () => [creatorPlaytest] }
+    });
+    assert.deepEqual(Object.keys(qualityOnly), ["quality_proofs"]);
+  });
+
+  it("wires the batch behind the active V7.3 rule boundary before pool and artifact decisions", () => {
+    const generator = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
+    const machineRules = JSON.parse(
+      readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8")
+    );
+
+    assert.equal(RULE_VERSION, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
+    assert.equal(machineRules.rule_version, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
+    assert.match(generator, /runV73TargetedCandidateSecondPasses/);
+    assert.match(generator, /fetchV73TargetedEvidence/);
+    assert.match(
+      generator,
+      /sourcingRuleVersion\s*===\s*V73_OBTAINABLE_EVIDENCE_RULE_VERSION/
+    );
+    assert.match(generator, /maxCandidates:\s*12/);
+    assert.match(generator, /sourcingDiagnostics\.v7_3_second_pass/);
+    assert.match(
+      generator,
+      /buildPools\(\s*v73SecondPass\.steam_candidates,\s*v73SecondPass\.media_candidates/
+    );
+    assert.match(
+      generator,
+      /enrichedSteamCandidates:\s*v73SecondPass\.steam_candidates/
+    );
+    assert.match(generator, /candidateStates:\s*v73SecondPass\.candidate_states/);
+    assert.doesNotMatch(generator, /daily editorial|OpenAI|paid provider/i);
+  });
+});
+
+function nearMissEvidence(index, overrides = {}) {
+  const appId = String(9600000 + index);
+  return {
+    project: `V7.3 Orchestrator Fixture ${String(index).padStart(2, "0")}`,
+    steam_app_id: appId,
+    dedupe_key: `steam:${appId}`,
+    region: "overseas",
+    release_state: "prelaunch",
+    release_window: "over_60",
+    early_access_state: "no",
+    publisher_occupancy: "clear",
+    narrative_state: "no",
+    india_team_state: "no",
+    official_demo_evidence: [{
+      type: "steam_demo",
+      value: "Official playable Demo",
+      url: `https://store.steampowered.com/app/${appId}/`
+    }],
+    official_gameplay_evidence: [],
+    quality_proofs: [firstQualityProof],
+    business_entrypoints: [{
+      type: "Email",
+      value: `bd+${appId}@orchestrator-fixture.example`
+    }],
+    china_bilibili_value: "系统型合作玩法可形成机制讲解和长期内容，并以简中社区运营承接B站反馈。",
+    china_demand: null,
+    ...overrides
+  };
+}
+
+function steamCandidate(evidence, overrides = {}) {
+  return {
+    appId: evidence.steam_app_id,
+    title: evidence.project,
+    source: "Steam discovery V7.3 orchestrator fixture",
+    storeUrl: `https://store.steampowered.com/app/${evidence.steam_app_id}/`,
+    steamDbUrl: `https://steamdb.info/app/${evidence.steam_app_id}/`,
+    developers: ["Fixture Studio"],
+    publishers: [],
+    country: "US",
+    region: "海外",
+    genres: ["Strategy", "Simulation"],
+    categories: ["Co-op"],
+    shortDescription: "A systems-led cooperative strategy game.",
+    releaseDate: "2027-02-01",
+    daysToRelease: 186,
+    alreadyReleased: evidence.release_state === "released",
+    comingSoon: true,
+    hasDemoSignal: evidence.official_demo_evidence.length > 0,
+    earlyAccess: evidence.early_access_state === "yes",
+    narrativeHeavy: evidence.narrative_state === "yes",
+    indiaTeam: evidence.india_team_state === "yes",
+    strongGameplay: true,
+    highVisual: true,
+    strongData: false,
+    validatedPcHit: false,
+    mobileAdaptationPotential: true,
+    publisherOccupied: evidence.publisher_occupancy === "occupied",
+    chinaPartnerOccupied: false,
+    contactMethods: evidence.business_entrypoints,
+    website: "https://orchestrator-fixture.example",
+    hasDetails: true,
+    recommendationCount: 0,
+    screenshotCount: 6,
+    movieCount: 1,
+    officialDemoEvidence: evidence.official_demo_evidence,
+    officialGameplayEvidence: evidence.official_gameplay_evidence,
+    qualityProofs: evidence.quality_proofs,
+    chinaBilibiliValue: evidence.china_bilibili_value,
+    chinaDemandEvidence: evidence.china_demand,
+    reviewText: "",
+    domesticQuery: false,
+    releaseTooSoon: false,
+    score: 80,
+    _indieAdmissionEvidence: structuredClone(evidence),
+    ...overrides
+  };
+}
+
+async function missingSecondPassOrchestrator({
+  steamCandidates = [],
+  mediaCandidates = [],
+  candidateStates = new Map()
+} = {}) {
+  return {
+    steam_candidates: structuredClone(steamCandidates),
+    media_candidates: structuredClone(mediaCandidates),
+    candidate_states: candidateStates,
+    metrics: {
+      eligible_count: 0,
+      selected_count: 0,
+      attempted_count: 0,
+      qualified_count: 0,
+      failed_count: 0
+    },
+    results: []
+  };
+}
+
+async function missingTargetedEvidenceProvider() {
+  return {};
+}
+
+assert.equal(
+  evaluateV73IndiePrelaunchAdmission(nearMissEvidence(999)).next_evidence_actions.length,
+  1,
+  "the RED fixture itself must remain a valid one-action V7.3 near-miss"
+);

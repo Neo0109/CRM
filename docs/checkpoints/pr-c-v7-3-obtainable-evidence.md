@@ -628,25 +628,26 @@ Task `RC-C-INT-S1-E` is the approved Phase 4 implementation slice for rebuilding
 
 ### Completed
 
-- Reconfirmed through explicit `Neo0109/CRM` GitHub API calls that remote `main` and the shared integration base both remain `3928de8472ffb15b609acc138c9340329234e686`.
-- Reconfirmed that the source Root remains `e0d0b2ac71849ac135d68f124c17e7262772c144` and its range from `71d0c2b2ff678cc73ba6704e949c0eae8177711d` changes exactly the frozen 21-path allowlist.
-- Created `codex/pr-c-int-s1-root` at the shared base. This checkpoint is the first content commit on the child, before any multi-file reconstruction.
-- No local CRM checkout or worktree was read, modified, fetched, checked out, or used. No PR, shared-base update, merge, workflow dispatch, deployment, or production generation occurred.
+- Reconfirmed through explicit `Neo0109/CRM` GitHub API calls that remote `main`, the shared integration base, and the source Root remain at their frozen SHAs immediately before reconstruction.
+- Created `codex/pr-c-int-s1-root` from the shared base and committed the durable pre-write checkpoint as `7a42c1e47594718c450d3af7cfc75654a72f58fe`.
+- Rebuilt all 20 non-checkpoint allowlisted paths by reusing their exact `mode`, `type`, and Git blob SHA from source Root `e0d0b2ac71849ac135d68f124c17e7262772c144`; no old branch commit was merged or replayed.
+- Preserved every base path outside the allowlist, including the current-main data-only commits. No local CRM checkout or worktree was read, modified, fetched, checked out, or used.
+- No PR, shared-base update, merge, workflow dispatch, deployment, production generation, B2, B3, C5, or backlog work occurred.
 
 ### Remaining
 
-- Rebuild the 20 non-checkpoint allowlisted paths by reusing their exact Git blob IDs from the frozen source Root.
-- Update this checkpoint after the reconstruction stage, then run the frozen syntax, JSON, focused, compatibility, Daily V4, source-parity, path-guard, and whitespace checks from disposable GitHub API snapshots.
-- Add the final validation checkpoint, validate the exact final head read-only, report the evidence externally, and stop.
+- Materialize a fresh disposable GitHub API archive for the exact reconstruction head and run syntax, JSON, focused Root suites, unchanged admission/candidate-audit controls, `scripts/test-sourcing-v6-3.mjs`, and `npm run test:daily-v4`.
+- Verify the exact 21-path guard, all 20 source blob IDs, and cumulative whitespace status against frozen `main`.
+- Commit the final validation checkpoint, rerun the required read-only verification at that exact final head, report its SHA and evidence externally, and stop.
 
 ### Next Action
 
-Create one Git Data API tree on this checkpoint parent containing the exact 20 source blobs plus the next checkpoint state. Do not modify the shared base, create a PR, merge, deploy, start B2/B3/C5, or touch any path outside the frozen allowlist.
+Do not write any further business path. Validate the exact reconstruction head only from a `mktemp -d` GitHub API archive. If a required check fails, record the reproducible blocker and stop without starting an unapproved repair loop.
 
 ### Git Status
 
 - Remote `main`: `3928de8472ffb15b609acc138c9340329234e686`.
 - Shared base: `codex/pr-c-v7-3-integration@3928de8472ffb15b609acc138c9340329234e686`.
 - Source Root: `codex/pr-c-v7-3-obtainable-evidence@e0d0b2ac71849ac135d68f124c17e7262772c144`.
-- Child ref was created at the shared base; GitHub assigns the exact checkpoint commit SHA after this content is committed, so that SHA is reported by the Release Captain evidence stream rather than written back recursively.
-- Expected current diff after this commit: only `docs/checkpoints/pr-c-v7-3-obtainable-evidence.md`.
+- Reconstruction parent: `7a42c1e47594718c450d3af7cfc75654a72f58fe`. GitHub assigns this reconstruction commit SHA after the tree is committed; the next checkpoint records it.
+- Expected cumulative diff from the shared base after this commit: exactly 21 frozen paths, with 20 non-checkpoint blob IDs identical to source Root.

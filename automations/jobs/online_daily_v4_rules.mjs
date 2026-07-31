@@ -6,7 +6,7 @@ import { REGULAR_SOURCING_RULE_VERSION } from "./online_daily_v7_2_regular_admis
 
 const GENERATOR_REPO_PATH = "automations/jobs/online_daily_v4.mjs";
 export const QUALITY_QUARANTINE_RULE_VERSION = "sourcing-rules-v6.8-quality-quarantine";
-export const RULE_VERSION = REGULAR_SOURCING_RULE_VERSION;
+export const RULE_VERSION = "sourcing-rules-v7.3-obtainable-evidence";
 const ACTIVE_RULES_DOC = "docs/SOURCING_RULES_CURRENT.md";
 
 export function isQualityQuarantineRule(ruleVersion) {
@@ -16,7 +16,8 @@ export function isQualityQuarantineRule(ruleVersion) {
 export function isLeadCountHealthEnabled(ruleVersion) {
   return !isQualityQuarantineRule(ruleVersion)
     && ruleVersion !== INDIE_PRELAUNCH_RULE_VERSION
-    && ruleVersion !== REGULAR_SOURCING_RULE_VERSION;
+    && ruleVersion !== REGULAR_SOURCING_RULE_VERSION
+    && ruleVersion !== RULE_VERSION;
 }
 
 export function quarantineDailyLeadPools(pools, ruleVersion) {
