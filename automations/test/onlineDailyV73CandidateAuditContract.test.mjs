@@ -98,6 +98,104 @@ describe("V7.3 candidate audit and schema contract", () => {
   });
 
 
+  it("keeps a merged multi-source formal record aligned with the qualified admission", () => {
+    const mergeEvidence = {
+      ...evidence,
+      project: "V7.3 Multi Source Merge",
+      steam_app_id: "9500004",
+      dedupe_key: "steam:9500004",
+      quality_proofs: [
+        firstQualityProof,
+        {
+          type: "media_review",
+          source_id: "media:independent-review",
+          value: "Independent hands-on review",
+          url: "https://independent-review.example/games/v73-multi-source-merge"
+        }
+      ]
+    };
+    const steamNearMiss = {
+      ...steamCandidate({
+        ...mergeEvidence,
+        quality_proofs: [firstQualityProof]
+      }),
+      developers: ["V7.3 Multi Source Studio"],
+      publishers: [],
+      country: "US",
+      region: "海外",
+      validatedPcHit: false,
+      mobileAdaptationPotential: false,
+      hasDemoSignal: true,
+      strongGameplay: true,
+      highVisual: true,
+      strongData: true,
+      shortDescription: "A systems-driven co-op strategy game."
+    };
+    const mediaQualified = {
+      project: mergeEvidence.project,
+      steam_app_id: mergeEvidence.steam_app_id,
+      source: "Independent media V7.3 audit fixture",
+      links: ["https://independent-review.example/games/v73-multi-source-merge"],
+      risks: null,
+      bilibili_fit: mergeEvidence.china_bilibili_value,
+      _mediaItem: {
+        title: "V7.3 Multi Source Merge hands-on review",
+        summary: "Independent hands-on review confirms the core gameplay loop.",
+        link: "https://independent-review.example/games/v73-multi-source-merge"
+      },
+      _steamEntityResolution: {
+        details: {
+          name: mergeEvidence.project,
+          recommendations: { total: 900 },
+          publishers: [],
+          screenshots: [{ id: 1 }],
+          movies: [{ id: 1 }]
+        }
+      },
+      _indieAdmissionEvidence: mergeEvidence
+    };
+    const pools = buildPools([steamNearMiss], [mediaQualified], {
+      reportDate,
+      ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION
+    });
+    const mergedArtifact = buildSourcingCandidateArtifact({
+      reportDate,
+      capturedAt,
+      ruleVersion: V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
+      rawSteamCandidates: [steamNearMiss],
+      enrichedSteamCandidates: [steamNearMiss],
+      mediaSignalsSeen: 1,
+      mediaCandidates: [mediaQualified],
+      candidatePools: pools,
+      publishedPools: pools
+    });
+    const mergedAudit = mergedArtifact.candidates.find(
+      (item) => item.steam_app_id === mergeEvidence.steam_app_id
+    );
+
+    assert.equal(pools.push.length, 1);
+    assert.ok(mergedAudit);
+    assert.equal(mergedArtifact.candidates.length, 1);
+    assert.equal(mergedAudit.decision, "formal");
+    assert.equal(mergedAudit.source_type, "multi_source");
+    assert.equal(mergedAudit.sourcing_lane, "indie_prelaunch");
+    assert.deepEqual(mergedAudit.missing_evidence, []);
+    assert.deepEqual(mergedAudit.failed_gate_details, []);
+    assert.deepEqual(mergedAudit.next_evidence_actions, []);
+    assert.deepEqual(mergedAudit.exclusion_reasons, []);
+    assert.ok(mergedAudit.matched_rules.includes("steam_discovery"));
+    assert.ok(mergedAudit.matched_rules.includes("media_discovery"));
+    assert.ok(mergedAudit.source_links.includes(
+      "https://store.steampowered.com/app/9500004/"
+    ));
+    assert.ok(mergedAudit.source_links.includes(
+      "https://independent-review.example/games/v73-multi-source-merge"
+    ));
+    assert.equal(mergedArtifact.scan_summary.new_qualified_count, 1);
+    assert.equal(mergedArtifact.scan_summary.push_pool_count, 1);
+  });
+
+
   it("keeps a retained Steam china_joint formal Lead aligned with the V7.3 candidate audit", () => {
     const jointCandidate = retainedJointSteamCandidate();
     const pools = buildPools([jointCandidate], [], {
