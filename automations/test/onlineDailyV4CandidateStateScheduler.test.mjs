@@ -15,6 +15,7 @@ import {
 } from "../jobs/online_daily_v4_candidate_state.mjs";
 import { scheduleSteamCandidateEnrichment } from "../jobs/online_daily_v4_enrichment_scheduler.mjs";
 import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
+import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const validatorPath = fileURLToPath(new URL("../../scripts/validate-daily-contract.mjs", import.meta.url));
@@ -353,6 +354,65 @@ describe("PR B candidate state and fair enrichment", () => {
     assert.notEqual(corruptResult.status, 0);
     assert.match(corruptResult.stdout + "\n" + corruptResult.stderr, /first_seen/);
   });
+
+  it("accepts a complete schema v3 artifact with inherited PR B integrity", () => {
+    const result = validateCandidateArtifact(completeV3Artifact());
+    assert.equal(result.status, 0, validatorOutput(result));
+  });
+
+  it("rejects a schema v3 candidate missing failed_gate_details", () => {
+    const artifact = completeV3Artifact();
+    delete artifact.candidates[0].failed_gate_details;
+
+    const result = validateCandidateArtifact(artifact);
+    assert.notEqual(result.status, 0, "validator wrongly accepted missing failed_gate_details\n" + validatorOutput(result));
+    assert.match(validatorOutput(result), /failed_gate_details is required for schema v3/);
+  });
+
+  it("rejects a schema v3 candidate missing next_evidence_actions", () => {
+    const artifact = completeV3Artifact();
+    delete artifact.candidates[0].next_evidence_actions;
+
+    const result = validateCandidateArtifact(artifact);
+    assert.notEqual(result.status, 0, "validator wrongly accepted missing next_evidence_actions\n" + validatorOutput(result));
+    assert.match(validatorOutput(result), /next_evidence_actions is required for schema v3/);
+  });
+
+  it("rejects a schema v3 Steam candidate missing inherited first_seen state", () => {
+    const artifact = completeV3Artifact();
+    const firstSteam = artifact.candidates.find((candidate) => ["steam", "multi_source"].includes(candidate.source_type));
+    assert.ok(firstSteam);
+    delete firstSteam.first_seen;
+
+    const result = validateCandidateArtifact(artifact);
+    assert.notEqual(result.status, 0, "validator wrongly accepted missing inherited first_seen\n" + validatorOutput(result));
+    assert.match(validatorOutput(result), /first_seen is required for schema v2/);
+  });
+
+  it("rejects a schema v3 scheduled counter identity mismatch", () => {
+    const artifact = completeV3Artifact();
+    artifact.scan_summary.steam_candidates_scheduled += 1;
+
+    const result = validateCandidateArtifact(artifact);
+    assert.notEqual(result.status, 0, "validator wrongly accepted a scheduled counter identity mismatch\n" + validatorOutput(result));
+    assert.match(validatorOutput(result), /steam_candidates_enriched must equal steam_candidates_scheduled/);
+  });
+
+  it("rejects a schema v3 evidence snapshot with a mismatched dedupe_key", () => {
+    const artifact = completeV3Artifact();
+    const firstSteam = artifact.candidates.find((candidate) => ["steam", "multi_source"].includes(candidate.source_type));
+    assert.ok(firstSteam);
+    firstSteam.evidence_snapshot = {
+      ...createEvidenceSnapshot(enrichedEvidence(rawFromAudit(firstSteam)), {
+        capturedAt: artifact.generated_at
+      }),
+      dedupe_key: firstSteam.dedupe_key + ":mismatch"
+    };
+
+    const result = validateCandidateArtifact(artifact);
+    assert.notEqual(result.status, 0, "validator wrongly accepted a snapshot dedupe_key mismatch\n" + validatorOutput(result));
+    assert.match(validatorOutput(result), /evidence_snapshot dedupe_key must match candidate/);
+  });
 });
 
 function admissionAudit(evidence) {
@@ -522,6 +582,30 @@ function runValidator(rootDir) {
     "--allowLowVolume=true",
     "--requireSourcingCandidates=true"
   ], { encoding: "utf8" });
+}
+
+function validateCandidateArtifact(artifact) {
+  const rootDir = temporaryContractRoot();
+  writeCandidateArtifact(rootDir, artifact);
+  return runValidator(rootDir);
+}
+
+function validatorOutput(result) {
+  return result.stdout + "\n" + result.stderr;
+}
+
+function completeV3Artifact() {
+  const legacy = JSON.parse(readFileSync(new URL("../../data/sourcing_candidates/2026-07-29.json", import.meta.url), "utf8"));
+  const artifact = upgradeArtifactToV2(legacy);
+  artifact.schema_version = 3;
+  artifact.sourcing_rule_version = RULE_VERSION;
+  artifact.candidates = artifact.candidates.map((candidate) => ({
+    ...candidate,
+    sourcing_rule_version: RULE_VERSION,
+    failed_gate_details: [],
+    next_evidence_actions: []
+  }));
+  return artifact;
 }
 
 function upgradeArtifactToV2(legacy) {
