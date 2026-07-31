@@ -193,6 +193,7 @@ function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
   }
 
   if (artifact.schema_version === 2) validateSourcingCandidateV2(artifact, candidates, errors);
+  if (artifact.schema_version === 3) validateSourcingCandidateV3(artifact, candidates, errors);
 
   if (artifact.sourcing_rule_version === RULE_VERSION) {
     const newQualifiedCount = artifact.scan_summary?.new_qualified_count;
@@ -314,6 +315,20 @@ function validateSourcingCandidateV2(artifact, candidates, errors) {
     }
     if (String(snapshot.captured_at ?? "").slice(0, 10) >= String(snapshot.expires_on ?? "")) {
       errors.push(key + ": evidence_snapshot expires_on must be after captured_at");
+    }
+  }
+}
+
+function validateSourcingCandidateV3(artifact, candidates, errors) {
+  validateSourcingCandidateV2(artifact, candidates, errors);
+
+  const requiredActionableFields = ["failed_gate_details", "next_evidence_actions"];
+  for (const candidate of candidates) {
+    const key = String(candidate?.dedupe_key ?? "sourcing candidate");
+    for (const field of requiredActionableFields) {
+      if (!Object.prototype.hasOwnProperty.call(candidate ?? {}, field)) {
+        errors.push(key + ": " + field + " is required for schema v3");
+      }
     }
   }
 }
