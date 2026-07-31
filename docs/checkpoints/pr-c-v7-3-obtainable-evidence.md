@@ -628,26 +628,30 @@ Task `RC-C-INT-S1-E` is the approved Phase 4 implementation slice for rebuilding
 
 ### Completed
 
-- Reconfirmed through explicit `Neo0109/CRM` GitHub API calls that remote `main`, the shared integration base, and the source Root remain at their frozen SHAs immediately before reconstruction.
+- Reconfirmed immediately before every write phase that remote `main`, the shared integration base, and source Root remained at their frozen SHAs.
 - Created `codex/pr-c-int-s1-root` from the shared base and committed the durable pre-write checkpoint as `7a42c1e47594718c450d3af7cfc75654a72f58fe`.
-- Rebuilt all 20 non-checkpoint allowlisted paths by reusing their exact `mode`, `type`, and Git blob SHA from source Root `e0d0b2ac71849ac135d68f124c17e7262772c144`; no old branch commit was merged or replayed.
-- Preserved every base path outside the allowlist, including the current-main data-only commits. No local CRM checkout or worktree was read, modified, fetched, checked out, or used.
-- No PR, shared-base update, merge, workflow dispatch, deployment, production generation, B2, B3, C5, or backlog work occurred.
+- Rebuilt all 20 non-checkpoint allowlisted paths in `c2a78bc09afc6ac22650d65d78dd699e2096aefb` by reusing their exact source Git blob IDs. No old branch commit was merged or replayed.
+- GitHub API compare from the frozen base reported exactly 21 changed paths. Recursive-tree comparison reported 20 of 20 non-checkpoint blob IDs identical to source Root, with no mismatch.
+- From the exact `c2a78bc09afc6ac22650d65d78dd699e2096aefb` GitHub API tarball on Node `v22.23.1`: 16 of 16 changed MJS files passed `node --check`; both changed JSON files parsed; seven frozen focused suites plus four unchanged admission/candidate-audit controls passed 73 of 73 tests.
+- `node scripts/test-sourcing-v6-3.mjs` passed and reported `sourcing-v6.3-compatibility` with active rule `sourcing-rules-v7.3-obtainable-evidence`.
+- The first dependency-free tarball Daily V4 run had only two missing-`ajv` environment failures. After the repository-standard temporary install with `npm install --no-package-lock --ignore-scripts --no-audit --no-fund`, `npm run test:daily-v4` passed 206 of 206 tests; no `package-lock.json` was generated.
+- A disposable Git repository assembled from exact base/head GitHub API tarballs passed `git diff --check origin/main...HEAD` and independently reported exactly the same 21 changed paths.
+- Exact-head GitHub Build run `30601905479` completed `success` for `c2a78bc09afc6ac22650d65d78dd699e2096aefb`.
+- Preserved every base path outside the allowlist, including current-main data-only commits. No local CRM checkout/worktree was read or modified; no PR, shared-base update, merge, workflow dispatch, deployment, production generation, B2, B3, C5, or backlog work occurred.
 
 ### Remaining
 
-- Materialize a fresh disposable GitHub API archive for the exact reconstruction head and run syntax, JSON, focused Root suites, unchanged admission/candidate-audit controls, `scripts/test-sourcing-v6-3.mjs`, and `npm run test:daily-v4`.
-- Verify the exact 21-path guard, all 20 source blob IDs, and cumulative whitespace status against frozen `main`.
-- Commit the final validation checkpoint, rerun the required read-only verification at that exact final head, report its SHA and evidence externally, and stop.
+- GitHub assigns this final checkpoint commit SHA after the content is committed. Re-download that exact final head and repeat the frozen read-only syntax, JSON, focused/control, compatibility, Daily V4, path, source-parity, and whitespace checks.
+- Report the exact final head and evidence to the Release Captain, then stop. Independent review, independent verification, PR creation, integration-base advancement, merge, and later slices remain separate cards.
 
 ### Next Action
 
-Do not write any further business path. Validate the exact reconstruction head only from a `mktemp -d` GitHub API archive. If a required check fails, record the reproducible blocker and stop without starting an unapproved repair loop.
+Perform only read-only verification of the exact final child head from a new disposable GitHub API tarball. Do not write again, start a repair loop, create a PR, merge, deploy, or start another slice.
 
 ### Git Status
 
 - Remote `main`: `3928de8472ffb15b609acc138c9340329234e686`.
 - Shared base: `codex/pr-c-v7-3-integration@3928de8472ffb15b609acc138c9340329234e686`.
 - Source Root: `codex/pr-c-v7-3-obtainable-evidence@e0d0b2ac71849ac135d68f124c17e7262772c144`.
-- Reconstruction parent: `7a42c1e47594718c450d3af7cfc75654a72f58fe`. GitHub assigns this reconstruction commit SHA after the tree is committed; the next checkpoint records it.
-- Expected cumulative diff from the shared base after this commit: exactly 21 frozen paths, with 20 non-checkpoint blob IDs identical to source Root.
+- Final checkpoint parent: `c2a78bc09afc6ac22650d65d78dd699e2096aefb`. The exact final checkpoint SHA is intentionally reported externally after GitHub creates it, avoiding a recursive self-reference write.
+- Expected final cumulative diff: exactly 21 frozen paths; the only post-reconstruction change is this checkpoint evidence.
