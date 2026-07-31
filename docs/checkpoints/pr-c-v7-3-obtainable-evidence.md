@@ -655,3 +655,40 @@ Perform only read-only verification of the exact final child head from a new dis
 - Source Root: `codex/pr-c-v7-3-obtainable-evidence@e0d0b2ac71849ac135d68f124c17e7262772c144`.
 - Final checkpoint parent: `c2a78bc09afc6ac22650d65d78dd699e2096aefb`. The exact final checkpoint SHA is intentionally reported externally after GitHub creates it, avoiding a recursive self-reference write.
 - Expected final cumulative diff: exactly 21 frozen paths; the only post-reconstruction change is this checkpoint evidence.
+
+## RC-C-INT-S1-P1 Atomic Admission Merge Repair
+
+### Current Goal
+
+Task `RC-C-INT-S1-P1` is the approved three-file Phase 4 repair for the only reproducible P1 from S1 independent review. It keeps one merged AppID audit aligned with one selected admission winner. It does not recompute admission from merged evidence or change any V7.3 gate, source-independence rule, quantity policy, workflow, shared base, main, PR metadata, or production state.
+
+### Completed
+
+- Reconfirmed the approved pre-write boundary. Shared base remained `codex/pr-c-v7-3-integration@3928de8472ffb15b609acc138c9340329234e686`; S1 started at `f85bf3069d232a759afa0cab521a0001bec788bf`.
+- Remote `main` advanced only through two approved data-only automation commits to `3362adf9b7256cee9bc6682bdc1f539d9b8998fc`. The five changed paths are dated `data/**` artifacts with zero overlap with S1 or this repair. No rebase or metadata change was made.
+- Added only the deterministic RED regression in `automations/test/onlineDailyV73CandidateAuditContract.test.mjs` at `8289662739bfd92050c5742f9fed9dd38f53dd8c`.
+- Exact RED GitHub API tarball SHA-256: `66ca2b6fd73b07d25f84b958e5000233cc79d729a9df8e40aaec78de8f25ea12`. Syntax passed; 6 of 7 tests passed; the sole failure was the intended stale `independent_quality_proof=unknown` detail on a formal multi-source record.
+- Updated only `automations/jobs/online_daily_v4_candidate_audit.mjs` at exact GREEN code head `863a5393b8f990467af7b454f8713d38b428a5ea`.
+- The merge now selects an admission winner by qualification first, decision rank second, and stable-current tie behavior. It copies the winner's admission state atomically while retaining the existing cross-source provenance, links, lifecycle state, review, EA, and visual aggregation.
+- Exact GREEN GitHub API tarball SHA-256: `b63fa38c6f35e0a0433266ab708aaeeced82beb239f9c2002d69de35aaff87bf`.
+- Both touched MJS files passed `node --check`; the candidate-audit contract passed 7 of 7; the frozen focused/control matrix passed 74 of 74; `scripts/test-sourcing-v6-3.mjs` passed with active rule `sourcing-rules-v7.3-obtainable-evidence`.
+- After a repository-standard temporary dependency install with no package lock, `npm run test:daily-v4` passed 207 of 207 tests.
+- The first unmodified `npm run verify:all` passed every task before final `git diff --check`; that last command returned 129 only because the GitHub API tarball intentionally contains no `.git`.
+- Initialized Git metadata only inside the same disposable exact-head snapshot and reran the unmodified verifier. Every task, including final diff-check, passed. Verification log SHA-256: `bc9ad4a911b5b06c1566293637ea17809ffa43c3ba7144862eea60e026384aae`.
+- GitHub compare `f85bf3069d232a759afa0cab521a0001bec788bf...863a5393b8f990467af7b454f8713d38b428a5ea` contains exactly two commits and the two approved code/test paths. GREEN changes the implementation path only.
+- GitHub compare from frozen shared base to GREEN remains exactly 21 cumulative paths. A disposable base/head Git repository passed staged `git diff --check` for all 21 paths. Eighteen of the original 20 non-checkpoint Root blobs remain unchanged; only the approved implementation and test blobs intentionally diverge.
+- Existing exact-S1 Build run `30602153850` remains 17 of 17 success. The GitHub connector exposes no pull-request-triggered run for the new code head; no workflow dispatch, PR creation, or CI repair was authorized or performed.
+
+### Remaining
+
+- GitHub assigns the exact final checkpoint commit after this evidence section is written. Re-read that exact final head, confirm the three-file slice and 21-path cumulative boundary, and perform the second and final formal review.
+- A new exact-head Actions run remains an external release gate. Do not dispatch a workflow or create a PR merely to manufacture it under this card.
+- If the final review finds no reproducible P0/P1, close this S1 blocker and return control to the Release Captain. Shared-base advancement, PR creation, merge, deployment, production replay, and later sourcing stages remain separate work.
+
+### Git Status
+
+- Observed remote `main`: `3362adf9b7256cee9bc6682bdc1f539d9b8998fc`, data-only drift accepted without rebase.
+- Shared integration base: `3928de8472ffb15b609acc138c9340329234e686`.
+- S1 repair code head: `863a5393b8f990467af7b454f8713d38b428a5ea`.
+- Exact final checkpoint SHA is reported externally after GitHub creates this commit, avoiding a recursive self-reference write.
+
