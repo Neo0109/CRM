@@ -173,9 +173,18 @@ export async function fetchV73TargetedEvidence({
   }
 
   if (requested.has("fetch_independent_quality_evidence")) {
+    const independentQualitySignals = matchingMediaSignals.filter(
+      isIndependentQualitySignal
+    );
     patch.quality_proofs = uniqueEvidence([
-      ...qualityEvidenceFromSignals(officialSignals, "bilibili"),
-      ...qualityEvidenceFromSignals(matchingMediaSignals, "media")
+      ...qualityEvidenceFromSignals(
+        independentQualitySignals.filter(isBilibiliSignal),
+        "bilibili"
+      ),
+      ...qualityEvidenceFromSignals(
+        independentQualitySignals.filter((item) => !isBilibiliSignal(item)),
+        "media"
+      )
     ]);
   }
 
@@ -311,6 +320,29 @@ function publicSignalUrl(item) {
     return value;
   } catch {
     return null;
+  }
+}
+
+function isIndependentQualitySignal(item) {
+  if (!isBilibiliSignal(item)) return true;
+  const sourceKind = String(item?.bilibili_probe?.source_kind ?? "")
+    .trim()
+    .toLowerCase();
+  return sourceKind === "media" || sourceKind === "trusted_creator";
+}
+
+function isBilibiliSignal(item) {
+  if (item?.bilibili_probe && typeof item.bilibili_probe === "object") return true;
+  const url = publicSignalUrl(item);
+  if (!url) return false;
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname === "bilibili.com"
+      || hostname.endsWith(".bilibili.com")
+      || hostname === "b23.tv"
+      || hostname.endsWith(".b23.tv");
+  } catch {
+    return false;
   }
 }
 
