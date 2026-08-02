@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: in progress — exact GREEN frozen; independent QA pending
+Status: independent QA failed — P0=0/P1=2; Phase 4 stopped and returned to Phase 2
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -107,3 +107,65 @@ This checkpoint is an in-progress recovery record. It is not GREEN evidence and 
 - Complete the independent read-only exact-head QA and record P0/P1 findings.
 - If QA returns P0 or P1, return to Phase 2 or the smallest approved TDD repair as required.
 - If QA returns P0=0/P1=0, close this checkpoint with the final QA evidence and stop before PR creation.
+
+
+## Independent QA Result — Blocking
+
+Independent read-only QA locked to implementation GREEN `9c0ef83183eb5736350aeee147e23c77cc3d0b93`.
+
+Result: **P0=0, P1=2. Merge/deploy and PR creation are blocked. Phase 4 is stopped and this work returns to Phase 2.**
+
+### P1-1 — Module-load failure is outside the non-throwing boundary
+
+- `automations/jobs/online_daily_v4.mjs` uses a top-level static import of the shadow collector.
+- If the collector or any of its top-level dependencies fails to parse or load, the production generator exits before the four V7.2 writes and before `runC5BShadowCollectorSafely` can catch anything.
+- Both receipt workflows dynamically import the finalizer inside the receipt IIFE whose outer catch sets `process.exitCode=1`.
+- A finalizer module-load/import rejection can therefore fail the existing V7.2 receipt commit step.
+- Existing integration tests assert markers and function names but do not inject collector/finalizer module-load failures.
+- This violates the frozen requirement that any provider, collector, or finalizer failure cannot change V7.2 generation, report, validation, sync, receipt, or exit behavior.
+
+### P1-2 — Behavior manifest omits approved transitive dependencies
+
+The authority proposal's exact current-main transitive floor includes:
+
+- `automations/jobs/online_daily_v4_enrichment_scheduler.mjs`
+- `automations/jobs/online_daily_v4_steam_source.mjs`
+
+The GREEN 26-path manifest omits both while production `online_daily_v4.mjs` imports and uses them to determine scheduled candidates, budget use, and enrichment. A future change in either path would not change `behavior_contract_sha256`, so a later observation window could fail to detect behavior drift and reset.
+
+The current frozen hash `1927376864a35386142d86288062a91b38c4aa87f259226fe599ddbf93a17537` is therefore not acceptable as the final C5-B behavior authority.
+
+### QA Reproduction Evidence
+
+- Exact remote facts: `main=1fc883e36ce8725d345061b8f8f64aef28e36bad`, GREEN `9c0ef83183eb5736350aeee147e23c77cc3d0b93`.
+- Current branch was checkpoint-only beyond GREEN during QA.
+- Compare: ahead 5 / behind 0, exactly 21 allowlisted paths.
+- Exact denylist equals main; the denied activation replay test remains absent on both.
+- Eleven exact-reuse blobs remain byte-for-byte.
+- No data, lockfile, app, Functions, UI/API, Supabase, CRM sync endpoint, C5-C, observation, Activation, PR D/E, or AI-editing path is present.
+- JSON parse and Node syntax: GREEN.
+- Focused union: 53/53 GREEN.
+- Daily V4: 234/234 GREEN.
+- `verify:all`: 16/16 GREEN.
+- No package lockfile.
+- No live provider/generator, workflow dispatch, sync, replay, deployment, PR, or merge.
+
+### Remaining P2 Risks
+
+- Final quality proofs are present in the evidence catalog, but the candidate gate binds only first-pass proof IDs; transaction final output does not explicitly bind final evidence IDs.
+- `independentRoleForProof` defaults non-`trusted_creator` proof to `media`; a future upstream role regression could hide official/developer/publisher/keyword/unclassified evidence unless the collector explicitly preserves or rejects those roles.
+
+## Phase 2 Repair Proposal Boundary
+
+One bounded amendment is required before any further implementation:
+
+1. Add RED tests that inject collector module-load failure and finalizer import/load failure and prove V7.2 writes/receipt/exit remain unchanged.
+2. Move collector import plus invocation wholly inside the post-output protected boundary; no shadow module may load before all four production writes.
+3. Give each workflow finalizer import plus invocation its own catch-and-warn boundary outside the receipt-fatal path.
+4. Add the two missing approved transitive-floor paths to the behavior manifest.
+5. Add a deterministic static test that proves every approved floor and every loaded shadow decision/capture dependency is declared, while any production-only exclusion is explicit and reviewed.
+6. Address the two P2 evidence-role/binding risks in tests before deciding whether they are required for GREEN; do not silently coerce unknown roles to `media`.
+7. Re-run JSON/syntax, focused union, Daily V4, `verify:all`, allowlist/denylist, exact remote blob/hash, and a new independent exact-head QA.
+8. Keep the same no-PR/no-merge/no-deploy/no-dispatch/no-live-provider/no-sync/no-replay/no-C5-C/no-Activation boundary.
+
+No Phase 4 repair is authorized by this checkpoint. The next action is explicit user approval or revision of this Phase 2 amendment.
