@@ -101,6 +101,15 @@ describe("C5-B V7.3 shadow collector", () => {
       core.budgets.usage.provider_transaction_ids,
       core.second_pass.transactions.map((item) => item.transaction_id)
     );
+    assert.deepEqual(
+      {
+        new_lane: core.budgets.limits.new_lane,
+        backlog_lane: core.budgets.limits.backlog_lane,
+        retry_refresh_lane: core.budgets.limits.retry_refresh_lane
+      },
+      { new_lane: 40, backlog_lane: 30, retry_refresh_lane: 20 },
+      "the corpus must freeze PR B's 4:3:2 network-lane budget"
+    );
     assert.equal(core.summary.candidate_count, 14);
     assert.equal(core.summary.second_pass_selected_count, 12);
     assert.ok(core.candidates.every((item) => item.qualification_affected_by_ranking === false));

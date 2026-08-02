@@ -56,6 +56,9 @@ describe("C5-B shadow-only production integration", () => {
     assert.match(generator, /steamCandidates:\s*enrichedCandidates/);
     assert.match(generator, /mediaCandidates:\s*mediaLeadCandidates/);
     assert.match(generator, /candidateStates/);
+    assert.match(generator, /new_lane:\s*40/);
+    assert.match(generator, /backlog_lane:\s*30/);
+    assert.match(generator, /retry_refresh_lane:\s*20/);
     assert.doesNotMatch(generator, /buildPools\([^)]*v73SecondPass/s);
     assert.doesNotMatch(generator, /buildSourcingCandidateArtifact\([^)]*v73SecondPass/s);
     assert.match(generator, /buildPools\(enrichedCandidates, mediaLeadCandidates, \{ reportDate \}\)/);
@@ -94,8 +97,8 @@ function read(relativePath) {
 
 function stripC5BBlocks(value) {
   return value
-    .replace(/\/\* C5B_SHADOW_[A-Z_]+_START \*\/[\s\S]*?\/\* C5B_SHADOW_[A-Z_]+_END \*\/\n?/g, "")
-    .replace(/^\s*# C5B_SHADOW_[A-Z_]+_START\n[\s\S]*?^\s*# C5B_SHADOW_[A-Z_]+_END\n?/gm, "");
+    .replace(/^[ \t]*\/\* C5B_SHADOW_[A-Z_]+_START \*\/[\s\S]*?^[ \t]*\/\* C5B_SHADOW_[A-Z_]+_END \*\/\n?/gm, "")
+    .replace(/^[ \t]*# C5B_SHADOW_[A-Z_]+_START\n[\s\S]*?^[ \t]*# C5B_SHADOW_[A-Z_]+_END\n?/gm, "");
 }
 
 function gitBlobSha(value) {
