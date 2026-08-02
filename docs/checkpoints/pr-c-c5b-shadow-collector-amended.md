@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: bounded repair focused GREEN; full exact-head verification pending
+Status: bounded repair full verification GREEN; independent exact-head QA pending
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -38,7 +38,7 @@ Implement only the approved C5-B repair amendment: prove module-load isolation a
 
 ## Next Action
 
-Atomically freeze the four-file minimal implementation on top of the accepted repair RED, then verify the resulting exact remote head with JSON/Node syntax, focused 57-test union, Daily V4, verify:all, allowlist/denylist, behavior hash, and no-lockfile checks.
+Perform a fresh read-only QA locked to implementation commit `4b33610a6c2973a7641fc1d52a70119f6f0b9c9d`. Reproduce the two former P1 boundaries, review P2 role/evidence closure, confirm exact 21-path scope and denylist, then either close with P0=0/P1=0 or stop and return to Phase 2.
 
 ## Git Status
 
@@ -266,3 +266,32 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - Modified MJS and RED-test Node syntax: GREEN.
 - Full exact-head Daily V4, verify:all, allowlist/denylist, behavior hash, and independent QA remain pending.
 - No production data, lockfile, PR, merge, deploy, dispatch, live provider/generator, sync, replay, C5-C, observation, or Activation.
+
+
+## Repair Stage 3 Exact-Head Full Verification — 2026-08-03
+
+- Atomic repair implementation commit: `4b33610a6c2973a7641fc1d52a70119f6f0b9c9d`.
+- Exact parent/RED: `a675df38d923816c81ab7e5e4bc9545e9e1a4eb7`.
+- Implementation commit changed the four approved implementation paths plus this checkpoint only.
+- Frozen implementation blobs:
+  - watchdog workflow: `78ce71384fb2fd8b687da1176d6c0e851e1c1bfe`
+  - sync workflow: `be328e9737b51088beab5eb7e3600cffdf8418fa`
+  - production orchestrator: `878697499f1649069e5d559208a8a99987744b01`
+  - shadow collector: `8b6f4bcfca9dd88cd3e869f6621aa00ed960b3f0`
+  - integration RED/GREEN contract: `d04602a2d4d4e040d1d4a1ef1bffce6193d401a0`
+  - collector RED/GREEN contract: `3a70dbe546d0ef693a5810b3e1743154ca31aca7`
+- Exact GitHub API snapshot verification:
+  - JSON parse: GREEN
+  - 14 relevant MJS syntax checks: GREEN
+  - focused union: 57/57 GREEN
+  - Daily V4: 238/238 GREEN
+  - `npm run verify:all`: all 16 tasks GREEN
+  - independent `git diff --check`: GREEN
+  - exact-main changed-path proof: 21/21 allowlisted paths
+  - denylist blobs unchanged; Activation replay test absent on base and implementation
+  - no `package-lock.json`
+- Behavior manifest: 36 paths.
+- Frozen `behavior_contract_sha256`: `0d2e9199de728a75750f0e4cd64571ab3859e5189ff734eea8d2c49c870aeaab`.
+- GitHub exposes no combined statuses and no PR-triggered workflow runs for exact implementation; no CI claim is made.
+- No PR exists for this branch.
+- No production data write, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation occurred.
