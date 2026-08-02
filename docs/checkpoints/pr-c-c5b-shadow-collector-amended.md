@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: in progress — focused and Daily V4 GREEN; full verification pending
+Status: in progress — exact GREEN frozen; independent QA pending
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -67,3 +67,43 @@ This checkpoint is an in-progress recovery record. It is not GREEN evidence and 
 - JSON parse and Node syntax checks passed for all added/modified rule, schema, job, and test files.
 - No `package-lock.json` was generated.
 - Full `verify:all`, exact changed-path/denylist proof, remote atomic GREEN write, behavior-hash freeze, and independent QA remain pending.
+
+
+## Recovery Stage 2 Exact GREEN Evidence
+
+- Atomic implementation GREEN commit: `9c0ef83183eb5736350aeee147e23c77cc3d0b93`.
+- GREEN parent: checkpoint head `40b15e3c9e072d6a69e9c66771693761c3b586e9`.
+- Atomic GREEN changed exactly four files beyond the accepted RED/checkpoint state:
+  - `.github/workflows/daily-report-watchdog.yml` blob `d51998e80835998c4e1d963a85da62a62d5a18b8`
+  - `.github/workflows/sync-daily-report.yml` blob `1b3ce6c724fbc28d248cdaa0d843342c2e35ba54`
+  - `automations/jobs/online_daily_v4.mjs` blob `26a823c6a9b7c8010e5b0e1bd4e2209ebd6ebf15`
+  - `automations/jobs/online_daily_v7_3_shadow_collector.mjs` blob `eca507996bea80c637cc65375ece561ff34b7fe3`
+- New/adapted contract blobs frozen at GREEN:
+  - shadow candidate audit: `1922f4f4b451dbd60c36bda8386da9febbde4c25`
+  - adapted second-pass test: `a7a228b9f4dd771639e560e5fa7426066b8e3b6c`
+  - shadow candidate-audit contract: `66e7b93de68416dbb8f053b7a6107fa9686f01de`
+  - shadow collector contract: `4e0a12e4b8024a5e7ce91d488bd61d100179a42e`
+  - shadow integration contract: `7e07ee9e1ad21b2dde4004eb48645446760ede86`
+- All eleven exact-reuse blobs match the authority amendment byte-for-byte.
+- Behavior dependency manifest contains 26 paths.
+- Frozen `behavior_contract_sha256`: `1927376864a35386142d86288062a91b38c4aa87f259226fe599ddbf93a17537`.
+- Exact `main@1fc883e36ce8725d345061b8f8f64aef28e36bad...9c0ef83183eb5736350aeee147e23c77cc3d0b93` compare: ahead 5, behind 0, exactly 21 allowlisted paths.
+- Exact denylist matches main; `automations/test/onlineDailyV73ActivationReplayContract.test.mjs` remains absent on both base and GREEN.
+- No production/generated data, replay corpus, package/lockfile, app/frontend/backend/functions, UI/API, Supabase, CRM sync endpoint, current sourcing-rule reader, C5-C, observation, Activation, PR D/E, or AI-editing path is present.
+- Disposable exact-SHA verification:
+  - JSON parse: GREEN
+  - modified/added MJS syntax: GREEN
+  - focused union: 53/53 GREEN
+  - Daily V4: 234/234 GREEN
+  - `npm run verify:all`: all 16 declared tasks GREEN after supplying an exact-main synthetic Git index for the tarball-only `git diff --check` task
+  - independent `git diff --check`: GREEN
+  - no `package-lock.json`
+- A fresh GitHub API tarball of exact GREEN `9c0ef831...` independently repeated focused 53/53 and the same behavior hash.
+- GitHub exposes no combined status checks and no PR-triggered Actions runs for exact GREEN; no CI claim is made.
+- No PR exists for this branch. No PR, merge, deployment, workflow dispatch, live provider/generator, CRM sync, production replay, or production data write was performed.
+
+## Remaining After Exact GREEN
+
+- Complete the independent read-only exact-head QA and record P0/P1 findings.
+- If QA returns P0 or P1, return to Phase 2 or the smallest approved TDD repair as required.
+- If QA returns P0=0/P1=0, close this checkpoint with the final QA evidence and stop before PR creation.
