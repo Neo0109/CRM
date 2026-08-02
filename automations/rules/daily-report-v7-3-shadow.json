@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "rule_version": "sourcing-rules-v7.3-obtainable-evidence",
+  "updated_at": "2026-07-30",
+  "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V7_3.md",
+  "compatible_generators": [
+    "automations/jobs/online_daily_v4.mjs"
+  ],
+  "reader": {
+    "role": "Bilibili game publishing BD owner",
+    "job_to_be_done": "Decide whether a game project deserves BD attention and what to do next."
+  },
+  "report_contract": {
+    "daily_report": "Scan the V7.3 obtainable-evidence indie_prelaunch lane and the retained china_joint lane in parallel, publish every deduped project that passes one complete V7.3 lane to push_pool with priority=null, apply no lane quota or total formal limit, and keep every failed or unknown candidate only in the sourcing-candidate audit.",
+    "steam_trends": "Output Steam market-board intelligence, not sourcing-rule notes. It must cover category risers, Steam/Next Fest or demo windows, publisher/developer slate signals, public data quality, and concrete BD implications.",
+    "industry_radar": "Use real external media, company, legal, platform, or community signals. 行业新闻 is macro only; concrete games, recommendations, fun products, IP/company/legal gossip, and former 发行八卦 items belong in 今日亮点. Never use internal CRM notes as industry news."
+  },
+  "indie_prelaunch_admission": {
+    "active": true,
+    "sourcing_lane": "indie_prelaunch",
+    "required_gate_ids": [
+      "identity_and_dedupe",
+      "prelaunch_window",
+      "publisher_china_capacity_clear",
+      "non_narrative_product",
+      "non_india_team",
+      "official_playable_or_gameplay",
+      "independent_quality_proof",
+      "non_steam_business_entry",
+      "concrete_china_bilibili_value"
+    ],
+    "evidence_model": {
+      "official_playable_or_gameplay": {
+        "combination": "any_of",
+        "minimum_required": 1,
+        "accepted_evidence_ids": [
+          "official_demo_or_playtest",
+          "official_gameplay"
+        ]
+      },
+      "independent_quality_proof": {
+        "minimum_independent_public_sources": 2
+      },
+      "explicit_china_demand": {
+        "required": false,
+        "treatment": "positive_signal"
+      }
+    },
+    "targeted_second_pass": {
+      "enabled": true,
+      "eligible_missing_action_count": {
+        "minimum": 1,
+        "maximum": 3
+      },
+      "max_candidates_per_run": 12,
+      "allowed_public_actions": [
+        "fetch_official_playable_or_gameplay",
+        "fetch_independent_quality_evidence",
+        "fetch_non_steam_business_entry",
+        "research_china_bilibili_value"
+      ],
+      "same_decision_function_required": true,
+      "hard_exclusion_bypass": false,
+      "formal_lead_backfill": false
+    },
+    "all_gates_required": true,
+    "qualified_route": "push_pool",
+    "unqualified_route": "sourcing_candidates",
+    "automatic_priority": null,
+    "formal_lead_minimum": null,
+    "formal_lead_maximum": null,
+    "watch_pool_enabled": false,
+    "drop_pool_enabled": false,
+    "invariant": "new_qualified_count === push_pool_count"
+  },
+  "china_joint_admission": {
+    "active": true,
+    "sourcing_lane": "china_joint",
+    "required_gate_ids": [
+      "identity_and_dedupe",
+      "traction_or_proven_team_event",
+      "current_china_opportunity",
+      "mature_china_partner_clear"
+    ],
+    "data_paths": [
+      {
+        "id": "steam_recommendations_5000",
+        "minimum_recommendations": 5000,
+        "required_rating": null
+      },
+      {
+        "id": "steam_recommendations_1500_very_positive",
+        "minimum_recommendations": 1500,
+        "accepted_ratings": ["very_positive", "overwhelmingly_positive"]
+      },
+      {
+        "id": "verified_major_title_and_current_official_event",
+        "verified_major_title_record_required": true,
+        "current_official_product_event_required": true
+      }
+    ],
+    "current_china_opportunity_types": [
+      "china_publishing",
+      "china_license",
+      "china_localization",
+      "china_marketing",
+      "china_mobile",
+      "china_joint_operations"
+    ],
+    "all_gates_required": true,
+    "qualified_route": "push_pool",
+    "unqualified_route": "sourcing_candidates",
+    "automatic_priority": null,
+    "formal_lead_minimum": null,
+    "formal_lead_maximum": null,
+    "watch_pool_enabled": false,
+    "drop_pool_enabled": false,
+    "invariant": "new_qualified_count === push_pool_count"
+  },
+  "required_decision_fields": [
+    "product",
+    "strengths",
+    "weaknesses",
+    "public_data_or_source_signal",
+    "gameplay_loop_or_content_hook",
+    "bilibili_leverage",
+    "next_bd_action"
+  ],
+  "push_pool_guardrails": [
+    "Domestic products are the sourcing default because cooperation, efficiency, visual/cultural fit, and signing probability are materially better.",
+    "Domestic developer Demo/test signals are useful testability signals, but they cannot override a closed or near-closed cooperation window.",
+    "The indie_prelaunch lane excludes candidates launching in fewer than 60 days; this window rule does not replace the independent china_joint commercial gates.",
+    "Domestic unreleased products should follow a testing-first workflow: test or inspect the game before asking BD to complete contacts or long-form evidence.",
+    "Domestic near-window products should not be backfilled into the unprocessed inbox merely because they are unreleased and testable.",
+    "The indie_prelaunch lane retains its overseas PC-data and mobile-adaptation discovery lens; china_joint instead requires one locked traction/team-event path plus a current China opportunity.",
+    "Released or Early Access products remain ineligible for indie_prelaunch but may qualify for china_joint when every joint-publishing gate passes.",
+    "Narrative-first and India-led exclusions remain specific to indie_prelaunch and cannot be used to bypass or replace china_joint commercial gates.",
+    "Indie projects with mature publisher or China-capability occupancy remain excluded; china_joint specifically requires that no mature China partner already occupies the opportunity.",
+    "Neither lane has a formal quota, minimum, maximum, backfill, or ranking cutoff."
+  ],
+  "source_strategy": [
+    "Expand domestic discovery through Chinese game/business media, domestic indie/developer communities, Bilibili video/search API signals, indienova, TapTap-style developer signals, and official studio posts.",
+    "Concrete products found through media or Bilibili must continue through discovery and the applicable V7.3 lane gates; source labels and scores cannot publish them into formal Lead pools.",
+    "Domestic media items containing a named game plus signals such as edition approval, first reveal, playtest, demo, trailer, store page, reservation, or domestic studio/publisher context should be treated as sourcing leads even when Steam data is missing.",
+    "Bilibili search results must point to a concrete game/project. Tutorial, wishlist-growth, Steam Next Fest signup, course, or generic developer-experience videos are research material, not CRM leads.",
+    "Standalone animation, anime, comic, series, season, broadcast, dubbing, or voice-cast signals must remain radar_only unless independent game-product evidence exists. A sourcing-source label, quoted title, PV/trailer, new-work, launch, reservation, or official-source status alone is not game evidence.",
+    "A valid first-pass lead does not require a Steam AppID. Bilibili videos, media articles, official sites, TapTap, indienova, or developer posts can be the first verification link.",
+    "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
+    "Daily sourcing coverage must not depend on Steam alone. Retain scan and conversion diagnostics while publishing only projects that pass one complete V7.3 lane.",
+    "Expanded domestic media/Bilibili candidates remain in the sourcing-candidate audit until identity and every other mandatory gate are complete.",
+    "If Steam search or AppDetails is unavailable, the report must transparently continue with domestic media/Bilibili market signals and any independently qualified projects rather than manufacture a token queue.",
+    "Bilibili expansion must filter stale videos, generic recommendation collections, mature blockbuster chatter, rant/review filler, and other non-actionable content.",
+    "Steam Trends must be a market board: category risers, Steam official/community windows, demo/Next Fest signals, publisher/developer slates, public data quality, and what those signals mean for Bilibili BD.",
+    "Industry radar should work as a China + overseas news board, not a short category filler list.",
+    "Industry radar should prioritize high-quality domestic and global sources when they reveal products, teams, publishing windows, legal/IP risk, creator momentum, market direction, platform policy, or Bilibili content angles.",
+    "Steam domestic keyword searches must use actual term filters and preserve the strongest domestic/Demo source for a repeated AppID.",
+    "Bilibili video leads must be enriched from video descriptions before CRM candidate creation, because descriptions often contain Steam store links, official sites, Discord, email, or other business-contact clues.",
+    "Bilibili probe must support configured official, developer, publisher, media, trusted creator, keyword, required keyword, blacklist UID/BVID, and max video age sources.",
+    "Bilibili probe should fetch video details for title, owner, publish time, description, tags, and public engagement before lead scoring.",
+    "Bilibili recommendation videos are discovery signals only. Before creating a lead, search for and prefer official, developer, studio, or publisher Bilibili sources when they match the concrete project.",
+    "Steam, TapTap, official-site, and community links found in Bilibili descriptions, media bodies, gameplay text, or summaries must be extracted into structured links before validation and CRM sync.",
+    "Bilibili/media leads must be cross-checked against Steam when a Steam URL or AppID is present. Released and near-window products remain outside indie_prelaunch but may enter china_joint only after every locked data and commercial gate passes.",
+    "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
+    "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
+    "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",
+    "V7.3 must not restore quantity backfill, P3-to-P2 promotion, lane quotas, or a total formal limit; every and only fully qualified project is published.",
+    "Full Bilibili video details must be converted into one structured BilibiliEvidence object before summary truncation or display-field formatting.",
+    "When Bilibili evidence contains a Steam Store, Steam Community app, or SteamDB app URL, the final lead must carry the resolved full-game AppID plus Store and SteamDB links; otherwise block Lead sync and record steam_evidence_lost.",
+    "Steam demo AppIDs must resolve through fullgame.appid before release-window classification; a demo release date must never be treated as the full game's release date.",
+    "Film, screenplay, actor/director, adaptation, update/DLC, promotion, guide, and review signals are radar_only unless an independent unreleased game entity is proven.",
+    "The word 过审 is a game Lead signal only when edition-number, 新闻出版署, or network-game approval context is also present."
+  ],
+  "media_sources": [
+    { "name": "GameLook", "url": "http://www.gamelook.com.cn/feed", "type": "feed", "quality": 16, "focus": ["china", "business", "domestic_sourcing"] },
+    { "name": "游戏葡萄", "url": "https://youxiputao.com/", "type": "page", "quality": 14, "focus": ["china", "business", "domestic_sourcing"] },
+    { "name": "GameRes游资网", "url": "https://www.gameres.com/", "type": "page", "quality": 13, "focus": ["china", "development", "domestic_sourcing"] },
+    { "name": "游戏陀螺", "url": "https://www.youxituoluo.com/", "type": "page", "quality": 13, "focus": ["china", "business", "mobile", "domestic_sourcing"] },
+    { "name": "手游那点事", "url": "https://www.nadianshi.com/", "type": "page", "quality": 12, "focus": ["china", "mobile", "domestic_sourcing"], "active": false, "disabled_reason": "repeated fetch failures in cloud runs" },
+    { "name": "游戏茶馆", "url": "https://www.youxichaguan.com/", "type": "page", "quality": 12, "focus": ["china", "business", "domestic_sourcing"] },
+    { "name": "indienova", "url": "https://indienova.com/groups", "type": "page", "quality": 12, "focus": ["china", "indie", "domestic_sourcing"] },
+    { "name": "游研社", "url": "https://www.yystv.cn/", "type": "page", "quality": 12, "focus": ["china", "product", "creator", "domestic_sourcing"] },
+    { "name": "机核", "url": "https://www.gcores.com/", "type": "page", "quality": 11, "focus": ["china", "product", "creator", "domestic_sourcing"] },
+    { "name": "TapTap发现", "url": "https://www.taptap.cn/discover", "type": "page", "quality": 10, "focus": ["china", "mobile", "product", "domestic_sourcing"] },
+    { "name": "B站视频-国产独立游戏", "type": "bilibili_video_search", "query": "国产独立游戏 Demo Steam", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产游戏试玩", "type": "bilibili_video_search", "query": "国产游戏 试玩 Demo", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产游戏实机", "type": "bilibili_video_search", "query": "国产游戏 实机 PV", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产肉鸽卡牌", "type": "bilibili_video_search", "query": "国产 肉鸽 卡牌 Steam", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-独立游戏开发日志", "type": "bilibili_video_search", "query": "独立游戏 开发日志 试玩", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产游戏公开测试", "type": "bilibili_video_search", "query": "国产游戏 公开测试 试玩", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产独立游戏PV", "type": "bilibili_video_search", "query": "国产独立游戏 PV 实机", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产策略模拟", "type": "bilibili_video_search", "query": "国产 策略 模拟经营 Steam", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国风修仙游戏", "type": "bilibili_video_search", "query": "国风 修仙 游戏 试玩", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产二游新作", "type": "bilibili_video_search", "query": "国产 二游 新作 PV", "quality": 12, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产官方PV", "type": "bilibili_video_search", "query": "国产独立游戏 官方 PV", "quality": 15, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产开发者Demo", "type": "bilibili_video_search", "query": "国产游戏 开发者 Demo Steam", "quality": 15, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产商店页愿望单", "type": "bilibili_video_search", "query": "国产游戏 Steam 商店页 愿望单", "quality": 15, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产Playtest", "type": "bilibili_video_search", "query": "国产游戏 Playtest 试玩", "quality": 14, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国人独立游戏Steam", "type": "bilibili_video_search", "query": "国人独立游戏 Steam 商店页", "quality": 14, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站视频-国产TapTap预约", "type": "bilibili_video_search", "query": "国产游戏 TapTap 预约 PV", "quality": 13, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站搜索-国产独立游戏", "url": "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E7%8B%AC%E7%AB%8B%E6%B8%B8%E6%88%8F%20Demo%20Steam", "type": "bilibili_page_search", "quality": 11, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站搜索-国产游戏试玩", "url": "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E8%AF%95%E7%8E%A9%20Demo", "type": "bilibili_page_search", "quality": 11, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站搜索-国产游戏实机", "url": "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%E6%B8%B8%E6%88%8F%20%E5%AE%9E%E6%9C%BA%20PV", "type": "bilibili_page_search", "quality": 11, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站搜索-国产肉鸽卡牌", "url": "https://search.bilibili.com/all?keyword=%E5%9B%BD%E4%BA%A7%20%E8%82%89%E9%B8%BD%20%E5%8D%A1%E7%89%8C%20Steam", "type": "bilibili_page_search", "quality": 11, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "B站搜索-独立游戏制作人", "url": "https://search.bilibili.com/all?keyword=%E7%8B%AC%E7%AB%8B%E6%B8%B8%E6%88%8F%20%E5%88%B6%E4%BD%9C%E4%BA%BA%20%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97", "type": "bilibili_page_search", "quality": 11, "focus": ["china", "bilibili", "creator", "domestic_sourcing"] },
+    { "name": "GamesIndustry.biz", "url": "https://www.gamesindustry.biz/feed", "type": "feed", "quality": 14, "focus": ["business", "publishing"] },
+    { "name": "GameDeveloper", "url": "https://www.gamedeveloper.com/rss.xml", "type": "feed", "quality": 13, "focus": ["development", "business"] },
+    { "name": "VGC", "url": "https://www.videogameschronicle.com/feed/", "type": "feed", "quality": 12, "focus": ["industry", "platform"] },
+    { "name": "Eurogamer", "url": "https://www.eurogamer.net/feed/news", "type": "feed", "quality": 11, "focus": ["industry", "product"] },
+    { "name": "PC Gamer", "url": "https://www.pcgamer.com/rss/", "type": "feed", "quality": 10, "focus": ["pc", "community"] },
+    { "name": "IGN", "url": "https://www.ign.com/rss/articles/feed?tags=games", "type": "feed", "quality": 10, "focus": ["product", "mainstream"] },
+    { "name": "Gematsu", "url": "https://www.gematsu.com/feed", "type": "feed", "quality": 9, "focus": ["product", "asia"] },
+    { "name": "The Verge Gaming", "url": "https://www.theverge.com/rss/games/index.xml", "type": "feed", "quality": 9, "focus": ["platform", "technology"] },
+    { "name": "GameSpot", "url": "https://www.gamespot.com/feeds/news/", "type": "feed", "quality": 8, "focus": ["mainstream", "product"] },
+    { "name": "Polygon", "url": "https://www.polygon.com/rss/index.xml", "type": "feed", "quality": 10, "focus": ["mainstream", "product", "culture"] },
+    { "name": "Rock Paper Shotgun", "url": "https://www.rockpapershotgun.com/feed", "type": "feed", "quality": 9, "focus": ["pc", "product", "culture"] },
+    { "name": "PocketGamer.biz", "url": "https://www.pocketgamer.biz/rss/", "type": "feed", "quality": 10, "focus": ["business", "mobile"] },
+    { "name": "GamesBeat", "url": "https://venturebeat.com/category/games/feed/", "type": "feed", "quality": 9, "focus": ["business", "technology"], "active": false, "disabled_reason": "legacy feed returns persistent 403/429 in cloud runs" },
+    { "name": "Siliconera", "url": "https://www.siliconera.com/feed/", "type": "feed", "quality": 8, "focus": ["product", "asia"] },
+    { "name": "触乐", "url": "https://www.chuapp.com/?feed=rss2", "type": "feed", "quality": 11, "focus": ["china", "culture"] },
+    { "name": "IT之家", "url": "https://www.ithome.com/rss/", "type": "feed", "quality": 7, "focus": ["china", "technology"] },
+    { "name": "3DM", "url": "https://www.3dmgame.com/news/", "type": "page", "quality": 6, "focus": ["china", "product"] },
+    { "name": "游民星空", "url": "https://www.gamersky.com/news/", "type": "page", "quality": 6, "focus": ["china", "product"] },
+    { "name": "证券时报", "url": "https://www.stcn.com/", "type": "page", "quality": 10, "focus": ["china", "capital", "legal"] },
+    { "name": "澎湃新闻", "url": "https://m.thepaper.cn/", "type": "page", "quality": 9, "focus": ["china", "legal", "society"], "active": false, "disabled_reason": "persistent 403 from GitHub Actions egress" }
+  ],
+  "media_quality_gates": {
+    "max_bilibili_lead_age_days": 120,
+    "media_low_score_threshold": 12,
+    "probe_config": "automations/rules/bilibili-probe.json"
+  },
+  "radar_diversity": {
+    "limit": 14,
+    "source_cap": 2,
+    "family_cap": 4,
+    "region_cap": 8,
+    "targets": [
+      { "category": "行业新闻", "region": "china", "count": 2 },
+      { "category": "行业新闻", "region": "global", "count": 3 },
+      { "category": "今日亮点", "region": "china", "count": 4 },
+      { "category": "今日亮点", "region": "global", "count": 2 },
+      { "category": "AI 游戏", "count": 2 },
+      { "categories": ["B站趋势", "新梗热点"], "count": 1 }
+    ]
+  },
+  "bilibili_media_quality_gates": {
+    "max_bilibili_lead_age_days": 120,
+    "probe_config": "automations/rules/bilibili-probe.json",
+    "official_developer_publisher_sources_preferred": true,
+    "description_enrichment_required": true,
+    "steam_cross_check_required_when_link_present": true,
+    "dedupe_against_existing_projects_appids_links_and_keys": true,
+    "already_released_text_routes_to_drop_pool": true,
+    "demo_or_store_page_live_text_does_not_count_as_full_release": true,
+    "structured_evidence_required": true,
+    "steam_evidence_integrity_required": true,
+    "demo_fullgame_resolution_required": true,
+    "media_disposition_required": true,
+    "non_game_animation_radar_only_required": true
+  },
+  "automation_guardrails": [
+    "Fail fast when this rule file is missing or incompatible.",
+    "Log the active rule version at the start of each automation run.",
+    "Workflow path filters must include this file and SOURCING_RULES documents.",
+    "Rule iteration and online automation must be updated together.",
+    "Automatic daily reports must not pre-assign non-dropped leads to 观察池, 待评测, 跟进中, or 推进池; the human reviewer decides the bucket after reading.",
+    "The generator must not use already-launched Steam pools such as Popular New as CRM lead sources.",
+    "The generator must report both Steam candidate counts and media/Bilibili product-lead counts so low daily volume is diagnosable.",
+    "Formal Lead count must not trigger failure or degraded status; Daily, Radar, Steam Trends, and the candidate audit still require valid artifacts, and V7.3 qualified/push parity is blocking.",
+    "Domestic media/Bilibili under-conversion must be logged with source and filter diagnostics instead of silently collapsing to a Steam-only report.",
+    "The generator should dedupe against a meaningful recent report history window so stale items do not crowd out new discoveries.",
+    "The generator must inspect Bilibili video descriptions for Steam/contact links before deciding whether a Bilibili item is a new lead.",
+    "The generator must route Bilibili/media items with confirmed already-released Steam status outside indie_prelaunch; they may enter china_joint only after every locked data and commercial gate passes.",
+    "The generator log must include candidate total, duplicate filtered count, released filtered count, Bilibili official-source hits, and final non-dropped import candidates.",
+    "Schema damage, empty source output, qualified/push parity mismatch, generated file write failure, and CRM sync authentication/write failure must fail scheduled automation; zero formal Leads is neither a failure nor a degraded warning.",
+    "GitHub Actions and Cloudflare sync paths must prefer CRM_AUTOMATION_TOKEN, with CRM_ACCESS_TOKEN only as a backwards-compatible fallback where explicitly supported.",
+    "Steam Trends must meet its item contract even when Steam sample quality is low by clearly marking domestic review-candidate fallback items.",
+    "Steam Trends market_insights must never use CRM Sourcing, rule documents, or internal automation notes as the source.",
+    "Every detected Steam evidence item must be accounted for as a structured Lead, Demo-to-full-game conversion, released/radar-only filter, duplicate merge, or explicit integrity failure.",
+    "A successful sourcing run must report steam_evidence_lost = 0; candidates with unresolved lost Steam evidence must not sync into Leads."
+  ]
+}
