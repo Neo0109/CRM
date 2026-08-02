@@ -302,13 +302,17 @@ jobs:
           };
           fs.writeFileSync(`data/automation_runs/${reportDate}-watchdog.json`, `${JSON.stringify(payload, null, 2)}\n`);
           /* C5B_SHADOW_FINALIZER_START */
-          const { finalizeC5BReplayCorpusSafely } = await import('./automations/jobs/online_daily_v7_3_shadow_collector.mjs');
-          await finalizeC5BReplayCorpusSafely({
-            rootDir: process.cwd(),
-            reportDate,
-            runSlot: 'watchdog',
-            receiptPath: `data/automation_runs/${reportDate}-watchdog.json`
-          });
+          try {
+            const { finalizeC5BReplayCorpusSafely } = await import('./automations/jobs/online_daily_v7_3_shadow_collector.mjs');
+            await finalizeC5BReplayCorpusSafely({
+              rootDir: process.cwd(),
+              reportDate,
+              runSlot: 'watchdog',
+              receiptPath: `data/automation_runs/${reportDate}-watchdog.json`
+            });
+          } catch (error) {
+            console.warn(`C5-B shadow finalizer module-load isolated failure: ${String(error?.message ?? error)}`);
+          }
           /* C5B_SHADOW_FINALIZER_END */
           })().catch((error) => {
             console.error(error);

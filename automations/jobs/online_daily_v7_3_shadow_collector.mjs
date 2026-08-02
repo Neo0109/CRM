@@ -37,15 +37,24 @@ export const C5B_DEFAULT_PROVIDER_TIMEOUT_MS = 15_000;
 export const C5B_BEHAVIOR_DEPENDENCY_PATHS = Object.freeze([
   ".github/workflows/daily-report-watchdog.yml",
   ".github/workflows/sync-daily-report.yml",
+  "automations/jobs/bilibili_evidence.mjs",
   "automations/jobs/bilibili_probe.mjs",
   "automations/jobs/online_daily_v4.mjs",
   "automations/jobs/online_daily_v4_artifacts.mjs",
   "automations/jobs/online_daily_v4_candidate_state.mjs",
+  "automations/jobs/online_daily_v4_decision.mjs",
   "automations/jobs/online_daily_v4_dedupe.mjs",
+  "automations/jobs/online_daily_v4_enrichment_scheduler.mjs",
+  "automations/jobs/online_daily_v4_media_enrichment.mjs",
+  "automations/jobs/online_daily_v4_media_entities.mjs",
   "automations/jobs/online_daily_v4_media_leads.mjs",
+  "automations/jobs/online_daily_v4_media_rules.mjs",
   "automations/jobs/online_daily_v4_media_sources.mjs",
+  "automations/jobs/online_daily_v4_network.mjs",
   "automations/jobs/online_daily_v4_rules.mjs",
+  "automations/jobs/online_daily_v4_source_health.mjs",
   "automations/jobs/online_daily_v4_source_utils.mjs",
+  "automations/jobs/online_daily_v4_steam_source.mjs",
   "automations/jobs/online_daily_v7_2_china_joint_admission.mjs",
   "automations/jobs/online_daily_v7_2_regular_admission.mjs",
   "automations/jobs/online_daily_v7_indie_admission.mjs",
@@ -56,11 +65,17 @@ export const C5B_BEHAVIOR_DEPENDENCY_PATHS = Object.freeze([
   "automations/jobs/online_daily_v7_3_shadow_candidate_audit.mjs",
   "automations/jobs/online_daily_v7_3_shadow_collector.mjs",
   "automations/jobs/online_daily_v7_3_shadow_decision.mjs",
+  "automations/jobs/sourcing_v6_3_quality.mjs",
   "automations/rules/daily-report-v7-3-shadow.json",
   "automations/rules/daily-report.json",
   "schemas/sourcing_candidates_v3_shadow.schema.json",
   "schemas/sourcing_replay_corpus.schema.json",
   "schemas/sourcing_replay_window.schema.json"
+]);
+export const C5B_BEHAVIOR_PRODUCTION_EXCLUSIONS = Object.freeze([
+  "automations/jobs/online_daily_v4_candidate_audit.mjs",
+  "automations/jobs/online_daily_v4_reports.mjs",
+  "automations/jobs/online_daily_v4_volume.mjs"
 ]);
 
 const SUPPORTED_ACTION_FIELDS = new Map([
@@ -81,6 +96,16 @@ const V73_HARD_EXCLUSION_GATES = new Set([
   "non_narrative_product",
   "non_india_team"
 ]);
+const EVIDENCE_SOURCE_ROLES = new Set([
+  "official",
+  "developer",
+  "publisher",
+  "media",
+  "trusted_creator",
+  "keyword",
+  "unclassified"
+]);
+const INDEPENDENT_SOURCE_ROLES = new Set(["media", "trusted_creator"]);
 
 export function isC5BShadowCaptureEligible(runContext = {}) {
   const eventName = String(runContext.event_name ?? "").trim();
@@ -522,7 +547,8 @@ function buildDecisionUniverse({
           candidateId,
           result,
           providerRecord,
-          evaluatorDependencySha256
+          evaluatorDependencySha256,
+          evidence
         })
       : null;
     if (transaction) transactions.push(transaction);
@@ -667,6 +693,15 @@ function candidateEvidence({
     summary: "Normalized public candidate source used by the shadow decision."
   })];
   const firstProofIds = [];
+  const finalProofIds = [];
+  const firstProofUrls = new Set(
+    (firstAdmission.lane_results?.indie_prelaunch?.evidence?.quality_proofs ?? [])
+      .map((item) => sanitizePublicUrl(item.url))
+  );
+  const finalProofUrls = new Set(
+    (finalAdmission.lane_results?.indie_prelaunch?.evidence?.quality_proofs ?? [])
+      .map((item) => sanitizePublicUrl(item.url))
+  );
   const proofItems = uniqueByUrl([
     ...(firstAdmission.lane_results?.indie_prelaunch?.evidence?.quality_proofs ?? []),
     ...(finalAdmission.lane_results?.indie_prelaunch?.evidence?.quality_proofs ?? [])
@@ -685,12 +720,12 @@ function candidateEvidence({
       title: String(proof.value ?? proof.title ?? "Independent public evidence"),
       summary: "Normalized bounded independent public evidence used by the shadow evaluator."
     }));
-    if ((firstAdmission.lane_results?.indie_prelaunch?.evidence?.quality_proofs ?? [])
-      .some((item) => sanitizePublicUrl(item.url) === url)) {
-      firstProofIds.push(id);
+    if (INDEPENDENT_SOURCE_ROLES.has(role)) {
+      if (firstProofUrls.has(url)) firstProofIds.push(id);
+      if (finalProofUrls.has(url)) finalProofIds.push(id);
     }
   }
-  return { catalog, defaultId, firstProofIds };
+  return { catalog, defaultId, firstProofIds, finalProofIds };
 }
 
 function laneEvaluation(admission, evidence, indieLane) {
@@ -720,7 +755,13 @@ function regularSelection(admission) {
   };
 }
 
-function transactionFromResult({ candidateId, result, providerRecord, evaluatorDependencySha256 }) {
+function transactionFromResult({
+  candidateId,
+  result,
+  providerRecord,
+  evaluatorDependencySha256,
+  evidence
+}) {
   const first = safeAdmissionOutput(result.first_pass);
   const final = safeAdmissionOutput(result.final_pass);
   return {
@@ -739,7 +780,10 @@ function transactionFromResult({ candidateId, result, providerRecord, evaluatorD
       ...safeAdmissionEvidence(result.final_pass?.evidence ?? result.first_pass?.evidence ?? {}),
       qualified: first.qualified
     },
-    final_output: final,
+    final_output: {
+      ...final,
+      evidence_ids: [...evidence.finalProofIds]
+    },
     decision_changed: first.qualified !== final.qualified || first.disposition !== final.disposition,
     changed_gate: changedGate(result.first_pass, result.final_pass),
     evaluator_dependency_sha256: evaluatorDependencySha256
@@ -1080,11 +1124,12 @@ function candidatePublicUrl(candidate, sourceTypes) {
 
 function independentRoleForProof(proof, url, mediaSignals) {
   const explicit = String(proof?.source_role ?? proof?.source_kind ?? "").toLowerCase();
-  if (explicit === "trusted_creator" || /trusted_creator|creator_playtest/i.test(String(proof?.type ?? ""))) {
+  if (EVIDENCE_SOURCE_ROLES.has(explicit)) return explicit;
+  if (/trusted_creator|creator_playtest/i.test(String(proof?.type ?? ""))) {
     return "trusted_creator";
   }
   const fromSignal = sourceRoleForUrl(url, mediaSignals);
-  return fromSignal === "trusted_creator" ? "trusted_creator" : "media";
+  return EVIDENCE_SOURCE_ROLES.has(fromSignal) ? fromSignal : "unclassified";
 }
 
 function sourceRoleForUrl(url, signals) {
@@ -1097,7 +1142,7 @@ function sourceRoleForSignal(item, url) {
   if (kind === "trusted_creator") return "trusted_creator";
   if (kind === "media") return "media";
   if (kind === "official" || kind === "developer" || kind === "publisher" || kind === "keyword") return kind;
-  return isBilibiliUrl(url) ? "unclassified" : "media";
+  return "unclassified";
 }
 
 function secondPassEligible(admission) {

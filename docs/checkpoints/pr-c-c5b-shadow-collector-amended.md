@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: valid bounded repair RED frozen; minimal Phase 4 repair in progress
+Status: bounded repair focused GREEN; full exact-head verification pending
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -38,7 +38,7 @@ Implement only the approved C5-B repair amendment: prove module-load isolation a
 
 ## Next Action
 
-Apply only the minimal approved repair that makes the five valid RED assertions GREEN: post-output collector load isolation, workflow finalizer catch-and-warn, behavior import closure plus explicit exclusions, and closed-role/final-evidence binding. Do not change V7.2 decisions, workflow triggers, production data, or later C5 phases.
+Atomically freeze the four-file minimal implementation on top of the accepted repair RED, then verify the resulting exact remote head with JSON/Node syntax, focused 57-test union, Daily V4, verify:all, allowlist/denylist, behavior hash, and no-lockfile checks.
 
 ## Git Status
 
@@ -247,3 +247,22 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - Node syntax checks for both RED test files: GREEN.
 - No production implementation, workflow trigger, data, lockfile, PR, merge, deploy, dispatch, live provider/generator, sync, replay, C5-C, observation, or Activation changed in the RED stage.
 - Next action: atomic minimal implementation repair against this RED, then focused GREEN.
+
+
+## Repair Stage 2 Focused GREEN Evidence — 2026-08-03
+
+- Exact accepted repair RED parent: `a675df38d923816c81ab7e5e4bc9545e9e1a4eb7`.
+- Minimal implementation changes exactly four paths:
+  - `.github/workflows/daily-report-watchdog.yml`
+  - `.github/workflows/sync-daily-report.yml`
+  - `automations/jobs/online_daily_v4.mjs`
+  - `automations/jobs/online_daily_v7_3_shadow_collector.mjs`
+- Collector static import was removed; dynamic import plus invocation now execute together inside the post-output protected boundary after all four production writes.
+- Each workflow finalizer import plus invocation now has its own catch-and-warn boundary after the receipt write and before the existing receipt-fatal catch.
+- Behavior authority now declares the approved/imported closure and the three explicit production-output/diagnostic exclusions.
+- Final transaction output binds final independent evidence IDs; explicit official/developer/publisher/keyword/unclassified roles are preserved and unknown roles remain unclassified.
+- Focused repair tests: 14/14 GREEN.
+- Full C5-B focused union: 57/57 GREEN.
+- Modified MJS and RED-test Node syntax: GREEN.
+- Full exact-head Daily V4, verify:all, allowlist/denylist, behavior hash, and independent QA remain pending.
+- No production data, lockfile, PR, merge, deploy, dispatch, live provider/generator, sync, replay, C5-C, observation, or Activation.
