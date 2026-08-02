@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: independent QA failed — P0=0/P1=2; Phase 4 stopped and returned to Phase 2
+Status: Phase 3/4 repair amendment approved; bounded Phase 4 repair in progress
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -14,7 +14,7 @@ Frozen failed implementation head: a8b9b45d502583d941d1038fcb57ff3de6fcd381
 
 ## Current Goal
 
-Complete only the approved C5-B shadow-only implementation from the accepted RED head, reach the bounded GREEN and repository verification gates, freeze exact evidence in this checkpoint, then stop before PR creation.
+Implement only the approved C5-B repair amendment: prove module-load isolation and behavior-manifest closure RED, apply the smallest fail-open/hash-closure repair, complete exact-head verification and independent QA, then stop before PR creation.
 
 ## Completed
 
@@ -28,18 +28,17 @@ Complete only the approved C5-B shadow-only implementation from the accepted RED
 
 ## Remaining
 
-- Re-read the amendment and original proposal acceptance gates from their exact remote blobs.
-- Prove the disposable snapshot is rooted in the accepted RED head and audit the nine recovered changes against the 21-path allowlist and denylist.
-- Run the focused RED-to-GREEN contracts and repair only approved C5-B failures.
-- Run JSON parse, Node syntax, focused union, Daily V4, `verify:all`, workflow/static guards, privacy/network sentinels, and diff checks.
-- Write the implementation files atomically through the GitHub Git Data API.
-- Freeze the exact GREEN head, new/adapted blob SHAs, behavior hash, verification evidence, and changed-path proof in this checkpoint.
-- Perform the required independent exact-head read-only QA handoff.
-- Stop before PR creation, merge, deployment, workflow dispatch, live provider/generator, CRM sync, replay, C5-C, observation window, or Activation.
+- Freeze this approval/start checkpoint on the exact remote branch.
+- Add and prove valid module-load and import-closure RED contracts in a disposable exact-SHA GitHub snapshot.
+- Apply only the approved workflow/orchestrator/collector/contract-test repair through the GitHub App/API.
+- Re-run focused, Daily V4, repository verification, allowlist/denylist, exact blob/hash, and no-lockfile guards.
+- Perform a new independent exact-head read-only QA.
+- Close the checkpoint if P0=0/P1=0; otherwise stop and return to Phase 2.
+- Stop before PR creation, merge, deploy, workflow dispatch, live provider/generator, CRM sync, replay, C5-C, observation window, or Activation.
 
 ## Next Action
 
-Audit the recovered nine-file snapshot against the accepted RED branch and run the focused fixture-only contracts. If any stop condition is encountered, return to Phase 2 without advancing implementation.
+Create a fixture-only RED that demonstrates collector/finalizer module-load failure can escape the current boundary and that the current behavior manifest omits the approved/imported closure. Do not alter production implementation until the RED is valid and bounded.
 
 ## Git Status
 
@@ -209,3 +208,22 @@ Decision, media-enrichment, and media-entities are not safely classified as outp
 - media-enrichment and media-entities shape the media universe, evidence, and identity passed into the shadow collector.
 
 The Phase 2 amendment must either include these behavior-affecting paths in the hash or explicitly justify and approve a narrower upstream-universe contract plus its observation-window risk. The default recommended repair is to include them and add an executable import-closure/floor contract so future dependency changes cannot silently escape the behavior hash.
+
+
+## Phase 3 Approval and Phase 4 Repair Start — 2026-08-03
+
+- User explicitly approved: `批准 C5-B Phase 2 repair amendment，并授权 Phase 4 按上述边界实施`.
+- Approval re-pin:
+  - remote `main`: `1fc883e36ce8725d345061b8f8f64aef28e36bad` (identical)
+  - pre-start branch head: `6564da55f2dd801f1451bc696592c9c2ae205723` (identical)
+  - pre-start checkpoint blob: `10f291a9e4edd8a82ffd87738bc51826680ef1a3`
+  - compare: ahead 8 / behind 0 / exactly 21 allowlisted paths
+  - open PRs: C5-A #107 and unrelated #71; no PR for this branch
+- Authorized repair:
+  - collector import plus invocation wholly inside the post-output protected boundary;
+  - each workflow finalizer import plus call inside its own catch-and-warn boundary;
+  - executable approved-floor/import-closure contract and explicit reviewed exclusions;
+  - P2 final-evidence binding and closed independent-role tests without relaxing quality rules;
+  - exact-head focused/full verification and a new independent QA.
+- Still forbidden: PR creation, merge, deploy, workflow dispatch, live provider/generator, CRM sync, production replay/data write, C5-C, 15-day observation, and Activation.
+- No implementation file changed in this checkpoint-only stage.
