@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: bounded repair full verification GREEN; independent exact-head QA pending
+Status: repair closed GREEN — independent exact-head QA P0=0/P1=0; stopped before PR creation
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -14,7 +14,7 @@ Frozen failed implementation head: a8b9b45d502583d941d1038fcb57ff3de6fcd381
 
 ## Current Goal
 
-Implement only the approved C5-B repair amendment: prove module-load isolation and behavior-manifest closure RED, apply the smallest fail-open/hash-closure repair, complete exact-head verification and independent QA, then stop before PR creation.
+Closed. The approved C5-B repair amendment is implemented, fully verified, independently re-audited at the exact implementation head, and stopped before PR creation.
 
 ## Completed
 
@@ -28,17 +28,11 @@ Implement only the approved C5-B repair amendment: prove module-load isolation a
 
 ## Remaining
 
-- Freeze this approval/start checkpoint on the exact remote branch.
-- Add and prove valid module-load and import-closure RED contracts in a disposable exact-SHA GitHub snapshot.
-- Apply only the approved workflow/orchestrator/collector/contract-test repair through the GitHub App/API.
-- Re-run focused, Daily V4, repository verification, allowlist/denylist, exact blob/hash, and no-lockfile guards.
-- Perform a new independent exact-head read-only QA.
-- Close the checkpoint if P0=0/P1=0; otherwise stop and return to Phase 2.
-- Stop before PR creation, merge, deploy, workflow dispatch, live provider/generator, CRM sync, replay, C5-C, observation window, or Activation.
+No work remains inside the authorized C5-B repair task. PR creation, merge, deploy, production acceptance, workflow dispatch, live provider/generator, CRM sync, replay, C5-C, 15-day observation, and Activation remain separate, unapproved actions.
 
 ## Next Action
 
-Perform a fresh read-only QA locked to implementation commit `4b33610a6c2973a7641fc1d52a70119f6f0b9c9d`. Reproduce the two former P1 boundaries, review P2 role/evidence closure, confirm exact 21-path scope and denylist, then either close with P0=0/P1=0 or stop and return to Phase 2.
+Stop and wait for separate explicit authorization if the user wants PR creation. Do not merge, deploy, dispatch, run live providers/generators, sync CRM, replay production, begin C5-C/observation, or activate.
 
 ## Git Status
 
@@ -295,3 +289,32 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - GitHub exposes no combined statuses and no PR-triggered workflow runs for exact implementation; no CI claim is made.
 - No PR exists for this branch.
 - No production data write, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation occurred.
+
+
+## Repair Stage 4 Fresh Exact-Head QA and Closure — 2026-08-03
+
+- QA authority: implementation commit `4b33610a6c2973a7641fc1d52a70119f6f0b9c9d`, not later checkpoint-only commits.
+- QA used a second fresh GitHub API exact-SHA snapshot.
+- Result: **P0=0, P1=0.**
+- Former P1-1 closed:
+  - no top-level static shadow-collector import remains in `online_daily_v4.mjs`;
+  - injected collector syntax/load failure leaves all four simulated production writes complete and exits zero;
+  - injected finalizer syntax/load failure leaves both sync/watchdog receipts unchanged and exits zero;
+  - exact patch review confirms both workflow finalizer imports/calls are nested in their own catch-and-warn boundary before the receipt-fatal catch.
+- Former P1-2 closed:
+  - executable recursive import-closure/floor contract passes;
+  - behavior manifest contains 36 declared paths;
+  - candidate-audit, reports, and volume are the exact three explicit production-only exclusions;
+  - collector closure contains no excluded dependency;
+  - fresh behavior hash reproduces `0d2e9199de728a75750f0e4cd64571ab3859e5189ff734eea8d2c49c870aeaab`.
+- P2 closure:
+  - final transaction output directly binds final independent evidence IDs;
+  - explicit official/developer/publisher/keyword/unclassified roles are preserved;
+  - unknown roles remain `unclassified`;
+  - only `media` and `trusted_creator` occupy independent-quality evidence IDs.
+- Fresh QA focused union: 57/57 GREEN.
+- Fresh QA syntax/no-static-import/no-lockfile guards: GREEN.
+- Branch after implementation contained only checkpoint documentation beyond the implementation SHA.
+- Overall scope remains exactly 21 allowlisted paths; denylist and production V7.2 authority remain unchanged.
+- No PR exists for this branch. GitHub exposes no combined status or PR-triggered workflow runs for the implementation SHA; no CI claim is made.
+- No PR, merge, deploy, workflow dispatch, live provider/generator, CRM sync, production replay/data write, C5-C, observation, or Activation occurred.
