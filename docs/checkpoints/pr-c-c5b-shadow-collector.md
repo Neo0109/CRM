@@ -57,3 +57,33 @@ Delivery and sync are healthy; admission/product output is degraded. This does n
 ## Stop Boundary
 
 Any proposal stop condition ends implementation and returns to proposal. This task stops after the remote implementation checkpoint and exact verification. It does not create a PR.
+
+## Stop Condition — Exact Reusable Test Conflicts With Shadow Boundary
+
+Implementation stopped before the RED commit and before any collector, integration hook, workflow, schema, rule, or test path was added.
+
+The proposal classifies archived blob `208de9f34ca06ee2fb4655c3bbe8711ff0b667ee` as an exact byte-for-byte reusable focused test at `automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs`. Direct GitHub App blob inspection shows that its final integration test requires all of the following:
+
+- production `RULE_VERSION === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`;
+- production `automations/rules/daily-report.json.rule_version === V73_OBTAINABLE_EVIDENCE_RULE_VERSION`;
+- production `online_daily_v4.mjs` to call `runV73TargetedCandidateSecondPasses` and `fetchV73TargetedEvidence`;
+- production pool construction to use `v73SecondPass.steam_candidates` and `v73SecondPass.media_candidates`;
+- production candidate audit to use the second-pass candidates and states before artifact decisions.
+
+Those assertions are activation assertions, not shadow-collector assertions. They contradict the same proposal's mandatory invariants:
+
+- `online_daily_v4_rules.mjs` and `automations/rules/daily-report.json` remain V7.2 and are denylisted;
+- `online_daily_v4.mjs` permits only an additive non-throwing hook after all four V7.2 production payload writes;
+- shadow decisions and candidates must never flow into production pools, reports, candidate artifacts, payloads, validation, sync, or receipt status;
+- the exact archived focused test must be rehomed byte-for-byte and run GREEN.
+
+Therefore the exact reusable blob cannot be rehomed GREEN without semantic change. Making it pass would require either activating V7.3 in production/altering denylisted files or editing the exact archived test into a new shadow-boundary test. Both are prohibited. This matches the explicit stop condition: “an exact reusable blob cannot be rehomed without semantic change.”
+
+## Frozen Stop State
+
+- Branch base: `1fc883e36ce8725d345061b8f8f64aef28e36bad`.
+- Initial implementation checkpoint commit: `c5c701e97ac5cb9b96c5ad180180ab5ab308375d`.
+- Changed path before this stop update: only `docs/checkpoints/pr-c-c5b-shadow-collector.md`.
+- No RED/GREEN implementation commit was created.
+- No PR, merge, deployment, workflow dispatch, live provider/generator, CRM sync, production replay, C5-C, observation window, or activation occurred.
+- Required next boundary: amend and separately approve the proposal so the archived activation test is either removed from the exact rehome/verification contract or replaced by a newly specified shadow-only test blob; then restart Phase 4 from a freshly verified latest main.
