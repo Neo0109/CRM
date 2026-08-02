@@ -169,3 +169,43 @@ One bounded amendment is required before any further implementation:
 8. Keep the same no-PR/no-merge/no-deploy/no-dispatch/no-live-provider/no-sync/no-replay/no-C5-C/no-Activation boundary.
 
 No Phase 4 repair is authorized by this checkpoint. The next action is explicit user approval or revision of this Phase 2 amendment.
+
+
+## Phase 2 Transitive Import Closure Audit
+
+Static recursive relative-import scanning was performed against exact GREEN `9c0ef83183eb5736350aeee147e23c77cc3d0b93`.
+
+### Explicit proposal floor missing from the manifest
+
+- `automations/jobs/online_daily_v4_enrichment_scheduler.mjs` — main blob `c63221f75658529607c7adfb9324065c97cad862`
+- `automations/jobs/online_daily_v4_steam_source.mjs` — main blob `0cc45a9788aed679c91be97a95e90b0391d18468`
+
+These are explicitly authoritative in the original proposal and cannot be excluded without a new Phase 2 contract decision.
+
+### Real collector/shadow transitive closure missing from the manifest
+
+- `automations/jobs/bilibili_evidence.mjs` — `5243ffe606734112e6b88cb24087cdb20cd0341b`
+- `automations/jobs/online_daily_v4_media_rules.mjs` — `7390e7f8ddb478c732394d3908a717aef4da8344`
+- `automations/jobs/online_daily_v4_network.mjs` — `50d81836e17dcb50bb5c36eb9f82eee0773efd68`
+- `automations/jobs/online_daily_v4_source_health.mjs` — `9c09f003d5268b9f48c7b506e41c34a8c36a8379`
+- `automations/jobs/sourcing_v6_3_quality.mjs` — `0e890ee2009472e9cec897791d78b86907e987da`
+
+Under the existing wording requiring every loaded transitive decision/capture dependency, all five belong in the behavior manifest unless a separately approved contract explicitly narrows the definition.
+
+### Production-root-only missing local imports
+
+- `automations/jobs/online_daily_v4_candidate_audit.mjs` — `f6e4403f937eaec60e935c01ea37bd8eeacd40d2`
+- `automations/jobs/online_daily_v4_decision.mjs` — `b326be1cb67b36985616ec54a489d30ec958a8c3`
+- `automations/jobs/online_daily_v4_media_enrichment.mjs` — `4de18e9d5e62076cf32b1240f8c24251ce8bca9a`
+- `automations/jobs/online_daily_v4_media_entities.mjs` — `254daa3b8e2d0802626bdf9872070ad338de2818`
+- `automations/jobs/online_daily_v4_reports.mjs` — `2d78c1d1605fd5ad6a89e68a85e5c2b20fa3d7e1`
+- `automations/jobs/online_daily_v4_volume.mjs` — `0c6168917876cc52bd08e8cf960f3ccb9f2e590b`
+
+Candidate-audit, reports, and volume may be proposed as explicit production-output/diagnostic exclusions. They may not be omitted silently.
+
+Decision, media-enrichment, and media-entities are not safely classified as output-only:
+
+- production decision exports `scoreCandidate`, which influences Steam scoring, shadow ranking, and second-pass selection;
+- media-enrichment and media-entities shape the media universe, evidence, and identity passed into the shadow collector.
+
+The Phase 2 amendment must either include these behavior-affecting paths in the hash or explicitly justify and approve a narrower upstream-universe contract plus its observation-window risk. The default recommended repair is to include them and add an executable import-closure/floor contract so future dependency changes cannot silently escape the behavior hash.
