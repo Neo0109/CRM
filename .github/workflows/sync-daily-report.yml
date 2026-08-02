@@ -313,11 +313,26 @@ jobs:
             sync_response: response
           };
           fs.writeFileSync(`data/automation_runs/${reportDate}-${runSlot}.json`, `${JSON.stringify(payload, null, 2)}\n`);
+          /* C5B_SHADOW_FINALIZER_START */
+          const { finalizeC5BReplayCorpusSafely } = await import('./automations/jobs/online_daily_v7_3_shadow_collector.mjs');
+          await finalizeC5BReplayCorpusSafely({
+            rootDir: process.cwd(),
+            reportDate,
+            runSlot,
+            receiptPath: `data/automation_runs/${reportDate}-${runSlot}.json`
+          });
+          /* C5B_SHADOW_FINALIZER_END */
           })().catch((error) => {
             console.error(error);
             process.exitCode = 1;
           });
           NODE
+          # C5B_SHADOW_CORPUS_ADD_START
+          corpus_path="data/sourcing_replay_corpus/$REPORT_DATE/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-1}-$RUN_SLOT.json"
+          if [ -f "$corpus_path" ]; then
+            git add "$corpus_path"
+          fi
+          # C5B_SHADOW_CORPUS_ADD_END
 
           git add "data/automation_runs/$REPORT_DATE-$RUN_SLOT.json"
           if git diff --cached --quiet; then
@@ -383,4 +398,7 @@ jobs:
           echo "- data/radar/$REPORT_DATE.json"
           echo "- data/steam_trends/$REPORT_DATE.json"
           echo "- data/sourcing_candidates/$REPORT_DATE.json"
+          # C5B_SHADOW_SUMMARY_START
+          echo "- data/sourcing_replay_corpus/$REPORT_DATE/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-1}-$RUN_SLOT.json (when eligible and complete)"
+          # C5B_SHADOW_SUMMARY_END
           echo "- data/automation_runs/$REPORT_DATE-$RUN_SLOT.json"
