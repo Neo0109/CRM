@@ -28,12 +28,14 @@ const capturedAt = "2026-08-03T14:30:00+08:00";
 const firstQualityProof = {
   type: "official_festival_selection",
   source_id: "festival:indie-showcase",
+  source_role: "media",
   value: "Selected for an independent showcase",
   url: "https://showcase.example/games/c5b-fixture"
 };
 const secondQualityProof = {
   type: "trusted_creator_playtest",
   source_id: "creator:trusted-playtester",
+  source_role: "trusted_creator",
   value: "Independent hands-on playtest",
   url: "https://creator.example/reviews/c5b-fixture"
 };
@@ -97,6 +99,14 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(core.second_pass.transactions.length, 12);
     assert.equal(providerCalls.length, 12);
     assert.ok(providerCalls.every((call) => call.actions.length >= 1 && call.actions.length <= 3));
+    const evidenceById = new Map(core.evidence_catalog.map((item) => [item.evidence_id, item]));
+    for (const transaction of core.second_pass.transactions) {
+      assert.equal(transaction.final_output.evidence_ids.length, 2);
+      assert.deepEqual(
+        new Set(transaction.final_output.evidence_ids.map((id) => evidenceById.get(id)?.source_role)),
+        new Set(["media", "trusted_creator"])
+      );
+    }
     assert.deepEqual(
       core.budgets.usage.provider_transaction_ids,
       core.second_pass.transactions.map((item) => item.transaction_id)
@@ -178,6 +188,51 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(core.capture_status, "incomplete");
     assert.ok(core.capture_errors.some((item) => item.code === "privacy_violation"));
     assert.doesNotMatch(JSON.stringify(core), /forbidden-secret|authorization/i);
+  });
+
+  it("does not coerce official or unknown proof roles into independent media evidence", async () => {
+    requireCollector("collectV73ShadowCore");
+    const officialProof = {
+      type: "developer_statement",
+      source_id: "developer:fixture",
+      source_role: "official",
+      value: "Developer-authored quality statement",
+      url: "https://developer.example/games/c5b-fixture"
+    };
+    const unknownProof = {
+      type: "external_blog",
+      source_id: "blog:unclassified",
+      value: "Unclassified external write-up",
+      url: "https://unknown.example/reviews/c5b-fixture"
+    };
+    const candidate = steamCandidate({
+      ...nearMissEvidence(60),
+      quality_proofs: [officialProof]
+    });
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9006" }),
+      steamCandidates: [candidate],
+      mediaCandidates: [],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async () => ({ quality_proofs: [unknownProof] })
+    });
+
+    const qualityEvidence = core.evidence_catalog.filter(
+      (item) => item.gate_id === "independent_quality_proof"
+    );
+    assert.deepEqual(
+      new Set(qualityEvidence.map((item) => item.source_role)),
+      new Set(["official", "unclassified"])
+    );
+    const firstGate = core.candidates[0].first_pass.indie_prelaunch.gate_results.find(
+      (item) => item.gate_id === "independent_quality_proof"
+    );
+    assert.deepEqual(firstGate.evidence_ids, []);
+    assert.deepEqual(core.second_pass.transactions[0].final_output.evidence_ids, []);
   });
 
   it("writes a pending core and finalizes one schema-valid receipt-bound corpus", async () => {

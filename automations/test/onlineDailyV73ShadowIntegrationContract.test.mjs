@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, it } from "node:test";
+
+import * as shadowCollector from "../jobs/online_daily_v7_3_shadow_collector.mjs";
 
 const generator = read("../jobs/online_daily_v4.mjs");
 const activeRulesModule = read("../jobs/online_daily_v4_rules.mjs");
@@ -39,7 +50,6 @@ describe("C5-B shadow-only production integration", () => {
   });
 
   it("adds only one non-throwing hook after all four production writes", () => {
-    assert.match(generator, /C5B_SHADOW_IMPORT_START/);
     assert.match(generator, /runC5BShadowCollectorSafely/);
     assert.match(generator, /C5B_SHADOW_HOOK_START/);
     assert.equal(gitBlobSha(stripC5BBlocks(generator)), ORIGINAL_BLOBS.generator);
@@ -64,6 +74,40 @@ describe("C5-B shadow-only production integration", () => {
     assert.match(generator, /buildPools\(enrichedCandidates, mediaLeadCandidates, \{ reportDate \}\)/);
   });
 
+  it("isolates an injected collector module-load failure after all four production writes", () => {
+    const fixture = mkdtempSync(path.join(tmpdir(), "c5b-generator-load-failure-"));
+    try {
+      writeFileSync(path.join(fixture, "failing-collector.mjs"), "export const = ;\n");
+      const importBlock = c5bBlock(generator, "IMPORT");
+      const hookBlock = c5bBlock(generator, "HOOK");
+      const harness = `${importBlock}\n${generatorHarnessPrelude()}\n${hookBlock}\n`;
+      const harnessPath = path.join(fixture, "generator-harness.mjs");
+      const writeLog = path.join(fixture, "writes.json");
+      writeFileSync(
+        harnessPath,
+        harness.replaceAll(
+          "./online_daily_v7_3_shadow_collector.mjs",
+          "./failing-collector.mjs"
+        )
+      );
+
+      const result = spawnSync(process.execPath, [harnessPath], {
+        cwd: fixture,
+        env: { ...process.env, C5B_WRITE_LOG: writeLog },
+        encoding: "utf8"
+      });
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(JSON.parse(readFileSync(writeLog, "utf8")), [
+        "data/sourcing_candidates/2026-08-03.json",
+        "data/reports/2026-08-03.json",
+        "data/radar/2026-08-03.json",
+        "data/steam_trends/2026-08-03.json"
+      ]);
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
+    }
+  });
+
   it("uses only existing workflow receipt plumbing and the exact corpus path", () => {
     assert.equal(gitBlobSha(stripC5BBlocks(syncWorkflow)), ORIGINAL_BLOBS.syncWorkflow);
     assert.equal(gitBlobSha(stripC5BBlocks(watchdogWorkflow)), ORIGINAL_BLOBS.watchdogWorkflow);
@@ -81,6 +125,80 @@ describe("C5-B shadow-only production integration", () => {
     assert.match(watchdogWorkflow, /git add "data\/automation_runs\/\$REPORT_DATE-watchdog\.json"/);
   });
 
+  it("isolates injected finalizer module-load failures without changing receipt or exit status", () => {
+    for (const [name, workflow, runSlot] of [
+      ["sync", syncWorkflow, "afternoon"],
+      ["watchdog", watchdogWorkflow, "watchdog"]
+    ]) {
+      const fixture = mkdtempSync(path.join(tmpdir(), `c5b-${name}-finalizer-load-failure-`));
+      try {
+        writeFileSync(path.join(fixture, "failing-collector.mjs"), "export const = ;\n");
+        const receiptPath = path.join(fixture, "receipt.json");
+        const block = c5bBlock(workflow, "FINALIZER").replaceAll(
+          "./automations/jobs/online_daily_v7_3_shadow_collector.mjs",
+          "./failing-collector.mjs"
+        );
+        const harnessPath = path.join(fixture, "finalizer-harness.mjs");
+        writeFileSync(harnessPath, finalizerHarness({ block, receiptPath, runSlot }));
+
+        const result = spawnSync(process.execPath, [harnessPath], {
+          cwd: fixture,
+          encoding: "utf8"
+        });
+        assert.equal(result.status, 0, `${name}: ${result.stderr}`);
+        assert.equal(readFileSync(receiptPath, "utf8"), "receipt-before-finalizer\n");
+      } finally {
+        rmSync(fixture, { recursive: true, force: true });
+      }
+    }
+  });
+
+  it("declares the approved behavior floor and closes every loaded local dependency", () => {
+    const manifest = new Set(shadowCollector.C5B_BEHAVIOR_DEPENDENCY_PATHS ?? []);
+    const exclusions = new Set(shadowCollector.C5B_BEHAVIOR_PRODUCTION_EXCLUSIONS ?? []);
+    assert.deepEqual([...exclusions].sort(), [
+      "automations/jobs/online_daily_v4_candidate_audit.mjs",
+      "automations/jobs/online_daily_v4_reports.mjs",
+      "automations/jobs/online_daily_v4_volume.mjs"
+    ]);
+
+    const approvedAdditions = [
+      "automations/jobs/bilibili_evidence.mjs",
+      "automations/jobs/online_daily_v4_decision.mjs",
+      "automations/jobs/online_daily_v4_enrichment_scheduler.mjs",
+      "automations/jobs/online_daily_v4_media_enrichment.mjs",
+      "automations/jobs/online_daily_v4_media_entities.mjs",
+      "automations/jobs/online_daily_v4_media_rules.mjs",
+      "automations/jobs/online_daily_v4_network.mjs",
+      "automations/jobs/online_daily_v4_source_health.mjs",
+      "automations/jobs/online_daily_v4_steam_source.mjs",
+      "automations/jobs/sourcing_v6_3_quality.mjs"
+    ];
+    assert.deepEqual(
+      approvedAdditions.filter((relativePath) => !manifest.has(relativePath)),
+      []
+    );
+
+    const collectorClosure = relativeImportClosure([
+      "automations/jobs/online_daily_v7_3_shadow_collector.mjs"
+    ]);
+    assert.deepEqual(
+      [...collectorClosure].filter((relativePath) => exclusions.has(relativePath)),
+      [],
+      "a loaded collector dependency cannot be hidden behind a production-only exclusion"
+    );
+    const loadedClosure = relativeImportClosure([
+      "automations/jobs/online_daily_v4.mjs",
+      "automations/jobs/online_daily_v7_3_shadow_collector.mjs"
+    ]);
+    assert.deepEqual(
+      [...loadedClosure]
+        .filter((relativePath) => !manifest.has(relativePath) && !exclusions.has(relativePath))
+        .sort(),
+      []
+    );
+  });
+
   it("contains no activation acceptance or return flow from shadow into production", () => {
     const replacementTest = read("../test/onlineDailyV73SecondPassOrchestrator.test.mjs");
     assert.doesNotMatch(replacementTest, /RULE_VERSION\s*,?\s*V73_OBTAINABLE_EVIDENCE_RULE_VERSION/);
@@ -93,6 +211,85 @@ describe("C5-B shadow-only production integration", () => {
 
 function read(relativePath) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}
+
+function readRepo(relativePath) {
+  return readFileSync(new URL(`../../${relativePath}`, import.meta.url), "utf8");
+}
+
+function c5bBlock(source, label) {
+  const match = source.match(new RegExp(
+    `^[ \\t]*(?:/\\*|#) C5B_SHADOW_${label}_START(?: \\*/)?\\n([\\s\\S]*?)^[ \\t]*(?:/\\*|#) C5B_SHADOW_${label}_END(?: \\*/)?$`,
+    "m"
+  ));
+  return match?.[1] ?? "";
+}
+
+function generatorHarnessPrelude() {
+  return `
+import { writeFileSync } from "node:fs";
+const rootDir = process.cwd();
+const reportDate = "2026-08-03";
+const capturedAt = "2026-08-03T14:30:00+08:00";
+const enrichedCandidates = [];
+const mediaLeadCandidates = [];
+const mediaSignals = [];
+const candidateStates = new Map();
+const steamEnrichmentMetrics = {};
+const maxCandidates = 320;
+const maxSteamDetails = 90;
+const maxBilibiliLeadAgeDays = 30;
+const enrichmentPlan = { scheduled: [], reused: [] };
+const writes = [];
+async function writeJson(relativePath) {
+  writes.push(relativePath);
+  writeFileSync(process.env.C5B_WRITE_LOG, JSON.stringify(writes));
+}
+await writeJson(\`data/sourcing_candidates/\${reportDate}.json\`, {});
+await writeJson(\`data/reports/\${reportDate}.json\`, {});
+await writeJson(\`data/radar/\${reportDate}.json\`, {});
+await writeJson(\`data/steam_trends/\${reportDate}.json\`, {});
+`;
+}
+
+function finalizerHarness({ block, receiptPath, runSlot }) {
+  return `
+import { writeFileSync } from "node:fs";
+const reportDate = "2026-08-03";
+const runSlot = ${JSON.stringify(runSlot)};
+await (async () => {
+  writeFileSync(${JSON.stringify(receiptPath)}, "receipt-before-finalizer\\n");
+${block}
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+`;
+}
+
+function relativeImportClosure(roots) {
+  const closure = new Set();
+  const pending = [...roots];
+  while (pending.length) {
+    const relativePath = pending.pop();
+    if (closure.has(relativePath)) continue;
+    closure.add(relativePath);
+    const source = readRepo(relativePath);
+    const specifiers = source.matchAll(
+      /(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["'](\.[^"']+)["']|import\(\s*["'](\.[^"']+)["']\s*\)/g
+    );
+    for (const match of specifiers) {
+      const specifier = match[1] ?? match[2];
+      let dependency = path.posix.normalize(
+        path.posix.join(path.posix.dirname(relativePath), specifier)
+      );
+      if (!path.posix.extname(dependency)) dependency += ".mjs";
+      if (dependency.endsWith(".mjs") && existsSync(new URL(`../../${dependency}`, import.meta.url))) {
+        pending.push(dependency);
+      }
+    }
+  }
+  return closure;
 }
 
 function stripC5BBlocks(value) {

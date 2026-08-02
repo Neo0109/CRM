@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 implementation
-Status: Phase 3/4 repair amendment approved; bounded Phase 4 repair in progress
+Status: valid bounded repair RED frozen; minimal Phase 4 repair in progress
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -38,7 +38,7 @@ Implement only the approved C5-B repair amendment: prove module-load isolation a
 
 ## Next Action
 
-Create a fixture-only RED that demonstrates collector/finalizer module-load failure can escape the current boundary and that the current behavior manifest omits the approved/imported closure. Do not alter production implementation until the RED is valid and bounded.
+Apply only the minimal approved repair that makes the five valid RED assertions GREEN: post-output collector load isolation, workflow finalizer catch-and-warn, behavior import closure plus explicit exclusions, and closed-role/final-evidence binding. Do not change V7.2 decisions, workflow triggers, production data, or later C5 phases.
 
 ## Git Status
 
@@ -227,3 +227,23 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
   - exact-head focused/full verification and a new independent QA.
 - Still forbidden: PR creation, merge, deploy, workflow dispatch, live provider/generator, CRM sync, production replay/data write, C5-C, 15-day observation, and Activation.
 - No implementation file changed in this checkpoint-only stage.
+
+
+## Repair Stage 1 Valid RED Evidence — 2026-08-03
+
+- Exact RED parent: `253bfaa5412dedcc6a842ed3b8ac89396b5c16e6`.
+- RED changes are limited to:
+  - `automations/test/onlineDailyV73ShadowIntegrationContract.test.mjs`
+  - `automations/test/onlineDailyV73ShadowCollector.test.mjs`
+  - this checkpoint
+- RED command: `node --test automations/test/onlineDailyV73ShadowIntegrationContract.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs`.
+- RED result: 14 tests, 9 passed, 5 expected failures.
+- Expected failures:
+  1. collector module-load syntax failure exits before the simulated four production writes;
+  2. sync finalizer module-load failure reaches the receipt-fatal catch and exits nonzero;
+  3. watchdog finalizer has the same failure;
+  4. behavior manifest lacks the approved/imported closure and explicit exclusions;
+  5. final evidence IDs are unbound and official/unknown roles are coerced to `media`.
+- Node syntax checks for both RED test files: GREEN.
+- No production implementation, workflow trigger, data, lockfile, PR, merge, deploy, dispatch, live provider/generator, sync, replay, C5-C, observation, or Activation changed in the RED stage.
+- Next action: atomic minimal implementation repair against this RED, then focused GREEN.
