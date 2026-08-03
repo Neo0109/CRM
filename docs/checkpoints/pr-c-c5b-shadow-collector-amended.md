@@ -1,8 +1,8 @@
 # PR C C5-B Shadow Collector Amended Implementation
 
 Date: 2026-08-03 (Asia/Shanghai)
-Phase: Phase 4 implementation
-Status: repair closed GREEN — independent exact-head QA P0=0/P1=0; stopped before PR creation
+Phase: Phase 4 review-repair implementation
+Status: in progress — PR #108 evidence-integrity cluster accepted RED
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -14,7 +14,7 @@ Frozen failed implementation head: a8b9b45d502583d941d1038fcb57ff3de6fcd381
 
 ## Current Goal
 
-Closed. The approved C5-B repair amendment is implemented, fully verified, independently re-audited at the exact implementation head, and stopped before PR creation.
+Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, remote checkpointing, full bounded verification, and fresh independent QA; stop before merge, deploy, thread resolution, or any live/production action.
 
 ## Completed
 
@@ -28,22 +28,26 @@ Closed. The approved C5-B repair amendment is implemented, fully verified, indep
 
 ## Remaining
 
-No work remains inside the authorized C5-B repair task. PR creation, merge, deploy, production acceptance, workflow dispatch, live provider/generator, CRM sync, replay, C5-C, 15-day observation, and Activation remain separate, unapproved actions.
+- Make the evidence-integrity RED pass with the smallest producer/validator changes.
+- Add and close the two P2 RED contracts.
+- Run the exact-head focused union, Daily V4, `verify:all`, syntax/JSON/diff/allowlist/denylist/no-lockfile guards, and behavior-manifest/hash recalculation.
+- Complete a fresh independent exact-head QA with P0=0/P1=0.
+- Recheck PR Actions, preview, review-thread state, and scope, then stop.
 
 ## Next Action
 
-Stop and wait for separate explicit authorization if the user wants PR creation. Do not merge, deploy, dispatch, run live providers/generators, sync CRM, replay production, begin C5-C/observation, or activate.
+Implement only the evidence-integrity GREEN against accepted RED `a6ffb924958f53fe9e3a6bb409455713179315fb`, then update this checkpoint before starting the P2 cluster.
 
 ## Git Status
 
-Remote implementation branch before this checkpoint:
+Remote review-repair branch at this checkpoint:
 
-- base/main: `1fc883e36ce8725d345061b8f8f64aef28e36bad`
-- branch/head: `4d9fddfd01b3801d5792caeb881af8c535d75cdf`
-- compare: ahead 1 / behind 0
-- accepted RED changed paths: 16 added implementation/test/schema/rule paths
+- PR base/main: `8e255cded6e9063011f4da2f4c2f3f53ec3cc7e4`
+- pre-repair PR head: `8bf9414929b0b0a7c6a932f142987f7ab0ca1a93`
+- accepted review-repair RED: `a6ffb924958f53fe9e3a6bb409455713179315fb`
+- PR: `#108`, open, head `codex/pr-c-c5b-shadow-collector-amended`
+- scope: exactly the existing 21-path PR allowlist; this RED changes two existing test paths only
 - production authority: V7.2
-- PR: none for this branch
 
 This checkpoint is an in-progress recovery record. It is not GREEN evidence and does not authorize or claim deployment or production activation.
 
@@ -318,3 +322,24 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - Overall scope remains exactly 21 allowlisted paths; denylist and production V7.2 authority remain unchanged.
 - No PR exists for this branch. GitHub exposes no combined status or PR-triggered workflow runs for the implementation SHA; no CI claim is made.
 - No PR, merge, deploy, workflow dispatch, live provider/generator, CRM sync, production replay/data write, C5-C, observation, or Activation occurred.
+
+
+## PR #108 Review Repair Stage 1 — Evidence-Integrity RED — 2026-08-03
+
+- Remote freeze before write:
+  - `main = 8e255cded6e9063011f4da2f4c2f3f53ec3cc7e4`
+  - PR #108 open/base `main`/head `8bf9414929b0b0a7c6a932f142987f7ab0ca1a93`
+  - checkpoint blob `f5597a01f4487ff962ec60c51d2c064829d23f1b`
+  - Build run `30782720394` completed/success
+  - exactly 21 allowlisted changed paths; no production/generated data or lockfile
+  - all four confirmed review threads unresolved and non-outdated
+- Accepted RED commit: `a6ffb924958f53fe9e3a6bb409455713179315fb`.
+- RED changed only:
+  - `automations/test/onlineDailyV73ShadowCollector.test.mjs`
+  - `automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`
+- RED contract 1 uses the real fixture provider with an ordinary non-Bilibili media signal that has no `source_role`; qualification must preserve an explicit `media` proof and bind two final evidence IDs (`media` plus `trusted_creator`).
+- RED contract 2 rejects a qualified `final_output` when evidence IDs are missing, empty, unknown, role-ineligible, or represent fewer than two distinct eligible `source_id` values.
+- RED command: `node --test automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`.
+- RED result: 32 tests, 30 passed, 2 expected failures; one producer-role/binding failure and one validator final-reference failure.
+- No implementation, schema, workflow, production V7.2, data, or lockfile path changed. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation occurred.
+- Next action: minimal producer role propagation plus final transaction evidence semantic validation; keep unknown proof roles unclassified.
