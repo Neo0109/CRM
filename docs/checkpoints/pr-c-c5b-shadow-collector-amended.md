@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 review-repair implementation
-Status: in progress — all four PR #108 findings GREEN; exact-head full verification pending
+Status: in progress — all four PR #108 findings and exact-head verification GREEN; independent QA pending
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -28,13 +28,12 @@ Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, 
 
 ## Remaining
 
-- Run the exact-head focused union, Daily V4, `verify:all`, syntax/JSON/diff/allowlist/denylist/no-lockfile guards, and behavior-manifest/hash recalculation.
 - Complete a fresh independent exact-head QA with P0=0/P1=0.
 - Recheck PR Actions, preview, review-thread state, and scope, then stop.
 
 ## Next Action
 
-Freeze the P2 GREEN checkpoint, then build a fresh GitHub API snapshot from the resulting remote head and run the complete exact-head verification matrix without any live/provider/production execution.
+Run fresh independent read-only QA against the checkpointed remote exact head. Require P0=0/P1=0; otherwise stop and return to diagnosis/proposal.
 
 ## Git Status
 
@@ -393,3 +392,22 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - Evidence validator recheck: `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` → 24/24 GREEN.
 - No schema, workflow, production V7.2, generated data, or lockfile change. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation.
 - Next action: fresh exact-head full verification, behavior-manifest/hash recalculation, and independent QA.
+
+
+## PR #108 Review Repair Stage 5 — Exact-Head Full Verification — 2026-08-03
+
+- Verification authority: remote checkpoint-inclusive head `28457cef894c50a1845e8515e9e7186e56f1e992`; implementation commits are `d4bbd00f3740c6b96a0b6ec39c04d9d5008d6ce2` and `1e34169971a7944040a412c0bf1cff98ddf22bab`.
+- Verification used a fresh GitHub API tarball of exact head plus a separate exact `main@8e255cded6e9063011f4da2f4c2f3f53ec3cc7e4` tarball. Neither is the local CRM checkout/worktree.
+- Node syntax: all 14 changed C5-B job/test MJS paths GREEN.
+- JSON parse: rule plus three changed schemas, 4/4 GREEN.
+- Focused C5-B union: 60/60 GREEN.
+- Daily V4: 241/241 GREEN.
+- `npm run verify:all`: all 16 declared tasks GREEN.
+- Independent `git diff --check`: GREEN; exact tracked verification tree clean.
+- Exact `main...head` changed-path proof: 21/21 existing allowlist paths; no new path.
+- Denylist/no-production-write guards: no production/generated data, replay corpus/window data, Activation/observation, package/lockfile, UI/API, Supabase, CRM sync, C5-C, PR D/E, or AI-editing path.
+- `package-lock.json` absent after dependency installation with `--no-package-lock`.
+- Behavior manifest: 36 paths.
+- Recomputed `behavior_contract_sha256 = ff69a278853345974f5f8ed51551c648c7040dee86ee419fa08df01ce1bac579`.
+- No workflow dispatch, live provider/generator, CRM sync, replay/data write, merge, deploy, review reply/resolution, C5-C, observation, or Activation occurred.
+- Next action: fresh independent exact-head QA, then final PR Actions/preview/review-state recheck and stop.
