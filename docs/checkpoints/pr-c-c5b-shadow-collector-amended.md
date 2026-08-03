@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 review-repair implementation
-Status: in progress — PR #108 evidence-integrity cluster GREEN; P2 cluster next
+Status: in progress — PR #108 P2 cluster accepted RED
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -35,7 +35,7 @@ Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, 
 
 ## Next Action
 
-Add only the two P2 RED contracts for quality-only lookup suppression and Steam app-ID publication matching, prove the exact failures, then apply the minimal GREEN.
+Implement only the minimal P2 GREEN against accepted RED `106c5e205aa9ef39c73f682a454027df870ee5ef`, then run the complete exact-head verification matrix.
 
 ## Git Status
 
@@ -45,6 +45,7 @@ Remote review-repair branch at this checkpoint:
 - pre-repair PR head: `8bf9414929b0b0a7c6a932f142987f7ab0ca1a93`
 - accepted review-repair RED: `a6ffb924958f53fe9e3a6bb409455713179315fb`
 - evidence-integrity GREEN: `d4bbd00f3740c6b96a0b6ec39c04d9d5008d6ce2`
+- P2 accepted RED: `106c5e205aa9ef39c73f682a454027df870ee5ef`
 - PR: `#108`, open, head `codex/pr-c-c5b-shadow-collector-amended`
 - scope: exactly the existing 21-path PR allowlist; this RED changes two existing test paths only
 - production authority: V7.2
@@ -360,3 +361,18 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - Focused cluster result: 32/32 GREEN.
 - No schema, workflow, production V7.2, generated data, or lockfile change. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation.
 - Next action: P2 RED for zero official lookup on quality-only requests and Steam app-ID-only publication matching when an app ID is known.
+
+
+## PR #108 Review Repair Stage 3 — P2 RED — 2026-08-03
+
+- P2 RED parent/checkpoint: `903bdd289c4baf8f4745a7ada92543fdca58502c`.
+- Accepted P2 RED commit: `106c5e205aa9ef39c73f682a454027df870ee5ef`.
+- RED changed only:
+  - `automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs`
+  - `automations/test/onlineDailyV73ShadowCollector.test.mjs`
+- Quality-only contract: `fetch_independent_quality_evidence` must make zero official Bilibili lookups; an official stub that throws cannot suppress the locally available media quality patch.
+- Publication contract: with the same project title but different known Steam app IDs, only the actually published app may set `shadow_push_pool=true` or receive a shadow lead payload hash.
+- RED command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs`.
+- RED result: 17 tests, 15 passed, 2 expected failures; the official lookup was called and the same-title different-app candidate falsely matched the push pool.
+- No implementation, schema, workflow, production V7.2, generated data, or lockfile path changed. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation.
+- Next action: gate official lookup to actions that consume official signals and use project fallback only when `entry.steamAppId` is absent.
