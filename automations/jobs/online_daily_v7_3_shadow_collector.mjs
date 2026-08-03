@@ -793,8 +793,9 @@ function transactionFromResult({
 function publicationForEntry({ candidateId, entry, admission, audit, shadowPools }) {
   const decision = audit?.decision ?? (admission.qualified ? "formal" : admission.disposition === "excluded" ? "excluded" : "candidate");
   const lead = shadowPools.push.find((item) => (
-    (entry.steamAppId && String(item.steam_app_id ?? "") === String(entry.steamAppId))
-    || String(item.project ?? "").trim() === String(entry.project ?? "").trim()
+    entry.steamAppId
+      ? String(item.steam_app_id ?? "") === String(entry.steamAppId)
+      : String(item.project ?? "").trim() === String(entry.project ?? "").trim()
   ));
   const inPush = Boolean(lead);
   return {

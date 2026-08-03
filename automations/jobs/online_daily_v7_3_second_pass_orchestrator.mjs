@@ -153,9 +153,16 @@ export async function fetchV73TargetedEvidence({
   if (!project) return {};
   const fetchOfficial = context.fetchOfficialBilibiliCandidatesImpl
     ?? fetchOfficialBilibiliCandidates;
-  const officialSignals = uniquePublicSignals(
-    (await fetchOfficial(project, context)).filter((item) => signalMatchesProject(item, project))
-  );
+  const needsOfficialSignals = [
+    "fetch_official_playable_or_gameplay",
+    "fetch_non_steam_business_entry",
+    "research_china_bilibili_value"
+  ].some((action) => requested.has(action));
+  const officialSignals = needsOfficialSignals
+    ? uniquePublicSignals(
+        (await fetchOfficial(project, context)).filter((item) => signalMatchesProject(item, project))
+      )
+    : [];
   const matchingMediaSignals = uniquePublicSignals(
     mediaSignals.filter((item) => signalMatchesProject(item, project))
   );
