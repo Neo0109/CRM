@@ -56,14 +56,18 @@ const CORPUS_REASON_CODES = [
 ];
 const WINDOW_FAILURE_REASONS = [
   "missing_date",
+  "no_canonical",
   "duplicate_date",
   "date_gap",
   "behavior_drift",
   "corpus_contract_drift",
+  "contract_drift",
   "manual_only",
   "corpus_incomplete",
   "receipt_unhealthy",
-  "payload_mismatch"
+  "payload_mismatch",
+  "artifact_mismatch",
+  "replay_mismatch"
 ];
 const SHA256_PATTERN = /^[0-9a-f]{64}$/;
 const GIT_SHA_PATTERN = /^[0-9a-f]{40}$/;
@@ -1215,7 +1219,8 @@ function validateWindowDates(value, path, errors) {
       "corpus_path",
       "git_blob_sha",
       "payload_sha256",
-      "receipt_binding"
+      "receipt_binding",
+      "replay_binding"
     ];
     if (!validateClosedObject(item, itemPath, fields, fields, errors)) return;
     validateDate(item.report_date, appendPath(itemPath, "report_date"), errors);
@@ -1246,6 +1251,7 @@ function validateWindowDates(value, path, errors) {
     validatePattern(item.git_blob_sha, GIT_SHA_PATTERN, appendPath(itemPath, "git_blob_sha"), errors);
     validateSha256(item.payload_sha256, appendPath(itemPath, "payload_sha256"), errors);
     validateReceiptBinding(item.receipt_binding, appendPath(itemPath, "receipt_binding"), errors);
+    validateReplayBinding(item.replay_binding, appendPath(itemPath, "replay_binding"), errors);
   });
 }
 
@@ -1284,6 +1290,63 @@ function validateReceiptBinding(value, path, errors) {
   validateBoolean(value.synced, appendPath(path, "synced"), errors);
 }
 
+function validateReplayBinding(value, path, errors) {
+  const fields = [
+    "engine_contract_version",
+    "input_corpus_payload_sha256",
+    "expected_decision_sha256",
+    "replayed_decision_sha256",
+    "deterministic",
+    "status"
+  ];
+  if (!validateClosedObject(value, path, fields, fields, errors)) return;
+  validateConst(
+    value.engine_contract_version,
+    1,
+    appendPath(path, "engine_contract_version"),
+    errors
+  );
+  validateSha256(
+    value.input_corpus_payload_sha256,
+    appendPath(path, "input_corpus_payload_sha256"),
+    errors
+  );
+  validateSha256(
+    value.expected_decision_sha256,
+    appendPath(path, "expected_decision_sha256"),
+    errors
+  );
+  validateSha256(
+    value.replayed_decision_sha256,
+    appendPath(path, "replayed_decision_sha256"),
+    errors
+  );
+  if (value.deterministic !== true) {
+    addError(
+      errors,
+      "WINDOW_REPLAY_NON_DETERMINISTIC",
+      appendPath(path, "deterministic"),
+      "canonical replay must be deterministic"
+    );
+  }
+  if (value.status !== "match") {
+    addError(
+      errors,
+      "WINDOW_REPLAY_MISMATCH",
+      appendPath(path, "status"),
+      "canonical replay must match the stored decision view"
+    );
+  }
+  if (value.expected_decision_sha256 !== value.replayed_decision_sha256) {
+    addError(
+      errors,
+      "WINDOW_REPLAY_HASH_MISMATCH",
+      appendPath(path, "replayed_decision_sha256"),
+      "stored and replayed decision hashes must be equal"
+    );
+  }
+}
+
 function validateRejectedAttempts(value, path, errors) {
   if (!validateArray(value, path, errors)) return;
   value.forEach((item, index) => {
@@ -1302,8 +1365,13 @@ function validateRejectedAttempts(value, path, errors) {
         "incomplete",
         "corrupt",
         "unreplayable",
-        "delivery_unhealthy",
-        "superseded_automatic_attempt"
+          "delivery_unhealthy",
+          "superseded_automatic_attempt",
+          "rerun",
+          "artifact_mismatch",
+          "replay_mismatch",
+          "contract_drift",
+          "behavior_drift"
       ],
       appendPath(itemPath, "reason_code"),
       errors
@@ -2347,6 +2415,16 @@ function validateCanonicalDateHealth(entry, index, errors) {
       "WINDOW_CANONICAL_RECEIPT_UNHEALTHY",
       `/dates/${index}/receipt_binding`,
       "canonical date requires generation, validation, receipt, and sync success"
+    );
+  }
+  const replay = entry.replay_binding;
+  if (!isPlainObject(replay)) return;
+  if (replay.input_corpus_payload_sha256 !== entry.payload_sha256) {
+    addError(
+      errors,
+      "WINDOW_REPLAY_INPUT_HASH_MISMATCH",
+      `/dates/${index}/replay_binding/input_corpus_payload_sha256`,
+      "replay input hash must match the retained corpus payload hash"
     );
   }
 }

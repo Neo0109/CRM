@@ -136,16 +136,20 @@ describe("C5-C 15-natural-day replay windows", () => {
     const failed = advanceReplayWindow({
       window: dayOne.window,
       reportDate: "2026-08-02",
-      attempts: [],
+      attempts: [attempt({
+        reportDate: "2026-08-02",
+        workflowRunId: 9502,
+        behaviorManifest: { "automations/jobs/pre-c5c.mjs": BLOB_A }
+      })],
       expectedBehaviorContractSha256: BEHAVIOR_HASH
     });
     assert.equal(failed.window.status, "failed");
-    assert.deepEqual(failed.window.failure_reasons, ["no_canonical"]);
+    assert.deepEqual(failed.window.failure_reasons, ["behavior_drift"]);
 
     const sameDay = advanceReplayWindow({
       window: failed.window,
       reportDate: "2026-08-02",
-      attempts: [attempt({ reportDate: "2026-08-02", workflowRunId: 9502 })],
+      attempts: [attempt({ reportDate: "2026-08-02", workflowRunId: 9503 })],
       expectedBehaviorContractSha256: BEHAVIOR_HASH
     });
     assert.equal(sameDay.transition, "same_day_reopen_blocked");
@@ -154,7 +158,7 @@ describe("C5-C 15-natural-day replay windows", () => {
     const restarted = advanceReplayWindow({
       window: failed.window,
       reportDate: "2026-08-03",
-      attempts: [attempt({ reportDate: "2026-08-03", workflowRunId: 9503 })],
+      attempts: [attempt({ reportDate: "2026-08-03", workflowRunId: 9504 })],
       expectedBehaviorContractSha256: BEHAVIOR_HASH
     });
     assert.equal(restarted.transition, "restarted_after_failure");

@@ -68,6 +68,9 @@ describe("C5-C no-network offline replay", () => {
       sha256Canonical(buildStoredDecisionView(corpus)),
       sha256Canonical(buildReplayedDecisionView(corpus))
     );
+
+    const boundMismatch = replayFixture({ withCandidate: true, storedDecisionMismatch: true });
+    expectReplayError(() => replayOfflineCorpus(boundMismatch), "REPLAY_MISMATCH");
   });
 
   it("rejects corpus and receipt artifact metadata mismatches", () => {
@@ -97,6 +100,8 @@ function replayFixture({
   workflowRunId = 9100,
   runAttempt = 1,
   healthy = true,
+  withCandidate = false,
+  storedDecisionMismatch = false,
   behaviorManifest = {
     "automations/jobs/online_daily_v7_3_offline_replay.mjs": BLOB_A,
     "automations/jobs/online_daily_v7_3_replay_window.mjs": BLOB_B
@@ -179,9 +184,14 @@ function replayFixture({
         provider_transaction_ids: []
       }
     },
-    discovery_summary: { decision_universe_count: 0, sources: [] },
-    evidence_catalog: [],
-    candidates: [],
+    discovery_summary: {
+      decision_universe_count: withCandidate ? 1 : 0,
+      sources: withCandidate
+        ? [{ source_id: "steam", raw_count: 1, retained_count: 1, failure_count: 0 }]
+        : []
+    },
+    evidence_catalog: withCandidate ? [evidenceFixture()] : [],
+    candidates: withCandidate ? [candidateFixture()] : [],
     second_pass: {
       selector_version: "targeted-v1",
       max_candidates: 12,
@@ -194,23 +204,23 @@ function replayFixture({
       transactions: []
     },
     summary: {
-      candidate_count: 0,
-      evidence_count: 0,
+      candidate_count: withCandidate ? 1 : 0,
+      evidence_count: withCandidate ? 1 : 0,
       second_pass_eligible_count: 0,
       second_pass_selected_count: 0,
       second_pass_attempted_count: 0,
       second_pass_failed_count: 0,
       second_pass_qualified_count: 0,
-      formal_count: 0,
+      formal_count: withCandidate ? 1 : 0,
       candidate_decision_count: 0,
       excluded_count: 0,
-      shadow_push_pool_count: 0
+      shadow_push_pool_count: withCandidate ? 1 : 0
     },
     integrity: {
       canonical_json_version: 1,
       payload_sha256: "0".repeat(64),
-      ordered_candidate_count: 0,
-      ordered_evidence_count: 0,
+      ordered_candidate_count: withCandidate ? 1 : 0,
+      ordered_evidence_count: withCandidate ? 1 : 0,
       artifact_binding_count: 4,
       byte_size: 0,
       inline_text_characters: 0,
@@ -218,6 +228,11 @@ function replayFixture({
       reason_codes: []
     }
   };
+  corpus.artifact_bindings.replay_corpus.record_count = corpus.candidates.length;
+  if (storedDecisionMismatch) {
+    corpus.candidates[0].first_pass.indie_prelaunch.output.qualified = false;
+    corpus.candidates[0].first_pass.indie_prelaunch.output.disposition = "candidate";
+  }
   sealCorpus(corpus);
   assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
   const corpusBytes = `${canonicalJson(corpus)}\n`;
@@ -234,6 +249,123 @@ function replayFixture({
     receiptBytes,
     artifactMetadata,
     expectedBehaviorContractSha256: behaviorHash
+  };
+}
+
+function candidateFixture() {
+  const indieOutput = {
+    qualified: true,
+    disposition: "formal",
+    sourcing_lane: "indie_prelaunch",
+    sourcing_rule_version: "sourcing-rules-v7.3-obtainable-evidence",
+    failed_gates: [],
+    missing_evidence: [],
+    exclusion_reasons: [],
+    gate_results: [{ id: "identity_and_dedupe", status: "pass", reason: null }]
+  };
+  const chinaOutput = {
+    qualified: false,
+    disposition: "excluded",
+    sourcing_lane: "china_joint",
+    sourcing_rule_version: "sourcing-rules-v7.2-china-joint",
+    failed_gates: ["china_joint"],
+    missing_evidence: [],
+    exclusion_reasons: ["not a China joint opportunity"],
+    gate_results: [{ id: "china_joint", status: "fail", reason: "not a China joint opportunity" }]
+  };
+  return {
+    candidate_id: "steam:100",
+    project: "Game One",
+    steam_app_id: "100",
+    dedupe_key: "steam:100",
+    source_type: "steam",
+    source_lane: "regular",
+    origin_signal_ids: ["signal:steam:100"],
+    first_seen: "2026-08-04",
+    last_seen: "2026-08-04",
+    scheduler_lane: "new",
+    enrichment_status: "success",
+    enrichment_attempts: 1,
+    snapshot_status: "fresh_success",
+    evidence_freshness: "fresh",
+    normalized_candidate: { project: "Game One", steam_app_id: "100" },
+    discovery_score: 10,
+    ranking_inputs: {
+      action_count: 0,
+      discovery_score: 10,
+      dedupe_key: "steam:100",
+      source_type: "steam"
+    },
+    qualification_affected_by_ranking: false,
+    dedupe_boundary: {
+      history_match: false,
+      crm_preexisting_match: false,
+      match_basis: "none",
+      audit_digest: SHA_A
+    },
+    first_pass: {
+      evaluator_dependency_sha256: SHA_B,
+      indie_prelaunch: {
+        input: { project: "Game One", steam_app_id: "100" },
+        output: indieOutput,
+        gate_results: [{
+          gate_id: "identity_and_dedupe",
+          status: "pass",
+          hard_exclusion: false,
+          evidence_ids: ["evidence:one"]
+        }]
+      },
+      china_joint: {
+        input: { project: "Game One", steam_app_id: "100" },
+        output: chinaOutput,
+        gate_results: [{
+          gate_id: "china_joint",
+          status: "fail",
+          hard_exclusion: false,
+          evidence_ids: ["evidence:one"]
+        }]
+      },
+      regular_selection: {
+        status: "selected",
+        lane: "indie_prelaunch",
+        reason_code: "indie_prelaunch_qualified"
+      }
+    },
+    second_pass: {
+      eligible: false,
+      rejection_reason: "already_qualified",
+      selected: false,
+      attempted: false,
+      transaction_id: null
+    },
+    publication: {
+      decision: "formal",
+      selected_lane: "indie_prelaunch",
+      shadow_push_pool: true,
+      dedupe_suppressed: false,
+      shadow_lead_payload_sha256: SHA_A,
+      risk_flags: [],
+      day_lead_count_used: false
+    }
+  };
+}
+
+function evidenceFixture() {
+  return {
+    evidence_id: "evidence:one",
+    evidence_type: "public_url",
+    gate_id: "identity_and_dedupe",
+    url: "https://store.steampowered.com/app/100/",
+    source_id: "store.steampowered.com",
+    source_role: "official",
+    evidence_family: "playability",
+    captured_at: "2026-08-04T15:00:00+08:00",
+    title: "Game One",
+    normalized_summary: "Normalized public evidence.",
+    content_sha256: SHA_A,
+    source_status: "success",
+    fetch_error: null,
+    official_public_business_entry: false
   };
 }
 
