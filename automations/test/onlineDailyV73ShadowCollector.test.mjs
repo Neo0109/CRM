@@ -282,6 +282,46 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.deepEqual(core.second_pass.transactions[0].final_output.evidence_ids, []);
   });
 
+  it("matches a known Steam publication only by app ID when titles collide", async () => {
+    requireCollector("collectV73ShadowCore");
+    const sharedProject = "C5-B Shared Steam Title";
+    const qualifiedEvidence = nearMissEvidence(80, {
+      project: sharedProject,
+      quality_proofs: [firstQualityProof, secondQualityProof]
+    });
+    const excludedEvidence = nearMissEvidence(81, {
+      project: sharedProject,
+      publisher_occupancy: "occupied",
+      quality_proofs: [firstQualityProof, secondQualityProof]
+    });
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9011" }),
+      steamCandidates: [
+        steamCandidate(qualifiedEvidence),
+        steamCandidate(excludedEvidence, {
+          publisherOccupied: true,
+          chinaPartnerOccupied: true
+        })
+      ],
+      mediaCandidates: [],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest
+    });
+
+    const qualified = core.candidates.find(
+      (item) => item.steam_app_id === qualifiedEvidence.steam_app_id
+    );
+    const excluded = core.candidates.find(
+      (item) => item.steam_app_id === excludedEvidence.steam_app_id
+    );
+    assert.equal(qualified.publication.shadow_push_pool, true);
+    assert.equal(excluded.publication.shadow_push_pool, false);
+    assert.equal(excluded.publication.shadow_lead_payload_sha256, null);
+  });
+
   it("writes a pending core and finalizes one schema-valid receipt-bound corpus", async () => {
     requireCollector("runC5BShadowCollectorSafely");
     requireCollector("finalizeC5BReplayCorpusSafely");

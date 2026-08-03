@@ -408,6 +408,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     assert.ok(patch.business_entrypoints.some((item) => item.value === officialBilibili.link));
     assert.match(patch.china_bilibili_value, /B站|社区|内容|玩法/);
 
+    let qualityOnlyOfficialLookupCount = 0;
     const qualityOnly = await fetchV73TargetedEvidence({
       candidate,
       source_type: "steam",
@@ -417,9 +418,19 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       }],
       evidence,
       mediaSignals,
-      context: { fetchOfficialBilibiliCandidatesImpl: async () => [officialBilibili] }
+      context: {
+        fetchOfficialBilibiliCandidatesImpl: async () => {
+          qualityOnlyOfficialLookupCount += 1;
+          throw new Error("quality-only requests must not perform an official lookup");
+        }
+      }
     });
+    assert.equal(qualityOnlyOfficialLookupCount, 0);
     assert.deepEqual(Object.keys(qualityOnly), ["quality_proofs"]);
+    assert.ok(
+      qualityOnly.quality_proofs.some((item) => item.url === mediaSignals[1].link),
+      "locally available quality evidence must survive an unavailable official provider"
+    );
   });
 
   it("keeps the bounded second pass inside a deep-cloned shadow collector result", async () => {
