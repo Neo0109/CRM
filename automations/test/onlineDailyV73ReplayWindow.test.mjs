@@ -105,6 +105,22 @@ describe("C5-C canonical replay-run selector", () => {
     assert.equal(behaviorFailure.status, "failed");
     assert.deepEqual(behaviorFailure.failure_reasons, ["behavior_drift"]);
   });
+
+  it("fails closed when requested Shanghai date differs from retained corpus identity", () => {
+    const attemptForNextDay = attempt({
+      reportDate: "2026-08-05",
+      runSlot: "afternoon",
+      workflowRunId: 9450
+    });
+    const result = selectCanonicalReplayRun({
+      reportDate: "2026-08-04",
+      expectedBehaviorContractSha256: BEHAVIOR_HASH,
+      attempts: [attemptForNextDay]
+    });
+    assert.equal(result.status, "failed");
+    assert.deepEqual(result.failure_reasons, ["artifact_mismatch"]);
+    assert.equal(result.rejected_attempts[0].report_date, "2026-08-05");
+  });
 });
 
 describe("C5-C 15-natural-day replay windows", () => {
@@ -199,6 +215,8 @@ function attempt({
   behaviorManifest = BEHAVIOR_MANIFEST
 }) {
   const receipt = {
+    report_date: reportDate,
+    slot: runSlot,
     status: healthy ? "success" : "failed",
     generation_status: healthy ? "success" : "failed",
     validation_status: healthy ? "success" : "failed",
@@ -210,6 +228,10 @@ function attempt({
   const behaviorHash = computeBehaviorContractSha256(behaviorManifest);
   const corpusPath = `data/sourcing_replay_corpus/${reportDate}/${workflowRunId}-${runAttempt}-${runSlot}.json`;
   const receiptPath = `data/automation_runs/${reportDate}-${runSlot}.json`;
+  const report = { report_date: reportDate, push_pool: [], watch_pool: [], drop_pool: [] };
+  const sourcingCandidates = { schema_version: 2, report_date: reportDate, candidates: [] };
+  const reportBytes = `${JSON.stringify(report, null, 2)}\n`;
+  const sourcingCandidatesBytes = `${JSON.stringify(sourcingCandidates, null, 2)}\n`;
   const complete = captureStatus === "complete";
   const corpus = {
     contract_version: 1,
@@ -232,8 +254,18 @@ function attempt({
     capture_status: captureStatus,
     capture_errors: complete ? [] : [{ stage: "collector", code: "incomplete", message: "fixture" }],
     artifact_bindings: {
-      report: binding(`data/reports/${reportDate}.json`, BLOB_A, SHA_A, 0),
-      sourcing_candidates: binding(`data/sourcing_candidates/${reportDate}.json`, BLOB_B, SHA_B, 0),
+      report: binding(
+        `data/reports/${reportDate}.json`,
+        gitBlobSha(reportBytes),
+        sha256Canonical(report),
+        0
+      ),
+      sourcing_candidates: binding(
+        `data/sourcing_candidates/${reportDate}.json`,
+        gitBlobSha(sourcingCandidatesBytes),
+        sha256Canonical(sourcingCandidates),
+        0
+      ),
       replay_corpus: binding(corpusPath, null, "0".repeat(64), 0),
       receipt: binding(receiptPath, receiptBlobSha, receiptPayloadSha, 1)
     },
@@ -292,7 +324,15 @@ function attempt({
     }])
   );
   artifactMetadata.replay_corpus.git_blob_sha = gitBlobSha(corpusBytes);
-  return { corpusBytes, receiptBytes, artifactMetadata };
+  return {
+    corpusBytes,
+    receiptBytes,
+    artifactBytes: {
+      report: reportBytes,
+      sourcing_candidates: sourcingCandidatesBytes
+    },
+    artifactMetadata
+  };
 }
 
 function binding(path, gitBlobShaValue, payloadSha256, recordCount) {

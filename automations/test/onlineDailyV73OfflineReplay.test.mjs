@@ -17,6 +17,8 @@ import {
   buildStoredDecisionView,
   replayOfflineCorpus
 } from "../jobs/online_daily_v7_3_offline_replay.mjs";
+import { evaluateV73IndiePrelaunchAdmission } from "../jobs/online_daily_v7_3_obtainable_evidence.mjs";
+import { evaluateChinaJointAdmission } from "../jobs/online_daily_v7_2_china_joint_admission.mjs";
 
 const SHA_A = "a".repeat(64);
 const SHA_B = "b".repeat(64);
@@ -73,6 +75,59 @@ describe("C5-C no-network offline replay", () => {
     expectReplayError(() => replayOfflineCorpus(boundMismatch), "REPLAY_MISMATCH");
   });
 
+  it("rebuilds first-pass decisions from evaluator input and treats stored targets as comparison-only", () => {
+    const corpus = decisionCorpus();
+    const baseline = sha256Canonical(buildReplayedDecisionView(corpus));
+
+    const storedTargetTamper = structuredClone(corpus);
+    storedTargetTamper.candidates[0].first_pass.indie_prelaunch.output.qualified = false;
+    storedTargetTamper.candidates[0].first_pass.indie_prelaunch.gate_results = [{
+      gate_id: "prelaunch_window",
+      status: "fail",
+      hard_exclusion: true,
+      evidence_ids: []
+    }];
+    storedTargetTamper.candidates[0].publication.decision = "excluded";
+    assert.equal(
+      sha256Canonical(buildReplayedDecisionView(storedTargetTamper)),
+      baseline,
+      "stored output, gate_results, and publication must not feed replay"
+    );
+
+    const inputTamper = structuredClone(corpus);
+    inputTamper.candidates[0].first_pass.indie_prelaunch.input.release_state = "released";
+    assert.notEqual(
+      sha256Canonical(buildReplayedDecisionView(inputTamper)),
+      baseline,
+      "changing frozen evaluator input must change the replayed decision"
+    );
+  });
+
+  it("rebuilds second-pass decisions from merged bounded input, not captured final output", () => {
+    const corpus = secondPassDecisionCorpus();
+    const baseline = sha256Canonical(buildReplayedDecisionView(corpus));
+
+    const storedTargetTamper = structuredClone(corpus);
+    storedTargetTamper.second_pass.transactions[0].final_output.gate_results = [{
+      id: "prelaunch_window",
+      status: "fail"
+    }];
+    storedTargetTamper.candidates[0].publication.decision = "excluded";
+    assert.equal(
+      sha256Canonical(buildReplayedDecisionView(storedTargetTamper)),
+      baseline,
+      "captured final output and publication must be comparison-only"
+    );
+
+    const mergedInputTamper = structuredClone(corpus);
+    mergedInputTamper.second_pass.transactions[0].merged_final_input.official_gameplay_evidence = [];
+    assert.notEqual(
+      sha256Canonical(buildReplayedDecisionView(mergedInputTamper)),
+      baseline,
+      "changing frozen merged input must change the replayed decision"
+    );
+  });
+
   it("rejects corpus and receipt artifact metadata mismatches", () => {
     const badCorpus = replayFixture();
     badCorpus.artifactMetadata.replay_corpus.git_blob_sha = BLOB_B;
@@ -81,6 +136,38 @@ describe("C5-C no-network offline replay", () => {
     const badReceipt = replayFixture();
     badReceipt.artifactMetadata.receipt.payload_sha256 = SHA_A;
     expectReplayError(() => replayOfflineCorpus(badReceipt), "ARTIFACT_MISMATCH");
+  });
+
+  it("requires actual bytes for non-corpus artifacts and verifies their hashes", () => {
+    const missingReport = replayFixture();
+    delete missingReport.artifactBytes.report;
+    expectReplayError(
+      () => replayOfflineCorpus(missingReport),
+      "ARTIFACT_BYTES_REQUIRED"
+    );
+
+    const changedReport = replayFixture();
+    changedReport.artifactBytes.report = `${JSON.stringify({
+      report_date: "1900-01-01",
+      push_pool: [],
+      watch_pool: [],
+      drop_pool: []
+    }, null, 2)}\n`;
+    expectReplayError(() => replayOfflineCorpus(changedReport), "ARTIFACT_MISMATCH");
+  });
+
+  it("closes report-date, run-slot, corpus-id, and canonical path identity", () => {
+    const wrongReceiptDate = replayFixture({ receiptReportDate: "1900-01-01" });
+    expectReplayError(
+      () => replayOfflineCorpus(wrongReceiptDate),
+      "ARTIFACT_IDENTITY_MISMATCH"
+    );
+
+    const wrongPaths = replayFixture({ artifactPathDate: "1900-01-01" });
+    expectReplayError(
+      () => replayOfflineCorpus(wrongPaths),
+      "ARTIFACT_IDENTITY_MISMATCH"
+    );
   });
 
   it("rejects unhealthy receipts and a behavior hash outside the frozen contract", () => {
@@ -102,12 +189,16 @@ function replayFixture({
   healthy = true,
   withCandidate = false,
   storedDecisionMismatch = false,
+  receiptReportDate = reportDate,
+  artifactPathDate = reportDate,
   behaviorManifest = {
     "automations/jobs/online_daily_v7_3_offline_replay.mjs": BLOB_A,
     "automations/jobs/online_daily_v7_3_replay_window.mjs": BLOB_B
   }
 } = {}) {
   const receipt = {
+    report_date: receiptReportDate,
+    slot: runSlot,
     status: healthy ? "success" : "failed",
     generation_status: healthy ? "success" : "failed",
     validation_status: healthy ? "success" : "failed",
@@ -117,8 +208,12 @@ function replayFixture({
   const receiptPayloadSha = sha256Canonical(receipt);
   const receiptBlobSha = gitBlobSha(receiptBytes);
   const behaviorHash = computeBehaviorContractSha256(behaviorManifest);
-  const corpusPath = `data/sourcing_replay_corpus/${reportDate}/${workflowRunId}-${runAttempt}-${runSlot}.json`;
-  const receiptPath = `data/automation_runs/${reportDate}-${runSlot}.json`;
+  const corpusPath = `data/sourcing_replay_corpus/${artifactPathDate}/${workflowRunId}-${runAttempt}-${runSlot}.json`;
+  const receiptPath = `data/automation_runs/${artifactPathDate}-${runSlot}.json`;
+  const report = { report_date: reportDate, push_pool: [], watch_pool: [], drop_pool: [] };
+  const sourcingCandidates = { schema_version: 2, report_date: reportDate, candidates: [] };
+  const reportBytes = `${JSON.stringify(report, null, 2)}\n`;
+  const sourcingCandidatesBytes = `${JSON.stringify(sourcingCandidates, null, 2)}\n`;
   const corpus = {
     contract_version: 1,
     corpus_id: `${reportDate}/${workflowRunId}/${runAttempt}/${runSlot}`,
@@ -140,11 +235,16 @@ function replayFixture({
     capture_status: "complete",
     capture_errors: [],
     artifact_bindings: {
-      report: binding(`data/reports/${reportDate}.json`, BLOB_A, SHA_A, 0),
+      report: binding(
+        `data/reports/${artifactPathDate}.json`,
+        gitBlobSha(reportBytes),
+        sha256Canonical(report),
+        0
+      ),
       sourcing_candidates: binding(
-        `data/sourcing_candidates/${reportDate}.json`,
-        BLOB_B,
-        SHA_B,
+        `data/sourcing_candidates/${artifactPathDate}.json`,
+        gitBlobSha(sourcingCandidatesBytes),
+        sha256Canonical(sourcingCandidates),
         0
       ),
       replay_corpus: binding(corpusPath, null, "0".repeat(64), 0),
@@ -247,6 +347,10 @@ function replayFixture({
   return {
     corpusBytes,
     receiptBytes,
+    artifactBytes: {
+      report: reportBytes,
+      sourcing_candidates: sourcingCandidatesBytes
+    },
     artifactMetadata,
     expectedBehaviorContractSha256: behaviorHash
   };
@@ -370,6 +474,10 @@ function evidenceFixture() {
 }
 
 function decisionCorpus() {
+  const indieInput = qualifiedIndieInput();
+  const chinaInput = {};
+  const indieOutput = evaluateV73IndiePrelaunchAdmission(indieInput);
+  const chinaOutput = evaluateChinaJointAdmission(chinaInput);
   return {
     contract_version: 1,
     corpus_id: "decision-only",
@@ -384,8 +492,8 @@ function decisionCorpus() {
         source_type: "steam"
       },
       first_pass: {
-        indie_prelaunch: { input: {}, output: {}, gate_results: [] },
-        china_joint: { input: {}, output: {}, gate_results: [] },
+        indie_prelaunch: { input: indieInput, output: indieOutput, gate_results: [] },
+        china_joint: { input: chinaInput, output: chinaOutput, gate_results: [] },
         regular_selection: {}
       },
       second_pass: {
@@ -417,6 +525,83 @@ function decisionCorpus() {
       transactions: []
     },
     summary: {}
+  };
+}
+
+function secondPassDecisionCorpus() {
+  const corpus = decisionCorpus();
+  const candidate = corpus.candidates[0];
+  const firstInput = qualifiedIndieInput();
+  firstInput.official_gameplay_evidence = [];
+  candidate.first_pass.indie_prelaunch.input = firstInput;
+  candidate.first_pass.indie_prelaunch.output = evaluateV73IndiePrelaunchAdmission(firstInput);
+  candidate.ranking_inputs.action_count = 1;
+  candidate.second_pass = {
+    eligible: true,
+    rejection_reason: null,
+    selected: true,
+    attempted: true,
+    transaction_id: "tx:steam:100"
+  };
+  const mergedInput = qualifiedIndieInput();
+  const finalOutput = evaluateV73IndiePrelaunchAdmission(mergedInput);
+  corpus.second_pass = {
+    selector_version: "targeted-v1",
+    max_candidates: 1,
+    eligible_ids: [candidate.candidate_id],
+    selected_ids: [candidate.candidate_id],
+    omitted_ids: [],
+    attempted_ids: [candidate.candidate_id],
+    failed_ids: [],
+    qualified_ids: [candidate.candidate_id],
+    transactions: [{
+      transaction_id: "tx:steam:100",
+      candidate_id: candidate.candidate_id,
+      requested_actions: [{
+        gate_id: "official_playable_or_gameplay",
+        action: "fetch_official_playable_or_gameplay"
+      }],
+      allowlisted_patch_fields: ["official_demo_evidence", "official_gameplay_evidence"],
+      bounded_signals: [],
+      provider_contract_version: "public-second-pass-v1",
+      request_metrics: {},
+      raw_provider_result: { official_gameplay_evidence: mergedInput.official_gameplay_evidence },
+      filtered_patch: { official_gameplay_evidence: mergedInput.official_gameplay_evidence },
+      provider_status: "success",
+      error: null,
+      merged_final_input: mergedInput,
+      final_output: finalOutput,
+      decision_changed: true,
+      changed_gate: "official_playable_or_gameplay",
+      evaluator_dependency_sha256: SHA_B
+    }]
+  };
+  return corpus;
+}
+
+function qualifiedIndieInput() {
+  return {
+    project: "Game One",
+    steam_app_id: "100",
+    dedupe_key: "steam:100",
+    region: "domestic",
+    release_state: "prelaunch",
+    release_window: "over_60",
+    early_access_state: "no",
+    publisher_occupancy: "clear",
+    narrative_state: "no",
+    india_team_state: "no",
+    official_demo_evidence: [],
+    official_gameplay_evidence: [{
+      type: "official_gameplay",
+      url: "https://example.com/gameplay"
+    }],
+    quality_proofs: [
+      { source_id: "media-one", value: "review one", url: "https://one.example/review" },
+      { source_id: "media-two", value: "review two", url: "https://two.example/review" }
+    ],
+    business_entrypoints: [{ type: "website", url: "https://game.example/contact" }],
+    china_bilibili_value: "Systemic gameplay supports creator challenges."
   };
 }
 
