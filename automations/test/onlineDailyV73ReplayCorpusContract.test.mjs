@@ -376,6 +376,61 @@ describe("Replay corpus validator", () => {
     );
   });
 
+  it("rejects qualified final outputs without two eligible referenced public sources", () => {
+    const cases = [
+      {
+        code: "FINAL_EVIDENCE_REQUIRED",
+        path: "/second_pass/transactions/0/final_output/evidence_ids",
+        apply(value) {
+          delete value.second_pass.transactions[0].final_output.evidence_ids;
+        }
+      },
+      {
+        code: "FINAL_EVIDENCE_REQUIRED",
+        path: "/second_pass/transactions/0/final_output/evidence_ids",
+        apply(value) {
+          value.second_pass.transactions[0].final_output.evidence_ids = [];
+        }
+      },
+      {
+        code: "EVIDENCE_REFERENCE_NOT_FOUND",
+        path: "/second_pass/transactions/0/final_output/evidence_ids/0",
+        apply(value) {
+          value.second_pass.transactions[0].final_output.evidence_ids = [
+            "evidence:missing",
+            "evidence:creator"
+          ];
+        }
+      },
+      {
+        code: "INDEPENDENT_ROLE_FORBIDDEN",
+        path: "/second_pass/transactions/0/final_output/evidence_ids/0",
+        apply(value) {
+          value.second_pass.transactions[0].final_output.evidence_ids = [
+            "evidence:official",
+            "evidence:creator"
+          ];
+        }
+      },
+      {
+        code: "INDEPENDENT_SOURCE_COUNT",
+        path: "/second_pass/transactions/0/final_output/evidence_ids",
+        apply(value) {
+          value.evidence_catalog[2].source_id = value.evidence_catalog[1].source_id;
+        }
+      }
+    ];
+
+    for (const finalEvidenceCase of cases) {
+      const corpus = mutateCorpus(finalEvidenceCase.apply);
+      expectInvalid(
+        validateReplayCorpus(corpus),
+        finalEvidenceCase.code,
+        finalEvidenceCase.path
+      );
+    }
+  });
+
   it("rejects ineligible independent proof roles and unexplained capture states", () => {
     const ineligibleRole = mutateCorpus((value) => {
       value.evidence_catalog[1].source_role = "official";
@@ -847,7 +902,11 @@ function transactionFixture() {
     provider_status: "success",
     error: null,
     merged_final_input: { official_gameplay: true },
-    final_output: { qualified: true, disposition: "formal" },
+    final_output: {
+      qualified: true,
+      disposition: "formal",
+      evidence_ids: ["evidence:media", "evidence:creator"]
+    },
     decision_changed: true,
     changed_gate: "official_product",
     evaluator_dependency_sha256: EVALUATOR_SHA

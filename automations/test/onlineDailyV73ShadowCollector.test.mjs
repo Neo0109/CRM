@@ -9,6 +9,9 @@ import { after, describe, it } from "node:test";
 import {
   validateReplayCorpus
 } from "../jobs/online_daily_v7_3_replay_corpus_contract.mjs";
+import {
+  fetchV73TargetedEvidence
+} from "../jobs/online_daily_v7_3_second_pass_orchestrator.mjs";
 
 const collectorUrl = new URL(
   "../jobs/online_daily_v7_3_shadow_collector.mjs",
@@ -126,6 +129,50 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.ok(core.candidates.every((item) => item.ranking_inputs.dedupe_key));
     assert.equal("production_pools" in core, false);
     assert.equal("production_candidate_artifact" in core, false);
+  });
+
+  it("preserves the media role from the real fixture provider and binds both final proofs", async () => {
+    requireCollector("collectV73ShadowCore");
+    const evidence = nearMissEvidence(20, {
+      quality_proofs: [secondQualityProof]
+    });
+    const ordinaryMediaSignal = {
+      title: `${evidence.project} hands-on preview`,
+      summary: `${evidence.project} independent media playtest review`,
+      source: "Fixture Games Media",
+      link: "https://media.example/reviews/c5b-role-fixture"
+    };
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9010" }),
+      steamCandidates: [steamCandidate(evidence)],
+      mediaCandidates: [],
+      mediaSignals: [ordinaryMediaSignal],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: (request) => fetchV73TargetedEvidence({
+        ...request,
+        context: {
+        fetchOfficialBilibiliCandidatesImpl: async () => []
+        }
+      })
+    });
+
+    const transaction = core.second_pass.transactions[0];
+    assert.equal(transaction.final_output.qualified, true);
+    assert.ok(
+      transaction.filtered_patch.quality_proofs.some((proof) => (
+        proof.url === ordinaryMediaSignal.link && proof.source_role === "media"
+      )),
+      "the real provider must classify an ordinary non-Bilibili media proof explicitly"
+    );
+    assert.equal(transaction.final_output.evidence_ids.length, 2);
+    const evidenceById = new Map(core.evidence_catalog.map((item) => [item.evidence_id, item]));
+    assert.deepEqual(
+      new Set(transaction.final_output.evidence_ids.map((id) => evidenceById.get(id)?.source_role)),
+      new Set(["media", "trusted_creator"])
+    );
   });
 
   it("records thrown, empty, invalid, and timeout outcomes once and retains first pass", async () => {
