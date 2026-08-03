@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 review-repair implementation
-Status: in progress — all four PR #108 findings and exact-head verification GREEN; independent QA pending
+Status: review repair closed GREEN — all four findings fixed; independent QA P0=0/P1=0
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -14,26 +14,25 @@ Frozen failed implementation head: a8b9b45d502583d941d1038fcb57ff3de6fcd381
 
 ## Current Goal
 
-Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, remote checkpointing, full bounded verification, and fresh independent QA; stop before merge, deploy, thread resolution, or any live/production action.
+Closed. All four confirmed PR #108 review findings are repaired within the existing allowlist, fully verified at exact head, independently re-audited at P0=0/P1=0, and stopped before merge, deploy, thread resolution, or any live/production action.
 
 ## Completed
 
-- Rechecked remote `main` at `1fc883e36ce8725d345061b8f8f64aef28e36bad`.
-- Rechecked the amended implementation branch at accepted RED head `4d9fddfd01b3801d5792caeb881af8c535d75cdf`.
-- Confirmed the branch is ahead 1 / behind 0 from the exact implementation base.
-- Confirmed the RED baseline contains the 11 exact reusable blobs plus the approved import-retarget/reference test surface; production workflows, production V7.2 rule, and production data remain unchanged at the remote head.
-- Recovered the disposable GitHub exact-SHA snapshot at `/tmp/crm-c5b-amended.ZKNvih/base`; it is not the CRM checkout/worktree.
-- Confirmed the interrupted snapshot contains exactly the nine expected working-path changes beyond RED: two workflows, `online_daily_v4.mjs`, the shadow candidate audit, the new shadow collector, the adapted second-pass test, the candidate-audit contract, the collector contract, and the integration contract.
-- No PR, merge, deployment, workflow dispatch, live generator/provider, CRM sync, production replay, or production data write was performed.
+- Re-froze PR #108 at `base=8e255cded6e9063011f4da2f4c2f3f53ec3cc7e4`, original review head `8bf9414929b0b0a7c6a932f142987f7ab0ca1a93`, and exact 21-path scope before implementation.
+- Closed both P1 findings with accepted RED, minimal producer/validator GREEN, and checkpointed exact evidence.
+- Closed both P2 findings with accepted RED, minimal lookup/publication GREEN, and checkpointed exact evidence.
+- Verified exact repair head with 60/60 focused, 241/241 Daily V4, 16/16 `verify:all`, syntax/JSON/diff/allowlist/denylist/no-lockfile guards, and 36-path behavior hash.
+- Completed fresh independent read-only QA: P0=0/P1=0, with independent focused/Daily/hash reproduction.
+- Confirmed later current-main drift to `3ecde795e76d1d56c9185e1985b567673531fdb1` changes only five `data/*2026-08-03` paths and has no C5-B overlap.
+- No review reply/resolution, merge, deployment, workflow dispatch, live generator/provider, CRM sync, production replay/data write, C5-C, observation, or Activation occurred.
 
 ## Remaining
 
-- Complete a fresh independent exact-head QA with P0=0/P1=0.
-- Recheck PR Actions, preview, review-thread state, and scope, then stop.
+No code work remains inside the authorized PR #108 review-repair task. After this final docs-only checkpoint commit, recheck its Actions/preview/review-thread state read-only and stop.
 
 ## Next Action
 
-Run fresh independent read-only QA against the checkpointed remote exact head. Require P0=0/P1=0; otherwise stop and return to diagnosis/proposal.
+Read-only recheck the final docs-only head's Build, branch preview, PR/open/mergeability, 21-path scope, and four unresolved review threads; then report and stop. Do not reply, resolve, merge, deploy, dispatch, run live providers/generators, sync, replay, begin C5-C/observation, or activate.
 
 ## Git Status
 
@@ -411,3 +410,24 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - Recomputed `behavior_contract_sha256 = ff69a278853345974f5f8ed51551c648c7040dee86ee419fa08df01ce1bac579`.
 - No workflow dispatch, live provider/generator, CRM sync, replay/data write, merge, deploy, review reply/resolution, C5-C, observation, or Activation occurred.
 - Next action: fresh independent exact-head QA, then final PR Actions/preview/review-state recheck and stop.
+
+
+## PR #108 Review Repair Stage 6 — Independent QA and Closure — 2026-08-03
+
+- Independent QA authority: remote exact head `678bbc10df9685faead699f88d99f57c4f4de0da`.
+- QA used a separate fresh GitHub API exact-SHA disposable snapshot and performed no writes.
+- Result: **P0=0 / P1=0**.
+- All four fixes closed under independent code review and executable contracts:
+  1. generated ordinary non-Bilibili media proofs carry `source_role=media` and bind two eligible final evidence IDs;
+  2. qualified final outputs reject missing/empty/unknown/ineligible IDs and fewer than two distinct eligible public `source_id` values;
+  3. quality-only requests perform zero official lookups and keep the local quality patch even when the official stub would fail;
+  4. known Steam entries match publication only by app ID; same-title/different-app fallback is blocked.
+- Unknown proof roles remain `unclassified`; only `media` and `trusted_creator` occupy independent-quality slots.
+- Independent focused C5-B union: 60/60 GREEN.
+- Independent Daily V4: 241/241 GREEN after installing declared dependencies only in the disposable snapshot with no package lockfile.
+- Independent behavior manifest: 36 paths; hash reproduced as `ff69a278853345974f5f8ed51551c648c7040dee86ee419fa08df01ce1bac579`.
+- QA-head GitHub Build checks and Cloudflare branch preview: success.
+- Repair diff from original review head changes only three jobs, three tests, and this checkpoint; overall PR scope remains exactly 21 allowlisted paths with no production data or lockfile.
+- Four review threads remain unresolved by design: three non-outdated and the quality-only lookup thread outdated after its code change. No reply or resolution was posted.
+- Current remote `main=3ecde795e76d1d56c9185e1985b567673531fdb1`; its two post-freeze commits change only five dated `data/*2026-08-03` paths and do not overlap C5-B. Recheck current main again at the next separately approved action.
+- No merge, deploy, workflow dispatch, live provider/generator, CRM sync, replay/data write, C5-C, observation, or Activation occurred.
