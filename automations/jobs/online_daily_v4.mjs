@@ -220,6 +220,58 @@ await writeJson(`data/steam_trends/${reportDate}.json`, buildSteamTrendReport({
   reportDate,
   capturedAt
 }));
+/* C5B_SHADOW_HOOK_START */
+try {
+  const { runC5BShadowCollectorSafely } = await import(
+    "./online_daily_v7_3_shadow_collector.mjs"
+  );
+  await runC5BShadowCollectorSafely({
+    rootDir,
+    reportDate,
+    capturedAt,
+    runContext: {
+      event_name: process.env.GITHUB_EVENT_NAME,
+      run_slot: process.env.RUN_SLOT,
+      workflow_run_id: process.env.GITHUB_RUN_ID,
+      run_attempt: Number(process.env.GITHUB_RUN_ATTEMPT || 1),
+      run_url: `${process.env.GITHUB_SERVER_URL || "https://github.com"}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+      input_commit_sha: process.env.GITHUB_SHA,
+      node_version: process.version,
+      generation_performed: true,
+      forced: process.env.FORCE_RUN === "true"
+    },
+    steamCandidates: enrichedCandidates,
+    mediaCandidates: mediaLeadCandidates,
+    mediaSignals,
+    candidateStates,
+    steamEnrichmentMetrics,
+    budgetLimits: {
+      max_candidates: maxCandidates,
+      max_steam_details: maxSteamDetails,
+      new_lane: 40,
+      backlog_lane: 30,
+      retry_refresh_lane: 20,
+      snapshot_ttl_days: 7,
+      scheduled_network_budget: maxSteamDetails
+    },
+    budgetUsage: {
+      fresh_steam_detail_candidate_ids: enrichmentPlan.scheduled.map(
+        (item) => `steam:${item.candidate.appId}`
+      ),
+      scheduled_network_candidate_ids: enrichmentPlan.scheduled.map(
+        (item) => `steam:${item.candidate.appId}`
+      ),
+      reused_snapshot_candidate_ids: enrichmentPlan.reused.map(
+        (item) => `steam:${item.candidate.appId}`
+      )
+    },
+    providerContext: { reportDate, maxBilibiliLeadAgeDays },
+    providerTimeoutMs: 10_000
+  });
+} catch (error) {
+  console.warn(`C5-B shadow collector module-load isolated failure: ${String(error?.message ?? error)}`);
+}
+/* C5B_SHADOW_HOOK_END */
 
 console.log(JSON.stringify({
   ok: true,
