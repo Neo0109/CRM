@@ -41,6 +41,11 @@ describe("Replay Corpus Contract v1 schemas", () => {
     assert.equal(windowSchema.additionalProperties, false);
     assert.equal(windowSchema.properties.contract_version.const, 1);
     assert.deepEqual(windowSchema.properties.status.enum, ["active", "failed", "complete"]);
+    assert.ok(windowSchema.$defs.dateEntry.required.includes("replay_binding"));
+    assert.equal(
+      windowSchema.$defs.replayBinding.properties.engine_contract_version.const,
+      1
+    );
   });
 
   it("allows the replay corpus self binding to defer its Git blob SHA", () => {
@@ -983,6 +988,14 @@ function completeWindowFixture() {
         validation_status: "success",
         receipt_status: "success",
         synced: true
+      },
+      replay_binding: {
+        engine_contract_version: 1,
+        input_corpus_payload_sha256: SHA_A,
+        expected_decision_sha256: SHA_C,
+        replayed_decision_sha256: SHA_C,
+        deterministic: true,
+        status: "match"
       }
     };
   });
