@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 review-repair implementation
-Status: in progress — PR #108 P2 cluster accepted RED
+Status: in progress — all four PR #108 findings GREEN; exact-head full verification pending
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -28,14 +28,13 @@ Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, 
 
 ## Remaining
 
-- Add and close the two P2 RED contracts.
 - Run the exact-head focused union, Daily V4, `verify:all`, syntax/JSON/diff/allowlist/denylist/no-lockfile guards, and behavior-manifest/hash recalculation.
 - Complete a fresh independent exact-head QA with P0=0/P1=0.
 - Recheck PR Actions, preview, review-thread state, and scope, then stop.
 
 ## Next Action
 
-Implement only the minimal P2 GREEN against accepted RED `106c5e205aa9ef39c73f682a454027df870ee5ef`, then run the complete exact-head verification matrix.
+Freeze the P2 GREEN checkpoint, then build a fresh GitHub API snapshot from the resulting remote head and run the complete exact-head verification matrix without any live/provider/production execution.
 
 ## Git Status
 
@@ -46,6 +45,7 @@ Remote review-repair branch at this checkpoint:
 - accepted review-repair RED: `a6ffb924958f53fe9e3a6bb409455713179315fb`
 - evidence-integrity GREEN: `d4bbd00f3740c6b96a0b6ec39c04d9d5008d6ce2`
 - P2 accepted RED: `106c5e205aa9ef39c73f682a454027df870ee5ef`
+- P2 GREEN implementation: `1e34169971a7944040a412c0bf1cff98ddf22bab`
 - PR: `#108`, open, head `codex/pr-c-c5b-shadow-collector-amended`
 - scope: exactly the existing 21-path PR allowlist; this RED changes two existing test paths only
 - production authority: V7.2
@@ -376,3 +376,20 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - RED result: 17 tests, 15 passed, 2 expected failures; the official lookup was called and the same-title different-app candidate falsely matched the push pool.
 - No implementation, schema, workflow, production V7.2, generated data, or lockfile path changed. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation.
 - Next action: gate official lookup to actions that consume official signals and use project fallback only when `entry.steamAppId` is absent.
+
+
+## PR #108 Review Repair Stage 4 — P2 GREEN — 2026-08-03
+
+- Accepted P2 RED: `106c5e205aa9ef39c73f682a454027df870ee5ef`; RED checkpoint head: `fa3e68fa4b500c894dbda70b4fb485bdac2dcb5b`.
+- Minimal P2 implementation commit: `1e34169971a7944040a412c0bf1cff98ddf22bab`.
+- Implementation changed exactly:
+  - `automations/jobs/online_daily_v7_3_second_pass_orchestrator.mjs`
+  - `automations/jobs/online_daily_v7_3_shadow_collector.mjs`
+- Official Bilibili lookup now runs only when requested actions consume official signals: official playable/gameplay, non-Steam business entry, or China/Bilibili value research. Quality-only requests derive their patch from bounded local `mediaSignals` with zero official calls.
+- Steam publication matching now uses app ID exclusively whenever the entry has a known Steam app ID; project-name fallback remains available only for entries without an app ID.
+- Syntax: both modified jobs GREEN.
+- P2 focused command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs`.
+- P2 focused result: 17/17 GREEN.
+- Evidence validator recheck: `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs` → 24/24 GREEN.
+- No schema, workflow, production V7.2, generated data, or lockfile change. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation.
+- Next action: fresh exact-head full verification, behavior-manifest/hash recalculation, and independent QA.
