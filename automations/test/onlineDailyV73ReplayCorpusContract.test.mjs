@@ -577,6 +577,33 @@ describe("Replay window validator", () => {
       "/integrity/payload_sha256"
     );
   });
+
+  it("rejects a retained date without a deterministic replay match", () => {
+    const missingBinding = mutateWindow((value) => {
+      delete value.dates[7].replay_binding;
+    });
+    expectInvalid(
+      validateReplayWindow(missingBinding),
+      "SCHEMA_REQUIRED",
+      "/dates/7/replay_binding"
+    );
+
+    const mismatch = mutateWindow((value) => {
+      value.dates[7].replay_binding.deterministic = false;
+      value.dates[7].replay_binding.status = "mismatch";
+      value.dates[7].replay_binding.replayed_decision_sha256 = SHA_B;
+    });
+    expectInvalid(
+      validateReplayWindow(mismatch),
+      "WINDOW_REPLAY_NON_DETERMINISTIC",
+      "/dates/7/replay_binding/deterministic"
+    );
+    expectInvalid(
+      validateReplayWindow(mismatch),
+      "WINDOW_REPLAY_MISMATCH",
+      "/dates/7/replay_binding/status"
+    );
+  });
 });
 
 function readSchema(relativePath) {
