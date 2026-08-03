@@ -1,15 +1,15 @@
 # PR C C5-C Offline Replay Window Recovery Checkpoint
 
 Date: 2026-08-03 (Asia/Shanghai)
-Phase: Phase 4 exact-head verification recovery
-Status: implementation GREEN exists; full verification interrupted and not yet claimable
+Phase: Phase 4 exact-head verification complete
+Status: exact implementation verification GREEN; independent exact-head QA pending
 Branch: codex/pr-c-c5c-offline-replay-window
 Exact base: 9dfce284903a72ba61fac1937acc69ab7f6d04c4
 Implementation authority: 800f615fd30546eae4f03c89838e59416406c6a5
 
 ## Current Goal
 
-Recover from the interrupted compact task without repeating completed work, then finish exact-head verification for the bounded C5-C deterministic offline replay/window implementation. Stop before PR creation, merge, deploy, workflow dispatch, live generator/provider execution, CRM sync, production replay/data writes, the 15-day observation window, or Activation.
+Exact-head verification for the bounded C5-C deterministic offline replay/window implementation is complete. Preserve implementation authority at `800f615fd30546eae4f03c89838e59416406c6a5` and stop for fresh independent read-only QA before any PR decision.
 
 ## Completed
 
@@ -27,20 +27,14 @@ The completed test counters above are recovered run evidence. They do not imply 
 
 ## Remaining
 
-- From a fresh GitHub API snapshot of exact implementation authority `800f615fd30546eae4f03c89838e59416406c6a5`, run:
-  - `npm run test:daily-v4`
-  - `npm run verify:all`
-- Recompute and record:
-  - exact `main...800f615f` compare and the nine-path scope proof;
-  - denylist/no-production-data/no-lockfile/no-Activation guards;
-  - independent `git diff --check`;
-  - the 38-path behavior manifest/hash claimed by the interrupted run, or report any mismatch.
-- If any pending check fails, stop at diagnosis/proposal; do not broaden implementation.
-- If all pending checks pass, update this checkpoint with exact evidence and stop for independent QA/next-phase confirmation.
+- Run a fresh independent read-only exact-head QA against implementation authority `800f615fd30546eae4f03c89838e59416406c6a5`.
+- Audit deterministic decision replay, artifact/receipt binding, retained-date and replacement semantics, schema/validator closure, production-isolation boundaries, and the 38-path behavior authority.
+- If QA returns P0 or P1, return to diagnosis/proposal and do not broaden implementation.
+- If QA returns P0=0/P1=0, close this checkpoint and separately decide whether to create a C5-C PR.
 
 ## Next Action
 
-Create one disposable, clean snapshot downloaded from GitHub at exact SHA `800f615fd30546eae4f03c89838e59416406c6a5`; run only the pending full checks and boundary/hash proof. Do not rerun the already completed focused/syntax/schema suite unless a pending check exposes a contradiction.
+Perform fresh independent read-only exact-head QA at `800f615fd30546eae4f03c89838e59416406c6a5`; do not change code, create a PR, merge, deploy, dispatch, run live providers/generators, sync, replay production data, begin the 15-day observation window, or activate V7.3.
 
 ## Git Status
 
@@ -50,6 +44,30 @@ Create one disposable, clean snapshot downloaded from GitHub at exact SHA `800f6
 - Implementation diff paths: exactly 9
 - PR: none for C5-C
 - Production authority: V7.2
+- Recovery checkpoint commit: `7a16db9abe1a3be66f90bbeb807e5f27d56b0e3d`
 - Local CRM checkout/worktree: not used or modified
 
 This is an in-progress recovery record. It is not final GREEN evidence and does not authorize a PR, merge, deployment, live replay, observation, or Activation.
+
+
+## Recovery Stage 2 Exact-Head Full Verification — 2026-08-03
+
+- Verification authority: implementation commit `800f615fd30546eae4f03c89838e59416406c6a5`.
+- Verification used a fresh GitHub API exact-SHA tarball plus a synthetic exact-`main@9dfce284903a72ba61fac1937acc69ab7f6d04c4` Git index in a disposable `/tmp` snapshot. The local CRM checkout/worktree was not used or modified.
+- Recovered pre-interruption evidence:
+  - focused C5-C suite: 43/43 GREEN;
+  - V7.3 focused union: 72/72 GREEN;
+  - four modified/added job MJS syntax checks: GREEN;
+  - replay-window schema JSON parse: GREEN.
+- Newly completed after recovery:
+  - `npm run test:daily-v4`: GREEN;
+  - `npm run verify:all`: all 16 declared tasks GREEN;
+  - exact remote compare: `main...800f615f` ahead 3 / behind 0, merge base `9dfce284`;
+  - exact implementation scope: 9/9 allowlisted paths;
+  - denylist/no-production-data/no-workflow/no-Activation/no-observation guard: GREEN;
+  - independent intent-to-add-aware `git diff --check`: GREEN across all nine paths;
+  - `package-lock.json`: absent after dependency installation with `--no-package-lock`.
+- Behavior manifest contains exactly 38 paths.
+- Recomputed `behavior_contract_sha256 = d9f59dd6c2444b6ec3dc64fb7658b22a4ff1ab81dd285a5ab0d1fcefbb11955e`.
+- No PR exists for C5-C. No merge, deployment, workflow dispatch, live provider/generator, CRM sync, production replay/data write, 15-day observation, or Activation occurred.
+- Next action: fresh independent read-only exact-head QA, then stop for a separate PR decision.
