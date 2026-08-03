@@ -376,10 +376,20 @@ function qualityEvidenceFromSignals(signals, family) {
         ? "bilibili_public_playtest"
         : "independent_media_preview",
       source_id: publicSourceId(item, family),
+      source_role: independentQualitySourceRole(item, family),
       source: String(item.source ?? "").trim() || null,
       value: String(item.title ?? item.summary ?? "public quality evidence").trim(),
       url: publicSignalUrl(item)
     }));
+}
+
+function independentQualitySourceRole(item, family) {
+  const classified = String(
+    item?.bilibili_probe?.source_kind ?? item?.source_role ?? ""
+  ).trim().toLowerCase();
+  if (classified === "trusted_creator") return "trusted_creator";
+  if (classified === "media") return "media";
+  return family === "media" ? "media" : "unclassified";
 }
 
 function publicSourceId(item, family) {

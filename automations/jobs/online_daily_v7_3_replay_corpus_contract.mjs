@@ -1490,6 +1490,7 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
   }
 
   validateEvidenceReferences(candidates, evidenceById, errors);
+  validateFinalEvidenceReferences(transactions, evidenceById, errors);
   validateSecondPassIntegrity(
     corpus,
     candidates,
@@ -1672,6 +1673,56 @@ function validateEvidenceReferences(candidates, evidenceById, errors) {
           );
         }
       });
+    }
+  });
+}
+
+function validateFinalEvidenceReferences(transactions, evidenceById, errors) {
+  transactions.forEach((transaction, transactionIndex) => {
+    if (transaction?.final_output?.qualified !== true) return;
+    const evidencePath =
+      `/second_pass/transactions/${transactionIndex}/final_output/evidence_ids`;
+    const evidenceIds = transaction.final_output.evidence_ids;
+    if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
+      addError(
+        errors,
+        "FINAL_EVIDENCE_REQUIRED",
+        evidencePath,
+        "qualified final output requires concrete independent evidence references"
+      );
+      return;
+    }
+    const independentSources = new Set();
+    evidenceIds.forEach((evidenceId, evidenceIndex) => {
+      const referencePath = `${evidencePath}/${evidenceIndex}`;
+      const evidence = evidenceById.get(evidenceId);
+      if (!evidence) {
+        addError(
+          errors,
+          "EVIDENCE_REFERENCE_NOT_FOUND",
+          referencePath,
+          `unknown evidence_id ${String(evidenceId)}`
+        );
+        return;
+      }
+      if (!INDEPENDENT_SOURCE_ROLES.has(evidence.source_role)) {
+        addError(
+          errors,
+          "INDEPENDENT_ROLE_FORBIDDEN",
+          referencePath,
+          `${String(evidence.source_role)} cannot occupy an independent-quality slot`
+        );
+        return;
+      }
+      independentSources.add(evidence.source_id);
+    });
+    if (independentSources.size < 2) {
+      addError(
+        errors,
+        "INDEPENDENT_SOURCE_COUNT",
+        evidencePath,
+        "qualified final output requires two distinct eligible public sources"
+      );
     }
   });
 }
