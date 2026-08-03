@@ -2,7 +2,7 @@
 
 Date: 2026-08-03 (Asia/Shanghai)
 Phase: Phase 4 review-repair implementation
-Status: in progress — PR #108 evidence-integrity cluster accepted RED
+Status: in progress — PR #108 evidence-integrity cluster GREEN; P2 cluster next
 Branch: codex/pr-c-c5b-shadow-collector-amended
 Exact implementation base: 1fc883e36ce8725d345061b8f8f64aef28e36bad
 Accepted RED head: 4d9fddfd01b3801d5792caeb881af8c535d75cdf
@@ -28,7 +28,6 @@ Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, 
 
 ## Remaining
 
-- Make the evidence-integrity RED pass with the smallest producer/validator changes.
 - Add and close the two P2 RED contracts.
 - Run the exact-head focused union, Daily V4, `verify:all`, syntax/JSON/diff/allowlist/denylist/no-lockfile guards, and behavior-manifest/hash recalculation.
 - Complete a fresh independent exact-head QA with P0=0/P1=0.
@@ -36,7 +35,7 @@ Repair only the four confirmed unresolved PR #108 findings with exact-head TDD, 
 
 ## Next Action
 
-Implement only the evidence-integrity GREEN against accepted RED `a6ffb924958f53fe9e3a6bb409455713179315fb`, then update this checkpoint before starting the P2 cluster.
+Add only the two P2 RED contracts for quality-only lookup suppression and Steam app-ID publication matching, prove the exact failures, then apply the minimal GREEN.
 
 ## Git Status
 
@@ -45,6 +44,7 @@ Remote review-repair branch at this checkpoint:
 - PR base/main: `8e255cded6e9063011f4da2f4c2f3f53ec3cc7e4`
 - pre-repair PR head: `8bf9414929b0b0a7c6a932f142987f7ab0ca1a93`
 - accepted review-repair RED: `a6ffb924958f53fe9e3a6bb409455713179315fb`
+- evidence-integrity GREEN: `d4bbd00f3740c6b96a0b6ec39c04d9d5008d6ce2`
 - PR: `#108`, open, head `codex/pr-c-c5b-shadow-collector-amended`
 - scope: exactly the existing 21-path PR allowlist; this RED changes two existing test paths only
 - production authority: V7.2
@@ -343,3 +343,20 @@ The Phase 2 amendment must either include these behavior-affecting paths in the 
 - RED result: 32 tests, 30 passed, 2 expected failures; one producer-role/binding failure and one validator final-reference failure.
 - No implementation, schema, workflow, production V7.2, data, or lockfile path changed. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation occurred.
 - Next action: minimal producer role propagation plus final transaction evidence semantic validation; keep unknown proof roles unclassified.
+
+
+## PR #108 Review Repair Stage 2 — Evidence-Integrity GREEN — 2026-08-03
+
+- Accepted RED: `a6ffb924958f53fe9e3a6bb409455713179315fb`; RED checkpoint head: `b28770814befe4f2b5d79790cf8be69666aef661`.
+- Minimal implementation commit: `d4bbd00f3740c6b96a0b6ec39c04d9d5008d6ce2`.
+- Implementation changed exactly:
+  - `automations/jobs/online_daily_v7_3_second_pass_orchestrator.mjs`
+  - `automations/jobs/online_daily_v7_3_replay_corpus_contract.mjs`
+- Producer behavior: generated independent-quality proofs now carry the provider's normalized `media` or `trusted_creator` role; ordinary non-Bilibili media signals classify as `media`.
+- Collector behavior remains closed: arbitrary proof roles are not coerced; unknown remains `unclassified`; only `media` and `trusted_creator` bind final independent evidence IDs.
+- Validator behavior: every qualified final output must reference evidence in the catalog, use only eligible independent roles, and provide at least two distinct eligible `source_id` values.
+- Syntax: both modified jobs GREEN.
+- Focused cluster command: `node --test automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`.
+- Focused cluster result: 32/32 GREEN.
+- No schema, workflow, production V7.2, generated data, or lockfile change. No review reply/resolution, merge, deploy, dispatch, live provider/generator, CRM sync, replay, C5-C, observation, or Activation.
+- Next action: P2 RED for zero official lookup on quality-only requests and Steam app-ID-only publication matching when an app ID is known.
