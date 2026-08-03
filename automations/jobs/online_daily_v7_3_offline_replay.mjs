@@ -6,11 +6,13 @@ import {
   sha256Canonical,
   validateReplayCorpus
 } from "./online_daily_v7_3_replay_corpus_contract.mjs";
+import { evaluateV73IndiePrelaunchAdmission } from "./online_daily_v7_3_obtainable_evidence.mjs";
+import { evaluateChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
+import { selectRegularAdmission } from "./online_daily_v7_2_regular_admission.mjs";
 
 export const C5C_REPLAY_ENGINE_CONTRACT_VERSION = 1;
 const V73_OBTAINABLE_EVIDENCE_RULE_VERSION =
   "sourcing-rules-v7.3-obtainable-evidence";
-const CHINA_JOINT_RULE_VERSION = "sourcing-rules-v7.2-china-joint";
 
 const SUPPORTED_SECOND_PASS_ACTIONS = new Set([
   "resolve_project_identity",
@@ -22,6 +24,23 @@ const SUPPORTED_SECOND_PASS_ACTIONS = new Set([
   "fetch_independent_quality_evidence",
   "fetch_non_steam_business_entry",
   "research_china_bilibili_value"
+]);
+const PATCH_FIELDS_BY_ACTION = new Map([
+  ["resolve_project_identity", ["project", "steam_app_id", "dedupe_key"]],
+  ["verify_prelaunch_window", ["release_state", "release_window", "early_access_state"]],
+  ["verify_publisher_china_capacity", ["publisher_occupancy"]],
+  ["verify_product_focus", ["narrative_state"]],
+  ["verify_team_region", ["india_team_state"]],
+  ["fetch_official_playable_or_gameplay", ["official_demo_evidence", "official_gameplay_evidence"]],
+  ["fetch_independent_quality_evidence", ["quality_proofs"]],
+  ["fetch_non_steam_business_entry", ["business_entrypoints"]],
+  ["research_china_bilibili_value", ["china_bilibili_value"]]
+]);
+const MERGED_EVIDENCE_LIST_FIELDS = new Set([
+  "official_demo_evidence",
+  "official_gameplay_evidence",
+  "quality_proofs",
+  "business_entrypoints"
 ]);
 
 export class OfflineReplayError extends Error {
@@ -36,6 +55,8 @@ export class OfflineReplayError extends Error {
 export function replayOfflineCorpus({
   corpusBytes,
   receiptBytes,
+  artifactBytes,
+  gitBlobResolver,
   artifactMetadata,
   expectedBehaviorContractSha256
 } = {}) {
@@ -67,6 +88,8 @@ export function replayOfflineCorpus({
     receipt,
     corpusBuffer,
     receiptBuffer,
+    artifactBytes,
+    gitBlobResolver,
     artifactMetadata,
     inputCorpusPayloadSha256
   });
@@ -140,17 +163,20 @@ export function buildStoredDecisionView(corpus = {}) {
 export function buildReplayedDecisionView(corpus = {}) {
   const transactions = transactionIndex(corpus);
   const candidates = (corpus.candidates ?? []).map((candidate) => {
-    const indie = replayLaneOutput(
-      candidate?.first_pass?.indie_prelaunch,
-      "indie_prelaunch"
+    const indie = evaluateV73IndiePrelaunchAdmission(
+      cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {})
     );
-    const china = replayLaneOutput(candidate?.first_pass?.china_joint, "china_joint");
+    const china = evaluateChinaJointAdmission(
+      cloneJson(candidate?.first_pass?.china_joint?.input ?? {})
+    );
     const selected = selectRegular(indie, china);
     const transaction = transactions.get(candidate?.second_pass?.transaction_id) ?? null;
     const finalIndie = transaction
-      ? replayLaneOutput(
-          { gate_results: transaction.final_output?.gate_results ?? [] },
-          "indie_prelaunch"
+      ? evaluateV73IndiePrelaunchAdmission(
+          secondPassReplayInput(
+            candidate?.first_pass?.indie_prelaunch?.input ?? {},
+            transaction
+          )
         )
       : indie;
     const finalSelected = selectRegular(finalIndie, china);
@@ -165,6 +191,7 @@ export function buildReplayedDecisionView(corpus = {}) {
         source_type: String(candidate?.ranking_inputs?.source_type ?? "")
       },
       eligible: secondPassEligible(indie),
+      first_admission: indie,
       transaction,
       first_pass: {
         indie_prelaunch: { output: decisionOutput(indie) },
@@ -173,7 +200,8 @@ export function buildReplayedDecisionView(corpus = {}) {
       },
       final_output: transaction ? decisionOutput(finalIndie) : null,
       final_selected: finalSelected,
-      captured_publication: candidate?.publication ?? {}
+      normalized_candidate: candidate?.normalized_candidate ?? {},
+      dedupe_boundary: candidate?.dedupe_boundary ?? {}
     };
   });
 
@@ -206,6 +234,7 @@ export function buildReplayedDecisionView(corpus = {}) {
     ))
     .map((candidate) => candidate.candidate_id);
 
+  const publicationByCandidateId = replayPublicationIndex(candidates);
   const replayedCandidates = candidates.map((candidate) => {
     const isSelected = selected.has(candidate.candidate_id);
     const attempted = attemptedIds.includes(candidate.candidate_id);
@@ -216,23 +245,13 @@ export function buildReplayedDecisionView(corpus = {}) {
         eligible: candidate.eligible,
         rejection_reason: candidate.eligible
           ? isSelected ? null : "budget_omitted"
-          : secondPassRejection(
-              replayLaneOutput(
-                (corpus.candidates ?? []).find(
-                  (item) => item?.candidate_id === candidate.candidate_id
-                )?.first_pass?.indie_prelaunch,
-                "indie_prelaunch"
-              )
-            ),
+          : secondPassRejection(candidate.first_admission),
         selected: isSelected,
         attempted,
         transaction_id: attempted ? candidate.transaction?.transaction_id ?? null : null
       },
       final_output: candidate.final_output,
-      publication: replayedPublication(
-        candidate.final_selected,
-        candidate.captured_publication
-      )
+      publication: publicationByCandidateId.get(candidate.candidate_id)
     };
   });
   const secondPass = {
@@ -261,12 +280,15 @@ function verifyArtifactBindings({
   receipt,
   corpusBuffer,
   receiptBuffer,
+  artifactBytes,
+  gitBlobResolver,
   artifactMetadata,
   inputCorpusPayloadSha256
 }) {
   if (!isPlainObject(artifactMetadata)) {
     throw new OfflineReplayError("ARTIFACT_MISMATCH", "artifact metadata must be explicit");
   }
+  const payloadByKey = new Map();
   for (const [key, binding] of Object.entries(corpus.artifact_bindings ?? {})) {
     const metadata = artifactMetadata[key];
     if (!isPlainObject(metadata)) {
@@ -275,9 +297,31 @@ function verifyArtifactBindings({
     if (metadata.path !== binding.path || metadata.payload_sha256 !== binding.payload_sha256) {
       throw new OfflineReplayError("ARTIFACT_MISMATCH", `payload metadata mismatch for ${key}`);
     }
-    if (key !== "replay_corpus" && metadata.git_blob_sha !== binding.git_blob_sha) {
-      throw new OfflineReplayError("ARTIFACT_MISMATCH", `Git blob metadata mismatch for ${key}`);
+    const bytes = artifactBuffer({
+      key,
+      binding,
+      corpusBuffer,
+      receiptBuffer,
+      artifactBytes,
+      gitBlobResolver
+    });
+    const payload = parseJsonBytes(bytes, "ARTIFACT_PARSE_ERROR");
+    const actualGitBlobSha = gitBlobSha(bytes);
+    const actualPayloadSha256 = key === "replay_corpus"
+      ? inputCorpusPayloadSha256
+      : sha256Canonical(payload);
+    if (
+      metadata.git_blob_sha !== actualGitBlobSha
+      || metadata.payload_sha256 !== actualPayloadSha256
+      || binding.payload_sha256 !== actualPayloadSha256
+      || (key !== "replay_corpus" && binding.git_blob_sha !== actualGitBlobSha)
+    ) {
+      throw new OfflineReplayError(
+        "ARTIFACT_MISMATCH",
+        `artifact bytes are not bound for ${key}`
+      );
     }
+    payloadByKey.set(key, payload);
   }
 
   const corpusMetadata = artifactMetadata.replay_corpus;
@@ -288,12 +332,85 @@ function verifyArtifactBindings({
   ) {
     throw new OfflineReplayError("ARTIFACT_MISMATCH", "replay corpus bytes are not bound");
   }
-  const receiptMetadata = artifactMetadata.receipt;
+  verifyArtifactIdentity(corpus, receipt, payloadByKey);
+}
+
+function artifactBuffer({
+  key,
+  binding,
+  corpusBuffer,
+  receiptBuffer,
+  artifactBytes,
+  gitBlobResolver
+}) {
+  if (key === "replay_corpus") return corpusBuffer;
+  if (key === "receipt") return receiptBuffer;
+  if (isPlainObject(artifactBytes) && Object.hasOwn(artifactBytes, key)) {
+    return explicitBytes(artifactBytes[key], `artifactBytes.${key}`);
+  }
+  if (typeof gitBlobResolver === "function") {
+    const resolved = gitBlobResolver(Object.freeze({
+      key,
+      path: binding.path,
+      git_blob_sha: binding.git_blob_sha
+    }));
+    if (resolved && typeof resolved.then === "function") {
+      throw new OfflineReplayError(
+        "ARTIFACT_BYTES_REQUIRED",
+        "gitBlobResolver must return explicit bytes synchronously"
+      );
+    }
+    return explicitBytes(resolved, `gitBlobResolver(${key})`);
+  }
+  throw new OfflineReplayError(
+    "ARTIFACT_BYTES_REQUIRED",
+    `explicit bytes or a trusted Git blob resolver are required for ${key}`
+  );
+}
+
+function verifyArtifactIdentity(corpus, receipt, payloadByKey) {
+  const reportDate = String(corpus.report_date ?? "");
+  const runSlot = String(corpus.run_slot ?? "");
+  const runId = String(corpus.workflow_run_id ?? "");
+  const runAttempt = String(corpus.run_attempt ?? "");
+  const expectedCorpusId = `${reportDate}/${runId}/${runAttempt}/${runSlot}`;
+  const expectedPaths = {
+    report: `data/reports/${reportDate}.json`,
+    sourcing_candidates: `data/sourcing_candidates/${reportDate}.json`,
+    replay_corpus: `data/sourcing_replay_corpus/${reportDate}/${runId}-${runAttempt}-${runSlot}.json`,
+    receipt: `data/automation_runs/${reportDate}-${runSlot}.json`,
+    radar: `data/radar/${reportDate}.json`,
+    steam_trends: `data/steam_trends/${reportDate}.json`
+  };
   if (
-    receiptMetadata.git_blob_sha !== gitBlobSha(receiptBuffer)
-    || receiptMetadata.payload_sha256 !== sha256Canonical(receipt)
+    corpus.corpus_id !== expectedCorpusId
+    || !String(corpus.captured_at ?? "").startsWith(`${reportDate}T`)
+    || !String(corpus.captured_at ?? "").endsWith("+08:00")
   ) {
-    throw new OfflineReplayError("ARTIFACT_MISMATCH", "receipt bytes are not bound");
+    throw new OfflineReplayError(
+      "ARTIFACT_IDENTITY_MISMATCH",
+      "corpus ID and Asia/Shanghai retained date must agree"
+    );
+  }
+  for (const [key, binding] of Object.entries(corpus.artifact_bindings ?? {})) {
+    if (expectedPaths[key] && binding.path !== expectedPaths[key]) {
+      throw new OfflineReplayError(
+        "ARTIFACT_IDENTITY_MISMATCH",
+        `canonical artifact path mismatch for ${key}`
+      );
+    }
+    if (key !== "replay_corpus" && payloadByKey.get(key)?.report_date !== reportDate) {
+      throw new OfflineReplayError(
+        "ARTIFACT_IDENTITY_MISMATCH",
+        `artifact report_date mismatch for ${key}`
+      );
+    }
+  }
+  if (String(receipt.slot ?? receipt.run_slot ?? "") !== runSlot) {
+    throw new OfflineReplayError(
+      "ARTIFACT_IDENTITY_MISMATCH",
+      "receipt run slot must match the replay corpus"
+    );
   }
 }
 
@@ -317,14 +434,65 @@ function verifyHealthyReceipt(corpus, receipt) {
   }
 }
 
+function secondPassReplayInput(firstInput, transaction) {
+  const expectedFields = uniqueStrings(
+    (transaction.requested_actions ?? [])
+      .flatMap((item) => PATCH_FIELDS_BY_ACTION.get(item?.action) ?? [])
+  ).sort();
+  const declaredFields = uniqueStrings(transaction.allowlisted_patch_fields).sort();
+  if (canonicalJson(expectedFields) !== canonicalJson(declaredFields)) {
+    throw new OfflineReplayError(
+      "REPLAY_INPUT_MISMATCH",
+      "second-pass allowlisted patch fields do not match requested actions"
+    );
+  }
+  const filteredPatch = isPlainObject(transaction.filtered_patch)
+    ? transaction.filtered_patch
+    : {};
+  if (Object.keys(filteredPatch).some((field) => !expectedFields.includes(field))) {
+    throw new OfflineReplayError(
+      "REPLAY_INPUT_MISMATCH",
+      "second-pass filtered patch exceeds its bounded allowlist"
+    );
+  }
+  const reconstructed = mergeBoundedInput(firstInput, filteredPatch);
+  const reconstructedEvidence = evaluateV73IndiePrelaunchAdmission(reconstructed).evidence;
+  const retainedEvidence = evaluateV73IndiePrelaunchAdmission(
+    cloneJson(transaction.merged_final_input ?? {})
+  ).evidence;
+  if (canonicalJson(reconstructedEvidence) !== canonicalJson(retainedEvidence)) {
+    throw new OfflineReplayError(
+      "REPLAY_INPUT_MISMATCH",
+      "second-pass merged input does not match the bounded patch"
+    );
+  }
+  return retainedEvidence;
+}
+
+function mergeBoundedInput(firstInput, patch) {
+  const merged = cloneJson(firstInput ?? {});
+  for (const [field, value] of Object.entries(patch)) {
+    if (MERGED_EVIDENCE_LIST_FIELDS.has(field)) {
+      const values = [
+        ...(Array.isArray(merged[field]) ? merged[field] : []),
+        ...(Array.isArray(value) ? value : [])
+      ];
+      const seen = new Set();
+      merged[field] = values.filter((item) => {
+        const key = canonicalJson(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).map(cloneJson);
+    } else {
+      merged[field] = cloneJson(value);
+    }
+  }
+  return merged;
+}
+
 function selectRegular(indie, china) {
-  const selected = indie.qualified
-    ? indie
-    : china.qualified
-      ? china
-      : indie.disposition !== "excluded"
-        ? indie
-        : china;
+  const selected = selectRegularAdmission(indie, china);
   return { ...selected, sourcing_rule_version: V73_OBTAINABLE_EVIDENCE_RULE_VERSION };
 }
 
@@ -358,64 +526,38 @@ function decisionOutput(value = {}) {
   });
 }
 
-function replayLaneOutput(value = {}, lane) {
-  const gates = (value?.gate_results ?? []).map((gate) => ({
-    id: String(gate?.gate_id ?? gate?.id ?? ""),
-    status: String(gate?.status ?? "unknown"),
-    hard_exclusion: gate?.hard_exclusion === true
-  }));
-  const failed = gates.filter((gate) => gate.status === "fail" || gate.status === "unknown");
-  const qualified = failed.length === 0;
-  const hardFailure = lane === "china_joint"
-    ? failed.some((gate) => gate.status === "fail")
-    : failed.some((gate) => gate.status === "fail" && gate.hard_exclusion);
-  return {
-    qualified,
-    disposition: qualified ? "formal" : hardFailure ? "excluded" : "candidate",
-    sourcing_lane: lane,
-    sourcing_rule_version:
-      lane === "china_joint" ? CHINA_JOINT_RULE_VERSION : V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
-    failed_gates: failed.map((gate) => gate.id),
-    missing_evidence: failed
-      .filter((gate) => gate.status === "unknown")
-      .map((gate) => gate.id),
-    next_evidence_actions: lane === "indie_prelaunch"
-      ? failed
-          .filter((gate) => gate.status === "unknown")
-          .map((gate) => ({ action: actionForGate(gate.id) }))
-          .filter((item) => item.action)
-      : []
-  };
-}
-
-function actionForGate(gateId) {
-  return {
-    identity_and_dedupe: "resolve_project_identity",
-    prelaunch_window: "verify_prelaunch_window",
-    publisher_china_capacity_clear: "verify_publisher_china_capacity",
-    non_narrative_product: "verify_product_focus",
-    non_india_team: "verify_team_region",
-    official_playable_or_gameplay: "fetch_official_playable_or_gameplay",
-    independent_quality_proof: "fetch_independent_quality_evidence",
-    non_steam_business_entry: "fetch_non_steam_business_entry",
-    concrete_china_bilibili_value: "research_china_bilibili_value"
-  }[gateId] ?? null;
-}
-
-function replayedPublication(admission = {}, captured = {}) {
-  const shadowPushPool = captured.shadow_push_pool === true;
-  return {
-    decision: shadowPushPool
-      ? "formal"
-      : admission.qualified === true
-        ? "candidate"
+function replayPublicationIndex(candidates) {
+  const used = new Set();
+  const publications = new Map();
+  for (const candidate of candidates) {
+    const admission = candidate.final_selected ?? {};
+    const poolKey = replayPoolKey(candidate);
+    const duplicate = admission.qualified === true && used.has(poolKey);
+    const shadowPushPool = admission.qualified === true && !duplicate;
+    if (shadowPushPool) used.add(poolKey);
+    publications.set(candidate.candidate_id, {
+      decision: shadowPushPool
+        ? "formal"
         : admission.disposition === "excluded" ? "excluded" : "candidate",
-    selected_lane: admission.sourcing_lane ?? null,
-    shadow_push_pool: shadowPushPool,
-    dedupe_suppressed: admission.qualified === true && !shadowPushPool,
-    risk_flags: uniqueStrings(captured.risk_flags),
-    day_lead_count_used: false
-  };
+      selected_lane: admission.sourcing_lane ?? null,
+      shadow_push_pool: shadowPushPool,
+      dedupe_suppressed: admission.qualified === true && !shadowPushPool,
+      risk_flags: uniqueStrings(admission.exclusion_reasons),
+      day_lead_count_used: false
+    });
+  }
+  return publications;
+}
+
+function replayPoolKey(candidate) {
+  const normalized = candidate.normalized_candidate ?? {};
+  const steamAppId = String(normalized.steam_app_id ?? "").trim();
+  if (steamAppId) return `steam:${steamAppId}`;
+  const project = String(normalized.project ?? candidate.candidate_id ?? "")
+    .normalize("NFKC")
+    .trim()
+    .toLowerCase();
+  return `project:${project}`;
 }
 
 function publicationView(value = {}) {

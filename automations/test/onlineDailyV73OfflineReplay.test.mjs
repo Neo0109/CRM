@@ -65,7 +65,7 @@ describe("C5-C no-network offline replay", () => {
       sha256Canonical(buildReplayedDecisionView(corpus))
     );
 
-    corpus.candidates[0].publication.decision = "formal";
+    corpus.candidates[0].publication.decision = "excluded";
     assert.notEqual(
       sha256Canonical(buildStoredDecisionView(corpus)),
       sha256Canonical(buildReplayedDecisionView(corpus))
@@ -121,6 +121,7 @@ describe("C5-C no-network offline replay", () => {
 
     const mergedInputTamper = structuredClone(corpus);
     mergedInputTamper.second_pass.transactions[0].merged_final_input.official_gameplay_evidence = [];
+    mergedInputTamper.second_pass.transactions[0].filtered_patch.official_gameplay_evidence = [];
     assert.notEqual(
       sha256Canonical(buildReplayedDecisionView(mergedInputTamper)),
       baseline,
@@ -357,26 +358,10 @@ function replayFixture({
 }
 
 function candidateFixture() {
-  const indieOutput = {
-    qualified: true,
-    disposition: "formal",
-    sourcing_lane: "indie_prelaunch",
-    sourcing_rule_version: "sourcing-rules-v7.3-obtainable-evidence",
-    failed_gates: [],
-    missing_evidence: [],
-    exclusion_reasons: [],
-    gate_results: [{ id: "identity_and_dedupe", status: "pass", reason: null }]
-  };
-  const chinaOutput = {
-    qualified: false,
-    disposition: "excluded",
-    sourcing_lane: "china_joint",
-    sourcing_rule_version: "sourcing-rules-v7.2-china-joint",
-    failed_gates: ["china_joint"],
-    missing_evidence: [],
-    exclusion_reasons: ["not a China joint opportunity"],
-    gate_results: [{ id: "china_joint", status: "fail", reason: "not a China joint opportunity" }]
-  };
+  const indieInput = qualifiedIndieInput();
+  const chinaInput = {};
+  const indieOutput = evaluateV73IndiePrelaunchAdmission(indieInput);
+  const chinaOutput = evaluateChinaJointAdmission(chinaInput);
   return {
     candidate_id: "steam:100",
     project: "Game One",
@@ -410,7 +395,7 @@ function candidateFixture() {
     first_pass: {
       evaluator_dependency_sha256: SHA_B,
       indie_prelaunch: {
-        input: { project: "Game One", steam_app_id: "100" },
+        input: indieInput,
         output: indieOutput,
         gate_results: [{
           gate_id: "identity_and_dedupe",
@@ -420,7 +405,7 @@ function candidateFixture() {
         }]
       },
       china_joint: {
-        input: { project: "Game One", steam_app_id: "100" },
+        input: chinaInput,
         output: chinaOutput,
         gate_results: [{
           gate_id: "china_joint",

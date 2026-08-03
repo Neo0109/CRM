@@ -28,6 +28,10 @@ export function selectCanonicalReplayRun({
   const rejected = [];
   for (const attempt of attempts) {
     const snapshot = attemptSnapshot(attempt, reportDate);
+    if (snapshot.report_date !== reportDate) {
+      rejected.push(rejectedAttempt(snapshot, "artifact_mismatch"));
+      continue;
+    }
     const exclusion = staticExclusion(snapshot);
     if (exclusion) {
       rejected.push(rejectedAttempt(snapshot, exclusion));
@@ -366,7 +370,11 @@ function rejectedAttempt(snapshot, reasonCode) {
 function replayErrorReason(code) {
   if (code === "RECEIPT_UNHEALTHY") return "delivery_unhealthy";
   if (code === "BEHAVIOR_DRIFT") return "behavior_drift";
-  if (code === "REPLAY_MISMATCH" || code === "NON_DETERMINISTIC_REPLAY") {
+  if (
+    code === "REPLAY_MISMATCH"
+    || code === "REPLAY_INPUT_MISMATCH"
+    || code === "NON_DETERMINISTIC_REPLAY"
+  ) {
     return "replay_mismatch";
   }
   if (code === "CORPUS_CONTRACT_INVALID") return "contract_drift";

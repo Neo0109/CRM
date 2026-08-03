@@ -79,7 +79,7 @@
       },
       "then": {
         "properties": {
-          "dates": { "maxItems": 15 },
+          "dates": { "maxItems": 14 },
           "failure_date": { "$ref": "#/$defs/date" },
           "failure_reasons": { "minItems": 1 },
           "integrity": {
@@ -100,12 +100,13 @@
       },
       "then": {
         "properties": {
-          "dates": { "maxItems": 14 },
+          "dates": { "minItems": 1, "maxItems": 14 },
           "failure_date": { "type": "null" },
           "failure_reasons": { "maxItems": 0 },
           "integrity": {
             "properties": {
-              "status": { "const": "incomplete" }
+              "status": { "const": "incomplete" },
+              "reason_codes": { "maxItems": 0 }
             }
           }
         }

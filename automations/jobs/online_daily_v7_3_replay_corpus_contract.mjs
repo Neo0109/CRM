@@ -2207,6 +2207,14 @@ function validateWindowState(windowManifest, errors) {
       );
     }
   } else if (windowManifest.status === "failed") {
+    if (dates.length > 14) {
+      addError(
+        errors,
+        "WINDOW_FAILED_DATE_COUNT",
+        "/dates",
+        "failed window may retain at most 14 dates"
+      );
+    }
     if (!isValidDateString(windowManifest.failure_date)) {
       addError(
         errors,
@@ -2231,13 +2239,32 @@ function validateWindowState(windowManifest, errors) {
         "failed window cannot have complete integrity"
       );
     }
+    if (windowManifest.end_date !== windowManifest.failure_date) {
+      addError(
+        errors,
+        "WINDOW_FAILED_END_DATE_MISMATCH",
+        "/end_date",
+        "failed window end_date must equal failure_date"
+      );
+    }
+    const integrityReasons = Array.isArray(windowManifest.integrity?.reason_codes)
+      ? windowManifest.integrity.reason_codes
+      : [];
+    if (!sameStringSet(integrityReasons, failureReasons)) {
+      addError(
+        errors,
+        "WINDOW_FAILURE_REASON_PARITY",
+        "/integrity/reason_codes",
+        "failed window integrity reasons must equal failure_reasons"
+      );
+    }
   } else if (windowManifest.status === "active") {
-    if (dates.length > 14) {
+    if (dates.length < 1 || dates.length > 14) {
       addError(
         errors,
         "WINDOW_ACTIVE_DATE_COUNT",
         "/dates",
-        "active window must become complete or failed after day 15"
+        "active window must retain 1 to 14 consecutive dates"
       );
     }
     if (windowManifest.failure_date !== null || failureReasons.length > 0) {
@@ -2254,6 +2281,15 @@ function validateWindowState(windowManifest, errors) {
         "WINDOW_ACTIVE_INTEGRITY_STATUS",
         "/integrity/status",
         "active window has incomplete integrity until it closes"
+      );
+    }
+    if (Array.isArray(windowManifest.integrity?.reason_codes)
+      && windowManifest.integrity.reason_codes.length > 0) {
+      addError(
+        errors,
+        "WINDOW_ACTIVE_INTEGRITY_REASONS",
+        "/integrity/reason_codes",
+        "active window cannot contain integrity reasons"
       );
     }
   }
@@ -2346,6 +2382,17 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "start_date must match the first retained date"
       );
     }
+    if (windowManifest.status === "failed") {
+      const expectedFailureDate = nextDateString(dates[dates.length - 1]?.report_date);
+      if (expectedFailureDate && windowManifest.failure_date !== expectedFailureDate) {
+        addError(
+          errors,
+          "WINDOW_FAILURE_DATE_SEQUENCE",
+          "/failure_date",
+          `expected ${expectedFailureDate}`
+        );
+      }
+    }
     if (
       windowManifest.status !== "failed"
       && windowManifest.end_date !== dates[dates.length - 1]?.report_date
@@ -2357,6 +2404,16 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "end_date must match the last retained date"
       );
     }
+  } else if (
+    windowManifest.status === "failed"
+    && windowManifest.start_date !== windowManifest.failure_date
+  ) {
+    addError(
+      errors,
+      "WINDOW_FAILED_START_DATE_MISMATCH",
+      "/start_date",
+      "failed window without retained dates must start on failure_date"
+    );
   }
 
   if (canonical) {
@@ -2391,6 +2448,12 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
       }
     }
   }
+}
+
+function sameStringSet(left, right) {
+  if (left.length !== right.length) return false;
+  const rightSet = new Set(right);
+  return left.every((value) => rightSet.has(value));
 }
 
 function validateCanonicalDateHealth(entry, index, errors) {
