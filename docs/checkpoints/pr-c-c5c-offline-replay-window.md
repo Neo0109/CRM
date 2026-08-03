@@ -1,53 +1,53 @@
 # PR C C5-C Offline Replay Window Recovery Checkpoint
 
 Date: 2026-08-03 (Asia/Shanghai)
-Phase: Phase 5 independent exact-head QA complete — diagnosis/proposal boundary
+Phase: Phase 5 fresh independent exact-head QA complete — diagnosis/proposal boundary
 Status: QA RED — P0=0 / P1=4 / P2=0; no PR decision authorized
 Branch: codex/pr-c-c5c-offline-replay-window
-Exact base: 9dfce284903a72ba61fac1937acc69ab7f6d04c4
-Implementation authority: 800f615fd30546eae4f03c89838e59416406c6a5
+Frozen merge base: 9dfce284903a72ba61fac1937acc69ab7f6d04c4
+Current remote main observed: e27c86e6b4901e19ad20e226e851a4424dfe2577
+Accepted repair RED: 8d1ed37777ca85cb92f9f8faf2e13d0d9eba1d11
+Repair implementation / QA authority: a972963f27c61e88994ba0168c5140720eab011c
 
 ## Current Goal
 
-Fresh independent read-only exact-head QA against implementation authority `800f615fd30546eae4f03c89838e59416406c6a5` is complete. QA found four P1 contract gaps. Preserve the implementation authority and stop at the diagnosis/proposal boundary; no implementation repair or PR decision is authorized.
+Fresh independent adversarial QA against repair authority `a972963f27c61e88994ba0168c5140720eab011c` is complete. Four P1 closure gaps remain. Preserve accepted repair RED `8d1ed37777ca85cb92f9f8faf2e13d0d9eba1d11` and the repair implementation head; stop at diagnosis/proposal. Do not interpret the prior GREEN verification as independent QA closure.
 
 ## Completed
 
-- Re-pinned remote `main` and this branch through the GitHub API.
-- Current `main`/merge base is `9dfce284903a72ba61fac1937acc69ab7f6d04c4`, the merged shadow-only C5-B authority.
-- C5-C branch is exactly three commits ahead and zero behind:
-  1. `1040985f911fb68627069d9ec4ad04af637ca1ce` — accepted offline replay/window RED.
-  2. `59ca1ccb550f149eb00e5071f6123bd1f6481f32` — added the missing deterministic replay-binding RED.
-  3. `800f615fd30546eae4f03c89838e59416406c6a5` — minimal implementation GREEN.
-- Exact compare contains nine C5-C job/test/schema paths and no checkpoint path before this recovery record.
-- The interrupted run visibly completed the exact-`800f615f` focused suite at 43/43, the V7.3 union at 72/72, syntax checks for the four modified/added job MJS files, and replay-window schema JSON parsing.
-- No C5-C PR exists. C5-C is not in `main`, not deployed, not live, and not activated.
-
-The completed test counters above are recovered run evidence. They do not imply that commands whose result was lost during the transport failure passed.
+- Re-pinned remote `main`, the C5-C branch, commit chain, PR state, commit status, and PR-triggered Actions through GitHub App/API.
+- Current remote `main` is `e27c86e6b4901e19ad20e226e851a4424dfe2577`; its two commits after frozen base `9dfce284903a72ba61fac1937acc69ab7f6d04c4` change only five dated `data/` paths and do not overlap C5-C.
+- C5-C pre-checkpoint head is exactly `a972963f27c61e88994ba0168c5140720eab011c`, eight commits ahead and two data-only commits behind current `main`, with ten branch diff paths including this checkpoint.
+- No C5-C PR exists. GitHub exposes no combined status checks and no PR-triggered Actions run for `a972963f`.
+- Reviewed only the accepted repair delta `8d1ed377...a972963f` plus the frozen production functions required to test semantic parity.
+- Ran four new disposable exact-SHA adversarial probes only; did not rerun focused 43/43, V7.3 union 79/79, Daily V4 260/260, `verify:all`, syntax/schema, diff-check, allowlist, or behavior-manifest suites.
+- Fresh QA result: **P0=0 / P1=4 / P2=0**.
+- Local CRM checkout/worktree was not read or modified. No implementation code, production data, workflow, PR, merge, deployment, live replay, observation, or Activation changed.
 
 ## Remaining
 
-- Resolve the four P1 findings recorded below through a separately approved, bounded repair plan.
-- Add adversarial RED coverage for input-derived decision replay, end-to-end artifact/receipt binding, requested-date equality, and impossible replay-window states before changing implementation.
-- After an approved repair, repeat focused exact-head verification and fresh independent QA. Do not treat the previous GREEN counters as QA closure.
+- Prepare a separate bounded repair proposal for the four fresh P1 findings recorded below.
+- Add accepted adversarial RED coverage for receipt workflow-run identity, raw-provider-to-filtered-patch selection, production merge parity, and production publication/dedupe parity before changing implementation.
+- After separate approval, implement the smallest repair, run exact-head focused verification, and perform another fresh independent QA before any separate PR decision.
 
 ## Next Action
 
-Stop at diagnosis/proposal. Prepare a separate bounded C5-C repair proposal for the four P1 findings; do not change implementation until separately approved, and do not create a PR, merge, deploy, dispatch, run live providers/generators, sync, replay production data, begin the 15-day observation window, or activate V7.3.
+Stop at diagnosis/proposal. Do not change implementation until the user separately approves a bounded repair proposal. Do not create a PR, merge, deploy, dispatch workflows, call live providers/generators, sync, replay production data, start the 15-day observation window, or activate V7.3.
 
 ## Git Status
 
-- Remote `main`: `9dfce284903a72ba61fac1937acc69ab7f6d04c4`
-- Branch pre-checkpoint head: `800f615fd30546eae4f03c89838e59416406c6a5`
-- Ahead/behind before this docs-only checkpoint: 3/0
-- Implementation diff paths: exactly 9
+- Current remote `main`: `e27c86e6b4901e19ad20e226e851a4424dfe2577`
+- Frozen C5-C merge base: `9dfce284903a72ba61fac1937acc69ab7f6d04c4`
+- Branch pre-checkpoint head / QA authority: `a972963f27c61e88994ba0168c5140720eab011c`
+- Current branch relation before this docs-only checkpoint: ahead 8 / behind 2
+- Branch diff paths before this docs-only checkpoint: 10, including this checkpoint
+- Repair delta: one commit, five paths, `8d1ed377...a972963f`
 - PR: none for C5-C
+- Commit statuses / PR-triggered Actions at QA authority: none exposed
 - Production authority: V7.2
-- Recovery checkpoint commit: `7a16db9abe1a3be66f90bbeb807e5f27d56b0e3d`
 - Local CRM checkout/worktree: not used or modified
 
 This checkpoint is QA RED at the diagnosis/proposal boundary. It does not authorize an implementation repair, PR, merge, deployment, live replay, observation, or Activation.
-
 
 ## Recovery Stage 2 Exact-Head Full Verification — 2026-08-03
 
@@ -123,3 +123,52 @@ This checkpoint is QA RED at the diagnosis/proposal boundary. It does not author
 ### Remaining / Next Action
 
 Stop at diagnosis/proposal. The next task, only if separately approved, is a small TDD repair proposal covering the four P1 contracts above. After repair, run exact-head focused verification and a new independent QA before any separate PR decision.
+
+
+## Fresh Independent Exact-Head QA Of Repair — 2026-08-03
+
+### Authority And Method
+
+- QA authority: `a972963f27c61e88994ba0168c5140720eab011c`.
+- Accepted repair RED: `8d1ed37777ca85cb92f9f8faf2e13d0d9eba1d11`.
+- Remote frozen merge base: `9dfce284903a72ba61fac1937acc69ab7f6d04c4`.
+- Current remote `main`: `e27c86e6b4901e19ad20e226e851a4424dfe2577`; the intervening five changed paths are dated `data/` artifacts only.
+- QA used a fresh disposable GitHub API exact-SHA snapshot under `/tmp`. The local CRM checkout/worktree was not read or modified.
+- Existing verification suites were not repeated. Four new adversarial probes targeted only gaps not asserted by the accepted RED.
+- Result: **P0=0 / P1=4 / P2=0**.
+
+### P1 Findings
+
+1. **Receipt workflow-run identity remains unbound.**
+   - `verifyArtifactIdentity` closes canonical paths, report date, corpus ID, captured Shanghai date, and receipt slot, but never compares the receipt's `run_id` or run attempt with `corpus.workflow_run_id` and `corpus.run_attempt`.
+   - Reproduction: replace the re-hashed, byte-bound receipt with `run_id="999999"` and `run_attempt=99` while the corpus remains run `9100/1`; replay still returns `status=match`.
+   - Impact: a successful receipt from another workflow run can be made self-consistent at the byte/hash layer and admitted into the canonical day.
+   - Bounded repair direction: require and normalize receipt run identity, then bind it to corpus ID, workflow run ID, run attempt, date, and slot.
+
+2. **The frozen provider-result-to-patch selector is not replayed.**
+   - `buildReplayedDecisionView` consumes `filtered_patch` and `merged_final_input` but ignores `raw_provider_result`; the validator only type-checks the raw result.
+   - Reproduction: replace `raw_provider_result.official_gameplay_evidence` with an empty list while retaining the captured filtered patch. The replay hash stays exactly `d669cbd507b8b61aefb767921789e019d3eb7f6646edfdf9251d6746c30151fe`.
+   - Impact: a self-consistent filtered patch can prove itself without demonstrating that the frozen allowlist selector would derive it from the retained provider result.
+   - Bounded repair direction: replay the frozen privacy/allowlist selector over the retained normalized provider result and compare the derived patch byte-for-byte/canonically before merging.
+
+3. **Offline bounded-list merge semantics differ from production.**
+   - Production `mergeEvidenceList` deduplicates by normalized `source_id`, then URL, then `type:value`; offline `mergeBoundedInput` deduplicates by canonical JSON of the full object.
+   - Reproduction: a production-valid quality patch containing a changed record for an existing `source_id` plus a second independent source retains the original and the new source in production, but exact-head replay adds both same-source records and throws `REPLAY_INPUT_MISMATCH`.
+   - Impact: a legitimate captured transaction can be unreplayable even when provider selection and the retained merged input are correct.
+   - Bounded repair direction: reuse one exported frozen merge helper or reproduce its exact evidence-key semantics under a contract test.
+
+4. **Publication replay does not reproduce production dedupe and precedence.**
+   - Production `buildPools` applies media-first selection and `poolLeadKey`, including the 6-24 Han-character loose key; replay uses corpus order plus `steam_app_id` or lower-cased project text.
+   - Reproduction: two qualified media projects with the same Han character set in different order produce one production push Lead, preserving media input order, while replay marks both candidates as `shadow_push_pool=true`.
+   - Impact: valid captured publication can fail replay, and replay can reconstruct a formal pool different from the frozen shadow publication authority.
+   - Bounded repair direction: retain sufficient publication-order/key inputs in the corpus and invoke or exactly mirror the frozen pool selector/dedupe function.
+
+### Green Boundaries Preserved
+
+- Requested-date equality, explicit non-corpus artifact bytes/hash verification, and active/failed replay-window state closure were inspected; this QA found no additional P1 in those repaired boundaries.
+- The repair delta remains one commit across five paths. The branch remains confined to the C5-C offline replay/window scope plus its checkpoint.
+- V7.2 remains production authority. No live run, production write, observation, or Activation occurred.
+
+### Remaining / Next Action
+
+Stop at diagnosis/proposal. The next task, only if separately approved, is a new bounded TDD repair proposal for the four P1 findings above. After repair, run exact-head focused verification and another independent QA before any separate PR decision.
