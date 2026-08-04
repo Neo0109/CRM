@@ -213,4 +213,3 @@ Stop at diagnosis/proposal. The next task, only if separately approved, is a new
 - No PR was created or modified; open PRs remained only #107 and #71 at the opening recheck.
 - No PR merge, workflow dispatch/rerun, deployment, live provider/generator call, CRM sync, production replay/write, visual acceptance, 15-day observation, or V7.3 Activation occurred.
 - After the docs-only checkpoint, perform final exact-head validation/guards and fresh independent read-only adversarial QA, then stop at a separate PR decision gate.
-
