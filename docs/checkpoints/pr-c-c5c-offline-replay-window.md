@@ -231,3 +231,48 @@ Stop at diagnosis/proposal. The next task, only if separately approved, is a new
 - Fixture expansion from `c50ae24f3bc62183fca3e5ce81c3e76d9825c521` remains exactly the two approved `attempt()` receipt fields. Independent focused probes were 21/21 GREEN: offline replay 14/14 plus selector/window 7/7.
 - No file or remote state was changed by QA. No PR/workflow/deployment/replay/write/observation/Activation action occurred, and no success is claimed for the absent 2026-08-04 corpus.
 - Gate A may stop at the PR decision gate; PR creation or modification still requires separate approval.
+
+## PR #110 Post-Interruption Boundary Recovery — 2026-08-04
+
+### Current Goal
+
+Preserve the completed C5-C verification and review evidence while recovering only the interrupted PR-boundary correction. Keep PR #110 at the approved original ten paths, record the corrected exact code authority, and stop with the PR still draft. Merge, ready-for-review, deployment, workflow dispatch/rerun, live replay/write, observation, and V7.3 Activation remain unauthorized.
+
+### Completed
+
+- Recovery began from remote PR #110 head `7c6491f1491d2d4c1d5126a2674b5d0169361159`; the local CRM checkout/worktree was not read or modified.
+- The saved pre-interruption suites were not repeated: C5-C repair 61/61, all V7.3 103/103, Daily V4 284/284, and `verify:all` 16/16 remain prior exact-head evidence.
+- Remote Build #1014 for `7c6491f1` was successful, but the PR compare exposed 11 paths because `schemas/sourcing_replay_corpus.schema.json` had crossed the approved ten-path boundary.
+- The bounded correction moved publication-order evidence under the existing canonical-hashed `ranking_inputs.publication_order`, retained explicit JS contract validation, and restored `schemas/sourcing_replay_corpus.schema.json` byte-for-byte to its `018af7dce0e23568088288d1cf91b803d61f59de` blob `7b96f828bead30fa97fc1c45861eae8bdb894729`.
+- The correction was validated in a disposable exact-`7c6491f1` GitHub archive: touched syntax checks GREEN, impacted suites 53/53 GREEN, schema byte comparison GREEN, seven-path correction `+36/-45`, and `diff --check` GREEN.
+- Corrective code authority `b32627661ea9d6f9c809d8fd113d4dc21d8c6876` is a one-parent fast-forward from `7c6491f1`. GitHub tree `a5b7f01f9970653800267dab9ef9dacad295f7fc` matched the independently rebuilt disposable tree exactly.
+- Remote compare at `b3262766`: base and merge base remain `main@4707887aa00a8ca453cebcc187e6bb6bea3f0f85`, ahead 15 / behind 0, and exactly the original ten C5-C paths.
+- Build #1017 completed successfully at exact `b3262766`. PR #110 remains open, draft, and mergeable with zero reviews and zero review threads.
+- Open PR overlap remains bounded and disclosed: #107 overlaps three paths; #71 overlaps zero paths. Neither PR was modified.
+
+### Remaining
+
+- Commit this checkpoint as the only docs-only delta after exact code authority `b3262766`.
+- Re-read remote `main`, PR #110 head/draft/mergeability, exact ten-path diff, Build status, reviews/threads, and open-PR overlap.
+- Stop. No readiness, reviewer request, merge, deployment, workflow action, production replay/write, observation, or Activation is authorized.
+
+### Next Action
+
+Create one docs-only checkpoint commit with parent `b32627661ea9d6f9c809d8fd113d4dc21d8c6876`, fast-forward PR #110 only if its head is unchanged, perform the final read-only remote recheck, and stop.
+
+### Git Status
+
+- Current remote `main`: `4707887aa00a8ca453cebcc187e6bb6bea3f0f85`
+- PR: #110, open, draft, mergeable
+- Corrected exact code authority: `b32627661ea9d6f9c809d8fd113d4dc21d8c6876`
+- Corrective parent: `7c6491f1491d2d4c1d5126a2674b5d0169361159`
+- Exact corrected tree: `a5b7f01f9970653800267dab9ef9dacad295f7fc`
+- Branch relation at code authority: ahead 15 / behind 0; merge base exactly current `main`
+- Branch diff at code authority: exactly ten approved C5-C paths
+- Remote CI: Build #1017 success
+- Reviews / review threads: 0 / 0
+- Open PR overlap: #107 = 3 paths; #71 = 0 paths
+- Production authority: V7.2
+- Local CRM checkout/worktree: not used or modified
+
+This recovery checkpoint is delivery evidence for the draft PR boundary only. It is not merge, deployment, production replay/write, observation, or V7.3 Activation authority.
