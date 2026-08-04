@@ -1,53 +1,55 @@
 # PR C C5-C Offline Replay Window Recovery Checkpoint
 
-Date: 2026-08-03 (Asia/Shanghai)
-Phase: Phase 5 fresh independent exact-head QA complete — diagnosis/proposal boundary
-Status: QA RED — P0=0 / P1=4 / P2=0; no PR decision authorized
-Branch: codex/pr-c-c5c-offline-replay-window
-Frozen merge base: 9dfce284903a72ba61fac1937acc69ab7f6d04c4
-Current remote main observed: e27c86e6b4901e19ad20e226e851a4424dfe2577
-Accepted repair RED: 8d1ed37777ca85cb92f9f8faf2e13d0d9eba1d11
-Repair implementation / QA authority: a972963f27c61e88994ba0168c5140720eab011c
+Date: 2026-08-04 (Asia/Shanghai)
+Phase: Phase 4 bounded implementation and root verification complete
+Status: GREEN at root verification; fresh independent exact-head QA still required
+Branch: codex/c5c-gate-a-reconciliation
+Current remote main observed: 4707887aa00a8ca453cebcc187e6bb6bea3f0f85
+Opening docs-only head: 5c38c9a5555f4f187e6a923e299f21c4453dfd45
+Accepted Gate A repair RED: 2a15af5b147cfa79a1ebe24febd228278e311e48
+Gate A implementation / root-verification authority: 8307120ab50c7e91714f350cf94e17323ae0bb55
 
 ## Current Goal
 
-Fresh independent adversarial QA against repair authority `a972963f27c61e88994ba0168c5140720eab011c` is complete. Four P1 closure gaps remain. Preserve accepted repair RED `8d1ed37777ca85cb92f9f8faf2e13d0d9eba1d11` and the repair implementation head; stop at diagnosis/proposal. Do not interpret the prior GREEN verification as independent QA closure.
+Preserve accepted RED `2a15af5b147cfa79a1ebe24febd228278e311e48` and implementation/root-verification authority `8307120ab50c7e91714f350cf94e17323ae0bb55`. The two approved Gate A P1 contracts are GREEN under root verification. Stop before independent QA and do not interpret root GREEN as independent QA closure or PR authorization.
 
 ## Completed
 
-- Re-pinned remote `main`, the C5-C branch, commit chain, PR state, commit status, and PR-triggered Actions through GitHub App/API.
-- Current remote `main` is `e27c86e6b4901e19ad20e226e851a4424dfe2577`; its two commits after frozen base `9dfce284903a72ba61fac1937acc69ab7f6d04c4` change only five dated `data/` paths and do not overlap C5-C.
-- C5-C pre-checkpoint head is exactly `a972963f27c61e88994ba0168c5140720eab011c`, eight commits ahead and two data-only commits behind current `main`, with ten branch diff paths including this checkpoint.
-- No C5-C PR exists. GitHub exposes no combined status checks and no PR-triggered Actions run for `a972963f`.
-- Reviewed only the accepted repair delta `8d1ed377...a972963f` plus the frozen production functions required to test semantic parity.
-- Ran four new disposable exact-SHA adversarial probes only; did not rerun focused 43/43, V7.3 union 79/79, Daily V4 260/260, `verify:all`, syntax/schema, diff-check, allowlist, or behavior-manifest suites.
-- Fresh QA result: **P0=0 / P1=4 / P2=0**.
-- Local CRM checkout/worktree was not read or modified. No implementation code, production data, workflow, PR, merge, deployment, live replay, observation, or Activation changed.
+- Opening GitHub App/API gate re-pinned `main=4707887aa00a8ca453cebcc187e6bb6bea3f0f85`, reconciliation head `5c38c9a5555f4f187e6a923e299f21c4453dfd45`, and Gate A code/QA authority `7b8b1ad9b9efd94796e3c2b57faa2b265520f117`. The one authority-to-head commit changed only this checkpoint.
+- The branch was ahead 9 / behind 0 at opening with the known ten paths. Open PRs remained #107 and #71; neither overlapped the five repair allowlist paths.
+- Accepted RED `2a15af5b147cfa79a1ebe24febd228278e311e48` changed only the two approved tests. The focused adversarial run was 21/23 GREEN with exactly two expected RED failures: self-consistent receipt/corpus event mismatch and invalid completed persisted window accepted by the fast path.
+- Minimal GREEN `8307120ab50c7e91714f350cf94e17323ae0bb55` changed only the two approved jobs: supported receipt events must exist and equal `corpus.event_name`; every non-null persisted replay window is validated before complete, failed, active, or same-day fast paths.
+- Fresh GitHub API exact-`8307120a` snapshot narrow checks: four touched job/test syntax checks GREEN; C5-C focused suite 58/58 GREEN; all `onlineDailyV73*.test.mjs` 100/100 GREEN.
+- Root full verification ran once at exact `8307120a`: the first 15 declared tasks were GREEN, including Daily V4 281/281, typechecks, contract checks, and build. The final diff-check initially stopped only because the disposable no-index shim did not map branch-added files to `/dev/null`; after that harness-only correction, the final exact main-to-head ten-path `git diff --check` was GREEN without rerunning the first 15 tasks. All 16 declared task commands are GREEN.
+- Exact remote post-verification compare: `main...8307120a` ahead 11 / behind 0, merge base `4707887a`, exactly the existing ten paths. The repair delta `5c38c9a...8307120a` is two commits and exactly four allowlisted paths; workflow, schema, rules, `data/**`, Daily V4, shadow collector, API/UI/Supabase, package/lockfile, observation, and Activation denylist remained untouched.
+- `package-lock.json` is absent. GitHub exposes no combined status checks and no PR-triggered Actions run for `8307120a`.
+- The local CRM checkout/worktree was not read or modified. No PR was created or modified; no workflow dispatch/rerun, merge, deployment, live provider/generator, CRM sync, production replay/write, observation, or Activation occurred.
 
 ## Remaining
 
-- Prepare a separate bounded repair proposal for the four fresh P1 findings recorded below.
-- Add accepted adversarial RED coverage for receipt workflow-run identity, raw-provider-to-filtered-patch selection, production merge parity, and production publication/dedupe parity before changing implementation.
-- After separate approval, implement the smallest repair, run exact-head focused verification, and perform another fresh independent QA before any separate PR decision.
+- Run a fresh independent read-only adversarial QA task against exact code/QA authority `8307120ab50c7e91714f350cf94e17323ae0bb55`.
+- Only if that independent QA closes P0/P1/P2 should a later, separate task enter the PR decision gate.
+- PR creation or modification, merge, deployment, workflow dispatch/rerun, production replay/write, observation, and Activation remain out of scope.
 
 ## Next Action
 
-Stop at diagnosis/proposal. Do not change implementation until the user separately approves a bounded repair proposal. Do not create a PR, merge, deploy, dispatch workflows, call live providers/generators, sync, replay production data, start the 15-day observation window, or activate V7.3.
+Stop at Phase 4 implementation plus root verification complete. The next action is another task's fresh independent exact-head QA at `8307120ab50c7e91714f350cf94e17323ae0bb55`; after that, and only if independently GREEN, use a separate PR decision gate. Do not create or modify a PR, merge, deploy, dispatch workflows, call live providers/generators, sync, replay production data, start observation, or activate V7.3.
 
 ## Git Status
 
-- Current remote `main`: `e27c86e6b4901e19ad20e226e851a4424dfe2577`
-- Frozen C5-C merge base: `9dfce284903a72ba61fac1937acc69ab7f6d04c4`
-- Branch pre-checkpoint head / QA authority: `a972963f27c61e88994ba0168c5140720eab011c`
-- Current branch relation before this docs-only checkpoint: ahead 8 / behind 2
-- Branch diff paths before this docs-only checkpoint: 10, including this checkpoint
-- Repair delta: one commit, five paths, `8d1ed377...a972963f`
-- PR: none for C5-C
-- Commit statuses / PR-triggered Actions at QA authority: none exposed
+- Current remote `main`: `4707887aa00a8ca453cebcc187e6bb6bea3f0f85`
+- Opening docs-only head: `5c38c9a5555f4f187e6a923e299f21c4453dfd45`
+- Accepted RED: `2a15af5b147cfa79a1ebe24febd228278e311e48`
+- Implementation / root-verification authority: `8307120ab50c7e91714f350cf94e17323ae0bb55`
+- Branch relation before this docs-only checkpoint: ahead 11 / behind 0; merge base exactly current `main`
+- Branch diff paths before this docs-only checkpoint: exactly the existing ten paths, including this checkpoint
+- Approved repair delta: two commits, four paths, `5c38c9a...8307120a`
+- C5-C PR: none; open PRs remain #107 and #71 with no repair-allowlist overlap
+- Commit statuses / PR-triggered Actions at implementation authority: none exposed
 - Production authority: V7.2
 - Local CRM checkout/worktree: not used or modified
 
-This checkpoint is QA RED at the diagnosis/proposal boundary. It does not authorize an implementation repair, PR, merge, deployment, live replay, observation, or Activation.
+This checkpoint records implementation and root verification only. It is not independent QA and does not authorize a PR, merge, deployment, live replay, observation, or Activation.
 
 ## Recovery Stage 2 Exact-Head Full Verification — 2026-08-03
 
