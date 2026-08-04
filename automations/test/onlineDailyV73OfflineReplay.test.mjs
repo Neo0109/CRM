@@ -179,6 +179,183 @@ describe("C5-C no-network offline replay", () => {
     drift.expectedBehaviorContractSha256 = "f".repeat(64);
     expectReplayError(() => replayOfflineCorpus(drift), "BEHAVIOR_DRIFT");
   });
+
+  it("binds the receipt run tuple to corpus identity even when every hash is self-consistent", () => {
+    const wrongRunId = replayFixture({ receiptRunId: "9101" });
+    expectReplayError(
+      () => replayOfflineCorpus(wrongRunId),
+      "ARTIFACT_IDENTITY_MISMATCH"
+    );
+
+    const wrongRunAttempt = replayFixture({ receiptRunAttempt: 2 });
+    expectReplayError(
+      () => replayOfflineCorpus(wrongRunAttempt),
+      "ARTIFACT_IDENTITY_MISMATCH"
+    );
+  });
+
+  it("derives the bounded patch from raw provider output instead of trusting stored filtered output", () => {
+    const corpus = secondPassDecisionCorpus();
+    const candidate = corpus.candidates[0];
+    const transaction = corpus.second_pass.transactions[0];
+    const authoritativeEvidence = [{
+      source_id: "official-channel",
+      type: "official_gameplay",
+      url: "https://authority.example/gameplay"
+    }];
+    const forgedEvidence = [{
+      source_id: "forged-channel",
+      type: "official_gameplay",
+      url: "https://forged.example/gameplay"
+    }];
+    transaction.raw_provider_result = {
+      official_gameplay_evidence: authoritativeEvidence,
+      project: "Stored patch must not widen the allowlist"
+    };
+    transaction.filtered_patch = { official_gameplay_evidence: forgedEvidence };
+    transaction.merged_final_input = {
+      ...structuredClone(candidate.first_pass.indie_prelaunch.input),
+      official_gameplay_evidence: forgedEvidence
+    };
+
+    expectReplayError(
+      () => buildReplayedDecisionView(corpus),
+      "REPLAY_INPUT_MISMATCH"
+    );
+  });
+
+  it("replays the frozen privacy boundary before comparing the stored filtered patch", () => {
+    const corpus = secondPassDecisionCorpus();
+    const candidate = corpus.candidates[0];
+    const transaction = corpus.second_pass.transactions[0];
+    const storedEntry = {
+      type: "Email",
+      value: "public@example.test",
+      official_public_business_entry: false
+    };
+    transaction.requested_actions = [{
+      gate_id: "non_steam_business_entry",
+      action: "fetch_non_steam_business_entry"
+    }];
+    transaction.allowlisted_patch_fields = ["business_entrypoints"];
+    transaction.raw_provider_result = {
+      business_entrypoints: [storedEntry]
+    };
+    transaction.filtered_patch = {
+      business_entrypoints: [storedEntry]
+    };
+    transaction.merged_final_input = {
+      ...structuredClone(candidate.first_pass.indie_prelaunch.input),
+      business_entrypoints: [storedEntry]
+    };
+
+    expectReplayError(
+      () => buildReplayedDecisionView(corpus),
+      "REPLAY_INPUT_MISMATCH"
+    );
+  });
+
+  it("merges bounded evidence with normalized source, URL, and type-value priority", () => {
+    const corpus = secondPassDecisionCorpus();
+    const candidate = corpus.candidates[0];
+    const transaction = corpus.second_pass.transactions[0];
+    const firstInput = candidate.first_pass.indie_prelaunch.input;
+    const retained = [
+      {
+        source_id: "Media-One",
+        value: "retained source priority",
+        url: "https://one.example/original"
+      },
+      {
+        value: "retained URL priority",
+        url: "https://TWO.example/Review"
+      },
+      {
+        type: "Review",
+        value: "Same Value",
+        note: "retained type-value priority"
+      }
+    ];
+    const uniqueIncoming = {
+      source_id: "media-three",
+      value: "unique incoming evidence",
+      url: "https://three.example/review"
+    };
+    const incoming = [
+      {
+        source_id: " MEDIA-ONE ",
+        value: "must not replace source priority",
+        url: "https://one.example/replacement"
+      },
+      {
+        value: "must not replace URL priority",
+        url: "https://two.example/review"
+      },
+      {
+        type: "review",
+        value: "same value",
+        note: "must not replace type-value priority"
+      },
+      uniqueIncoming
+    ];
+    firstInput.quality_proofs = retained;
+    transaction.requested_actions = [{
+      gate_id: "independent_quality_proof",
+      action: "fetch_independent_quality_evidence"
+    }];
+    transaction.allowlisted_patch_fields = ["quality_proofs"];
+    transaction.raw_provider_result = { quality_proofs: incoming };
+    transaction.filtered_patch = { quality_proofs: incoming };
+    transaction.merged_final_input = {
+      ...structuredClone(firstInput),
+      quality_proofs: [...retained, uniqueIncoming]
+    };
+
+    assert.doesNotThrow(() => buildReplayedDecisionView(corpus));
+  });
+
+  it("replays media-first publication with production pool keys and Han loose-key dedupe", () => {
+    const corpus = decisionCorpus();
+    corpus.candidates = [
+      publicationCandidate({
+        candidateId: "steam-app",
+        sourceType: "steam",
+        project: "Steam Variant",
+        steamAppId: "777",
+        dedupeKey: "candidate:steam-app"
+      }),
+      publicationCandidate({
+        candidateId: "media-app",
+        sourceType: "media",
+        project: "Media Variant",
+        steamAppId: "777",
+        dedupeKey: "candidate:media-app"
+      }),
+      publicationCandidate({
+        candidateId: "media-han-retained",
+        sourceType: "media",
+        project: "山海星河传奇世界",
+        steamAppId: null,
+        dedupeKey: "candidate:media-han-retained"
+      }),
+      publicationCandidate({
+        candidateId: "media-han-duplicate",
+        sourceType: "media",
+        project: "界世奇传河星海山",
+        steamAppId: null,
+        dedupeKey: "candidate:media-han-duplicate"
+      })
+    ];
+
+    const replayed = buildReplayedDecisionView(corpus);
+    const publication = new Map(
+      replayed.candidates.map((candidate) => [candidate.candidate_id, candidate.publication])
+    );
+    assert.equal(publication.get("media-app").shadow_push_pool, true);
+    assert.equal(publication.get("steam-app").shadow_push_pool, false);
+    assert.equal(publication.get("media-han-retained").shadow_push_pool, true);
+    assert.equal(publication.get("media-han-duplicate").shadow_push_pool, false);
+  });
 });
 
 function replayFixture({
@@ -191,6 +368,8 @@ function replayFixture({
   withCandidate = false,
   storedDecisionMismatch = false,
   receiptReportDate = reportDate,
+  receiptRunId = String(workflowRunId),
+  receiptRunAttempt = runAttempt,
   artifactPathDate = reportDate,
   behaviorManifest = {
     "automations/jobs/online_daily_v7_3_offline_replay.mjs": BLOB_A,
@@ -200,6 +379,8 @@ function replayFixture({
   const receipt = {
     report_date: receiptReportDate,
     slot: runSlot,
+    run_id: receiptRunId,
+    run_attempt: receiptRunAttempt,
     status: healthy ? "success" : "failed",
     generation_status: healthy ? "success" : "failed",
     validation_status: healthy ? "success" : "failed",
@@ -588,6 +769,48 @@ function qualifiedIndieInput() {
     business_entrypoints: [{ type: "website", url: "https://game.example/contact" }],
     china_bilibili_value: "Systemic gameplay supports creator challenges."
   };
+}
+
+function publicationCandidate({
+  candidateId,
+  sourceType,
+  project,
+  steamAppId,
+  dedupeKey
+}) {
+  const candidate = candidateFixture();
+  const indieInput = qualifiedIndieInput();
+  indieInput.project = project;
+  indieInput.steam_app_id = steamAppId;
+  indieInput.dedupe_key = dedupeKey;
+  candidate.candidate_id = candidateId;
+  candidate.project = project;
+  candidate.steam_app_id = steamAppId;
+  candidate.dedupe_key = dedupeKey;
+  candidate.source_type = sourceType;
+  candidate.normalized_candidate = {
+    project,
+    steam_app_id: steamAppId,
+    dedupe_key: dedupeKey,
+    source_type: sourceType
+  };
+  candidate.ranking_inputs = {
+    action_count: 0,
+    discovery_score: 10,
+    dedupe_key: dedupeKey,
+    source_type: sourceType
+  };
+  candidate.first_pass.indie_prelaunch.input = indieInput;
+  candidate.first_pass.indie_prelaunch.output =
+    evaluateV73IndiePrelaunchAdmission(indieInput);
+  candidate.second_pass = {
+    eligible: false,
+    rejection_reason: "already_qualified",
+    selected: false,
+    attempted: false,
+    transaction_id: null
+  };
+  return candidate;
 }
 
 function applyReplayedState(corpus, replayed) {
