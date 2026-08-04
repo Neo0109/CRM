@@ -217,6 +217,8 @@ function attempt({
   const receipt = {
     report_date: reportDate,
     slot: runSlot,
+    run_id: String(workflowRunId),
+    run_attempt: runAttempt,
     status: healthy ? "success" : "failed",
     generation_status: healthy ? "success" : "failed",
     validation_status: healthy ? "success" : "failed",
