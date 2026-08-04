@@ -172,3 +172,45 @@ Stop at diagnosis/proposal. The next task, only if separately approved, is a sma
 ### Remaining / Next Action
 
 Stop at diagnosis/proposal. The next task, only if separately approved, is a new bounded TDD repair proposal for the four P1 findings above. After repair, run exact-head focused verification and another independent QA before any separate PR decision.
+
+## Gate A Reconciliation And Minimal Fixture Compatibility — 2026-08-04
+
+### Authority And Approved Scope
+
+- Reconciliation branch: `codex/c5c-gate-a-reconciliation`.
+- Frozen merge base: `9dfce284903a72ba61fac1937acc69ab7f6d04c4`.
+- Opening remote `main`: `4707887aa00a8ca453cebcc187e6bb6bea3f0f85`.
+- Reconciliation commit: `7d4ee87e4072432dfafab5b7c60a98f557acb7cf`.
+- Accepted adversarial RED: `10a20d26a2f33a0501d0769a8df8de128c7a6db6` — the original 9 focused tests remained GREEN and 5 new adversarial tests were RED, covering the four P1 findings with raw-selector allowlist and privacy boundaries separated.
+- Gate A implementation: `e373dc4c4d1289fe265a03be922a89a567e010f2`.
+- Raw-authority mutation alignment: `c50ae24f3bc62183fca3e5ce81c3e76d9825c521`.
+- Minimal fixture-compatibility GREEN authority: `df3eabd94fd995f904d5a28efe0d289688b659fa`.
+- The only newly approved compatibility delta is in `attempt()` in `automations/test/onlineDailyV73ReplayWindow.test.mjs`: `run_id: String(workflowRunId)` and `run_attempt: runAttempt`. The exact commit delta is one path, +2/-0.
+- Saved code/QA authority `a972963f27c61e88994ba0168c5140720eab011c`, saved docs authority and old-branch head `385fabd33f7abb3ae491f19821572af7b7cc1e7e`, and old branch `codex/pr-c-c5c-offline-replay-window` remain unchanged.
+
+### Exact-Head GREEN Evidence At `df3eabd94fd995f904d5a28efe0d289688b659fa`
+
+- Relevant job/test `node --check`: GREEN for all eight main-to-head job/test paths.
+- C5-C focused suite: 56/56 GREEN.
+- All `onlineDailyV73*.test.mjs`: 98/98 GREEN.
+- `npm run test:daily-v4`: 279/279 GREEN after installing declared dependencies into the disposable tarball with `--ignore-scripts --no-package-lock`; the first dependency-free attempt stopped only because `ajv` was absent.
+- `npm run verify:all`: all 16 declared tasks GREEN. Because an API tarball intentionally has no `.git`, a temporary projectless git shim routed only the final `git diff --check` task to the frozen `main@4707887...df3eabd9` ten-path no-index whitespace check; the other 15 tasks ran unchanged.
+- `schemas/sourcing_replay_window.schema.json`: JSON parse GREEN.
+- Main-to-head compare: ahead 6 / behind 0, merge base exactly `4707887aa00a8ca453cebcc187e6bb6bea3f0f85`, and exactly the approved 10 paths.
+- Workflow, production-data, Daily V4, rules, API, UI, Supabase, package, lockfile, observation, and Activation denylist: GREEN.
+- `package-lock.json`: absent.
+- Behavior manifest: exactly 38 paths, asserted by the GREEN shadow-integration contract.
+
+### Production Fact Boundary
+
+- Remote morning receipt `data/automation_runs/2026-08-04-morning.json` remains `status=success`, encoded `sync_response` parses to `synced=true`, `run_id="30878679661"`, and `run_attempt=1`.
+- Target corpus `data/sourcing_replay_corpus/2026-08-04/30878679661-1-morning.json` remains absent on `main` with GitHub API 404.
+- Workflow run `30878679661`, job `91895191085`, remains successful while its log records the isolated pending-core failure exactly as `ENOENT` for `data/runtime/2026-08-04-c5b-shadow-30878679661-1-morning.json`. No corpus success is claimed or manufactured.
+
+### Stop Boundary
+
+- V7.2 remains production authority.
+- No PR was created or modified; open PRs remained only #107 and #71 at the opening recheck.
+- No PR merge, workflow dispatch/rerun, deployment, live provider/generator call, CRM sync, production replay/write, visual acceptance, 15-day observation, or V7.3 Activation occurred.
+- After the docs-only checkpoint, perform final exact-head validation/guards and fresh independent read-only adversarial QA, then stop at a separate PR decision gate.
+
