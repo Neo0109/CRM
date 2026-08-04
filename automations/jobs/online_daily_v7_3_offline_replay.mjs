@@ -4,11 +4,13 @@ import {
   canonicalJson,
   computeReplayCorpusPayloadSha256,
   sha256Canonical,
-  validateReplayCorpus
+  validateReplayCorpus,
+  validateReplayPrivacy
 } from "./online_daily_v7_3_replay_corpus_contract.mjs";
 import { evaluateV73IndiePrelaunchAdmission } from "./online_daily_v7_3_obtainable_evidence.mjs";
 import { evaluateChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
 import { selectRegularAdmission } from "./online_daily_v7_2_regular_admission.mjs";
+import { normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mjs";
 
 export const C5C_REPLAY_ENGINE_CONTRACT_VERSION = 1;
 const V73_OBTAINABLE_EVIDENCE_RULE_VERSION =
@@ -373,6 +375,10 @@ function verifyArtifactIdentity(corpus, receipt, payloadByKey) {
   const runSlot = String(corpus.run_slot ?? "");
   const runId = String(corpus.workflow_run_id ?? "");
   const runAttempt = String(corpus.run_attempt ?? "");
+  const corpusRunId = canonicalRunId(corpus.workflow_run_id);
+  const receiptRunId = canonicalRunId(receipt.run_id);
+  const corpusRunAttempt = strictRunAttempt(corpus.run_attempt);
+  const receiptRunAttempt = strictRunAttempt(receipt.run_attempt);
   const expectedCorpusId = `${reportDate}/${runId}/${runAttempt}/${runSlot}`;
   const expectedPaths = {
     report: `data/reports/${reportDate}.json`,
@@ -384,12 +390,18 @@ function verifyArtifactIdentity(corpus, receipt, payloadByKey) {
   };
   if (
     corpus.corpus_id !== expectedCorpusId
+    || receipt.report_date !== reportDate
+    || String(receipt.slot ?? "") !== runSlot
+    || !corpusRunId
+    || receiptRunId !== corpusRunId
+    || corpusRunAttempt === null
+    || receiptRunAttempt !== corpusRunAttempt
     || !String(corpus.captured_at ?? "").startsWith(`${reportDate}T`)
     || !String(corpus.captured_at ?? "").endsWith("+08:00")
   ) {
     throw new OfflineReplayError(
       "ARTIFACT_IDENTITY_MISMATCH",
-      "corpus ID and Asia/Shanghai retained date must agree"
+      "receipt and corpus must share one canonical run tuple"
     );
   }
   for (const [key, binding] of Object.entries(corpus.artifact_bindings ?? {})) {
@@ -405,12 +417,6 @@ function verifyArtifactIdentity(corpus, receipt, payloadByKey) {
         `artifact report_date mismatch for ${key}`
       );
     }
-  }
-  if (String(receipt.slot ?? receipt.run_slot ?? "") !== runSlot) {
-    throw new OfflineReplayError(
-      "ARTIFACT_IDENTITY_MISMATCH",
-      "receipt run slot must match the replay corpus"
-    );
   }
 }
 
@@ -446,16 +452,23 @@ function secondPassReplayInput(firstInput, transaction) {
       "second-pass allowlisted patch fields do not match requested actions"
     );
   }
-  const filteredPatch = isPlainObject(transaction.filtered_patch)
+  const storedFilteredPatch = isPlainObject(transaction.filtered_patch)
     ? transaction.filtered_patch
     : {};
-  if (Object.keys(filteredPatch).some((field) => !expectedFields.includes(field))) {
+  if (Object.keys(storedFilteredPatch).some((field) => !expectedFields.includes(field))) {
     throw new OfflineReplayError(
       "REPLAY_INPUT_MISMATCH",
       "second-pass filtered patch exceeds its bounded allowlist"
     );
   }
-  const reconstructed = mergeBoundedInput(firstInput, filteredPatch);
+  const replayedFilteredPatch = replayFilteredPatch(transaction, expectedFields);
+  if (canonicalJson(replayedFilteredPatch) !== canonicalJson(storedFilteredPatch)) {
+    throw new OfflineReplayError(
+      "REPLAY_INPUT_MISMATCH",
+      "second-pass raw result does not reproduce the stored filtered patch"
+    );
+  }
+  const reconstructed = mergeBoundedInput(firstInput, replayedFilteredPatch);
   const reconstructedEvidence = evaluateV73IndiePrelaunchAdmission(reconstructed).evidence;
   const retainedEvidence = evaluateV73IndiePrelaunchAdmission(
     cloneJson(transaction.merged_final_input ?? {})
@@ -469,6 +482,42 @@ function secondPassReplayInput(firstInput, transaction) {
   return retainedEvidence;
 }
 
+function replayFilteredPatch(transaction, expectedFields) {
+  if (transaction.provider_status !== "success") return {};
+  if (!isPlainObject(transaction.raw_provider_result)) {
+    throw new OfflineReplayError(
+      "REPLAY_INPUT_MISMATCH",
+      "successful second-pass transaction requires one raw result"
+    );
+  }
+  const privacyPrepared = replayPrivacyBoundary(transaction.raw_provider_result);
+  const privacy = validateReplayPrivacy(privacyPrepared);
+  if (!privacy.valid) {
+    throw new OfflineReplayError(
+      "REPLAY_INPUT_MISMATCH",
+      "second-pass raw result fails the frozen privacy boundary",
+      privacy.errors
+    );
+  }
+  const allowed = new Set(expectedFields);
+  return Object.fromEntries(
+    Object.entries(privacyPrepared)
+      .filter(([field]) => allowed.has(field))
+      .map(([field, value]) => [field, cloneJson(value)])
+  );
+}
+
+function replayPrivacyBoundary(rawResult) {
+  const value = cloneJson(rawResult);
+  if (Array.isArray(value.business_entrypoints)) {
+    value.business_entrypoints = value.business_entrypoints.map((item) => ({
+      ...item,
+      official_public_business_entry: true
+    }));
+  }
+  return value;
+}
+
 function mergeBoundedInput(firstInput, patch) {
   const merged = cloneJson(firstInput ?? {});
   for (const [field, value] of Object.entries(patch)) {
@@ -479,8 +528,8 @@ function mergeBoundedInput(firstInput, patch) {
       ];
       const seen = new Set();
       merged[field] = values.filter((item) => {
-        const key = canonicalJson(item);
-        if (seen.has(key)) return false;
+        const key = evidenceEntryKey(item);
+        if (!key || seen.has(key)) return false;
         seen.add(key);
         return true;
       }).map(cloneJson);
@@ -489,6 +538,20 @@ function mergeBoundedInput(firstInput, patch) {
     }
   }
   return merged;
+}
+
+function evidenceEntryKey(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return normalizeIdentifier(value);
+  }
+  return normalizeIdentifier(value.source_id)
+    || normalizeIdentifier(value.url)
+    || normalizeIdentifier(`${value.type ?? ""}:${value.value ?? ""}`);
+}
+
+function normalizeIdentifier(value) {
+  const text = String(value ?? "").trim().toLowerCase();
+  return text || null;
 }
 
 function selectRegular(indie, china) {
@@ -529,7 +592,10 @@ function decisionOutput(value = {}) {
 function replayPublicationIndex(candidates) {
   const used = new Set();
   const publications = new Map();
-  for (const candidate of candidates) {
+  const publicationOrder = [...candidates].sort((left, right) => (
+    publicationPriority(left) - publicationPriority(right)
+  ));
+  for (const candidate of publicationOrder) {
     const admission = candidate.final_selected ?? {};
     const poolKey = replayPoolKey(candidate);
     const duplicate = admission.qualified === true && used.has(poolKey);
@@ -549,15 +615,27 @@ function replayPublicationIndex(candidates) {
   return publications;
 }
 
+function publicationPriority(candidate) {
+  const sourceType = String(candidate?.ranking_inputs?.source_type ?? "");
+  if (sourceType === "media" || sourceType === "multi_source") return 0;
+  if (sourceType === "steam") return 1;
+  return 2;
+}
+
 function replayPoolKey(candidate) {
   const normalized = candidate.normalized_candidate ?? {};
   const steamAppId = String(normalized.steam_app_id ?? "").trim();
   if (steamAppId) return `steam:${steamAppId}`;
-  const project = String(normalized.project ?? candidate.candidate_id ?? "")
-    .normalize("NFKC")
-    .trim()
-    .toLowerCase();
-  return `project:${project}`;
+  const project = String(normalized.project ?? "");
+  const looseKey = looseChineseProjectKey(project);
+  return `project:${looseKey || normalizeText(project)}`;
+}
+
+function looseChineseProjectKey(value) {
+  const hanChars = [...normalizeDisplayText(value)]
+    .filter((char) => /\p{Script=Han}/u.test(char));
+  if (hanChars.length < 6 || hanChars.length > 24) return null;
+  return `han:${hanChars.sort().join("")}`;
 }
 
 function publicationView(value = {}) {
@@ -691,6 +769,18 @@ function stringList(value) {
 
 function uniqueStrings(value) {
   return [...new Set(stringList(value).filter(Boolean))];
+}
+
+function canonicalRunId(value) {
+  if (Number.isSafeInteger(value) && value > 0) return String(value);
+  const text = String(value ?? "");
+  if (!/^[1-9]\d*$/.test(text)) return null;
+  const number = Number(text);
+  return Number.isSafeInteger(number) && String(number) === text ? text : null;
+}
+
+function strictRunAttempt(value) {
+  return Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 
 function finiteNumber(value) {
