@@ -326,6 +326,25 @@ describe("C5-C no-network offline replay", () => {
     assert.doesNotThrow(() => buildReplayedDecisionView(corpus));
   });
 
+  it("replays second-pass ordered vectors in frozen selector and transaction order", () => {
+    const corpus = orderedSecondPassDecisionCorpus();
+
+    const replayed = buildReplayedDecisionView(corpus);
+
+    assert.deepEqual(replayed.second_pass.selected_ids, [
+      "steam:200",
+      "steam:100",
+      "steam:300"
+    ]);
+    assert.deepEqual(replayed.second_pass.attempted_ids, [
+      "steam:200",
+      "steam:100",
+      "steam:300"
+    ]);
+    assert.deepEqual(replayed.second_pass.failed_ids, ["steam:200"]);
+    assert.deepEqual(replayed.second_pass.qualified_ids, ["steam:100"]);
+  });
+
   it("replays media-first publication with production pool keys and Han loose-key dedupe", () => {
     const corpus = decisionCorpus();
     corpus.candidates = [
@@ -344,18 +363,20 @@ describe("C5-C no-network offline replay", () => {
         dedupeKey: "candidate:media-app"
       }),
       publicationCandidate({
-        candidateId: "media-han-retained",
-        sourceType: "media",
-        project: "山海星河传奇世界",
-        steamAppId: null,
-        dedupeKey: "candidate:media-han-retained"
-      }),
-      publicationCandidate({
         candidateId: "media-han-duplicate",
         sourceType: "media",
         project: "界世奇传河星海山",
         steamAppId: null,
-        dedupeKey: "candidate:media-han-duplicate"
+        dedupeKey: "candidate:media-han-duplicate",
+        publicationOrder: { source_priority: 0, source_index: 1 }
+      }),
+      publicationCandidate({
+        candidateId: "media-han-retained",
+        sourceType: "media",
+        project: "山海星河传奇世界",
+        steamAppId: null,
+        dedupeKey: "candidate:media-han-retained",
+        publicationOrder: { source_priority: 0, source_index: 0 }
       })
     ];
 
@@ -572,6 +593,7 @@ function candidateFixture() {
     enrichment_attempts: 1,
     snapshot_status: "fresh_success",
     evidence_freshness: "fresh",
+    publication_order: { source_priority: 1, source_index: 0 },
     normalized_candidate: { project: "Game One", steam_app_id: "100" },
     discovery_score: 10,
     ranking_inputs: {
@@ -665,6 +687,7 @@ function decisionCorpus() {
     evidence_catalog: [],
     candidates: [{
       candidate_id: "steam:100",
+      publication_order: { source_priority: 1, source_index: 0 },
       ranking_inputs: {
         action_count: 0,
         discovery_score: 10,
@@ -759,6 +782,84 @@ function secondPassDecisionCorpus() {
   return corpus;
 }
 
+function orderedSecondPassDecisionCorpus() {
+  const corpus = secondPassDecisionCorpus();
+  const qualifiedCandidate = corpus.candidates[0];
+  const qualifiedTransaction = corpus.second_pass.transactions[0];
+  qualifiedCandidate.ranking_inputs.discovery_score = 20;
+
+  const failedCandidate = secondPassCandidateVariant(qualifiedCandidate, {
+    candidateId: "steam:200",
+    discoveryScore: 30,
+    transactionId: "tx:steam:200"
+  });
+  const failedTransaction = secondPassTransactionVariant(
+    qualifiedTransaction,
+    failedCandidate,
+    { providerStatus: "error", qualifies: false }
+  );
+  const unqualifiedCandidate = secondPassCandidateVariant(qualifiedCandidate, {
+    candidateId: "steam:300",
+    discoveryScore: 10,
+    transactionId: "tx:steam:300"
+  });
+  const unqualifiedTransaction = secondPassTransactionVariant(
+    qualifiedTransaction,
+    unqualifiedCandidate,
+    { providerStatus: "success", qualifies: false }
+  );
+
+  corpus.candidates = [qualifiedCandidate, failedCandidate, unqualifiedCandidate];
+  corpus.second_pass.max_candidates = 3;
+  corpus.second_pass.transactions = [
+    failedTransaction,
+    qualifiedTransaction,
+    unqualifiedTransaction
+  ];
+  return corpus;
+}
+
+function secondPassCandidateVariant(candidate, {
+  candidateId,
+  discoveryScore,
+  transactionId
+}) {
+  const value = structuredClone(candidate);
+  value.candidate_id = candidateId;
+  value.ranking_inputs.discovery_score = discoveryScore;
+  value.ranking_inputs.dedupe_key = candidateId;
+  value.second_pass.transaction_id = transactionId;
+  value.first_pass.indie_prelaunch.input.project = `Game ${candidateId}`;
+  value.first_pass.indie_prelaunch.input.steam_app_id = candidateId.split(":")[1];
+  value.first_pass.indie_prelaunch.input.dedupe_key = candidateId;
+  return value;
+}
+
+function secondPassTransactionVariant(transaction, candidate, {
+  providerStatus,
+  qualifies
+}) {
+  const value = structuredClone(transaction);
+  const firstInput = structuredClone(candidate.first_pass.indie_prelaunch.input);
+  const providerPatch = qualifies
+    ? structuredClone(value.raw_provider_result)
+    : {};
+  const mergedInput = qualifies
+    ? {
+        ...firstInput,
+        official_gameplay_evidence: providerPatch.official_gameplay_evidence
+      }
+    : firstInput;
+  value.transaction_id = candidate.second_pass.transaction_id;
+  value.candidate_id = candidate.candidate_id;
+  value.raw_provider_result = providerPatch;
+  value.filtered_patch = structuredClone(providerPatch);
+  value.provider_status = providerStatus;
+  value.merged_final_input = mergedInput;
+  value.final_output = evaluateV73IndiePrelaunchAdmission(mergedInput);
+  return value;
+}
+
 function qualifiedIndieInput() {
   return {
     project: "Game One",
@@ -790,7 +891,11 @@ function publicationCandidate({
   sourceType,
   project,
   steamAppId,
-  dedupeKey
+  dedupeKey,
+  publicationOrder = {
+    source_priority: sourceType === "steam" ? 1 : 0,
+    source_index: 0
+  }
 }) {
   const candidate = candidateFixture();
   const indieInput = qualifiedIndieInput();
@@ -802,6 +907,7 @@ function publicationCandidate({
   candidate.steam_app_id = steamAppId;
   candidate.dedupe_key = dedupeKey;
   candidate.source_type = sourceType;
+  candidate.publication_order = publicationOrder;
   candidate.normalized_candidate = {
     project,
     steam_app_id: steamAppId,

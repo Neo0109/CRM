@@ -207,6 +207,10 @@ export function buildReplayedDecisionView(corpus = {}) {
       },
       final_output: transaction ? decisionOutput(finalIndie) : null,
       final_selected: finalSelected,
+      publication_order: {
+        source_priority: nonNegativeInteger(candidate?.publication_order?.source_priority),
+        source_index: nonNegativeInteger(candidate?.publication_order?.source_index)
+      },
       normalized_candidate: candidate?.normalized_candidate ?? {},
       dedupe_boundary: candidate?.dedupe_boundary ?? {}
     };
@@ -224,22 +228,21 @@ export function buildReplayedDecisionView(corpus = {}) {
   const maxCandidates = nonNegativeInteger(corpus.second_pass?.max_candidates);
   const selectedIds = eligibleIds.slice(0, maxCandidates);
   const selected = new Set(selectedIds);
-  const attemptedIds = candidates
-    .filter((candidate) => selected.has(candidate.candidate_id) && candidate.transaction)
-    .map((candidate) => candidate.candidate_id);
-  const failedIds = candidates
-    .filter((candidate) => (
-      selected.has(candidate.candidate_id)
-      && ["error", "timeout"].includes(candidate.transaction?.provider_status)
-    ))
-    .map((candidate) => candidate.candidate_id);
-  const qualifiedIds = candidates
-    .filter((candidate) => (
-      selected.has(candidate.candidate_id)
-      && candidate.transaction
-      && candidate.final_selected?.qualified === true
-    ))
-    .map((candidate) => candidate.candidate_id);
+  const candidateById = new Map(
+    candidates.map((candidate) => [candidate.candidate_id, candidate])
+  );
+  const attemptedIds = selectedIds.filter((candidateId) => (
+    candidateById.get(candidateId)?.transaction
+  ));
+  const failedIds = selectedIds.filter((candidateId) => (
+    ["error", "timeout"].includes(
+      candidateById.get(candidateId)?.transaction?.provider_status
+    )
+  ));
+  const qualifiedIds = selectedIds.filter((candidateId) => {
+    const candidate = candidateById.get(candidateId);
+    return candidate?.transaction && candidate.final_selected?.qualified === true;
+  });
 
   const publicationByCandidateId = replayPublicationIndex(candidates);
   const replayedCandidates = candidates.map((candidate) => {
@@ -600,7 +603,9 @@ function replayPublicationIndex(candidates) {
   const used = new Set();
   const publications = new Map();
   const publicationOrder = [...candidates].sort((left, right) => (
-    publicationPriority(left) - publicationPriority(right)
+    left.publication_order.source_priority - right.publication_order.source_priority
+    || left.publication_order.source_index - right.publication_order.source_index
+    || left.candidate_id.localeCompare(right.candidate_id)
   ));
   for (const candidate of publicationOrder) {
     const admission = candidate.final_selected ?? {};
@@ -620,13 +625,6 @@ function replayPublicationIndex(candidates) {
     });
   }
   return publications;
-}
-
-function publicationPriority(candidate) {
-  const sourceType = String(candidate?.ranking_inputs?.source_type ?? "");
-  if (sourceType === "media" || sourceType === "multi_source") return 0;
-  if (sourceType === "steam") return 1;
-  return 2;
 }
 
 function replayPoolKey(candidate) {

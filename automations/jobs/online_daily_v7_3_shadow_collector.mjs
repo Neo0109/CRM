@@ -598,6 +598,7 @@ function buildDecisionUniverse({
       enrichment_attempts: nonNegativeInteger(state?.enrichment_attempts),
       snapshot_status: snapshotStatus(state, entry.sourceTypes),
       evidence_freshness: evidenceFreshness(state, entry.sourceTypes),
+      publication_order: publicationOrder(entry),
       normalized_candidate: normalizedCandidate(entry, firstAdmission.evidence),
       discovery_score: Number(entry.discoveryScore) || 0,
       ranking_inputs: {
@@ -663,12 +664,16 @@ function addUniverseEntries(entries, sourceType, before, after, candidateStates)
       originSignalIds: new Set(),
       beforeByType: {},
       afterByType: {},
+      sourceIndexes: {},
       state: candidateStates.get(dedupeKey) ?? null,
       project: evidence.project,
       steamAppId: evidence.steam_app_id,
       discoveryScore: Number(candidate?.score ?? candidate?.media_score ?? 0)
     };
     existing.sourceTypes.add(sourceType);
+    if (!Number.isInteger(existing.sourceIndexes[sourceType])) {
+      existing.sourceIndexes[sourceType] = index;
+    }
     existing.originSignalIds.add(originSignalId(sourceType, candidate, evidence));
     existing.beforeByType[sourceType] = candidate;
     existing.afterByType[sourceType] = after[index] ?? candidate;
@@ -1111,6 +1116,13 @@ function normalizedCandidate(entry, evidence = {}) {
     narrative_state: stringOrNull(evidence.narrative_state),
     india_team_state: stringOrNull(evidence.india_team_state)
   };
+}
+
+function publicationOrder(entry) {
+  if (Number.isInteger(entry.sourceIndexes.media)) {
+    return { source_priority: 0, source_index: entry.sourceIndexes.media };
+  }
+  return { source_priority: 1, source_index: entry.sourceIndexes.steam };
 }
 
 function privacyStrippedLead(lead, candidateId) {
