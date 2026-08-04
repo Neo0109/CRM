@@ -121,6 +121,7 @@ describe("C5-C no-network offline replay", () => {
 
     const mergedInputTamper = structuredClone(corpus);
     mergedInputTamper.second_pass.transactions[0].merged_final_input.official_gameplay_evidence = [];
+    mergedInputTamper.second_pass.transactions[0].raw_provider_result.official_gameplay_evidence = [];
     mergedInputTamper.second_pass.transactions[0].filtered_patch.official_gameplay_evidence = [];
     assert.notEqual(
       sha256Canonical(buildReplayedDecisionView(mergedInputTamper)),
