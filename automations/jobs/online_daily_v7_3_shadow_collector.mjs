@@ -598,14 +598,14 @@ function buildDecisionUniverse({
       enrichment_attempts: nonNegativeInteger(state?.enrichment_attempts),
       snapshot_status: snapshotStatus(state, entry.sourceTypes),
       evidence_freshness: evidenceFreshness(state, entry.sourceTypes),
-      publication_order: publicationOrder(entry),
       normalized_candidate: normalizedCandidate(entry, firstAdmission.evidence),
       discovery_score: Number(entry.discoveryScore) || 0,
       ranking_inputs: {
         action_count: firstAdmission.lane_results?.indie_prelaunch?.next_evidence_actions?.length ?? 0,
         discovery_score: Number(entry.discoveryScore) || 0,
         dedupe_key: entry.dedupeKey,
-        source_type: entry.sourceTypes.size > 1 ? "multi_source" : [...entry.sourceTypes][0]
+        source_type: entry.sourceTypes.size > 1 ? "multi_source" : [...entry.sourceTypes][0],
+        publication_order: publicationOrder(entry)
       },
       qualification_affected_by_ranking: false,
       dedupe_boundary: {

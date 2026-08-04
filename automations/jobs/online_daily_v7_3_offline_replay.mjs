@@ -195,7 +195,15 @@ export function buildReplayedDecisionView(corpus = {}) {
           : 0,
         discovery_score: finiteNumber(candidate?.ranking_inputs?.discovery_score),
         dedupe_key: String(candidate?.ranking_inputs?.dedupe_key ?? candidate?.candidate_id ?? ""),
-        source_type: String(candidate?.ranking_inputs?.source_type ?? "")
+        source_type: String(candidate?.ranking_inputs?.source_type ?? ""),
+        publication_order: {
+          source_priority: nonNegativeInteger(
+            candidate?.ranking_inputs?.publication_order?.source_priority
+          ),
+          source_index: nonNegativeInteger(
+            candidate?.ranking_inputs?.publication_order?.source_index
+          )
+        }
       },
       eligible: secondPassEligible(indie),
       first_admission: indie,
@@ -207,10 +215,6 @@ export function buildReplayedDecisionView(corpus = {}) {
       },
       final_output: transaction ? decisionOutput(finalIndie) : null,
       final_selected: finalSelected,
-      publication_order: {
-        source_priority: nonNegativeInteger(candidate?.publication_order?.source_priority),
-        source_index: nonNegativeInteger(candidate?.publication_order?.source_index)
-      },
       normalized_candidate: candidate?.normalized_candidate ?? {},
       dedupe_boundary: candidate?.dedupe_boundary ?? {}
     };
@@ -603,8 +607,10 @@ function replayPublicationIndex(candidates) {
   const used = new Set();
   const publications = new Map();
   const publicationOrder = [...candidates].sort((left, right) => (
-    left.publication_order.source_priority - right.publication_order.source_priority
-    || left.publication_order.source_index - right.publication_order.source_index
+    left.ranking_inputs.publication_order.source_priority
+      - right.ranking_inputs.publication_order.source_priority
+    || left.ranking_inputs.publication_order.source_index
+      - right.ranking_inputs.publication_order.source_index
     || left.candidate_id.localeCompare(right.candidate_id)
   ));
   for (const candidate of publicationOrder) {

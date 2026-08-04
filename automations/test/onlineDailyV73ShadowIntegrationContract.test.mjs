@@ -327,11 +327,11 @@ describe("C5-B shadow-only production integration", () => {
     const stored = new Map(
       core.candidates.map((candidate) => [candidate.project, candidate])
     );
-    assert.deepEqual(stored.get(retained.project).publication_order, {
+    assert.deepEqual(stored.get(retained.project).ranking_inputs.publication_order, {
       source_priority: 0,
       source_index: 0
     });
-    assert.deepEqual(stored.get(duplicate.project).publication_order, {
+    assert.deepEqual(stored.get(duplicate.project).ranking_inputs.publication_order, {
       source_priority: 0,
       source_index: 1
     });

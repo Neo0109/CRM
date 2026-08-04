@@ -578,15 +578,6 @@
       },
       "additionalProperties": false
     },
-    "publicationOrder": {
-      "type": "object",
-      "required": ["source_priority", "source_index"],
-      "properties": {
-        "source_priority": { "type": "integer", "minimum": 0, "maximum": 1 },
-        "source_index": { "type": "integer", "minimum": 0 }
-      },
-      "additionalProperties": false
-    },
     "candidate": {
       "type": "object",
       "required": [
@@ -604,7 +595,6 @@
         "enrichment_attempts",
         "snapshot_status",
         "evidence_freshness",
-        "publication_order",
         "normalized_candidate",
         "discovery_score",
         "ranking_inputs",
@@ -647,7 +637,6 @@
           "type": "string",
           "enum": ["fresh", "reused", "missing", "not_applicable"]
         },
-        "publication_order": { "$ref": "#/$defs/publicationOrder" },
         "normalized_candidate": { "$ref": "#/$defs/jsonObject" },
         "discovery_score": { "type": "number" },
         "ranking_inputs": { "$ref": "#/$defs/jsonObject" },

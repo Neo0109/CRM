@@ -593,14 +593,14 @@ function candidateFixture() {
     enrichment_attempts: 1,
     snapshot_status: "fresh_success",
     evidence_freshness: "fresh",
-    publication_order: { source_priority: 1, source_index: 0 },
     normalized_candidate: { project: "Game One", steam_app_id: "100" },
     discovery_score: 10,
     ranking_inputs: {
       action_count: 0,
       discovery_score: 10,
       dedupe_key: "steam:100",
-      source_type: "steam"
+      source_type: "steam",
+      publication_order: { source_priority: 1, source_index: 0 }
     },
     qualification_affected_by_ranking: false,
     dedupe_boundary: {
@@ -687,12 +687,12 @@ function decisionCorpus() {
     evidence_catalog: [],
     candidates: [{
       candidate_id: "steam:100",
-      publication_order: { source_priority: 1, source_index: 0 },
       ranking_inputs: {
         action_count: 0,
         discovery_score: 10,
         dedupe_key: "steam:100",
-        source_type: "steam"
+        source_type: "steam",
+        publication_order: { source_priority: 1, source_index: 0 }
       },
       first_pass: {
         indie_prelaunch: { input: indieInput, output: indieOutput, gate_results: [] },
@@ -907,7 +907,6 @@ function publicationCandidate({
   candidate.steam_app_id = steamAppId;
   candidate.dedupe_key = dedupeKey;
   candidate.source_type = sourceType;
-  candidate.publication_order = publicationOrder;
   candidate.normalized_candidate = {
     project,
     steam_app_id: steamAppId,
@@ -918,7 +917,8 @@ function publicationCandidate({
     action_count: 0,
     discovery_score: 10,
     dedupe_key: dedupeKey,
-    source_type: sourceType
+    source_type: sourceType,
+    publication_order: publicationOrder
   };
   candidate.first_pass.indie_prelaunch.input = indieInput;
   candidate.first_pass.indie_prelaunch.output =

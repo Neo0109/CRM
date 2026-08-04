@@ -828,7 +828,6 @@ function validateCandidate(value, path, errors) {
     "enrichment_attempts",
     "snapshot_status",
     "evidence_freshness",
-    "publication_order",
     "normalized_candidate",
     "discovery_score",
     "ranking_inputs",
@@ -883,15 +882,15 @@ function validateCandidate(value, path, errors) {
     appendPath(path, "evidence_freshness"),
     errors
   );
-  validatePublicationOrder(
-    value.publication_order,
-    appendPath(path, "publication_order"),
-    value.source_type,
-    errors
-  );
   validateJsonObject(value.normalized_candidate, appendPath(path, "normalized_candidate"), errors);
   validateNumber(value.discovery_score, appendPath(path, "discovery_score"), errors);
   validateJsonObject(value.ranking_inputs, appendPath(path, "ranking_inputs"), errors);
+  validatePublicationOrder(
+    value.ranking_inputs?.publication_order,
+    appendPath(appendPath(path, "ranking_inputs"), "publication_order"),
+    value.source_type,
+    errors
+  );
   validateConst(
     value.qualification_affected_by_ranking,
     false,

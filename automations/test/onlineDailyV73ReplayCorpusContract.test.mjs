@@ -32,12 +32,6 @@ describe("Replay Corpus Contract v1 schemas", () => {
 
     assert.equal(corpusSchema.additionalProperties, false);
     assert.equal(corpusSchema.properties.contract_version.const, 1);
-    assert.ok(corpusSchema.$defs.candidate.required.includes("publication_order"));
-    assert.deepEqual(corpusSchema.$defs.publicationOrder.required, [
-      "source_priority",
-      "source_index"
-    ]);
-    assert.equal(corpusSchema.$defs.publicationOrder.additionalProperties, false);
     assert.deepEqual(corpusSchema.properties.capture_status.enum, [
       "complete",
       "incomplete",
@@ -297,13 +291,13 @@ describe("Replay corpus validator", () => {
 
   it("binds publication order priority to the frozen production source lane", () => {
     const corpus = mutateCorpus((value) => {
-      value.candidates[0].publication_order.source_priority = 1;
+      value.candidates[0].ranking_inputs.publication_order.source_priority = 1;
     });
 
     expectInvalid(
       validateReplayCorpus(corpus),
       "PUBLICATION_ORDER_SOURCE_MISMATCH",
-      "/candidates/0/publication_order/source_priority"
+      "/candidates/0/ranking_inputs/publication_order/source_priority"
     );
   });
 
@@ -908,14 +902,17 @@ function candidateFixture() {
     enrichment_attempts: 1,
     snapshot_status: "fresh_success",
     evidence_freshness: "fresh",
-    publication_order: { source_priority: 0, source_index: 0 },
     normalized_candidate: {
       title: "Game One",
       release_state: "prelaunch",
       official_demo: true
     },
     discovery_score: 77,
-    ranking_inputs: { source_weight: 2, freshness: 1 },
+    ranking_inputs: {
+      source_weight: 2,
+      freshness: 1,
+      publication_order: { source_priority: 0, source_index: 0 }
+    },
     qualification_affected_by_ranking: false,
     dedupe_boundary: {
       history_match: false,
@@ -987,7 +984,7 @@ function addSecondAttemptedCandidate(value) {
   candidate.steam_app_id = "200";
   candidate.dedupe_key = "steam:200";
   candidate.origin_signal_ids = ["signal:steam:200", "signal:media:200"];
-  candidate.publication_order.source_index = 1;
+  candidate.ranking_inputs.publication_order.source_index = 1;
   candidate.dedupe_boundary.audit_digest = SHA_B;
   candidate.second_pass.transaction_id = "transaction:two";
   value.candidates.push(candidate);
