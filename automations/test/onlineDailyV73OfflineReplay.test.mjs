@@ -195,6 +195,14 @@ describe("C5-C no-network offline replay", () => {
     );
   });
 
+  it("binds the receipt event identity to the corpus event even when every hash is self-consistent", () => {
+    const wrongEvent = replayFixture({ receiptEventName: "workflow_dispatch" });
+    expectReplayError(
+      () => replayOfflineCorpus(wrongEvent),
+      "ARTIFACT_IDENTITY_MISMATCH"
+    );
+  });
+
   it("derives the bounded patch from raw provider output instead of trusting stored filtered output", () => {
     const corpus = secondPassDecisionCorpus();
     const candidate = corpus.candidates[0];
@@ -374,6 +382,7 @@ function replayFixture({
   receiptReportDate = reportDate,
   receiptRunId = String(workflowRunId),
   receiptRunAttempt = runAttempt,
+  receiptEventName = eventName,
   artifactPathDate = reportDate,
   behaviorManifest = {
     "automations/jobs/online_daily_v7_3_offline_replay.mjs": BLOB_A,
@@ -383,6 +392,7 @@ function replayFixture({
   const receipt = {
     report_date: receiptReportDate,
     slot: runSlot,
+    event_name: receiptEventName,
     run_id: receiptRunId,
     run_attempt: receiptRunAttempt,
     status: healthy ? "success" : "failed",

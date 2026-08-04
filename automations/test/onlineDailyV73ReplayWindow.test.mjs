@@ -140,6 +140,30 @@ describe("C5-C 15-natural-day replay windows", () => {
     }
   });
 
+  it("fails closed before the complete-window fast path when persisted state is invalid", () => {
+    const days = naturalDates("2026-08-01", 15).map((reportDate, index) => ({
+      report_date: reportDate,
+      attempts: [attempt({ reportDate, workflowRunId: 20_000 + index })]
+    }));
+    const completed = buildReplayWindowSequence({
+      days,
+      expectedBehaviorContractSha256: BEHAVIOR_HASH
+    }).current_window;
+    const tampered = structuredClone(completed);
+    tampered.dates = [];
+
+    assert.equal(validateReplayWindow(tampered).valid, false);
+    assert.throws(
+      () => advanceReplayWindow({
+        window: tampered,
+        reportDate: "2026-08-16",
+        attempts: [],
+        expectedBehaviorContractSha256: BEHAVIOR_HASH
+      }),
+      /invalid persisted replay window/
+    );
+  });
+
   it("seals missing/failure/drift days, blocks same-day reopen, and restarts next day", () => {
     const dayOne = advanceReplayWindow({
       window: null,
@@ -217,6 +241,7 @@ function attempt({
   const receipt = {
     report_date: reportDate,
     slot: runSlot,
+    event_name: eventName,
     run_id: String(workflowRunId),
     run_attempt: runAttempt,
     status: healthy ? "success" : "failed",
