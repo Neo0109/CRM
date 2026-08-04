@@ -15,6 +15,7 @@ import { describe, it } from "node:test";
 import * as shadowCollector from "../jobs/online_daily_v7_3_shadow_collector.mjs";
 
 const generator = read("../jobs/online_daily_v4.mjs");
+const collectorSource = read("../jobs/online_daily_v7_3_shadow_collector.mjs");
 const activeRulesModule = read("../jobs/online_daily_v4_rules.mjs");
 const activeRuleText = read("../rules/daily-report.json");
 const activeRule = JSON.parse(activeRuleText);
@@ -108,16 +109,75 @@ describe("C5-B shadow-only production integration", () => {
     }
   });
 
-  it("uses only existing workflow receipt plumbing and the exact corpus path", () => {
-    assert.equal(gitBlobSha(stripC5BBlocks(syncWorkflow)), ORIGINAL_BLOBS.syncWorkflow);
-    assert.equal(gitBlobSha(stripC5BBlocks(watchdogWorkflow)), ORIGINAL_BLOBS.watchdogWorkflow);
-    for (const workflow of [syncWorkflow, watchdogWorkflow]) {
+  it("adds only the direct run_attempt receipt field while freezing trigger, step, and sync scope", () => {
+    assert.equal(gitBlobSha(workflowHeader(syncWorkflow)), "4f0cfdbda3edec5d293d92b70e8a36fa42aca2c4");
+    assert.equal(gitBlobSha(workflowHeader(watchdogWorkflow)), "4d0724ad7c1735f3a5bbc50eadd4b52c3822a351");
+    assert.deepEqual(workflowStepNames(syncWorkflow), [
+      "Checkout repository",
+      "Setup Node.js",
+      "Resolve report date and run slot",
+      "Fetch CRM dedupe index",
+      "Generate daily report, radar, and Steam trends",
+      "Validate daily report contract",
+      "Commit generated data",
+      "Sync daily report into CRM",
+      "Commit sync receipt",
+      "Record CRM import quality",
+      "Fail if online daily automation did not succeed",
+      "Summary"
+    ]);
+    assert.deepEqual(workflowStepNames(watchdogWorkflow), [
+      "Checkout repository",
+      "Setup Node.js",
+      "Resolve report date",
+      "Inspect report health",
+      "Fetch CRM dedupe index",
+      "Generate daily report if unhealthy",
+      "Validate daily report contract",
+      "Commit generated data",
+      "Sync daily report into CRM",
+      "Commit watchdog receipt",
+      "Record watchdog import quality",
+      "Fail if watchdog sync did not succeed",
+      "Summary"
+    ]);
+    assert.equal(
+      gitBlobSha(workflowStep(syncWorkflow, "Sync daily report into CRM")),
+      "fe8a18eddcbda3342f8b0249db652e1f55019dc1"
+    );
+    assert.equal(
+      gitBlobSha(workflowStep(watchdogWorkflow, "Sync daily report into CRM")),
+      "8b60b060cfd116c4ba8b768a9f805b5ed25416cc"
+    );
+    const receiptViolations = [];
+    for (const [name, workflow] of [
+      ["sync", syncWorkflow],
+      ["watchdog", watchdogWorkflow]
+    ]) {
       assert.match(workflow, /C5B_SHADOW_FINALIZER_START/);
       assert.match(workflow, /finalizeC5BReplayCorpusSafely/);
       assert.match(workflow, /data\/sourcing_replay_corpus/);
       assert.doesNotMatch(workflow, /^\s*push:/m);
-      assert.equal((workflow.match(/\n\s*- name:/g) ?? []).length, (stripC5BBlocks(workflow).match(/\n\s*- name:/g) ?? []).length);
+      if (!/GITHUB_RUN_ATTEMPT_VALUE:\s*\$\{\{\s*github\.run_attempt\s*\}\}/.test(workflow)) {
+        receiptViolations.push(`${name}: github.run_attempt runtime field absent`);
+      }
+      if (!/const runAttempt = Number\(process\.env\.GITHUB_RUN_ATTEMPT_VALUE\);/.test(workflow)) {
+        receiptViolations.push(`${name}: run_attempt normalization absent`);
+      }
+      if (!/Number\.isSafeInteger\(runAttempt\)[\s\S]{0,120}(?:runAttempt\s*<=\s*0|runAttempt\s*<\s*1)/.test(workflow)) {
+        receiptViolations.push(`${name}: strict positive-integer guard absent`);
+      }
+      if (!/run_attempt:\s*runAttempt/.test(workflow)) {
+        receiptViolations.push(`${name}: normalized run_attempt receipt field absent`);
+      }
+      if (/\$\{GITHUB_RUN_ATTEMPT:-1\}/.test(workflow)) {
+        receiptViolations.push(`${name}: default-to-1 corpus path present`);
+      }
+      if (/GITHUB_RUN_ATTEMPT_VALUE\s*(?:\|\||\?\?)/.test(workflow)) {
+        receiptViolations.push(`${name}: defaulted receipt run_attempt present`);
+      }
     }
+    assert.deepEqual(receiptViolations, []);
     assert.match(syncWorkflow, /cron:\s*"37 1 \* \* \*"/);
     assert.match(syncWorkflow, /cron:\s*"17 6 \* \* \*"/);
     assert.match(watchdogWorkflow, /cron:\s*"23 2-8 \* \* \*"/);
@@ -125,32 +185,54 @@ describe("C5-B shadow-only production integration", () => {
     assert.match(watchdogWorkflow, /git add "data\/automation_runs\/\$REPORT_DATE-watchdog\.json"/);
   });
 
-  it("isolates injected finalizer module-load failures without changing receipt or exit status", () => {
+  it("isolates finalizer validation and module-load failures without changing receipt bytes or V7.2 exit status", () => {
     for (const [name, workflow, runSlot] of [
       ["sync", syncWorkflow, "afternoon"],
       ["watchdog", watchdogWorkflow, "watchdog"]
     ]) {
-      const fixture = mkdtempSync(path.join(tmpdir(), `c5b-${name}-finalizer-load-failure-`));
-      try {
-        writeFileSync(path.join(fixture, "failing-collector.mjs"), "export const = ;\n");
-        const receiptPath = path.join(fixture, "receipt.json");
-        const block = c5bBlock(workflow, "FINALIZER").replaceAll(
-          "./automations/jobs/online_daily_v7_3_shadow_collector.mjs",
-          "./failing-collector.mjs"
-        );
-        const harnessPath = path.join(fixture, "finalizer-harness.mjs");
-        writeFileSync(harnessPath, finalizerHarness({ block, receiptPath, runSlot }));
+      for (const [failure, moduleSource] of [
+        ["module-load", "export const = ;\n"],
+        [
+          "validation",
+          "export async function finalizeC5BReplayCorpusSafely() { return { status: 'error', reason: 'schema validation failed', corpus_path: null }; }\n"
+        ]
+      ]) {
+        const fixture = mkdtempSync(path.join(tmpdir(), `c5b-${name}-finalizer-${failure}-failure-`));
+        try {
+          writeFileSync(path.join(fixture, "failing-collector.mjs"), moduleSource);
+          const receiptPath = path.join(fixture, "receipt.json");
+          const block = c5bBlock(workflow, "FINALIZER").replaceAll(
+            "./automations/jobs/online_daily_v7_3_shadow_collector.mjs",
+            "./failing-collector.mjs"
+          );
+          const harnessPath = path.join(fixture, "finalizer-harness.mjs");
+          writeFileSync(harnessPath, finalizerHarness({ block, receiptPath, runSlot }));
 
-        const result = spawnSync(process.execPath, [harnessPath], {
-          cwd: fixture,
-          encoding: "utf8"
-        });
-        assert.equal(result.status, 0, `${name}: ${result.stderr}`);
-        assert.equal(readFileSync(receiptPath, "utf8"), "receipt-before-finalizer\n");
-      } finally {
-        rmSync(fixture, { recursive: true, force: true });
+          const result = spawnSync(process.execPath, [harnessPath], {
+            cwd: fixture,
+            encoding: "utf8"
+          });
+          assert.equal(result.status, 0, `${name}/${failure}: ${result.stderr}`);
+          assert.equal(readFileSync(receiptPath, "utf8"), "receipt-before-finalizer\n");
+        } finally {
+          rmSync(fixture, { recursive: true, force: true });
+        }
       }
     }
+  });
+
+  it("reads the receipt before pending-core selection and has no default or online resolver", () => {
+    const finalizer = finalizerImplementation(collectorSource);
+    const receiptReadIndex = finalizer.indexOf("readFile(receiptPath");
+    const pendingLookupIndex = finalizer.indexOf("findPendingPath");
+    assert.ok(receiptReadIndex >= 0, "the finalizer must read the receipt");
+    assert.ok(pendingLookupIndex >= 0, "the finalizer must select an exact pending core");
+    assert.ok(
+      receiptReadIndex < pendingLookupIndex,
+      "the validated receipt tuple must be authoritative before pending-core selection"
+    );
+    assert.doesNotMatch(finalizer, /run_attempt\s*(?:\?\?|\|\|)\s*1/);
+    assert.doesNotMatch(finalizer, /\bfetch\s*\(|https?:\/\/|api\.github|octokit/i);
   });
 
   it("declares the approved behavior floor and closes every loaded local dependency", () => {
@@ -223,6 +305,31 @@ function c5bBlock(source, label) {
     "m"
   ));
   return match?.[1] ?? "";
+}
+
+function workflowHeader(source) {
+  const end = source.indexOf("\npermissions:");
+  assert.ok(end >= 0, "workflow permissions boundary must exist");
+  return source.slice(0, end + 1);
+}
+
+function workflowStepNames(source) {
+  return [...source.matchAll(/^\s+- name:\s*(.+)$/gm)].map((match) => match[1]);
+}
+
+function workflowStep(source, name) {
+  const start = source.indexOf(`      - name: ${name}`);
+  assert.ok(start >= 0, `workflow step ${name} must exist`);
+  const tail = source.slice(start + 1);
+  const next = tail.match(/^      - name:/m);
+  return source.slice(start, next ? start + 1 + next.index : source.length);
+}
+
+function finalizerImplementation(source) {
+  const start = source.indexOf("async function finalizeC5BReplayCorpus(");
+  const end = source.indexOf("\nfunction createRecordingProvider", start);
+  assert.ok(start >= 0 && end > start, "finalizer implementation boundary must exist");
+  return source.slice(start, end);
 }
 
 function generatorHarnessPrelude() {
