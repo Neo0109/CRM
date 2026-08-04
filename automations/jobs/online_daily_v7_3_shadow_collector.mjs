@@ -244,7 +244,7 @@ export async function collectV73ShadowCore({
     event_name: "schedule",
     run_slot: String(runContext.run_slot),
     workflow_run_id: positiveInteger(runContext.workflow_run_id, "workflow_run_id"),
-    run_attempt: positiveInteger(runContext.run_attempt ?? 1, "run_attempt"),
+    run_attempt: positiveInteger(runContext.run_attempt, "run_attempt"),
     run_url: sanitizePublicUrl(runContext.run_url),
     input_commit_sha: gitSha(runContext.input_commit_sha),
     node_version: normalizedNodeVersion(runContext.node_version ?? process.version),
@@ -337,13 +337,31 @@ async function finalizeC5BReplayCorpus({
   receiptPath = path.join(rootDir, "data", "automation_runs", `${reportDate}-${runSlot}.json`)
 } = {}) {
   assertDate(reportDate);
-  const pendingPath = await findPendingPath({ rootDir, reportDate, runSlot });
-  if (!pendingPath) return { status: "skipped", reason: "pending_core_missing", corpus_path: null };
-  const core = JSON.parse(await readFile(pendingPath, "utf8"));
   const receipt = JSON.parse(await readFile(receiptPath, "utf8"));
-  const runId = positiveInteger(core.workflow_run_id, "workflow_run_id");
-  const attempt = positiveInteger(core.run_attempt, "run_attempt");
-  const corpusRelativePath = `data/sourcing_replay_corpus/${reportDate}/${runId}-${attempt}-${runSlot}.json`;
+  const runId = positiveInteger(receipt.run_id, "receipt run_id");
+  const runAttempt = strictPositiveInteger(receipt.run_attempt, "receipt run_attempt");
+  if (receipt.report_date !== reportDate) throw new Error("C5-B receipt report_date mismatch");
+  if (receipt.slot !== runSlot) throw new Error("C5-B receipt slot mismatch");
+  const pendingPath = await findPendingPath({
+    rootDir,
+    reportDate,
+    runSlot,
+    workflowRunId: runId,
+    runAttempt
+  });
+  const core = JSON.parse(await readFile(pendingPath, "utf8"));
+  const coreRunId = positiveInteger(core.workflow_run_id, "workflow_run_id");
+  const coreRunAttempt = strictPositiveInteger(core.run_attempt, "run_attempt");
+  const expectedCorpusId = `${reportDate}/${runId}/${runAttempt}/${runSlot}`;
+  if (core.corpus_id !== expectedCorpusId) throw new Error("C5-B receipt/core corpus_id mismatch");
+  if (coreRunId !== runId) throw new Error("C5-B receipt/core workflow_run_id mismatch");
+  if (coreRunAttempt !== runAttempt) throw new Error("C5-B receipt/core run_attempt mismatch");
+  if (core.report_date !== reportDate) throw new Error("C5-B receipt/core report_date mismatch");
+  if (core.run_slot !== runSlot) throw new Error("C5-B receipt/core run_slot mismatch");
+  if (Object.hasOwn(receipt, "event_name") && core.event_name !== receipt.event_name) {
+    throw new Error("C5-B receipt/core event_name mismatch");
+  }
+  const corpusRelativePath = `data/sourcing_replay_corpus/${reportDate}/${runId}-${runAttempt}-${runSlot}.json`;
   const bindings = {
     report: await artifactBinding(rootDir, `data/reports/${reportDate}.json`, "report"),
     sourcing_candidates: await artifactBinding(
@@ -937,20 +955,13 @@ function artifactRecordCount(payload, kind) {
   return 0;
 }
 
-async function findPendingPath({ rootDir, reportDate, runSlot }) {
-  const runtimeDir = path.join(rootDir, "data", "runtime");
-  let entries;
-  try {
-    entries = await import("node:fs/promises").then(({ readdir }) => readdir(runtimeDir));
-  } catch {
-    return null;
-  }
-  const suffix = `-${runSlot}.json`;
-  const name = entries
-    .filter((item) => item.startsWith(`${reportDate}-c5b-shadow-`) && item.endsWith(suffix))
-    .sort()
-    .at(-1);
-  return name ? path.join(runtimeDir, name) : null;
+async function findPendingPath({ rootDir, reportDate, runSlot, workflowRunId, runAttempt }) {
+  return path.join(
+    rootDir,
+    "data",
+    "runtime",
+    `${reportDate}-c5b-shadow-${workflowRunId}-${runAttempt}-${runSlot}.json`
+  );
 }
 
 function pendingRelativePath(core) {
@@ -958,7 +969,7 @@ function pendingRelativePath(core) {
 }
 
 function corpusId(reportDate, runContext) {
-  return `${reportDate}/${positiveInteger(runContext.workflow_run_id, "workflow_run_id")}/${positiveInteger(runContext.run_attempt ?? 1, "run_attempt")}/${String(runContext.run_slot)}`;
+  return `${reportDate}/${positiveInteger(runContext.workflow_run_id, "workflow_run_id")}/${positiveInteger(runContext.run_attempt, "run_attempt")}/${String(runContext.run_slot)}`;
 }
 
 function evidenceRecord({
@@ -1348,6 +1359,13 @@ function positiveInteger(value, name) {
   const number = Number(value);
   if (!Number.isInteger(number) || number < 1) throw new Error(`C5-B ${name} must be a positive integer`);
   return number;
+}
+
+function strictPositiveInteger(value, name) {
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`C5-B ${name} must be a positive safe JSON integer`);
+  }
+  return value;
 }
 
 function assertDate(value) {

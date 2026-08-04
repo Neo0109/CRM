@@ -229,6 +229,7 @@ jobs:
           GITHUB_EVENT_NAME_VALUE: ${{ github.event_name }}
           GITHUB_EVENT_SCHEDULE_VALUE: ${{ github.event.schedule }}
           GITHUB_RUN_ID_VALUE: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT_VALUE: ${{ github.run_attempt }}
           GITHUB_RUN_NUMBER_VALUE: ${{ github.run_number }}
           GITHUB_REPOSITORY_VALUE: ${{ github.repository }}
         run: |
@@ -244,6 +245,10 @@ jobs:
           const validationLogTail = Buffer.from(process.env.VALIDATION_LOG_B64 || '', 'base64').toString('utf8');
           const reportDate = process.env.REPORT_DATE;
           const runSlot = process.env.RUN_SLOT;
+          const runAttempt = Number(process.env.GITHUB_RUN_ATTEMPT_VALUE);
+          if (!Number.isSafeInteger(runAttempt) || runAttempt <= 0) {
+            throw new Error('github.run_attempt must be a positive safe integer');
+          }
           const generationStatus = process.env.GENERATION_STATUS || 'unknown';
           const validationStatus = process.env.VALIDATION_STATUS || 'unknown';
           const failurePayloadPath = `data/runtime/${reportDate}-generation-failure.json`;
@@ -307,6 +312,7 @@ jobs:
             event_name: process.env.GITHUB_EVENT_NAME_VALUE,
             event_schedule: process.env.GITHUB_EVENT_SCHEDULE_VALUE || null,
             run_id: process.env.GITHUB_RUN_ID_VALUE,
+            run_attempt: runAttempt,
             run_number: process.env.GITHUB_RUN_NUMBER_VALUE,
             run_url: `https://github.com/${process.env.GITHUB_REPOSITORY_VALUE}/actions/runs/${process.env.GITHUB_RUN_ID_VALUE}`,
             captured_at: new Date().toISOString(),
@@ -332,7 +338,7 @@ jobs:
           });
           NODE
           # C5B_SHADOW_CORPUS_ADD_START
-          corpus_path="data/sourcing_replay_corpus/$REPORT_DATE/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-1}-$RUN_SLOT.json"
+          corpus_path="data/sourcing_replay_corpus/$REPORT_DATE/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-$RUN_SLOT.json"
           if [ -f "$corpus_path" ]; then
             git add "$corpus_path"
           fi
@@ -403,6 +409,6 @@ jobs:
           echo "- data/steam_trends/$REPORT_DATE.json"
           echo "- data/sourcing_candidates/$REPORT_DATE.json"
           # C5B_SHADOW_SUMMARY_START
-          echo "- data/sourcing_replay_corpus/$REPORT_DATE/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-1}-$RUN_SLOT.json (when eligible and complete)"
+          echo "- data/sourcing_replay_corpus/$REPORT_DATE/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-$RUN_SLOT.json (when eligible and complete)"
           # C5B_SHADOW_SUMMARY_END
           echo "- data/automation_runs/$REPORT_DATE-$RUN_SLOT.json"

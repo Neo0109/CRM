@@ -322,12 +322,140 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(excluded.publication.shadow_lead_payload_sha256, null);
   });
 
-  it("writes a pending core and finalizes one schema-valid receipt-bound corpus", async () => {
+  it("selects the exact receipt run tuple among same-date and same-slot pending cores", async () => {
     requireCollector("runC5BShadowCollectorSafely");
     requireCollector("finalizeC5BReplayCorpusSafely");
-    const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-collector-"));
-    const runContext = automaticRun({ workflow_run_id: "9004" });
-    const candidate = steamCandidate(nearMissEvidence(70));
+    const fixture = await finalizerFixture([
+      automaticRun({ workflow_run_id: "9004", run_attempt: 1 }),
+      automaticRun({ workflow_run_id: "9005", run_attempt: 2 }),
+      automaticRun({ workflow_run_id: "9006", run_attempt: 1 })
+    ]);
+    await writeReceipt(fixture.receiptPath, healthyReceipt({
+      run_id: "9005",
+      run_attempt: 2
+    }));
+
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir: fixture.rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath: fixture.receiptPath
+    });
+    assert.equal(finalized.status, "complete");
+    const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
+    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
+    assert.equal(corpus.corpus_id, `${reportDate}/9005/2/afternoon`);
+    assert.equal(corpus.workflow_run_id, 9005);
+    assert.equal(corpus.run_attempt, 2);
+    assert.equal(corpus.delivery_health.sync_response.synced, true);
+    assert.equal(corpus.artifact_bindings.replay_corpus.git_blob_sha, null);
+    assert.equal(corpus.artifact_bindings.receipt.validation_status, "valid");
+    assert.equal(corpus.integrity.payload_sha256, corpus.artifact_bindings.replay_corpus.payload_sha256);
+  });
+
+  it("fails closed on a missing, invalid, or mismatched receipt run tuple", async (t) => {
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const cases = [
+      ["missing run_attempt", { run_id: "9004" }],
+      ["zero run_attempt", { run_id: "9004", run_attempt: 0 }],
+      ["negative run_attempt", { run_id: "9004", run_attempt: -1 }],
+      ["fractional run_attempt", { run_id: "9004", run_attempt: 1.5 }],
+      ["string run_attempt", { run_id: "9004", run_attempt: "1" }],
+      ["run_id mismatch", { run_id: "9904", run_attempt: 1 }],
+      ["run_attempt mismatch", { run_id: "9004", run_attempt: 2 }],
+      ["report_date mismatch", { report_date: "2026-08-02", run_id: "9004", run_attempt: 1 }],
+      ["slot mismatch", { slot: "watchdog", run_id: "9004", run_attempt: 1 }],
+      ["event_name mismatch", { event_name: "workflow_dispatch", run_id: "9004", run_attempt: 1 }]
+    ];
+
+    for (const [name, overrides] of cases) {
+      await t.test(name, async () => {
+        const fixture = await finalizerFixture([
+          automaticRun({ workflow_run_id: "9004", run_attempt: 1 })
+        ]);
+        await writeReceipt(fixture.receiptPath, healthyReceipt(overrides));
+        const receiptBefore = await readFile(fixture.receiptPath, "utf8");
+
+        const finalized = await collector.finalizeC5BReplayCorpusSafely({
+          rootDir: fixture.rootDir,
+          reportDate,
+          runSlot: "afternoon",
+          receiptPath: fixture.receiptPath
+        });
+
+        assert.equal(finalized.status, "error", `${name} must fail closed`);
+        assert.equal(finalized.corpus_path, null);
+        assert.equal(await readFile(fixture.receiptPath, "utf8"), receiptBefore);
+        assert.equal(existsSync(expectedCorpusPath(fixture.rootDir, 9004, 1)), false);
+      });
+    }
+  });
+
+  it("rejects an exact pending filename whose core tuple does not match the receipt", async () => {
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const fixture = await finalizerFixture([
+      automaticRun({ workflow_run_id: "9004", run_attempt: 1 })
+    ]);
+    const wrongCore = await readFile(fixture.captures[0].pending_path, "utf8");
+    const forgedExactPath = path.join(
+      fixture.rootDir,
+      "data/runtime",
+      `${reportDate}-c5b-shadow-9005-2-afternoon.json`
+    );
+    await writeFile(forgedExactPath, wrongCore);
+    await writeReceipt(fixture.receiptPath, healthyReceipt({
+      run_id: "9005",
+      run_attempt: 2
+    }));
+
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir: fixture.rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath: fixture.receiptPath
+    });
+
+    assert.equal(finalized.status, "error");
+    assert.equal(finalized.corpus_path, null);
+    assert.equal(existsSync(expectedCorpusPath(fixture.rootDir, 9005, 2)), false);
+  });
+
+  it("preserves receipt bytes and emits no corpus when corpus validation fails", async () => {
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const fixture = await finalizerFixture([
+      automaticRun({ workflow_run_id: "9004", run_attempt: 1 })
+    ]);
+    const invalidCore = JSON.parse(await readFile(fixture.captures[0].pending_path, "utf8"));
+    invalidCore.contract_version = 0;
+    await writeFile(fixture.captures[0].pending_path, `${JSON.stringify(invalidCore, null, 2)}\n`);
+    await writeReceipt(fixture.receiptPath, healthyReceipt({
+      run_id: "9004",
+      run_attempt: 1
+    }));
+    const receiptBefore = await readFile(fixture.receiptPath, "utf8");
+
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir: fixture.rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath: fixture.receiptPath
+    });
+
+    assert.equal(finalized.status, "error");
+    assert.equal(finalized.corpus_path, null);
+    assert.equal(await readFile(fixture.receiptPath, "utf8"), receiptBefore);
+    assert.equal(existsSync(expectedCorpusPath(fixture.rootDir, 9004, 1)), false);
+  });
+});
+
+async function finalizerFixture(runContexts) {
+  const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-finalizer-"));
+  const candidate = steamCandidate(nearMissEvidence(70));
+  const captures = [];
+  for (const runContext of runContexts) {
     const capture = await collector.runC5BShadowCollectorSafely({
       rootDir,
       reportDate,
@@ -342,44 +470,56 @@ describe("C5-B V7.3 shadow collector", () => {
     });
     assert.equal(capture.status, "pending");
     assert.ok(existsSync(capture.pending_path));
+    captures.push(capture);
+  }
 
-    const artifactPayloads = {
-      report: { report_date: reportDate, push_pool: [], watch_pool: [], drop_pool: [] },
-      sourcing_candidates: { report_date: reportDate, candidates: [] },
-      radar: { report_date: reportDate, items: [] },
-      steam_trends: { report_date: reportDate, items: [] }
-    };
-    for (const [name, payload] of Object.entries(artifactPayloads)) {
-      const directory = name === "report" ? "reports" : name;
-      await mkdir(path.join(rootDir, "data", directory), { recursive: true });
-      await writeFile(path.join(rootDir, "data", directory, `${reportDate}.json`), `${JSON.stringify(payload, null, 2)}\n`);
-    }
-    await mkdir(path.join(rootDir, "data", "automation_runs"), { recursive: true });
-    const receiptPath = path.join(rootDir, "data", "automation_runs", `${reportDate}-afternoon.json`);
-    await writeFile(receiptPath, `${JSON.stringify({
-      report_date: reportDate,
-      slot: "afternoon",
-      status: "success",
-      generation_status: "success",
-      validation_status: "success",
-      sync_response: JSON.stringify({ synced: true })
-    }, null, 2)}\n`);
+  const artifactPayloads = {
+    report: { report_date: reportDate, push_pool: [], watch_pool: [], drop_pool: [] },
+    sourcing_candidates: { report_date: reportDate, candidates: [] },
+    radar: { report_date: reportDate, items: [] },
+    steam_trends: { report_date: reportDate, items: [] }
+  };
+  for (const [name, payload] of Object.entries(artifactPayloads)) {
+    const directory = name === "report" ? "reports" : name;
+    await mkdir(path.join(rootDir, "data", directory), { recursive: true });
+    await writeFile(
+      path.join(rootDir, "data", directory, `${reportDate}.json`),
+      `${JSON.stringify(payload, null, 2)}\n`
+    );
+  }
+  await mkdir(path.join(rootDir, "data", "automation_runs"), { recursive: true });
+  return {
+    rootDir,
+    captures,
+    receiptPath: path.join(rootDir, "data", "automation_runs", `${reportDate}-afternoon.json`)
+  };
+}
 
-    const finalized = await collector.finalizeC5BReplayCorpusSafely({
-      rootDir,
-      reportDate,
-      runSlot: "afternoon",
-      receiptPath
-    });
-    assert.equal(finalized.status, "complete");
-    const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
-    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
-    assert.equal(corpus.delivery_health.sync_response.synced, true);
-    assert.equal(corpus.artifact_bindings.replay_corpus.git_blob_sha, null);
-    assert.equal(corpus.artifact_bindings.receipt.validation_status, "valid");
-    assert.equal(corpus.integrity.payload_sha256, corpus.artifact_bindings.replay_corpus.payload_sha256);
-  });
-});
+function healthyReceipt(overrides = {}) {
+  return {
+    report_date: reportDate,
+    slot: "afternoon",
+    status: "success",
+    generation_status: "success",
+    validation_status: "success",
+    event_name: "schedule",
+    sync_response: JSON.stringify({ synced: true }),
+    ...overrides
+  };
+}
+
+async function writeReceipt(receiptPath, payload) {
+  await writeFile(receiptPath, `${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function expectedCorpusPath(rootDir, runId, runAttempt) {
+  return path.join(
+    rootDir,
+    "data/sourcing_replay_corpus",
+    reportDate,
+    `${runId}-${runAttempt}-afternoon.json`
+  );
+}
 
 function requireCollector(name) {
   assert.equal(typeof collector[name], "function", `${name} is missing at the accepted RED boundary`);
