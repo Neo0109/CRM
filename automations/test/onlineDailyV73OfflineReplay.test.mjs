@@ -246,7 +246,10 @@ describe("C5-C no-network offline replay", () => {
     };
     transaction.merged_final_input = {
       ...structuredClone(candidate.first_pass.indie_prelaunch.input),
-      business_entrypoints: [storedEntry]
+      business_entrypoints: [
+        ...structuredClone(candidate.first_pass.indie_prelaunch.input.business_entrypoints),
+        storedEntry
+      ]
     };
 
     expectReplayError(
