@@ -82,6 +82,7 @@ export function advanceReplayWindow({
   expectedBehaviorContractSha256
 } = {}) {
   assertDate(reportDate);
+  assertPersistedWindowValid(window);
   if (window?.status === "complete") {
     return {
       window: clone(window),
@@ -166,6 +167,17 @@ export function advanceReplayWindow({
     sealed_window: null,
     transition: nextWindow.status === "complete" ? "completed" : window ? "advanced" : "started"
   };
+}
+
+function assertPersistedWindowValid(window) {
+  if (window == null) return;
+  const validation = validateReplayWindow(window);
+  if (!validation.valid) {
+    const first = validation.errors[0];
+    throw new Error(
+      `C5-C invalid persisted replay window: ${first?.code ?? "unknown"} at ${first?.path ?? "/"}`
+    );
+  }
 }
 
 export function buildReplayWindowSequence({

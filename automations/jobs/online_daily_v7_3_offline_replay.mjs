@@ -15,6 +15,11 @@ import { normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mj
 export const C5C_REPLAY_ENGINE_CONTRACT_VERSION = 1;
 const V73_OBTAINABLE_EVIDENCE_RULE_VERSION =
   "sourcing-rules-v7.3-obtainable-evidence";
+const SUPPORTED_RECEIPT_EVENT_NAMES = new Set([
+  "schedule",
+  "watchdog",
+  "workflow_dispatch"
+]);
 
 const SUPPORTED_SECOND_PASS_ACTIONS = new Set([
   "resolve_project_identity",
@@ -392,6 +397,8 @@ function verifyArtifactIdentity(corpus, receipt, payloadByKey) {
     corpus.corpus_id !== expectedCorpusId
     || receipt.report_date !== reportDate
     || String(receipt.slot ?? "") !== runSlot
+    || !SUPPORTED_RECEIPT_EVENT_NAMES.has(receipt.event_name)
+    || receipt.event_name !== corpus.event_name
     || !corpusRunId
     || receiptRunId !== corpusRunId
     || corpusRunAttempt === null
