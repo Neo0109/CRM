@@ -213,3 +213,17 @@ Stop at diagnosis/proposal. The next task, only if separately approved, is a new
 - No PR was created or modified; open PRs remained only #107 and #71 at the opening recheck.
 - No PR merge, workflow dispatch/rerun, deployment, live provider/generator call, CRM sync, production replay/write, visual acceptance, 15-day observation, or V7.3 Activation occurred.
 - After the docs-only checkpoint, perform final exact-head validation/guards and fresh independent read-only adversarial QA, then stop at a separate PR decision gate.
+
+### Fresh Independent Gate A Exact-Head QA
+
+- QA authority: `7b8b1ad9b9efd94796e3c2b57faa2b265520f117`.
+- Fresh remote recheck: `main=4707887aa00a8ca453cebcc187e6bb6bea3f0f85`; reconciliation branch exact at the QA authority; ahead 8 / behind 0 with the same exact 10 paths and no new code/schema/test overlap.
+- Method: independent GitHub App/API recheck, fresh GitHub API exact-SHA tarball, production-parity code review, and new read-only adversarial probes. The local CRM checkout/worktree was not read or modified.
+- Result: **P0=0 / P1=0 / P2=0**.
+- Receipt/corpus identity: corpus ID, report date, slot, workflow run ID, numeric run attempt, Shanghai captured date, and canonical artifact paths fail closed. Canonical decimal receipt run IDs must equal the corpus run ID; receipt run attempts must be positive safe integers and equal the corpus attempt.
+- Raw selector/privacy: raw output is privacy-normalized and validated before action-derived allowlist filtering and canonical stored-patch comparison. Unauthorized raw fields cannot widen the patch; stored-patch overreach, secrets, and privacy-normalization mismatches are rejected.
+- Bounded merge: normalized source ID, then URL, then `type:value` parity and base-first retention match production. All three duplicate-key probes preserve base, append only unique incoming evidence, and reject forged incoming replacement.
+- Publication replay: media-first order, Steam app key, project fallback, and the 6–24 Han sorted loose key match production. Probes confirm Han lengths 6 and 24 dedupe while 5 and 25 do not, with media precedence preserved.
+- Fixture expansion from `c50ae24f3bc62183fca3e5ce81c3e76d9825c521` remains exactly the two approved `attempt()` receipt fields. Independent focused probes were 21/21 GREEN: offline replay 14/14 plus selector/window 7/7.
+- No file or remote state was changed by QA. No PR/workflow/deployment/replay/write/observation/Activation action occurred, and no success is claimed for the absent 2026-08-04 corpus.
+- Gate A may stop at the PR decision gate; PR creation or modification still requires separate approval.
