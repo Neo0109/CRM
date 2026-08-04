@@ -41,6 +41,24 @@ describe("Replay Corpus Contract v1 schemas", () => {
     assert.equal(windowSchema.additionalProperties, false);
     assert.equal(windowSchema.properties.contract_version.const, 1);
     assert.deepEqual(windowSchema.properties.status.enum, ["active", "failed", "complete"]);
+    assert.ok(windowSchema.$defs.dateEntry.required.includes("replay_binding"));
+    assert.equal(
+      windowSchema.$defs.replayBinding.properties.engine_contract_version.const,
+      1
+    );
+    const activeState = windowSchema.allOf.find((branch) => (
+      branch.if?.properties?.status?.const === "active"
+    ));
+    const failedState = windowSchema.allOf.find((branch) => (
+      branch.if?.properties?.status?.const === "failed"
+    ));
+    assert.equal(activeState.then.properties.dates.minItems, 1);
+    assert.equal(activeState.then.properties.dates.maxItems, 14);
+    assert.equal(
+      activeState.then.properties.integrity.properties.reason_codes.maxItems,
+      0
+    );
+    assert.equal(failedState.then.properties.dates.maxItems, 14);
   });
 
   it("allows the replay corpus self binding to defer its Git blob SHA", () => {
@@ -512,6 +530,74 @@ describe("Replay window validator", () => {
     );
   });
 
+  it("rejects impossible active windows and binds active boundaries to retained dates", () => {
+    const emptyActive = completeWindowFixture();
+    Object.assign(emptyActive, {
+      status: "active",
+      start_date: "2026-07-01",
+      end_date: "2026-07-14",
+      dates: [],
+      failure_date: null,
+      failure_reasons: []
+    });
+    emptyActive.integrity.status = "incomplete";
+    emptyActive.integrity.reason_codes = ["behavior_drift"];
+    sealWindow(emptyActive);
+    expectInvalid(
+      validateReplayWindow(emptyActive),
+      "WINDOW_ACTIVE_DATE_COUNT",
+      "/dates"
+    );
+    expectInvalid(
+      validateReplayWindow(emptyActive),
+      "WINDOW_ACTIVE_INTEGRITY_REASONS",
+      "/integrity/reason_codes"
+    );
+
+    const mismatchedBoundaries = completeWindowFixture();
+    Object.assign(mismatchedBoundaries, {
+      status: "active",
+      start_date: "2026-07-02",
+      end_date: "2026-07-14",
+      dates: mismatchedBoundaries.dates.slice(0, 2),
+      failure_date: null,
+      failure_reasons: []
+    });
+    mismatchedBoundaries.integrity.status = "incomplete";
+    mismatchedBoundaries.integrity.reason_codes = [];
+    sealWindow(mismatchedBoundaries);
+    expectInvalid(
+      validateReplayWindow(mismatchedBoundaries),
+      "WINDOW_START_DATE_MISMATCH",
+      "/start_date"
+    );
+    expectInvalid(
+      validateReplayWindow(mismatchedBoundaries),
+      "WINDOW_END_DATE_MISMATCH",
+      "/end_date"
+    );
+  });
+
+  it("requires failed end-date, failure-date, and integrity-reason parity", () => {
+    const endMismatch = failedWindowFixture();
+    endMismatch.end_date = "2026-07-09";
+    sealWindow(endMismatch);
+    expectInvalid(
+      validateReplayWindow(endMismatch),
+      "WINDOW_FAILED_END_DATE_MISMATCH",
+      "/end_date"
+    );
+
+    const reasonMismatch = failedWindowFixture();
+    reasonMismatch.integrity.reason_codes = ["behavior_drift"];
+    sealWindow(reasonMismatch);
+    expectInvalid(
+      validateReplayWindow(reasonMismatch),
+      "WINDOW_FAILURE_REASON_PARITY",
+      "/integrity/reason_codes"
+    );
+  });
+
   it("rejects a complete window containing a non-canonical retained date", () => {
     const windowManifest = mutateWindow((value) => {
       value.dates[7].canonical = false;
@@ -570,6 +656,33 @@ describe("Replay window validator", () => {
       validateReplayWindow(windowManifest),
       "PAYLOAD_HASH_MISMATCH",
       "/integrity/payload_sha256"
+    );
+  });
+
+  it("rejects a retained date without a deterministic replay match", () => {
+    const missingBinding = mutateWindow((value) => {
+      delete value.dates[7].replay_binding;
+    });
+    expectInvalid(
+      validateReplayWindow(missingBinding),
+      "SCHEMA_REQUIRED",
+      "/dates/7/replay_binding"
+    );
+
+    const mismatch = mutateWindow((value) => {
+      value.dates[7].replay_binding.deterministic = false;
+      value.dates[7].replay_binding.status = "mismatch";
+      value.dates[7].replay_binding.replayed_decision_sha256 = SHA_B;
+    });
+    expectInvalid(
+      validateReplayWindow(mismatch),
+      "WINDOW_REPLAY_NON_DETERMINISTIC",
+      "/dates/7/replay_binding/deterministic"
+    );
+    expectInvalid(
+      validateReplayWindow(mismatch),
+      "WINDOW_REPLAY_MISMATCH",
+      "/dates/7/replay_binding/status"
     );
   });
 });
@@ -983,6 +1096,14 @@ function completeWindowFixture() {
         validation_status: "success",
         receipt_status: "success",
         synced: true
+      },
+      replay_binding: {
+        engine_contract_version: 1,
+        input_corpus_payload_sha256: SHA_A,
+        expected_decision_sha256: SHA_C,
+        replayed_decision_sha256: SHA_C,
+        deterministic: true,
+        status: "match"
       }
     };
   });

@@ -260,6 +260,9 @@ describe("C5-B shadow-only production integration", () => {
       approvedAdditions.filter((relativePath) => !manifest.has(relativePath)),
       []
     );
+    assert.equal(manifest.size, 38);
+    assert.ok(manifest.has("automations/jobs/online_daily_v7_3_offline_replay.mjs"));
+    assert.ok(manifest.has("automations/jobs/online_daily_v7_3_replay_window.mjs"));
 
     const collectorClosure = relativeImportClosure([
       "automations/jobs/online_daily_v7_3_shadow_collector.mjs"
