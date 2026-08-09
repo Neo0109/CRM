@@ -41,6 +41,25 @@ describe("Replay Corpus Contract v1 schemas", () => {
     assert.equal(windowSchema.additionalProperties, false);
     assert.equal(windowSchema.properties.contract_version.const, 1);
     assert.deepEqual(windowSchema.properties.status.enum, ["active", "failed", "complete"]);
+    assert.ok(windowSchema.$defs.dateEntry.required.includes("replay_binding"));
+    assert.ok(windowSchema.$defs.dateEntry.required.includes("shadow_formal_candidate_ids"));
+    assert.equal(
+      windowSchema.$defs.replayBinding.properties.engine_contract_version.const,
+      1
+    );
+    const activeState = windowSchema.allOf.find((branch) => (
+      branch.if?.properties?.status?.const === "active"
+    ));
+    const failedState = windowSchema.allOf.find((branch) => (
+      branch.if?.properties?.status?.const === "failed"
+    ));
+    assert.equal(activeState.then.properties.dates.minItems, 1);
+    assert.equal(activeState.then.properties.dates.maxItems, 2);
+    assert.equal(
+      activeState.then.properties.integrity.properties.reason_codes.maxItems,
+      0
+    );
+    assert.equal(failedState.then.properties.dates.maxItems, 3);
   });
 
   it("allows the replay corpus self binding to defer its Git blob SHA", () => {
@@ -271,6 +290,18 @@ describe("Replay corpus validator", () => {
     );
   });
 
+  it("binds publication order priority to the frozen production source lane", () => {
+    const corpus = mutateCorpus((value) => {
+      value.candidates[0].ranking_inputs.publication_order.source_priority = 1;
+    });
+
+    expectInvalid(
+      validateReplayCorpus(corpus),
+      "PUBLICATION_ORDER_SOURCE_MISMATCH",
+      "/candidates/0/ranking_inputs/publication_order/source_priority"
+    );
+  });
+
   it("rejects payload and behavior hash mismatches", () => {
     const payloadMismatch = completeCorpusFixture();
     payloadMismatch.integrity.payload_sha256 = "0".repeat(64);
@@ -483,7 +514,7 @@ describe("Replay corpus validator", () => {
 });
 
 describe("Replay window validator", () => {
-  it("accepts a complete 15-day window and an explained failed partial window", () => {
+  it("accepts a complete three-day evidence window and an explained failed partial window", () => {
     const complete = completeWindowFixture();
     assert.deepEqual(validateReplayWindow(complete), { valid: true, errors: [] });
     assert.equal(computeReplayWindowPayloadSha256(complete), complete.integrity.payload_sha256);
@@ -492,7 +523,7 @@ describe("Replay window validator", () => {
     assert.deepEqual(validateReplayWindow(failed), { valid: true, errors: [] });
   });
 
-  it("rejects complete windows with fewer than 15 days or a date gap", () => {
+  it("rejects complete windows with fewer than three days, no shadow formal, or a date gap", () => {
     const shortWindow = mutateWindow((value) => {
       value.dates.pop();
     });
@@ -502,54 +533,133 @@ describe("Replay window validator", () => {
       "/dates"
     );
 
+    const zeroShadow = mutateWindow((value) => {
+      value.dates.forEach((entry) => {
+        entry.shadow_formal_candidate_ids = [];
+      });
+    });
+    expectInvalid(
+      validateReplayWindow(zeroShadow),
+      "WINDOW_SHADOW_FORMAL_REQUIRED",
+      "/dates"
+    );
+
     const gappedWindow = mutateWindow((value) => {
-      value.dates[7].report_date = "2026-07-20";
+      value.dates[2].report_date = "2026-07-20";
     });
     expectInvalid(
       validateReplayWindow(gappedWindow),
       "WINDOW_DATE_GAP",
-      "/dates/7/report_date"
+      "/dates/2/report_date"
+    );
+  });
+
+  it("rejects impossible active windows and binds active boundaries to retained dates", () => {
+    const emptyActive = completeWindowFixture();
+    Object.assign(emptyActive, {
+      status: "active",
+      start_date: "2026-07-01",
+      end_date: "2026-07-14",
+      dates: [],
+      failure_date: null,
+      failure_reasons: []
+    });
+    emptyActive.integrity.status = "incomplete";
+    emptyActive.integrity.reason_codes = ["behavior_drift"];
+    sealWindow(emptyActive);
+    expectInvalid(
+      validateReplayWindow(emptyActive),
+      "WINDOW_ACTIVE_DATE_COUNT",
+      "/dates"
+    );
+    expectInvalid(
+      validateReplayWindow(emptyActive),
+      "WINDOW_ACTIVE_INTEGRITY_REASONS",
+      "/integrity/reason_codes"
+    );
+
+    const mismatchedBoundaries = completeWindowFixture();
+    Object.assign(mismatchedBoundaries, {
+      status: "active",
+      start_date: "2026-07-02",
+      end_date: "2026-07-14",
+      dates: mismatchedBoundaries.dates.slice(0, 2),
+      failure_date: null,
+      failure_reasons: []
+    });
+    mismatchedBoundaries.integrity.status = "incomplete";
+    mismatchedBoundaries.integrity.reason_codes = [];
+    sealWindow(mismatchedBoundaries);
+    expectInvalid(
+      validateReplayWindow(mismatchedBoundaries),
+      "WINDOW_START_DATE_MISMATCH",
+      "/start_date"
+    );
+    expectInvalid(
+      validateReplayWindow(mismatchedBoundaries),
+      "WINDOW_END_DATE_MISMATCH",
+      "/end_date"
+    );
+  });
+
+  it("requires failed end-date, failure-date, and integrity-reason parity", () => {
+    const endMismatch = failedWindowFixture();
+    endMismatch.end_date = "2026-07-09";
+    sealWindow(endMismatch);
+    expectInvalid(
+      validateReplayWindow(endMismatch),
+      "WINDOW_FAILED_END_DATE_MISMATCH",
+      "/end_date"
+    );
+
+    const reasonMismatch = failedWindowFixture();
+    reasonMismatch.integrity.reason_codes = ["behavior_drift"];
+    sealWindow(reasonMismatch);
+    expectInvalid(
+      validateReplayWindow(reasonMismatch),
+      "WINDOW_FAILURE_REASON_PARITY",
+      "/integrity/reason_codes"
     );
   });
 
   it("rejects a complete window containing a non-canonical retained date", () => {
     const windowManifest = mutateWindow((value) => {
-      value.dates[7].canonical = false;
-      value.dates[7].capture_status = "corrupt";
-      value.dates[7].receipt_binding.generation_status = "failed";
-      value.dates[7].receipt_binding.validation_status = "failed";
-      value.dates[7].receipt_binding.receipt_status = "failed";
-      value.dates[7].receipt_binding.synced = false;
+      value.dates[1].canonical = false;
+      value.dates[1].capture_status = "corrupt";
+      value.dates[1].receipt_binding.generation_status = "failed";
+      value.dates[1].receipt_binding.validation_status = "failed";
+      value.dates[1].receipt_binding.receipt_status = "failed";
+      value.dates[1].receipt_binding.synced = false;
     });
 
     expectInvalid(
       validateReplayWindow(windowManifest),
       "WINDOW_NON_CANONICAL_DATE",
-      "/dates/7/canonical"
+      "/dates/1/canonical"
     );
   });
 
   it("rejects duplicate dates, behavior drift, and manual-only canonical runs", () => {
     const duplicateDate = mutateWindow((value) => {
-      value.dates[7].report_date = value.dates[6].report_date;
+      value.dates[2].report_date = value.dates[1].report_date;
     });
     expectInvalid(
       validateReplayWindow(duplicateDate),
       "WINDOW_DUPLICATE_DATE",
-      "/dates/7/report_date"
+      "/dates/2/report_date"
     );
 
     const drift = mutateWindow((value) => {
-      value.dates[7].behavior_contract_sha256 = SHA_C;
+      value.dates[1].behavior_contract_sha256 = SHA_C;
     });
     expectInvalid(
       validateReplayWindow(drift),
       "WINDOW_BEHAVIOR_DRIFT",
-      "/dates/7/behavior_contract_sha256"
+      "/dates/1/behavior_contract_sha256"
     );
 
     const manual = mutateWindow((value) => {
-      Object.assign(value.dates[7], {
+      Object.assign(value.dates[1], {
         event_name: "workflow_dispatch",
         run_slot: "manual",
         manual_only: true,
@@ -559,7 +669,7 @@ describe("Replay window validator", () => {
     expectInvalid(
       validateReplayWindow(manual),
       "WINDOW_MANUAL_CANONICAL",
-      "/dates/7/canonical"
+      "/dates/1/canonical"
     );
   });
 
@@ -570,6 +680,33 @@ describe("Replay window validator", () => {
       validateReplayWindow(windowManifest),
       "PAYLOAD_HASH_MISMATCH",
       "/integrity/payload_sha256"
+    );
+  });
+
+  it("rejects a retained date without a deterministic replay match", () => {
+    const missingBinding = mutateWindow((value) => {
+      delete value.dates[1].replay_binding;
+    });
+    expectInvalid(
+      validateReplayWindow(missingBinding),
+      "SCHEMA_REQUIRED",
+      "/dates/1/replay_binding"
+    );
+
+    const mismatch = mutateWindow((value) => {
+      value.dates[1].replay_binding.deterministic = false;
+      value.dates[1].replay_binding.status = "mismatch";
+      value.dates[1].replay_binding.replayed_decision_sha256 = SHA_B;
+    });
+    expectInvalid(
+      validateReplayWindow(mismatch),
+      "WINDOW_REPLAY_NON_DETERMINISTIC",
+      "/dates/1/replay_binding/deterministic"
+    );
+    expectInvalid(
+      validateReplayWindow(mismatch),
+      "WINDOW_REPLAY_MISMATCH",
+      "/dates/1/replay_binding/status"
     );
   });
 });
@@ -783,7 +920,11 @@ function candidateFixture() {
       official_demo: true
     },
     discovery_score: 77,
-    ranking_inputs: { source_weight: 2, freshness: 1 },
+    ranking_inputs: {
+      source_weight: 2,
+      freshness: 1,
+      publication_order: { source_priority: 0, source_index: 0 }
+    },
     qualification_affected_by_ranking: false,
     dedupe_boundary: {
       history_match: false,
@@ -855,6 +996,7 @@ function addSecondAttemptedCandidate(value) {
   candidate.steam_app_id = "200";
   candidate.dedupe_key = "steam:200";
   candidate.origin_signal_ids = ["signal:steam:200", "signal:media:200"];
+  candidate.ranking_inputs.publication_order.source_index = 1;
   candidate.dedupe_boundary.audit_digest = SHA_B;
   candidate.second_pass.transaction_id = "transaction:two";
   value.candidates.push(candidate);
@@ -960,7 +1102,7 @@ function sealCorpus(corpus) {
 
 function completeWindowFixture() {
   const behaviorHash = computeBehaviorContractSha256(BEHAVIOR_MANIFEST);
-  const dates = Array.from({ length: 15 }, (_, index) => {
+  const dates = Array.from({ length: 3 }, (_, index) => {
     const day = String(index + 1).padStart(2, "0");
     return {
       report_date: `2026-07-${day}`,
@@ -975,6 +1117,7 @@ function completeWindowFixture() {
       corpus_path: `data/sourcing_replay_corpus/2026-07-${day}/900${day}-1-afternoon.json`,
       git_blob_sha: BLOB_A,
       payload_sha256: SHA_A,
+      shadow_formal_candidate_ids: index === 1 ? ["candidate:one"] : [],
       receipt_binding: {
         path: `data/automation_runs/2026-07-${day}-afternoon.json`,
         git_blob_sha: BLOB_B,
@@ -983,16 +1126,24 @@ function completeWindowFixture() {
         validation_status: "success",
         receipt_status: "success",
         synced: true
+      },
+      replay_binding: {
+        engine_contract_version: 1,
+        input_corpus_payload_sha256: SHA_A,
+        expected_decision_sha256: SHA_C,
+        replayed_decision_sha256: SHA_C,
+        deterministic: true,
+        status: "match"
       }
     };
   });
 
   return sealWindow({
     contract_version: 1,
-    window_id: "2026-07-01_2026-07-15",
+    window_id: "2026-07-01_2026-07-03",
     timezone: "Asia/Shanghai",
     start_date: "2026-07-01",
-    end_date: "2026-07-15",
+    end_date: "2026-07-03",
     status: "complete",
     corpus_contract_version: 1,
     behavior_contract_sha256: behaviorHash,
@@ -1014,9 +1165,9 @@ function completeWindowFixture() {
 function failedWindowFixture() {
   const value = completeWindowFixture();
   value.status = "failed";
-  value.end_date = "2026-07-08";
-  value.dates = value.dates.slice(0, 7);
-  value.failure_date = "2026-07-08";
+  value.end_date = "2026-07-03";
+  value.dates = value.dates.slice(0, 2);
+  value.failure_date = "2026-07-03";
   value.failure_reasons = ["missing_date"];
   value.integrity.status = "incomplete";
   value.integrity.reason_codes = ["missing_date"];

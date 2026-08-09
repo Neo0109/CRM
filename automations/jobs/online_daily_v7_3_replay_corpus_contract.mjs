@@ -56,14 +56,19 @@ const CORPUS_REASON_CODES = [
 ];
 const WINDOW_FAILURE_REASONS = [
   "missing_date",
+  "no_canonical",
   "duplicate_date",
   "date_gap",
   "behavior_drift",
   "corpus_contract_drift",
+  "contract_drift",
   "manual_only",
   "corpus_incomplete",
   "receipt_unhealthy",
-  "payload_mismatch"
+  "payload_mismatch",
+  "artifact_mismatch",
+  "replay_mismatch",
+  "evidence_coverage_insufficient"
 ];
 const SHA256_PATTERN = /^[0-9a-f]{64}$/;
 const GIT_SHA_PATTERN = /^[0-9a-f]{40}$/;
@@ -881,6 +886,12 @@ function validateCandidate(value, path, errors) {
   validateJsonObject(value.normalized_candidate, appendPath(path, "normalized_candidate"), errors);
   validateNumber(value.discovery_score, appendPath(path, "discovery_score"), errors);
   validateJsonObject(value.ranking_inputs, appendPath(path, "ranking_inputs"), errors);
+  validatePublicationOrder(
+    value.ranking_inputs?.publication_order,
+    appendPath(appendPath(path, "ranking_inputs"), "publication_order"),
+    value.source_type,
+    errors
+  );
   validateConst(
     value.qualification_affected_by_ranking,
     false,
@@ -892,6 +903,22 @@ function validateCandidate(value, path, errors) {
   validateFirstPass(value.first_pass, appendPath(path, "first_pass"), errors);
   validateCandidateSecondPass(value.second_pass, appendPath(path, "second_pass"), errors);
   validatePublication(value.publication, appendPath(path, "publication"), errors);
+}
+
+function validatePublicationOrder(value, path, sourceType, errors) {
+  const fields = ["source_priority", "source_index"];
+  if (!validateClosedObject(value, path, fields, fields, errors)) return;
+  validateInteger(value.source_priority, appendPath(path, "source_priority"), errors, 0);
+  validateInteger(value.source_index, appendPath(path, "source_index"), errors, 0);
+  const expectedPriority = sourceType === "steam" ? 1 : 0;
+  if (value.source_priority !== expectedPriority) {
+    addError(
+      errors,
+      "PUBLICATION_ORDER_SOURCE_MISMATCH",
+      appendPath(path, "source_priority"),
+      "publication source priority must match the frozen production source lane"
+    );
+  }
 }
 
 function validateDedupeBoundary(value, path, errors) {
@@ -1215,7 +1242,9 @@ function validateWindowDates(value, path, errors) {
       "corpus_path",
       "git_blob_sha",
       "payload_sha256",
-      "receipt_binding"
+      "shadow_formal_candidate_ids",
+      "receipt_binding",
+      "replay_binding"
     ];
     if (!validateClosedObject(item, itemPath, fields, fields, errors)) return;
     validateDate(item.report_date, appendPath(itemPath, "report_date"), errors);
@@ -1245,7 +1274,13 @@ function validateWindowDates(value, path, errors) {
     validateNonEmptyString(item.corpus_path, appendPath(itemPath, "corpus_path"), errors);
     validatePattern(item.git_blob_sha, GIT_SHA_PATTERN, appendPath(itemPath, "git_blob_sha"), errors);
     validateSha256(item.payload_sha256, appendPath(itemPath, "payload_sha256"), errors);
+    validateStringArray(
+      item.shadow_formal_candidate_ids,
+      appendPath(itemPath, "shadow_formal_candidate_ids"),
+      errors
+    );
     validateReceiptBinding(item.receipt_binding, appendPath(itemPath, "receipt_binding"), errors);
+    validateReplayBinding(item.replay_binding, appendPath(itemPath, "replay_binding"), errors);
   });
 }
 
@@ -1284,6 +1319,63 @@ function validateReceiptBinding(value, path, errors) {
   validateBoolean(value.synced, appendPath(path, "synced"), errors);
 }
 
+function validateReplayBinding(value, path, errors) {
+  const fields = [
+    "engine_contract_version",
+    "input_corpus_payload_sha256",
+    "expected_decision_sha256",
+    "replayed_decision_sha256",
+    "deterministic",
+    "status"
+  ];
+  if (!validateClosedObject(value, path, fields, fields, errors)) return;
+  validateConst(
+    value.engine_contract_version,
+    1,
+    appendPath(path, "engine_contract_version"),
+    errors
+  );
+  validateSha256(
+    value.input_corpus_payload_sha256,
+    appendPath(path, "input_corpus_payload_sha256"),
+    errors
+  );
+  validateSha256(
+    value.expected_decision_sha256,
+    appendPath(path, "expected_decision_sha256"),
+    errors
+  );
+  validateSha256(
+    value.replayed_decision_sha256,
+    appendPath(path, "replayed_decision_sha256"),
+    errors
+  );
+  if (value.deterministic !== true) {
+    addError(
+      errors,
+      "WINDOW_REPLAY_NON_DETERMINISTIC",
+      appendPath(path, "deterministic"),
+      "canonical replay must be deterministic"
+    );
+  }
+  if (value.status !== "match") {
+    addError(
+      errors,
+      "WINDOW_REPLAY_MISMATCH",
+      appendPath(path, "status"),
+      "canonical replay must match the stored decision view"
+    );
+  }
+  if (value.expected_decision_sha256 !== value.replayed_decision_sha256) {
+    addError(
+      errors,
+      "WINDOW_REPLAY_HASH_MISMATCH",
+      appendPath(path, "replayed_decision_sha256"),
+      "stored and replayed decision hashes must be equal"
+    );
+  }
+}
+
 function validateRejectedAttempts(value, path, errors) {
   if (!validateArray(value, path, errors)) return;
   value.forEach((item, index) => {
@@ -1299,11 +1391,17 @@ function validateRejectedAttempts(value, path, errors) {
       [
         "manual_only",
         "morning_only",
+        "watchdog_only",
         "incomplete",
         "corrupt",
         "unreplayable",
-        "delivery_unhealthy",
-        "superseded_automatic_attempt"
+          "delivery_unhealthy",
+          "superseded_automatic_attempt",
+          "rerun",
+          "artifact_mismatch",
+          "replay_mismatch",
+          "contract_drift",
+          "behavior_drift"
       ],
       appendPath(itemPath, "reason_code"),
       errors
@@ -2105,12 +2203,12 @@ function validateWindowState(windowManifest, errors) {
     ? windowManifest.failure_reasons
     : [];
   if (windowManifest.status === "complete") {
-    if (dates.length !== 15) {
+    if (dates.length !== 3) {
       addError(
         errors,
         "WINDOW_COMPLETE_DATE_COUNT",
         "/dates",
-        "complete window must contain exactly 15 dates"
+        "complete window must contain exactly 3 dates"
       );
     }
     if (windowManifest.failure_date !== null || failureReasons.length > 0) {
@@ -2138,7 +2236,23 @@ function validateWindowState(windowManifest, errors) {
         "complete window cannot contain integrity reasons"
       );
     }
+    if (!dates.some((entry) => entry?.shadow_formal_candidate_ids?.length > 0)) {
+      addError(
+        errors,
+        "WINDOW_SHADOW_FORMAL_REQUIRED",
+        "/dates",
+        "complete window requires at least one distinct shadow-formal candidate"
+      );
+    }
   } else if (windowManifest.status === "failed") {
+    if (dates.length > 3) {
+      addError(
+        errors,
+        "WINDOW_FAILED_DATE_COUNT",
+        "/dates",
+        "failed window may retain at most 3 dates"
+      );
+    }
     if (!isValidDateString(windowManifest.failure_date)) {
       addError(
         errors,
@@ -2163,13 +2277,32 @@ function validateWindowState(windowManifest, errors) {
         "failed window cannot have complete integrity"
       );
     }
+    if (windowManifest.end_date !== windowManifest.failure_date) {
+      addError(
+        errors,
+        "WINDOW_FAILED_END_DATE_MISMATCH",
+        "/end_date",
+        "failed window end_date must equal failure_date"
+      );
+    }
+    const integrityReasons = Array.isArray(windowManifest.integrity?.reason_codes)
+      ? windowManifest.integrity.reason_codes
+      : [];
+    if (!sameStringSet(integrityReasons, failureReasons)) {
+      addError(
+        errors,
+        "WINDOW_FAILURE_REASON_PARITY",
+        "/integrity/reason_codes",
+        "failed window integrity reasons must equal failure_reasons"
+      );
+    }
   } else if (windowManifest.status === "active") {
-    if (dates.length > 14) {
+    if (dates.length < 1 || dates.length > 2) {
       addError(
         errors,
         "WINDOW_ACTIVE_DATE_COUNT",
         "/dates",
-        "active window must become complete or failed after day 15"
+        "active window must retain 1 to 2 consecutive dates"
       );
     }
     if (windowManifest.failure_date !== null || failureReasons.length > 0) {
@@ -2186,6 +2319,15 @@ function validateWindowState(windowManifest, errors) {
         "WINDOW_ACTIVE_INTEGRITY_STATUS",
         "/integrity/status",
         "active window has incomplete integrity until it closes"
+      );
+    }
+    if (Array.isArray(windowManifest.integrity?.reason_codes)
+      && windowManifest.integrity.reason_codes.length > 0) {
+      addError(
+        errors,
+        "WINDOW_ACTIVE_INTEGRITY_REASONS",
+        "/integrity/reason_codes",
+        "active window cannot contain integrity reasons"
       );
     }
   }
@@ -2247,12 +2389,15 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "manual-only recovery cannot be a canonical run"
       );
     }
-    if (entry?.canonical === true && entry.run_slot === "morning") {
+    if (
+      entry?.canonical === true
+      && (entry.event_name !== "schedule" || entry.run_slot !== "afternoon")
+    ) {
       addError(
         errors,
         "WINDOW_INELIGIBLE_CANONICAL_SLOT",
         `/dates/${index}/run_slot`,
-        "morning runs cannot be canonical"
+        "only natural scheduled afternoon runs can be canonical"
       );
     }
     validateCanonicalDateHealth(entry, index, errors);
@@ -2278,6 +2423,34 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "start_date must match the first retained date"
       );
     }
+    if (windowManifest.status === "failed") {
+      const coverageFailure = Array.isArray(windowManifest.failure_reasons)
+        && windowManifest.failure_reasons.includes("evidence_coverage_insufficient");
+      const expectedFailureDate = coverageFailure
+        ? dates[dates.length - 1]?.report_date
+        : nextDateString(dates[dates.length - 1]?.report_date);
+      if (expectedFailureDate && windowManifest.failure_date !== expectedFailureDate) {
+        addError(
+          errors,
+          "WINDOW_FAILURE_DATE_SEQUENCE",
+          "/failure_date",
+          `expected ${expectedFailureDate}`
+        );
+      }
+      if (coverageFailure) {
+        const shadowFormalIds = new Set(
+          dates.flatMap((entry) => entry?.shadow_formal_candidate_ids ?? [])
+        );
+        if (dates.length !== 3 || shadowFormalIds.size > 0) {
+          addError(
+            errors,
+            "WINDOW_EVIDENCE_COVERAGE_FAILURE_INVALID",
+            "/failure_reasons",
+            "evidence coverage failure requires three retained zero-shadow dates"
+          );
+        }
+      }
+    }
     if (
       windowManifest.status !== "failed"
       && windowManifest.end_date !== dates[dates.length - 1]?.report_date
@@ -2289,6 +2462,16 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "end_date must match the last retained date"
       );
     }
+  } else if (
+    windowManifest.status === "failed"
+    && windowManifest.start_date !== windowManifest.failure_date
+  ) {
+    addError(
+      errors,
+      "WINDOW_FAILED_START_DATE_MISMATCH",
+      "/start_date",
+      "failed window without retained dates must start on failure_date"
+    );
   }
 
   if (canonical) {
@@ -2325,6 +2508,12 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
   }
 }
 
+function sameStringSet(left, right) {
+  if (left.length !== right.length) return false;
+  const rightSet = new Set(right);
+  return left.every((value) => rightSet.has(value));
+}
+
 function validateCanonicalDateHealth(entry, index, errors) {
   if (entry.capture_status !== "complete") {
     addError(
@@ -2347,6 +2536,16 @@ function validateCanonicalDateHealth(entry, index, errors) {
       "WINDOW_CANONICAL_RECEIPT_UNHEALTHY",
       `/dates/${index}/receipt_binding`,
       "canonical date requires generation, validation, receipt, and sync success"
+    );
+  }
+  const replay = entry.replay_binding;
+  if (!isPlainObject(replay)) return;
+  if (replay.input_corpus_payload_sha256 !== entry.payload_sha256) {
+    addError(
+      errors,
+      "WINDOW_REPLAY_INPUT_HASH_MISMATCH",
+      `/dates/${index}/replay_binding/input_corpus_payload_sha256`,
+      "replay input hash must match the retained corpus payload hash"
     );
   }
 }

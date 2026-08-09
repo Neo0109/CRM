@@ -260,6 +260,9 @@ describe("C5-B shadow-only production integration", () => {
       approvedAdditions.filter((relativePath) => !manifest.has(relativePath)),
       []
     );
+    assert.equal(manifest.size, 38);
+    assert.ok(manifest.has("automations/jobs/online_daily_v7_3_offline_replay.mjs"));
+    assert.ok(manifest.has("automations/jobs/online_daily_v7_3_replay_window.mjs"));
 
     const collectorClosure = relativeImportClosure([
       "automations/jobs/online_daily_v7_3_shadow_collector.mjs"
@@ -281,6 +284,62 @@ describe("C5-B shadow-only production integration", () => {
     );
   });
 
+  it("freezes production media order before dedupe-sorted corpus publication replay", async () => {
+    const retained = publicationMediaCandidate(
+      "界世奇传河星海山",
+      "https://media.example.test/retained"
+    );
+    const duplicate = publicationMediaCandidate(
+      "山海星河传奇世界",
+      "https://media.example.test/duplicate"
+    );
+    const core = await shadowCollector.collectV73ShadowCore({
+      reportDate: "2026-08-03",
+      capturedAt: "2026-08-03T14:30:00+08:00",
+      runContext: {
+        event_name: "schedule",
+        run_slot: "afternoon",
+        workflow_run_id: "9110",
+        run_attempt: 1,
+        run_url: "https://github.com/Neo0109/CRM/actions/runs/9110",
+        input_commit_sha: "a".repeat(40),
+        node_version: "22.17.0",
+        generation_performed: true,
+        forced: false
+      },
+      steamCandidates: [],
+      mediaCandidates: [retained, duplicate],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest: {
+        "automations/jobs/online_daily_v7_3_shadow_collector.mjs": "b".repeat(40),
+        "automations/jobs/online_daily_v7_3_offline_replay.mjs": "c".repeat(40)
+      },
+      provider: async () => {
+        throw new Error("already-qualified publication candidates must not call a provider");
+      }
+    });
+
+    assert.deepEqual(core.candidates.map((candidate) => candidate.project), [
+      duplicate.project,
+      retained.project
+    ]);
+    const stored = new Map(
+      core.candidates.map((candidate) => [candidate.project, candidate])
+    );
+    assert.deepEqual(stored.get(retained.project).ranking_inputs.publication_order, {
+      source_priority: 0,
+      source_index: 0
+    });
+    assert.deepEqual(stored.get(duplicate.project).ranking_inputs.publication_order, {
+      source_priority: 0,
+      source_index: 1
+    });
+    assert.equal(stored.get(retained.project).publication.shadow_push_pool, true);
+    assert.equal(stored.get(duplicate.project).publication.shadow_push_pool, false);
+
+  });
+
   it("contains no activation acceptance or return flow from shadow into production", () => {
     const replacementTest = read("../test/onlineDailyV73SecondPassOrchestrator.test.mjs");
     assert.doesNotMatch(replacementTest, /RULE_VERSION\s*,?\s*V73_OBTAINABLE_EVIDENCE_RULE_VERSION/);
@@ -293,6 +352,50 @@ describe("C5-B shadow-only production integration", () => {
 
 function read(relativePath) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}
+
+function publicationMediaCandidate(project, url) {
+  return {
+    project,
+    links: [url],
+    contact_methods: [{ type: "website", url: `${url}/contact` }],
+    _mediaItem: { title: project, summary: "Independent media signal", link: url },
+    _indieAdmissionEvidence: {
+      project,
+      steam_app_id: null,
+      dedupe_key: `project:${project}`,
+      region: "domestic",
+      release_state: "prelaunch",
+      release_window: "over_60",
+      early_access_state: "no",
+      publisher_occupancy: "clear",
+      narrative_state: "no",
+      india_team_state: "no",
+      official_demo_evidence: [],
+      official_gameplay_evidence: [{
+        type: "official_gameplay",
+        url: `${url}/gameplay`
+      }],
+      quality_proofs: [
+        {
+          type: "official_festival_selection",
+          source_id: "media-one",
+          source_role: "media",
+          value: "review one",
+          url: `${url}/review-one`
+        },
+        {
+          type: "trusted_creator_playtest",
+          source_id: "creator-two",
+          source_role: "trusted_creator",
+          value: "review two",
+          url: `${url}/review-two`
+        }
+      ],
+      business_entrypoints: [{ type: "website", url: `${url}/contact` }],
+      china_bilibili_value: "系统型玩法适合机制讲解、挑战栏目和长期社区运营。"
+    }
+  };
 }
 
 function readRepo(relativePath) {

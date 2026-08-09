@@ -59,8 +59,10 @@ export const C5B_BEHAVIOR_DEPENDENCY_PATHS = Object.freeze([
   "automations/jobs/online_daily_v7_2_regular_admission.mjs",
   "automations/jobs/online_daily_v7_indie_admission.mjs",
   "automations/jobs/online_daily_v7_3_obtainable_evidence.mjs",
+  "automations/jobs/online_daily_v7_3_offline_replay.mjs",
   "automations/jobs/online_daily_v7_3_regular_admission.mjs",
   "automations/jobs/online_daily_v7_3_replay_corpus_contract.mjs",
+  "automations/jobs/online_daily_v7_3_replay_window.mjs",
   "automations/jobs/online_daily_v7_3_second_pass_orchestrator.mjs",
   "automations/jobs/online_daily_v7_3_shadow_candidate_audit.mjs",
   "automations/jobs/online_daily_v7_3_shadow_collector.mjs",
@@ -608,7 +610,8 @@ function buildDecisionUniverse({
         action_count: firstAdmission.lane_results?.indie_prelaunch?.next_evidence_actions?.length ?? 0,
         discovery_score: Number(entry.discoveryScore) || 0,
         dedupe_key: entry.dedupeKey,
-        source_type: entry.sourceTypes.size > 1 ? "multi_source" : [...entry.sourceTypes][0]
+        source_type: entry.sourceTypes.size > 1 ? "multi_source" : [...entry.sourceTypes][0],
+        publication_order: publicationOrder(entry)
       },
       qualification_affected_by_ranking: false,
       dedupe_boundary: {
@@ -667,12 +670,16 @@ function addUniverseEntries(entries, sourceType, before, after, candidateStates)
       originSignalIds: new Set(),
       beforeByType: {},
       afterByType: {},
+      sourceIndexes: {},
       state: candidateStates.get(dedupeKey) ?? null,
       project: evidence.project,
       steamAppId: evidence.steam_app_id,
       discoveryScore: Number(candidate?.score ?? candidate?.media_score ?? 0)
     };
     existing.sourceTypes.add(sourceType);
+    if (!Number.isInteger(existing.sourceIndexes[sourceType])) {
+      existing.sourceIndexes[sourceType] = index;
+    }
     existing.originSignalIds.add(originSignalId(sourceType, candidate, evidence));
     existing.beforeByType[sourceType] = candidate;
     existing.afterByType[sourceType] = after[index] ?? candidate;
@@ -1115,6 +1122,13 @@ function normalizedCandidate(entry, evidence = {}) {
     narrative_state: stringOrNull(evidence.narrative_state),
     india_team_state: stringOrNull(evidence.india_team_state)
   };
+}
+
+function publicationOrder(entry) {
+  if (Number.isInteger(entry.sourceIndexes.media)) {
+    return { source_priority: 0, source_index: entry.sourceIndexes.media };
+  }
+  return { source_priority: 1, source_index: entry.sourceIndexes.steam };
 }
 
 function privacyStrippedLead(lead, candidateId) {
