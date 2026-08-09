@@ -69,6 +69,59 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(collector.isC5BShadowCaptureEligible({ event_name: "schedule", run_slot: "morning" }), false);
   });
 
+  it("projects private candidate audit state out of the persisted pending core", async () => {
+    requireCollector("runC5BShadowCollectorSafely");
+    const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-private-state-"));
+    const candidate = steamCandidate(nearMissEvidence(15));
+    const dedupeKey = `steam:${candidate.appId}`;
+    const candidateStates = new Map([[dedupeKey, {
+      first_seen: reportDate,
+      last_seen: reportDate,
+      enrichment_status: "success",
+      enrichment_attempts: 1,
+      last_attempted_at: capturedAt,
+      last_enriched_at: capturedAt,
+      next_retry_date: null,
+      scheduler_lane: "new",
+      evidence_snapshot: {
+        contract_version: 1,
+        captured_at: capturedAt,
+        expires_on: "2026-08-10",
+        dedupe_key: dedupeKey,
+        evidence: {
+          contactMethods: [{
+            type: "email",
+            value: "private-owner@c5b-fixture.example",
+            note: "candidate audit snapshot only"
+          }]
+        }
+      }
+    }]]);
+
+    const capture = await collector.runC5BShadowCollectorSafely({
+      rootDir,
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9015" }),
+      steamCandidates: [candidate],
+      mediaCandidates: [],
+      mediaSignals: [],
+      candidateStates,
+      steamEnrichmentMetrics: { steam_candidates_enriched: 1 },
+      behaviorManifest,
+      provider: async () => ({ quality_proofs: [secondQualityProof] })
+    });
+
+    assert.equal(capture.status, "pending", capture.reason);
+    assert.ok(existsSync(capture.pending_path));
+    const pending = JSON.parse(await readFile(capture.pending_path, "utf8"));
+    assert.equal("shadow_candidate_artifact" in pending, false);
+    assert.doesNotMatch(
+      JSON.stringify(pending),
+      /contactMethods|private-owner@c5b-fixture\.example/
+    );
+  });
+
   it("captures the full cloned universe while binding a deterministic max-12 second pass", async () => {
     requireCollector("collectV73ShadowCore");
     const steamCandidates = Array.from({ length: 14 }, (_, index) => (
