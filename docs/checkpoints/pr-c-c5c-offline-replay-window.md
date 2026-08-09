@@ -276,3 +276,61 @@ Create one docs-only checkpoint commit with parent `b32627661ea9d6f9c809d8fd113d
 - Local CRM checkout/worktree: not used or modified
 
 This recovery checkpoint is delivery evidence for the draft PR boundary only. It is not merge, deployment, production replay/write, observation, or V7.3 Activation authority.
+
+## Three-Day Natural-Afternoon Evidence Gate — 2026-08-09
+
+### Current Goal
+
+Reconcile Draft PR #110 with `main` after #111, replace the fixed fifteen-day replay window with a fail-closed three-consecutive-natural-afternoon gate, and require at least one distinct shadow-formal project before the window can complete. Keep this phase confined to C5-C replay-window code, schema, tests, and this checkpoint.
+
+### Completed
+
+- Re-read remote authority: `main=96afd976bbab7e713e29c8985b0a07c540167d86`; PR #111 is merged and its Build is successful.
+- Re-read Draft PR #110 at old head `0b1707e7b83ddbbcffc22272a294291eb1da0fde`; it was mergeable but based on stale `main=4707887aa00a8ca453cebcc187e6bb6bea3f0f85`.
+- Merged current `main` into `codex/c5c-gate-a-reconciliation` through the GitHub API. The aligned remote head is `30115ca9f77c47224b84fb98dcf3722f62a90ec7`.
+- Opened a disposable exact-head API snapshot under `/tmp` for TDD. The user's dirty local CRM checkout remains untouched.
+- Confirmed the old implementation still admits watchdog fallback and completes solely at fifteen retained dates without a shadow-formal reachability proof.
+
+### Remaining
+
+- Add RED coverage for natural-afternoon-only selection, two-day active state, three-day completion with a shadow formal, and third-day zero-shadow failure.
+- Implement the three-day window contract and evidence-coverage failure semantics.
+- Run focused tests, V7.3 suites, Daily V4, schema validation, `verify:all`, and remote exact-head CI.
+- Update Draft PR #110 body and this checkpoint with exact verification evidence.
+
+### Next Action
+
+Patch tests first and run the focused replay-window suite to capture the expected RED before changing production code.
+
+### Git Status
+
+- Remote `main`: `96afd976bbab7e713e29c8985b0a07c540167d86`
+- Draft PR: #110, branch `codex/c5c-gate-a-reconciliation`
+- Aligned branch head: `30115ca9f77c47224b84fb98dcf3722f62a90ec7`
+- Local CRM checkout/worktree: preserved and not modified
+- Disposable TDD snapshot: `/tmp/crm-c5c-3day-aligned.MjHWJi/repo`
+- Production authority: V7.2
+- Explicit non-goals for this phase: workflow trigger changes, API/UI, sourcing-rule activation, Supabase schema/write semantics, manual workflow dispatch, production writes, and Activation
+
+### Implementation And Disposable Validation
+
+- RED captured at aligned head: the focused suite failed exactly because watchdog remained eligible, a three-day window remained active, and a third zero-shadow day did not fail.
+- GREEN implementation admits only natural `schedule` + `afternoon` corpus runs into the canonical window; watchdog remains available to C5-B capture but cannot substitute for a natural acceptance day.
+- Each retained date binds the distinct candidate IDs whose replayed publication has `shadow_push_pool=true`.
+- Days one and two remain active. Day three completes only when the retained union contains at least one shadow-formal candidate; otherwise it fails that same day with `evidence_coverage_insufficient` and cannot keep accumulating.
+- Behavior SHA drift, privacy/schema failure, artifact mismatch, offline replay mismatch, unhealthy generation/validation/receipt, or `synced!=true` remain fail-closed through the existing selector/replay contract.
+- Focused replay-window suite: 9/9 GREEN.
+- All V7.3 suites: 105/105 GREEN.
+- Daily V4 full suite: 286/286 GREEN. The first dependency-light attempt exposed the repository's undeclared test-only `ajv` requirement; `ajv` was added only to disposable `node_modules`, and `package.json` was restored byte-for-byte before diff validation.
+- `verify:all`: the first 15 declared tasks GREEN. Its final `git diff --check` cannot run inside an API tarball because no `.git` directory exists; the equivalent six-path `git diff --no-index --check` is GREEN.
+- Exact disposable delta versus aligned head is six paths only: replay-window implementation, replay-corpus/window contract validator, their two focused tests, window JSON schema, and this checkpoint. No workflow, production data, API/UI, rules, package, lockfile, or Supabase path changed.
+
+### Remote Delivery Remaining
+
+- Create one GitHub API commit on top of unchanged remote head `30115ca9f77c47224b84fb98dcf3722f62a90ec7` and fast-forward only `codex/c5c-gate-a-reconciliation`.
+- Update Draft PR #110 description from the old fifteen-day contract to this three-day evidence gate.
+- Wait for exact-head Build, re-read the remote compare and PR state, then stop at the phase boundary.
+
+### Remote Delivery Next Action
+
+Re-read the branch head, create the six-path tree/commit only if it is still `30115ca9f77c47224b84fb98dcf3722f62a90ec7`, and let GitHub CI run on the real checkout. Do not mark the PR ready or merge it.

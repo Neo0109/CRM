@@ -15,6 +15,8 @@ import {
   buildReplayWindowSequence,
   selectCanonicalReplayRun
 } from "../jobs/online_daily_v7_3_replay_window.mjs";
+import { evaluateV73IndiePrelaunchAdmission } from "../jobs/online_daily_v7_3_obtainable_evidence.mjs";
+import { evaluateChinaJointAdmission } from "../jobs/online_daily_v7_2_china_joint_admission.mjs";
 
 const SHA_A = "a".repeat(64);
 const SHA_B = "b".repeat(64);
@@ -27,7 +29,7 @@ const BEHAVIOR_MANIFEST = {
 const BEHAVIOR_HASH = computeBehaviorContractSha256(BEHAVIOR_MANIFEST);
 
 describe("C5-C canonical replay-run selector", () => {
-  it("prefers healthy afternoon, falls back to watchdog, and uses stable same-tier order", () => {
+  it("uses only a healthy natural afternoon and rejects watchdog fallback", () => {
     const reportDate = "2026-08-04";
     const result = selectCanonicalReplayRun({
       reportDate,
@@ -43,7 +45,7 @@ describe("C5-C canonical replay-run selector", () => {
     assert.equal(result.canonical_entry.corpus_id, `${reportDate}/9101/1/afternoon`);
     assert.deepEqual(
       result.rejected_attempts.map((item) => item.reason_code),
-      ["superseded_automatic_attempt", "superseded_automatic_attempt"]
+      ["superseded_automatic_attempt", "watchdog_only"]
     );
 
     const fallback = selectCanonicalReplayRun({
@@ -54,9 +56,10 @@ describe("C5-C canonical replay-run selector", () => {
         attempt({ reportDate, runSlot: "watchdog", workflowRunId: 9200 })
       ]
     });
-    assert.equal(fallback.status, "selected");
-    assert.equal(fallback.canonical_entry.run_slot, "watchdog");
+    assert.equal(fallback.status, "failed");
+    assert.equal(fallback.canonical_entry, null);
     assert.ok(fallback.rejected_attempts.some((item) => item.reason_code === "delivery_unhealthy"));
+    assert.ok(fallback.rejected_attempts.some((item) => item.reason_code === "watchdog_only"));
   });
 
   it("excludes morning, workflow_dispatch, manual, rerun, and incomplete corpus", () => {
@@ -123,27 +126,64 @@ describe("C5-C canonical replay-run selector", () => {
   });
 });
 
-describe("C5-C 15-natural-day replay windows", () => {
-  it("handles month-end, year-end, and leap-day sequences", () => {
+describe("C5-C three-natural-afternoon-day evidence windows", () => {
+  it("handles month-end, year-end, and leap-day sequences when one distinct project converts", () => {
     for (const startDate of ["2026-01-25", "2026-12-25", "2028-02-20"]) {
-      const days = naturalDates(startDate, 15).map((reportDate, index) => ({
+      const days = naturalDates(startDate, 3).map((reportDate, index) => ({
         report_date: reportDate,
-        attempts: [attempt({ reportDate, workflowRunId: 10_000 + index })]
+        attempts: [attempt({
+          reportDate,
+          workflowRunId: 10_000 + index,
+          withShadowFormal: index === 1
+        })]
       }));
       const result = buildReplayWindowSequence({
         days,
         expectedBehaviorContractSha256: BEHAVIOR_HASH
       });
       assert.equal(result.current_window.status, "complete");
-      assert.equal(result.current_window.dates.length, 15);
+      assert.equal(result.current_window.dates.length, 3);
+      assert.deepEqual(
+        result.current_window.dates.flatMap((entry) => entry.shadow_formal_candidate_ids),
+        ["steam:100"]
+      );
       assert.deepEqual(validateReplayWindow(result.current_window), { valid: true, errors: [] });
     }
   });
 
+  it("remains active before three dates and fails on the third zero-shadow day", () => {
+    const firstTwo = buildReplayWindowSequence({
+      expectedBehaviorContractSha256: BEHAVIOR_HASH,
+      days: naturalDates("2026-08-01", 2).map((reportDate, index) => ({
+        report_date: reportDate,
+        attempts: [attempt({ reportDate, workflowRunId: 15_000 + index })]
+      }))
+    });
+    assert.equal(firstTwo.current_window.status, "active");
+    assert.equal(firstTwo.current_window.dates.length, 2);
+
+    const third = advanceReplayWindow({
+      window: firstTwo.current_window,
+      reportDate: "2026-08-03",
+      attempts: [attempt({ reportDate: "2026-08-03", workflowRunId: 15_002 })],
+      expectedBehaviorContractSha256: BEHAVIOR_HASH
+    });
+    assert.equal(third.transition, "failed");
+    assert.equal(third.window.status, "failed");
+    assert.equal(third.window.failure_date, "2026-08-03");
+    assert.equal(third.window.dates.length, 3);
+    assert.deepEqual(third.window.failure_reasons, ["evidence_coverage_insufficient"]);
+    assert.deepEqual(validateReplayWindow(third.window), { valid: true, errors: [] });
+  });
+
   it("fails closed before the complete-window fast path when persisted state is invalid", () => {
-    const days = naturalDates("2026-08-01", 15).map((reportDate, index) => ({
+    const days = naturalDates("2026-08-01", 3).map((reportDate, index) => ({
       report_date: reportDate,
-      attempts: [attempt({ reportDate, workflowRunId: 20_000 + index })]
+      attempts: [attempt({
+        reportDate,
+        workflowRunId: 20_000 + index,
+        withShadowFormal: index === 0
+      })]
     }));
     const completed = buildReplayWindowSequence({
       days,
@@ -156,7 +196,7 @@ describe("C5-C 15-natural-day replay windows", () => {
     assert.throws(
       () => advanceReplayWindow({
         window: tampered,
-        reportDate: "2026-08-16",
+        reportDate: "2026-08-04",
         attempts: [],
         expectedBehaviorContractSha256: BEHAVIOR_HASH
       }),
@@ -236,7 +276,8 @@ function attempt({
   runAttempt = 1,
   healthy = true,
   captureStatus = "complete",
-  behaviorManifest = BEHAVIOR_MANIFEST
+  behaviorManifest = BEHAVIOR_MANIFEST,
+  withShadowFormal = false
 }) {
   const receipt = {
     report_date: reportDate,
@@ -318,29 +359,40 @@ function attempt({
         reused_snapshot_candidate_ids: [], provider_transaction_ids: []
       }
     },
-    discovery_summary: { decision_universe_count: 0, sources: [] },
-    evidence_catalog: [],
-    candidates: [],
+    discovery_summary: {
+      decision_universe_count: withShadowFormal ? 1 : 0,
+      sources: withShadowFormal
+        ? [{ source_id: "steam", raw_count: 1, retained_count: 1, failure_count: 0 }]
+        : []
+    },
+    evidence_catalog: withShadowFormal ? [evidenceFixture(reportDate)] : [],
+    candidates: withShadowFormal ? [candidateFixture(reportDate)] : [],
     second_pass: {
       selector_version: "targeted-v1", max_candidates: 12,
       eligible_ids: [], selected_ids: [], omitted_ids: [], attempted_ids: [],
       failed_ids: [], qualified_ids: [], transactions: []
     },
     summary: {
-      candidate_count: 0, evidence_count: 0, second_pass_eligible_count: 0,
+      candidate_count: withShadowFormal ? 1 : 0,
+      evidence_count: withShadowFormal ? 1 : 0,
+      second_pass_eligible_count: 0,
       second_pass_selected_count: 0, second_pass_attempted_count: 0,
       second_pass_failed_count: 0, second_pass_qualified_count: 0,
-      formal_count: 0, candidate_decision_count: 0, excluded_count: 0,
-      shadow_push_pool_count: 0
+      formal_count: withShadowFormal ? 1 : 0,
+      candidate_decision_count: 0, excluded_count: 0,
+      shadow_push_pool_count: withShadowFormal ? 1 : 0
     },
     integrity: {
       canonical_json_version: 1, payload_sha256: "0".repeat(64),
-      ordered_candidate_count: 0, ordered_evidence_count: 0, artifact_binding_count: 4,
+      ordered_candidate_count: withShadowFormal ? 1 : 0,
+      ordered_evidence_count: withShadowFormal ? 1 : 0,
+      artifact_binding_count: 4,
       byte_size: 0, inline_text_characters: 0,
       status: captureStatus,
       reason_codes: complete ? [] : ["capture_error"]
     }
   };
+  corpus.artifact_bindings.replay_corpus.record_count = corpus.candidates.length;
   sealCorpus(corpus);
   const corpusBytes = `${canonicalJson(corpus)}\n`;
   const artifactMetadata = Object.fromEntries(
@@ -359,6 +411,132 @@ function attempt({
       sourcing_candidates: sourcingCandidatesBytes
     },
     artifactMetadata
+  };
+}
+
+function candidateFixture(reportDate) {
+  const indieInput = qualifiedIndieInput();
+  const chinaInput = {};
+  return {
+    candidate_id: "steam:100",
+    project: "Game One",
+    steam_app_id: "100",
+    dedupe_key: "steam:100",
+    source_type: "steam",
+    source_lane: "regular",
+    origin_signal_ids: ["signal:steam:100"],
+    first_seen: reportDate,
+    last_seen: reportDate,
+    scheduler_lane: "new",
+    enrichment_status: "success",
+    enrichment_attempts: 1,
+    snapshot_status: "fresh_success",
+    evidence_freshness: "fresh",
+    normalized_candidate: { project: "Game One", steam_app_id: "100" },
+    discovery_score: 10,
+    ranking_inputs: {
+      action_count: 0,
+      discovery_score: 10,
+      dedupe_key: "steam:100",
+      source_type: "steam",
+      publication_order: { source_priority: 1, source_index: 0 }
+    },
+    qualification_affected_by_ranking: false,
+    dedupe_boundary: {
+      history_match: false,
+      crm_preexisting_match: false,
+      match_basis: "none",
+      audit_digest: SHA_A
+    },
+    first_pass: {
+      evaluator_dependency_sha256: SHA_B,
+      indie_prelaunch: {
+        input: indieInput,
+        output: evaluateV73IndiePrelaunchAdmission(indieInput),
+        gate_results: [{
+          gate_id: "identity_and_dedupe",
+          status: "pass",
+          hard_exclusion: false,
+          evidence_ids: ["evidence:one"]
+        }]
+      },
+      china_joint: {
+        input: chinaInput,
+        output: evaluateChinaJointAdmission(chinaInput),
+        gate_results: [{
+          gate_id: "china_joint",
+          status: "fail",
+          hard_exclusion: false,
+          evidence_ids: ["evidence:one"]
+        }]
+      },
+      regular_selection: {
+        status: "selected",
+        lane: "indie_prelaunch",
+        reason_code: "indie_prelaunch_qualified"
+      }
+    },
+    second_pass: {
+      eligible: false,
+      rejection_reason: "already_qualified",
+      selected: false,
+      attempted: false,
+      transaction_id: null
+    },
+    publication: {
+      decision: "formal",
+      selected_lane: "indie_prelaunch",
+      shadow_push_pool: true,
+      dedupe_suppressed: false,
+      shadow_lead_payload_sha256: SHA_A,
+      risk_flags: [],
+      day_lead_count_used: false
+    }
+  };
+}
+
+function evidenceFixture(reportDate) {
+  return {
+    evidence_id: "evidence:one",
+    evidence_type: "public_url",
+    gate_id: "identity_and_dedupe",
+    url: "https://store.steampowered.com/app/100/",
+    source_id: "store.steampowered.com",
+    source_role: "official",
+    evidence_family: "playability",
+    captured_at: `${reportDate}T15:00:00+08:00`,
+    title: "Game One",
+    normalized_summary: "Normalized public evidence.",
+    content_sha256: SHA_A,
+    source_status: "success",
+    fetch_error: null,
+    official_public_business_entry: false
+  };
+}
+
+function qualifiedIndieInput() {
+  return {
+    project: "Game One",
+    steam_app_id: "100",
+    dedupe_key: "steam:100",
+    region: "domestic",
+    release_state: "prelaunch",
+    release_window: "over_60",
+    early_access_state: "no",
+    publisher_occupancy: "clear",
+    narrative_state: "no",
+    india_team_state: "no",
+    official_demo_evidence: [],
+    official_gameplay_evidence: [{
+      type: "official_gameplay",
+      url: "https://example.com/gameplay"
+    }],
+    quality_proofs: [
+      { source_id: "media-one", value: "review one", url: "https://one.example/review" },
+      { source_id: "media-two", value: "review two", url: "https://two.example/review" }
+    ],
+    business_entrypoints: [{ type: "website", url: "https://game.example/contact" }],
+    china_bilibili_value: "Systemic gameplay supports creator challenges."
   };
 }
 

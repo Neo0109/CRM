@@ -67,7 +67,8 @@ const WINDOW_FAILURE_REASONS = [
   "receipt_unhealthy",
   "payload_mismatch",
   "artifact_mismatch",
-  "replay_mismatch"
+  "replay_mismatch",
+  "evidence_coverage_insufficient"
 ];
 const SHA256_PATTERN = /^[0-9a-f]{64}$/;
 const GIT_SHA_PATTERN = /^[0-9a-f]{40}$/;
@@ -1241,6 +1242,7 @@ function validateWindowDates(value, path, errors) {
       "corpus_path",
       "git_blob_sha",
       "payload_sha256",
+      "shadow_formal_candidate_ids",
       "receipt_binding",
       "replay_binding"
     ];
@@ -1272,6 +1274,11 @@ function validateWindowDates(value, path, errors) {
     validateNonEmptyString(item.corpus_path, appendPath(itemPath, "corpus_path"), errors);
     validatePattern(item.git_blob_sha, GIT_SHA_PATTERN, appendPath(itemPath, "git_blob_sha"), errors);
     validateSha256(item.payload_sha256, appendPath(itemPath, "payload_sha256"), errors);
+    validateStringArray(
+      item.shadow_formal_candidate_ids,
+      appendPath(itemPath, "shadow_formal_candidate_ids"),
+      errors
+    );
     validateReceiptBinding(item.receipt_binding, appendPath(itemPath, "receipt_binding"), errors);
     validateReplayBinding(item.replay_binding, appendPath(itemPath, "replay_binding"), errors);
   });
@@ -1384,6 +1391,7 @@ function validateRejectedAttempts(value, path, errors) {
       [
         "manual_only",
         "morning_only",
+        "watchdog_only",
         "incomplete",
         "corrupt",
         "unreplayable",
@@ -2195,12 +2203,12 @@ function validateWindowState(windowManifest, errors) {
     ? windowManifest.failure_reasons
     : [];
   if (windowManifest.status === "complete") {
-    if (dates.length !== 15) {
+    if (dates.length !== 3) {
       addError(
         errors,
         "WINDOW_COMPLETE_DATE_COUNT",
         "/dates",
-        "complete window must contain exactly 15 dates"
+        "complete window must contain exactly 3 dates"
       );
     }
     if (windowManifest.failure_date !== null || failureReasons.length > 0) {
@@ -2228,13 +2236,21 @@ function validateWindowState(windowManifest, errors) {
         "complete window cannot contain integrity reasons"
       );
     }
+    if (!dates.some((entry) => entry?.shadow_formal_candidate_ids?.length > 0)) {
+      addError(
+        errors,
+        "WINDOW_SHADOW_FORMAL_REQUIRED",
+        "/dates",
+        "complete window requires at least one distinct shadow-formal candidate"
+      );
+    }
   } else if (windowManifest.status === "failed") {
-    if (dates.length > 14) {
+    if (dates.length > 3) {
       addError(
         errors,
         "WINDOW_FAILED_DATE_COUNT",
         "/dates",
-        "failed window may retain at most 14 dates"
+        "failed window may retain at most 3 dates"
       );
     }
     if (!isValidDateString(windowManifest.failure_date)) {
@@ -2281,12 +2297,12 @@ function validateWindowState(windowManifest, errors) {
       );
     }
   } else if (windowManifest.status === "active") {
-    if (dates.length < 1 || dates.length > 14) {
+    if (dates.length < 1 || dates.length > 2) {
       addError(
         errors,
         "WINDOW_ACTIVE_DATE_COUNT",
         "/dates",
-        "active window must retain 1 to 14 consecutive dates"
+        "active window must retain 1 to 2 consecutive dates"
       );
     }
     if (windowManifest.failure_date !== null || failureReasons.length > 0) {
@@ -2373,12 +2389,15 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
         "manual-only recovery cannot be a canonical run"
       );
     }
-    if (entry?.canonical === true && entry.run_slot === "morning") {
+    if (
+      entry?.canonical === true
+      && (entry.event_name !== "schedule" || entry.run_slot !== "afternoon")
+    ) {
       addError(
         errors,
         "WINDOW_INELIGIBLE_CANONICAL_SLOT",
         `/dates/${index}/run_slot`,
-        "morning runs cannot be canonical"
+        "only natural scheduled afternoon runs can be canonical"
       );
     }
     validateCanonicalDateHealth(entry, index, errors);
@@ -2405,7 +2424,11 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
       );
     }
     if (windowManifest.status === "failed") {
-      const expectedFailureDate = nextDateString(dates[dates.length - 1]?.report_date);
+      const coverageFailure = Array.isArray(windowManifest.failure_reasons)
+        && windowManifest.failure_reasons.includes("evidence_coverage_insufficient");
+      const expectedFailureDate = coverageFailure
+        ? dates[dates.length - 1]?.report_date
+        : nextDateString(dates[dates.length - 1]?.report_date);
       if (expectedFailureDate && windowManifest.failure_date !== expectedFailureDate) {
         addError(
           errors,
@@ -2413,6 +2436,19 @@ function validateWindowCrossRecordIntegrity(windowManifest, canonical, errors) {
           "/failure_date",
           `expected ${expectedFailureDate}`
         );
+      }
+      if (coverageFailure) {
+        const shadowFormalIds = new Set(
+          dates.flatMap((entry) => entry?.shadow_formal_candidate_ids ?? [])
+        );
+        if (dates.length !== 3 || shadowFormalIds.size > 0) {
+          addError(
+            errors,
+            "WINDOW_EVIDENCE_COVERAGE_FAILURE_INVALID",
+            "/failure_reasons",
+            "evidence coverage failure requires three retained zero-shadow dates"
+          );
+        }
       }
     }
     if (

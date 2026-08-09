@@ -60,7 +60,7 @@
       },
       "then": {
         "properties": {
-          "dates": { "minItems": 15, "maxItems": 15 },
+          "dates": { "minItems": 3, "maxItems": 3 },
           "failure_date": { "type": "null" },
           "failure_reasons": { "maxItems": 0 },
           "integrity": {
@@ -79,7 +79,7 @@
       },
       "then": {
         "properties": {
-          "dates": { "maxItems": 14 },
+          "dates": { "maxItems": 3 },
           "failure_date": { "$ref": "#/$defs/date" },
           "failure_reasons": { "minItems": 1 },
           "integrity": {
@@ -100,7 +100,7 @@
       },
       "then": {
         "properties": {
-          "dates": { "minItems": 1, "maxItems": 14 },
+          "dates": { "minItems": 1, "maxItems": 2 },
           "failure_date": { "type": "null" },
           "failure_reasons": { "maxItems": 0 },
           "integrity": {
@@ -154,7 +154,8 @@
         "receipt_unhealthy",
         "payload_mismatch",
         "artifact_mismatch",
-        "replay_mismatch"
+        "replay_mismatch",
+        "evidence_coverage_insufficient"
       ]
     },
     "receiptBinding": {
@@ -203,6 +204,7 @@
         "corpus_path",
         "git_blob_sha",
         "payload_sha256",
+        "shadow_formal_candidate_ids",
         "receipt_binding",
         "replay_binding"
       ],
@@ -219,6 +221,11 @@
         "corpus_path": { "type": "string", "minLength": 1 },
         "git_blob_sha": { "$ref": "#/$defs/gitSha" },
         "payload_sha256": { "$ref": "#/$defs/sha256" },
+        "shadow_formal_candidate_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
         "receipt_binding": { "$ref": "#/$defs/receiptBinding" },
         "replay_binding": { "$ref": "#/$defs/replayBinding" }
       },
@@ -263,6 +270,7 @@
           "enum": [
             "manual_only",
             "morning_only",
+            "watchdog_only",
             "incomplete",
             "corrupt",
             "unreplayable",

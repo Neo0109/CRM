@@ -8,7 +8,7 @@ import {
   replayOfflineCorpus
 } from "./online_daily_v7_3_offline_replay.mjs";
 
-const SLOT_PRIORITY = new Map([["afternoon", 0], ["watchdog", 1]]);
+const SLOT_PRIORITY = new Map([["afternoon", 0]]);
 const HARD_FAILURE_REASON_BY_REJECTION = new Map([
   ["artifact_mismatch", "artifact_mismatch"],
   ["delivery_unhealthy", "receipt_unhealthy"],
@@ -165,7 +165,11 @@ export function advanceReplayWindow({
   return {
     window: nextWindow,
     sealed_window: null,
-    transition: nextWindow.status === "complete" ? "completed" : window ? "advanced" : "started"
+    transition: nextWindow.status === "complete"
+      ? "completed"
+      : nextWindow.status === "failed"
+        ? "failed"
+        : window ? "advanced" : "started"
   };
 }
 
@@ -226,6 +230,12 @@ function canonicalEntry({ snapshot, replay, attempt }) {
     corpus_path: corpusMetadata.path,
     git_blob_sha: corpusMetadata.git_blob_sha,
     payload_sha256: replay.input_corpus_payload_sha256,
+    shadow_formal_candidate_ids: uniqueStrings(
+      (corpus.candidates ?? [])
+        .filter((candidate) => candidate?.publication?.shadow_push_pool === true)
+        .map((candidate) => candidate?.candidate_id)
+        .filter((candidateId) => typeof candidateId === "string" && candidateId.length > 0)
+    ).sort(),
     receipt_binding: {
       path: receiptMetadata.path,
       git_blob_sha: receiptMetadata.git_blob_sha,
@@ -248,7 +258,14 @@ function canonicalEntry({ snapshot, replay, attempt }) {
 
 function appendCanonicalDate(window, entry, rejectedAttempts, behaviorHash) {
   const dates = [...(window?.dates ?? []), entry];
-  const status = dates.length === 15 ? "complete" : "active";
+  const hasShadowFormal = dates.some(
+    (date) => Array.isArray(date.shadow_formal_candidate_ids)
+      && date.shadow_formal_candidate_ids.length > 0
+  );
+  const status = dates.length === 3
+    ? (hasShadowFormal ? "complete" : "failed")
+    : "active";
+  const failureReasons = status === "failed" ? ["evidence_coverage_insufficient"] : [];
   const next = {
     contract_version: 1,
     window_id: window?.window_id ?? windowId(entry.report_date, behaviorHash),
@@ -259,8 +276,8 @@ function appendCanonicalDate(window, entry, rejectedAttempts, behaviorHash) {
     corpus_contract_version: 1,
     behavior_contract_sha256: behaviorHash,
     dates,
-    failure_date: null,
-    failure_reasons: [],
+    failure_date: status === "failed" ? entry.report_date : null,
+    failure_reasons: failureReasons,
     rejected_attempts: [
       ...(window?.rejected_attempts ?? []),
       ...rejectedAttempts
@@ -271,7 +288,7 @@ function appendCanonicalDate(window, entry, rejectedAttempts, behaviorHash) {
       byte_size: 0,
       inline_text_characters: 0,
       status: status === "complete" ? "complete" : "incomplete",
-      reason_codes: []
+      reason_codes: failureReasons
     }
   };
   return sealAndValidateWindow(next);
@@ -360,6 +377,7 @@ function staticExclusion(snapshot) {
   if (snapshot.event_name !== "schedule") return "manual_only";
   if (snapshot.run_attempt !== 1) return "rerun";
   if (snapshot.run_slot === "morning") return "morning_only";
+  if (snapshot.run_slot === "watchdog") return "watchdog_only";
   if (!SLOT_PRIORITY.has(snapshot.run_slot)) return "manual_only";
   if (snapshot.capture_status !== "complete") {
     return ["incomplete", "corrupt", "unreplayable"].includes(snapshot.capture_status)
