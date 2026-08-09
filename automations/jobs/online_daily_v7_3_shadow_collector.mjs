@@ -279,7 +279,7 @@ export async function collectV73ShadowCore({
     shadow_candidate_artifact: shadowCandidateArtifact
   };
 
-  const privacy = validateReplayPrivacy(core);
+  const privacy = validateReplayPrivacy(pendingCoreForWrite(core));
   if (!privacy.valid) {
     throw new Error(`C5-B privacy boundary rejected the shadow core: ${privacy.errors[0]?.code ?? "unknown"}`);
   }
@@ -292,21 +292,27 @@ export async function runC5BShadowCollectorSafely(options = {}) {
   }
   try {
     const core = await collectV73ShadowCore(options);
+    const pendingCore = pendingCoreForWrite(core);
     const rootDir = options.rootDir ?? process.cwd();
-    const pendingPath = path.join(rootDir, pendingRelativePath(core));
+    const pendingPath = path.join(rootDir, pendingRelativePath(pendingCore));
     await mkdir(path.dirname(pendingPath), { recursive: true });
-    await writeFile(pendingPath, `${canonicalJson(core)}\n`, "utf8");
+    await writeFile(pendingPath, `${canonicalJson(pendingCore)}\n`, "utf8");
     return {
       status: "pending",
-      capture_status: core.capture_status,
+      capture_status: pendingCore.capture_status,
       pending_path: pendingPath,
-      candidate_count: core.candidates.length,
-      transaction_count: core.second_pass.transactions.length
+      candidate_count: pendingCore.candidates.length,
+      transaction_count: pendingCore.second_pass.transactions.length
     };
   } catch (error) {
     console.warn(`C5-B shadow collector isolated failure: ${errorMessage(error)}`);
     return { status: "error", reason: errorMessage(error), pending_path: null };
   }
+}
+
+function pendingCoreForWrite(core) {
+  const { shadow_candidate_artifact: _shadowCandidateArtifact, ...pendingCore } = core;
+  return pendingCore;
 }
 
 export async function finalizeC5BReplayCorpusSafely(options = {}) {
