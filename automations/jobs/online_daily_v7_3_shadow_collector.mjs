@@ -275,8 +275,7 @@ export async function collectV73ShadowCore({
       inline_text_characters: 0,
       status: captureStatus,
       reason_codes: reasonCodes
-    },
-    shadow_candidate_artifact: shadowCandidateArtifact
+    }
   };
 
   const privacy = validateReplayPrivacy(core);
