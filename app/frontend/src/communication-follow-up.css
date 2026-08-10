@@ -1,0 +1,763 @@
+.communication-shell {
+  margin: 0 auto;
+  max-width: 1680px;
+}
+
+.communication-head {
+  align-items: flex-start;
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 20px;
+}
+
+.communication-head h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  margin: 3px 0 0;
+}
+
+.communication-head > div > p:last-child {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 8px 0 0;
+}
+
+.communication-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  margin-bottom: 12px;
+}
+
+.communication-workspace-notice {
+  align-items: center;
+  background: var(--status-warning-bg);
+  border: 1px solid var(--status-warning-border);
+  border-radius: var(--radius-control);
+  color: var(--status-warning-text);
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+}
+
+.communication-metric {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 5px;
+  min-height: 86px;
+  padding: 14px 16px;
+}
+
+.communication-metric span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.communication-metric strong {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.communication-metric.danger {
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  color: var(--status-danger-text);
+}
+
+.communication-metric.warning {
+  background: var(--status-warning-bg);
+  border-color: var(--status-warning-border);
+  color: var(--status-warning-text);
+}
+
+.communication-metric.muted {
+  background: var(--surface-muted);
+}
+
+.communication-layout {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(310px, 0.72fr) minmax(0, 2fr);
+}
+
+.communication-list-panel,
+.communication-detail-panel {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.communication-list-panel {
+  max-height: calc(100vh - 210px);
+  overflow: hidden;
+  position: sticky;
+  top: 12px;
+}
+
+.communication-filters {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.communication-filters label,
+.communication-field {
+  display: grid;
+  gap: 6px;
+}
+
+.communication-filters label > span,
+.communication-field > span,
+.communication-section-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.communication-filters input,
+.communication-filters select,
+.communication-field input,
+.communication-field select,
+.communication-field textarea {
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font: inherit;
+  min-width: 0;
+  outline: none;
+  padding: 10px 11px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%;
+}
+
+.communication-filters input:focus,
+.communication-filters select:focus,
+.communication-field input:focus,
+.communication-field select:focus,
+.communication-field textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.communication-field [aria-invalid="true"] {
+  border-color: var(--red);
+}
+
+.communication-search {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  display: flex !important;
+  gap: 8px !important;
+  padding-left: 10px;
+}
+
+.communication-search:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.communication-search input {
+  border: 0;
+  box-shadow: none !important;
+  padding-left: 0;
+}
+
+.communication-filter-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.communication-list-summary {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 5px;
+  padding: 10px 14px;
+}
+
+.communication-list-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.communication-list-summary button {
+  background: transparent;
+  border: 0;
+  color: var(--blue);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.communication-lead-list {
+  display: grid;
+  gap: 8px;
+  max-height: calc(100vh - 480px);
+  min-height: 280px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.communication-lead-card {
+  background: var(--lead-row-default);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  text-align: left;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+  width: 100%;
+}
+
+.communication-lead-card:hover {
+  background: var(--lead-row-hover);
+  border-color: var(--border-info);
+  transform: translateY(-1px);
+}
+
+.communication-lead-card.selected {
+  background: var(--lead-row-selected);
+  border-color: var(--blue);
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+.communication-lead-card-head,
+.communication-lead-meta,
+.communication-chip-row,
+.communication-panel-title,
+.communication-panel-title > div,
+.communication-timeline-item-head,
+.communication-timeline-item-head > div {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.communication-lead-card-head {
+  justify-content: space-between;
+}
+
+.communication-lead-card-head strong {
+  font-size: 15px;
+}
+
+.communication-lead-meta {
+  color: var(--muted);
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+
+.communication-lead-meta span:not(:last-child)::after {
+  color: var(--faint);
+  content: "·";
+  margin-left: 7px;
+}
+
+.communication-status {
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 850;
+  justify-self: start;
+  padding: 3px 7px;
+}
+
+.communication-status.status-overdue {
+  background: var(--status-danger-bg);
+  color: var(--status-danger-text);
+}
+
+.communication-status.status-today,
+.communication-status.status-next-7-days {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-text);
+}
+
+.communication-status.status-missing {
+  background: var(--surface-muted);
+  color: var(--text-slate);
+}
+
+.communication-status.status-future {
+  background: var(--surface-info);
+  color: var(--text-info);
+}
+
+.communication-lead-card small,
+.communication-timeline-item footer,
+.communication-append-note {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.communication-lead-card p {
+  color: var(--text-secondary);
+  display: -webkit-box;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.communication-detail-panel {
+  min-height: 720px;
+  padding: 14px;
+}
+
+.communication-context-card,
+.communication-form-card,
+.communication-timeline-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-sm);
+}
+
+.communication-context-card {
+  margin-bottom: 12px;
+  padding: 16px;
+}
+
+.communication-context-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.communication-context-head h3 {
+  font-size: clamp(22px, 3vw, 31px);
+  margin: 8px 0 4px;
+}
+
+.communication-context-head p,
+.communication-current-action,
+.communication-muted {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.communication-chip-row {
+  flex-wrap: wrap;
+}
+
+.communication-chip-row span {
+  align-items: center;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  display: inline-flex;
+  font-size: 11px;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.communication-due-card {
+  background: var(--surface-info);
+  border: 1px solid var(--border-info);
+  border-radius: var(--radius-panel);
+  display: grid;
+  gap: 3px;
+  min-width: 220px;
+  padding: 12px;
+}
+
+.communication-due-card span {
+  color: var(--text-info);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.communication-due-card strong {
+  font-size: 13px;
+}
+
+.communication-context-grid {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.communication-current-action {
+  color: var(--ink);
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.communication-contact-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.communication-contact-chip {
+  align-items: center;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  display: inline-flex;
+  gap: 6px;
+  max-width: 100%;
+  padding: 7px 9px;
+  text-decoration: none;
+}
+
+.communication-contact-chip span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.communication-contact-chip strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.communication-contact-chip small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.communication-work-grid {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(340px, 1.1fr);
+}
+
+.communication-form-card,
+.communication-timeline-card {
+  min-width: 0;
+  padding: 15px;
+}
+
+.communication-panel-title {
+  border-bottom: 1px solid var(--line);
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 11px;
+}
+
+.communication-panel-title h3 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.communication-panel-title > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.communication-form-card form {
+  display: grid;
+  gap: 11px;
+}
+
+.communication-form-row {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 0.72fr 1.28fr;
+}
+
+.communication-field > span {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.communication-field > span strong {
+  color: var(--ink);
+}
+
+.communication-field > span small {
+  font-weight: 500;
+}
+
+.communication-field textarea {
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.communication-field em {
+  color: var(--red);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.communication-form-help {
+  background: var(--surface-info);
+  border: 1px solid var(--border-info);
+  border-radius: var(--radius-control);
+  color: var(--text-info);
+  font-size: 11px;
+  line-height: 1.55;
+  margin: 0;
+  padding: 8px 10px;
+}
+
+.communication-form-notice {
+  align-items: center;
+  border: 1px solid;
+  border-radius: var(--radius-control);
+  display: flex;
+  font-size: 12px;
+  gap: 7px;
+  padding: 9px 10px;
+}
+
+.communication-form-notice.error,
+.communication-inline-error {
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  color: var(--status-danger-text);
+}
+
+.communication-form-notice.success {
+  background: var(--status-success-bg);
+  border-color: var(--status-success-border);
+  color: var(--status-success-text);
+}
+
+.communication-submit,
+.communication-load-more,
+.communication-timeline-state button {
+  align-items: center;
+  background: var(--blue);
+  border: 0;
+  border-radius: var(--radius-control);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 7px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 9px 13px;
+}
+
+.communication-submit:disabled,
+.communication-load-more:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.communication-append-note {
+  line-height: 1.5;
+  text-align: center;
+}
+
+.communication-timeline-list {
+  display: grid;
+  gap: 0;
+}
+
+.communication-timeline-item {
+  border-left: 2px solid var(--border-info-muted);
+  margin-left: 7px;
+  padding: 0 0 18px 18px;
+  position: relative;
+}
+
+.communication-timeline-dot {
+  background: var(--blue);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border-info);
+  height: 12px;
+  left: -7px;
+  position: absolute;
+  top: 3px;
+  width: 12px;
+}
+
+.communication-timeline-item-head {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.communication-timeline-item-head strong {
+  font-size: 13px;
+}
+
+.communication-timeline-item-head span {
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 10px;
+  padding: 3px 6px;
+}
+
+.communication-timeline-item-head time {
+  color: var(--muted);
+  font-size: 10px;
+  text-align: right;
+}
+
+.communication-timeline-item > p {
+  line-height: 1.65;
+  margin: 8px 0;
+  white-space: pre-wrap;
+}
+
+.communication-timeline-next {
+  background: var(--surface-info);
+  border: 1px solid var(--border-info);
+  border-radius: var(--radius-control);
+  display: grid;
+  gap: 3px;
+  margin: 8px 0;
+  padding: 9px;
+}
+
+.communication-timeline-next span {
+  color: var(--text-info);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.communication-timeline-next strong {
+  font-size: 12px;
+}
+
+.communication-timeline-next small {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 10px;
+  gap: 4px;
+}
+
+.communication-timeline-state,
+.communication-detail-empty,
+.communication-empty {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 190px;
+  padding: 18px;
+  text-align: center;
+}
+
+.communication-timeline-state p,
+.communication-detail-empty p,
+.communication-empty p {
+  margin: 0;
+}
+
+.communication-timeline-state.error {
+  color: var(--status-danger-text);
+}
+
+.communication-timeline-state button {
+  min-height: 34px;
+}
+
+.communication-load-more {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.communication-inline-error {
+  border: 1px solid var(--status-danger-border);
+  border-radius: var(--radius-control);
+  font-size: 11px;
+  margin: 8px 0;
+  padding: 8px;
+}
+
+.communication-detail-empty {
+  min-height: 680px;
+}
+
+.communication-detail-empty h3 {
+  margin: 0;
+}
+
+@media (max-width: 1180px) {
+  .communication-layout,
+  .communication-work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .communication-list-panel {
+    max-height: none;
+    position: static;
+  }
+
+  .communication-lead-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .communication-head,
+  .communication-context-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .communication-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .communication-lead-list,
+  .communication-filter-grid,
+  .communication-form-row,
+  .communication-context-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .communication-due-card {
+    min-width: 0;
+  }
+
+  .communication-detail-panel,
+  .communication-form-card,
+  .communication-timeline-card {
+    padding: 11px;
+  }
+
+  .communication-panel-title,
+  .communication-timeline-item-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

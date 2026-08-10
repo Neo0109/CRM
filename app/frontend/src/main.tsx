@@ -13,6 +13,7 @@ import "./aesthetic-refresh.css";
 import "./lead-detail.css";
 import "./automation-diagnostics.css";
 import "./monthly-vision.css";
+import "./communication-follow-up.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -1,4 +1,4 @@
-import type { AutomationDiagnostics, CrmSettings, ImportResult, Lead, LeadAssistantPayload, LeadAssistantResult, MonthlyVisionItem, MonthlyVisionResponse, MonthlyVisionSheet, MonthlyVisionStatus, RadarReport, SourcingLearningReport, SteamTrendReport, WeeklyReport } from "./types";
+import type { AutomationDiagnostics, CrmSettings, ImportResult, InteractionCreateInput, InteractionCreateResult, InteractionPage, Lead, LeadAssistantPayload, LeadAssistantResult, MonthlyVisionItem, MonthlyVisionResponse, MonthlyVisionSheet, MonthlyVisionStatus, RadarReport, SourcingLearningReport, SteamTrendReport, WeeklyReport } from "./types";
 
 const tokenKey = "sourcing-crm-access-token";
 const usernameKey = "sourcing-crm-username";
@@ -32,11 +32,29 @@ export type LoginResult = {
   permissions?: string[];
 };
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = getAccessToken();
   const username = getAccessUsername();
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
+  const externalSignal = options?.signal;
+  let timedOut = false;
+  const abortFromCaller = () => controller.abort();
+  if (externalSignal?.aborted) controller.abort();
+  else externalSignal?.addEventListener("abort", abortFromCaller, { once: true });
+  const timeout = window.setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, requestTimeoutMs);
   const response = await fetch(url, {
     ...options,
     signal: controller.signal,
@@ -47,17 +65,19 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
       ...options?.headers
     }
   }).catch((error) => {
-    if (error instanceof DOMException && error.name === "AbortError") {
+    if (error instanceof DOMException && error.name === "AbortError" && timedOut) {
       throw new Error("请求超时，请退出登录后重新进入，或清除浏览器网站数据后重试");
     }
     throw error;
   }).finally(() => {
     window.clearTimeout(timeout);
+    externalSignal?.removeEventListener("abort", abortFromCaller);
   });
 
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({ error: response.statusText }));
-    throw new Error(payload.error ?? response.statusText);
+    const payload = await response.json().catch(() => ({ error: response.statusText })) as { error?: unknown };
+    const message = typeof payload.error === "string" ? payload.error : response.statusText;
+    throw new ApiError(response.status, message);
   }
 
   return response.json() as Promise<T>;
@@ -94,6 +114,33 @@ export async function loginToCrm(payload: LoginPayload) {
 
 export function fetchLeads() {
   return request<Lead[]>("/api/leads");
+}
+
+export function fetchInteractions(leadId: string, options: {
+  cursor?: string | null;
+  limit?: number;
+  signal?: AbortSignal;
+} = {}) {
+  const params = new URLSearchParams({
+    lead_id: leadId,
+    limit: String(options.limit ?? 50)
+  });
+  if (options.cursor) params.set("cursor", options.cursor);
+  return request<InteractionPage>(`/api/interactions?${params.toString()}`, {
+    cache: "no-store",
+    signal: options.signal
+  });
+}
+
+export function createInteraction(payload: InteractionCreateInput) {
+  return request<InteractionCreateResult>("/api/interactions", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function isApiErrorStatus(error: unknown, status: number) {
+  return error instanceof ApiError && error.status === status;
 }
 
 export function fetchRadar(date?: string) {

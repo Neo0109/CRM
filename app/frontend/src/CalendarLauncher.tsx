@@ -15,6 +15,7 @@ type CalendarEvent = {
   end: string;
   kind: "lead" | SteamEventKind;
   note: string;
+  nextAction?: string | null;
   link?: string;
   lead?: Lead;
 };
@@ -75,6 +76,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
       end: lead.due_date!,
       kind: "lead",
       note: `${lead.bucket} · ${priorityLabel(lead.priority)}${lead.owner ? ` · ${lead.owner}` : ""}`,
+      nextAction: lead.next_action,
       lead
     })), [calendarLeads]);
 
@@ -157,7 +159,7 @@ function CalendarWorkspace({ onClose }: { onClose: () => void }) {
         <div>
           <p className="eyebrow">CALENDAR · FOLLOW-UP</p>
           <h2>日历与长期跟进提醒</h2>
-          <p>日历只显示你手动加入的 Lead 提醒；Steam 官方活动默认显示，避免日程被自动导入的线索淹没。</p>
+          <p>手动确认提醒，或在沟通记录中设置下次日期，都会让 Lead 进入日历；Steam 官方活动仍默认显示。</p>
         </div>
         <div className="calendar-head-actions">
           <button className="ghost-button" onClick={() => void reload()} disabled={loading}><RefreshCw size={16} />刷新</button>
@@ -280,6 +282,10 @@ function CalendarAgendaItem({ event }: { event: CalendarEvent }) {
       <small>{event.start === event.end ? formatDate(event.start) : `${formatDate(event.start)} - ${formatDate(event.end)}`}</small>
     </div>
     <p>{event.note}</p>
+    {event.kind === "lead" && <div className="calendar-agenda-next-action">
+      <span>下一步</span>
+      <strong>{event.nextAction?.trim() || "尚未设置下一步动作"}</strong>
+    </div>}
     {event.link && <a href={event.link} target="_blank" rel="noreferrer"><ExternalLink size={14} />查看来源</a>}
   </article>;
 }
