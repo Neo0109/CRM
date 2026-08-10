@@ -108,6 +108,24 @@ const EVIDENCE_SOURCE_ROLES = new Set([
   "unclassified"
 ]);
 const INDEPENDENT_SOURCE_ROLES = new Set(["media", "trusted_creator"]);
+const PERSISTED_ALWAYS_PRIVATE_CONTACT_KEYS = new Set([
+  "contactemail",
+  "contactname",
+  "contactphone",
+  "personalemail",
+  "personalphone",
+  "qq",
+  "wechat",
+  "wecom"
+]);
+const PERSISTED_UNAUTHORIZED_CONTACT_KEYS = new Set([
+  "contactmethod",
+  "contactmethods",
+  "email",
+  "emails"
+]);
+const PRIVATE_CONTACT_VALUE_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+const PRIVATE_CONTACT_REDACTION = "private-contact-removed";
 
 export function isC5BShadowCaptureEligible(runContext = {}) {
   const eventName = String(runContext.event_name ?? "").trim();
@@ -283,7 +301,10 @@ export async function collectV73ShadowCore({
 
   const privacy = validateReplayPrivacy(pendingCoreForWrite(core));
   if (!privacy.valid) {
-    throw new Error(`C5-B privacy boundary rejected the shadow core: ${privacy.errors[0]?.code ?? "unknown"}`);
+    const first = privacy.errors[0];
+    throw new Error(
+      `C5-B privacy boundary rejected the shadow core: ${first?.code ?? "unknown"} at ${first?.path ?? "/"}`
+    );
   }
   return core;
 }
@@ -313,8 +334,33 @@ export async function runC5BShadowCollectorSafely(options = {}) {
 }
 
 function pendingCoreForWrite(core) {
-  const { shadow_candidate_artifact: _shadowCandidateArtifact, ...pendingCore } = core;
-  return pendingCore;
+  const { shadow_candidate_artifact: _shadowCandidateArtifact, ...pendingCore } = cloneValue(core);
+  return projectPrivateContactsForPersistence(pendingCore);
+}
+
+function projectPrivateContactsForPersistence(value, publicBusinessContext = false) {
+  if (typeof value === "string") {
+    return publicBusinessContext
+      ? value
+      : value.replace(PRIVATE_CONTACT_VALUE_PATTERN, PRIVATE_CONTACT_REDACTION);
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => projectPrivateContactsForPersistence(item, publicBusinessContext));
+  }
+  if (!isPlainObject(value)) return value;
+
+  const objectPublicBusiness = publicBusinessContext
+    || value.official_public_business_entry === true;
+  return Object.fromEntries(Object.entries(value).flatMap(([key, child]) => {
+    const normalizedKey = normalizePersistedContactKey(key);
+    if (PERSISTED_ALWAYS_PRIVATE_CONTACT_KEYS.has(normalizedKey)) return [];
+    if (!objectPublicBusiness && PERSISTED_UNAUTHORIZED_CONTACT_KEYS.has(normalizedKey)) return [];
+    return [[key, projectPrivateContactsForPersistence(child, objectPublicBusiness)]];
+  }));
+}
+
+function normalizePersistedContactKey(value) {
+  return String(value).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 export async function finalizeC5BReplayCorpusSafely(options = {}) {
