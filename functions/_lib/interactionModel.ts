@@ -1,5 +1,5 @@
-import type { AccessUser } from "./crmUsers";
-import type { Lead } from "./leadModel";
+import type { AccessUser } from "./crmUsers.js";
+import type { Lead } from "./leadModel.js";
 
 export const interactionEventPrefix = "__crm_interaction_event__";
 export const interactionChannels = [
