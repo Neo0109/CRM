@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   InteractionInputError,
+  encodeInteractionCursor,
   interactionEventPrefix,
   parseInteractionPage,
   prepareInteractionMutation
@@ -155,7 +156,8 @@ describe("interaction model", () => {
     assert.deepEqual(parseInteractionPage({ limit: "100" }), { offset: 0, limit: 100 });
 
     const first = parseInteractionPage({ limit: "2" });
-    const cursor = first.next_cursor(2);
+    assert.deepEqual(first, { offset: 0, limit: 2 });
+    const cursor = encodeInteractionCursor(2);
     assert.equal(typeof cursor, "string");
     assert.deepEqual(parseInteractionPage({ limit: "2", cursor }), {
       offset: 2,
