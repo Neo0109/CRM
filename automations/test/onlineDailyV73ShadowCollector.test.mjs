@@ -7,7 +7,8 @@ import path from "node:path";
 import { after, describe, it } from "node:test";
 
 import {
-  validateReplayCorpus
+  validateReplayCorpus,
+  validateReplayPrivacy
 } from "../jobs/online_daily_v7_3_replay_corpus_contract.mjs";
 import {
   fetchV73TargetedEvidence
@@ -120,6 +121,123 @@ describe("C5-B V7.3 shadow collector", () => {
       JSON.stringify(pending),
       /contactMethods|private-owner@c5b-fixture\.example/
     );
+  });
+
+  it("projects private contact data from live candidate, admission, and transaction shapes", async () => {
+    requireCollector("collectV73ShadowCore");
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-live-private-shape-"));
+    const privateContact = "private-projection@c5b-fixture.example";
+    const publicBusinessEntry = "public-business@c5b-fixture.example";
+    const evidence = nearMissEvidence(16, {
+      project: `C5-B live-shape candidate ${privateContact}`,
+      quality_proofs: [{
+        ...firstQualityProof,
+        contactMethods: [{ type: "email", value: privateContact }],
+        email: privateContact
+      }],
+      business_entrypoints: [{
+        type: "Email",
+        value: publicBusinessEntry,
+        official_public_business_entry: true
+      }]
+    });
+    const candidate = steamCandidate(evidence);
+    const mediaSignals = [{
+      title: `C5-B bounded signal ${privateContact}`,
+      source: "Fixture Games Media",
+      link: "https://media.example/reviews/c5b-live-private-shape"
+    }];
+    const options = {
+      rootDir,
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9016" }),
+      steamCandidates: [candidate],
+      mediaCandidates: [],
+      mediaSignals,
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async () => ({
+        quality_proofs: [secondQualityProof],
+        business_entrypoints: [{
+          type: "Email",
+          value: publicBusinessEntry,
+          email: publicBusinessEntry,
+          official_public_business_entry: true
+        }]
+      })
+    };
+
+    const core = await collector.collectV73ShadowCore(options);
+    const rawPersistedShape = structuredClone(core);
+    delete rawPersistedShape.shadow_candidate_artifact;
+    const privatePaths = validateReplayPrivacy(rawPersistedShape).errors
+      .filter((item) => item.code === "PRIVACY_PRIVATE_CONTACT")
+      .map((item) => item.path);
+    assert.ok(privatePaths.some((item) => /^\/candidates\/0\/project$/.test(item)));
+    assert.equal(privatePaths.includes(
+      "/candidates/0/first_pass/indie_prelaunch/input/quality_proofs/0/contactMethods/0/value"
+    ), true);
+    assert.equal(privatePaths.includes(
+      "/second_pass/transactions/0/bounded_signals/0/title"
+    ), true);
+    assert.equal(privatePaths.includes(
+      "/second_pass/transactions/0/merged_final_input/quality_proofs/0/contactMethods/0/value"
+    ), true);
+    assert.equal(core.candidates[0].project.includes(privateContact), true);
+    assert.equal(
+      core.second_pass.transactions[0].bounded_signals[0].title.includes(privateContact),
+      true
+    );
+
+    const capture = await collector.runC5BShadowCollectorSafely(options);
+    assert.equal(capture.status, "pending", capture.reason);
+    const pending = JSON.parse(await readFile(capture.pending_path, "utf8"));
+    assert.deepEqual(validateReplayPrivacy(pending), { valid: true, errors: [] });
+    assert.equal(JSON.stringify(pending).includes(privateContact), false);
+    const pendingAdmissionProof = pending.candidates[0].first_pass.indie_prelaunch
+      .input.quality_proofs[0];
+    assert.equal("contactMethods" in pendingAdmissionProof, false);
+    assert.equal("email" in pendingAdmissionProof, false);
+    const pendingBusinessEntry = pending.candidates[0].first_pass.indie_prelaunch
+      .input.business_entrypoints[0];
+    assert.equal(pendingBusinessEntry.official_public_business_entry, true);
+    assert.equal(pendingBusinessEntry.value, publicBusinessEntry);
+    const pendingTransactionBusinessEntry = pending.second_pass.transactions[0]
+      .raw_provider_result.business_entrypoints[0];
+    assert.equal(pendingTransactionBusinessEntry.official_public_business_entry, true);
+    assert.equal(pendingTransactionBusinessEntry.email, publicBusinessEntry);
+
+    await writeFinalizerArtifacts(rootDir);
+    const receiptPath = path.join(
+      rootDir,
+      "data/automation_runs",
+      `${reportDate}-afternoon.json`
+    );
+    await writeReceipt(receiptPath, healthyReceipt({
+      run_id: "9016",
+      run_attempt: 1
+    }));
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath
+    });
+    assert.equal(finalized.status, "complete", finalized.reason);
+    const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
+    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
+    assert.equal(JSON.stringify(corpus).includes(privateContact), false);
+    const corpusBusinessEntry = corpus.candidates[0].first_pass.indie_prelaunch
+      .input.business_entrypoints[0];
+    assert.equal(corpusBusinessEntry.official_public_business_entry, true);
+    assert.equal(corpusBusinessEntry.value, publicBusinessEntry);
+    const corpusTransactionBusinessEntry = corpus.second_pass.transactions[0]
+      .raw_provider_result.business_entrypoints[0];
+    assert.equal(corpusTransactionBusinessEntry.official_public_business_entry, true);
+    assert.equal(corpusTransactionBusinessEntry.email, publicBusinessEntry);
   });
 
   it("captures the full cloned universe while binding a deterministic max-12 second pass", async () => {
@@ -526,6 +644,15 @@ async function finalizerFixture(runContexts) {
     captures.push(capture);
   }
 
+  await writeFinalizerArtifacts(rootDir);
+  return {
+    rootDir,
+    captures,
+    receiptPath: path.join(rootDir, "data", "automation_runs", `${reportDate}-afternoon.json`)
+  };
+}
+
+async function writeFinalizerArtifacts(rootDir) {
   const artifactPayloads = {
     report: { report_date: reportDate, push_pool: [], watch_pool: [], drop_pool: [] },
     sourcing_candidates: { report_date: reportDate, candidates: [] },
@@ -541,11 +668,6 @@ async function finalizerFixture(runContexts) {
     );
   }
   await mkdir(path.join(rootDir, "data", "automation_runs"), { recursive: true });
-  return {
-    rootDir,
-    captures,
-    receiptPath: path.join(rootDir, "data", "automation_runs", `${reportDate}-afternoon.json`)
-  };
 }
 
 function healthyReceipt(overrides = {}) {
