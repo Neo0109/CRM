@@ -20,15 +20,18 @@ import { findProjectRoot } from "./lib/projectRoot.js";
 import {
   buildBackendUsers,
   cleanBackendAuthValue,
+  getBackendSessionUser,
   validateBackendLogin,
-  validateBackendSession,
   type BackendUsersInput
 } from "./lib/backendUsers.js";
+import { createBackendInteractionRepository } from "./lib/interactionRepository.js";
+import { registerBackendInteractionRoutes } from "./lib/interactionRoutes.js";
 import { createLeadRepository } from "./lib/leadRepository.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = findProjectRoot(dirname);
 const dataPath = path.join(rootDir, "data/leads.json");
+const interactionDataPath = path.join(rootDir, "data/interactions.local.json");
 const frontendDistPath = path.join(rootDir, "app/frontend/dist");
 const leadSchemaPath = path.join(rootDir, "schemas/sourcing_lead.schema.json");
 const dailyReportSchemaPath = path.join(rootDir, "schemas/daily_report.schema.json");
@@ -40,12 +43,19 @@ const crmAccessToken = process.env.CRM_ACCESS_TOKEN;
 const authConfig: BackendUsersInput = { rawUsers: crmUsersJson, legacyUsername: crmUsername, legacyPassword: crmAccessToken };
 const configuredCrmUsers = buildBackendUsers(authConfig);
 const hasCrmAuthConfig = Boolean(cleanBackendAuthValue(crmUsersJson) || crmUsername || cleanBackendAuthValue(crmAccessToken));
+const localInteractionActor = {
+  username: "local",
+  display_name: "Local CRM",
+  role: "local",
+  permissions: ["*"]
+};
 const supabase = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false }
     })
   : null;
 const leadRepository = createLeadRepository({ supabase, dataPath });
+const interactionRepository = createBackendInteractionRepository({ dataPath: interactionDataPath });
 
 const [leadSchema, dailyReportSchema] = await Promise.all([
   readJson(leadSchemaPath),
@@ -69,7 +79,7 @@ app.use((req, res, next) => {
     return;
   }
 
-  if (validateBackendSession(authConfig, {
+  if (getBackendSessionUser(authConfig, {
     usernameHeader: req.headers["x-crm-username"],
     tokenHeader: req.headers["x-crm-token"],
     cookieHeader: req.headers.cookie
@@ -107,6 +117,14 @@ app.post("/api/auth/login", (req, res) => {
   }
 
   res.json({ ok: true, username: result.user.username, display_name: result.user.display_name, role: result.user.role, permissions: result.user.permissions });
+});
+
+registerBackendInteractionRoutes(app, {
+  interactionRepository,
+  readLeads,
+  writeLeads,
+  assertValidLead,
+  resolveActor: resolveInteractionActor
 });
 
 app.get("/api/leads", async (_req, res, next) => {
@@ -192,6 +210,15 @@ app.listen(port, () => {
 
 async function readJson(filePath: string) {
   return JSON.parse(await readFile(filePath, "utf8"));
+}
+
+function resolveInteractionActor(request: express.Request) {
+  if (!hasCrmAuthConfig) return localInteractionActor;
+  return getBackendSessionUser(authConfig, {
+    usernameHeader: request.headers["x-crm-username"],
+    tokenHeader: request.headers["x-crm-token"],
+    cookieHeader: request.headers.cookie
+  });
 }
 
 async function readLeads(): Promise<BackendLead[]> {
