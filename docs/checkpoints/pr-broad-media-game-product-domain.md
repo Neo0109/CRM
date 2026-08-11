@@ -44,6 +44,12 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Post-repair focused contract passes 11/11, the impacted union passes 58/58, and `npm run test:daily-v4` passes 309/309. All tests remain provider/network-free.
 - Exact `npm run verify:all` passes every declared task after the repair, including frontend/backend/functions checks, Daily V4 309/309, historical liveness replay, daily contract validation, temporary frontend build, and frozen-base diff-check.
 
+### Final Named-Project Binding And Namespace RED
+
+- Review of coherent GREEN `7e73727454a80f8c0bdba9fbdbdc80972446ef6f` found one named-project binding asymmetry and one namespace-validity gap: structured names admitted the item but were not reused as tagged `Lead.project`; namespace prefixes allowed arbitrary non-product suffixes.
+- Added a structured `project_name: "雾港纪事"` end-to-end fixture and invalid `steam:abc`, `taptap:company-news`, `kuaibao:news`, and `3839:report` identities.
+- Accepted focused RED: 12 subtests produced 3 failures and 9 legacy greens, proving the absent shared extractor export, false namespace admission, and resulting broad-negative disposition leak.
+
 ## Remaining
 
 - Publish the final validation checkpoint, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance. Do not merge or deploy.

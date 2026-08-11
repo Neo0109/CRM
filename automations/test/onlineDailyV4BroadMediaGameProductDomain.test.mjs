@@ -237,6 +237,21 @@ describe("broad-media game-product candidate domain", () => {
     }
   });
 
+  it("binds every named semantic admission to one stored Lead project extractor", async () => {
+    assert.equal(typeof mediaRules.extractGameProductDomainProjectName, "function");
+    assert.equal(
+      mediaRules.extractGameProductDomainProjectName(fixture.structured_project_name_positive),
+      "雾港纪事"
+    );
+    const leads = await buildMediaLeadCandidates(
+      [fixture.structured_project_name_positive],
+      emptyIndex(),
+      offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
+    );
+    assert.equal(leads.length, 1);
+    assert.equal(leads[0].project, "雾港纪事");
+  });
+
   it("accepts only narrow structured IDs and normalized product routes", () => {
     const identityBase = {
       ...fixture.exact_false_positive,
