@@ -264,6 +264,17 @@ describe("broad-media game-product candidate domain", () => {
       reason: "non_game_animation_series"
     });
     assert.equal(
+      mediaRules.hasGameProductDomainEvidence(fixture.game_vertical_animation_control),
+      false,
+      "the broad-media domain helper intentionally does not treat PV/category wording alone as sufficient"
+    );
+    assert.equal(
+      mediaRules.classifyMediaDisposition(fixture.game_vertical_animation_control).kind,
+      "lead_candidate",
+      "untagged game-vertical animation signals must retain the legacy independent-game evidence boundary"
+    );
+    assert.equal(isProductSourcingSignal(fixture.game_vertical_animation_control), true);
+    assert.equal(
       mediaRules.hasGameProductDomainEvidence({
         ...fixture.structured_identity_positive,
         links: ["https://store.steampowered.com/app/4567890/"]

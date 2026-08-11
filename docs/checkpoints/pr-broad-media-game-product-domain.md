@@ -26,17 +26,20 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Implemented exported broad-media domain helpers, source-marker propagation, pre-enrichment fail-closed routing, a no-candidate enrichment short circuit, and disjoint strict/expanded/rescue lane partitioning.
 - Bumped the active runtime/machine/Heartbeat/current-doc contract to `sourcing-rules-v7.2.1-media-product-domain`; added canonical `docs/SOURCING_RULES_V7_2_1.md`; left the formal V7.2 admission gates unchanged.
 - Resolved one focused compatibility ripple: unmarked global game media retains the pre-existing China-joint discovery behavior, while every marked broad-media non-lead disposition remains unable to bypass the domain gate.
+- Root review caught and closed one scope regression with an accepted focused RED: the first GREEN reused the strict broad-media helper for standalone-animation filtering, which tightened an unmarked game-vertical path. The legacy private `hasIndependentGameProductEvidence()` boundary is restored for `non_game_animation_series`; the strict helper remains confined to sources marked `candidate_domain_gate=game_product`.
+- Added a regression control proving an unmarked animation-styled GameLook signal retains legacy candidate eligibility while a true non-game animation series remains Radar-only.
 - GREEN evidence is offline and provider-free: the focused contract passes 7/7 and `npm run test:daily-v4` passes 305/305.
+- Post-review focused union passes 29/29; the exact full `npm run verify:all` passes all declared tasks, including frontend/backend/functions typechecks, Daily V4 305/305, historical liveness replay, daily contract validation, the temporary frontend build, and diff-check.
+- Machine rules and the focused JSON fixture parse successfully; the exact frozen-main-to-snapshot whitespace check is GREEN.
 - Historical replay/window fixtures and the V7.2 baseline document retain their producing version; Heartbeat keeps the old version allowlisted for historical compatibility while recognizing V7.2.1.
 
 ## Remaining
 
-- Run focused tests, Daily V4, full repository verification, schema validation where relevant, and diff checks.
 - Push one ready PR; do not merge or deploy.
 
 ## Next Action
 
-Publish the coherent GREEN checkpoint, then run full repository verification, schema/config validation, and whitespace/diff checks from the disposable snapshot.
+Publish the post-review validation checkpoint, verify the exact remote tree, and open one ready PR.
 
 ## Git Status
 
@@ -46,3 +49,4 @@ Publish the coherent GREEN checkpoint, then run full repository verification, sc
 - Disposable snapshot: non-git temporary directory.
 - RED commit parent: `1034028cf6a481337794039e4752ddf01d0eb382`.
 - GREEN commit parent: `6e998999c0ea5679a12fe29e6bcfb27f5fa862bc`.
+- Published coherent GREEN before review: `4faf9101eec936822e9610ef8f856846bc5f1d10`.
