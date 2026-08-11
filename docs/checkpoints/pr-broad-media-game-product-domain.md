@@ -66,13 +66,20 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Exact-head remote acceptance is GREEN: Cloudflare Pages passed, and both frontend check runs passed (`31506242107 / 93828423157` and `31506246645 / 93828438916`). The only remaining review thread was an outdated nullish-project P1 already closed by string filtering, literal sentinel rejection, focused unit coverage, and end-to-end zero-candidate coverage; thread `PRRT_kwDOSiiYJ86YQzlH` is now resolved.
 - Nonblocking follow-up, deliberately not expanded into this repair: non-Bilibili dedupe currently preserves the conservative domain marker but does not union a valid Steam link carried only by the secondary duplicate, creating false-negative/input-order asymmetry. This should be addressed as a separate evidence-merge item after PR #116.
 
+### Compositional Generic-Token P1 RED
+
+- Follow-up QA superseded coherent GREEN `48e4e09e838746b6c59d46db90708ec926db3ef7` and its validation-only child after reproducing compositional descriptor bypasses that were not matched by a one-layer exact/regex grammar: `全新游戏项目`, `最新游戏项目`, `多个游戏项目`, `一款全新游戏`, `这款新游戏`, `某公司项目`, `公司最新消息`, `官方最新消息`, and `游戏最新消息`.
+- Extended the same structured/quoted/unquoted and end-to-end zero-candidate matrix with every reproduced Chinese composition and English equivalents such as `latest game project`, `company latest news`, `official game update`, `new publishing project`, and `development team update`. Added distinctive residue controls `新月计划` and `Project Echo` alongside the existing real-name controls.
+- Accepted provider-free RED: the focused contract remains 13 subtests with exactly the generic-name subtest failing and 12 existing subtests green; the first observed leak is structured `全新游戏项目` returning as the project name.
+
 ## Remaining
 
-- Publish this validation-only checkpoint and wait for its exact-head PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish the compositional RED checkpoint, replace the one-layer generic grammar with whole-string generic-token segmentation, and rerun focused/impacted/Daily V4/full verification.
+- Publish a new coherent GREEN and complete exact remote acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the validation-only checkpoint, wait for exact-head checks, then report the ready PR without merging.
+Publish the compositional RED checkpoint, implement the bounded shared segmentation predicate, then rerun provider-free validation.
 
 ## Git Status
 
@@ -89,3 +96,4 @@ Publish the validation-only checkpoint, wait for exact-head checks, then report 
 - Last fully verified head before generic-descriptor QA: `17151a4d2f8d296a68fc0a7b54b2f29482deffe2` (tree `6df28f908dd569a12260d8af089dc1c4a1350112`).
 - Generic-descriptor RED: `644257e541dadf35c674a4e1b32b1bd09ec3e4ab` (tree `5471529422e5594f00f5336a5d47692746bf606e`).
 - Coherent generic-descriptor GREEN before final validation-only checkpoint: `48e4e09e838746b6c59d46db90708ec926db3ef7` (tree `a76fb036d8602e564e3fe7be14577f19e6f11605`).
+- Superseded validation-only checkpoint: `de05087f83f9e6e36b0526eecdb18b0869e2a692` (tree `6df27c14fc24219618151c507d3d9da329425614`).

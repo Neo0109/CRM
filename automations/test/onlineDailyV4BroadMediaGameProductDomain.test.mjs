@@ -143,6 +143,20 @@ const genericProjectDescriptors = [
   "最新 消息",
   "行业 资讯",
   "行业：资讯",
+  "全新游戏项目",
+  "最新游戏项目",
+  "多个游戏项目",
+  "一款全新游戏",
+  "这款新游戏",
+  "某公司项目",
+  "公司最新消息",
+  "官方最新消息",
+  "游戏最新消息",
+  "latest game project",
+  "company latest news",
+  "official game update",
+  "new publishing project",
+  "development team update",
   "报道称",
   "消息称",
   "官方",
@@ -447,6 +461,16 @@ describe("broad-media game-product candidate domain", () => {
         ...genericDescriptorItem("New Game Chronicle", "structured", "named-generic-word-en"),
         title: "国产游戏开放商店页愿望单",
         project_name: "New Game Chronicle"
+      },
+      {
+        ...genericDescriptorItem("新月计划", "structured", "named-generic-token-fragments-cn"),
+        title: "国产独立游戏公布开发日志",
+        project_name: "新月计划"
+      },
+      {
+        ...genericDescriptorItem("Project Echo", "structured", "named-generic-token-fragments-en"),
+        title: "PC game announced Demo",
+        project_name: "Project Echo"
       }
     ];
     const namedLeads = await buildMediaLeadCandidates(namedItems, emptyIndex(), offlineContext({
