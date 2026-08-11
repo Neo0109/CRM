@@ -91,6 +91,11 @@ describe("communication follow-up queue", () => {
       due_date: "2026-08-20",
       next_action: "  "
     });
+    const validFuture = lead({
+      id: "future-with-action",
+      due_date: "2026-08-20",
+      next_action: "发送商务方案"
+    });
 
     assert.equal(communicationStatusForLead(missingAction, now), "missing");
     assert.deepEqual(filterCommunicationLeads([missingAction], {
@@ -99,12 +104,12 @@ describe("communication follow-up queue", () => {
       pool: "all",
       due: "missing"
     }, now).map((item) => item.id), ["future-missing-action"]);
-    assert.deepEqual(filterCommunicationLeads([missingAction], {
+    assert.deepEqual(filterCommunicationLeads([missingAction, validFuture], {
       query: "",
       owner: "all",
       pool: "all",
       due: "future"
-    }, now), []);
+    }, now).map((item) => item.id), ["future-with-action"]);
   });
 });
 
