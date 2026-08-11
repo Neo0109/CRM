@@ -156,7 +156,7 @@ export function buildStoredDecisionView(corpus = {}) {
       const transaction = transactions.get(candidate?.second_pass?.transaction_id) ?? null;
       return {
         candidate_id: candidate?.candidate_id ?? null,
-        ...(collectorV2
+        ...(collectorV2 && candidate?.second_pass?.eligible === true
           ? {
               ranking_inputs: {
                 actionable_gate_count: nonNegativeInteger(
@@ -192,7 +192,8 @@ export function buildReplayedDecisionView(corpus = {}) {
   const candidates = (corpus.candidates ?? []).map((candidate) => {
     const indieInput = cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {});
     const indie = evaluateV73IndiePrelaunchAdmission(indieInput);
-    const evidenceDiagnostics = collectorV2
+    const eligible = secondPassEligible(indie);
+    const evidenceDiagnostics = collectorV2 && eligible
       ? analyzeV73EvidenceAvailability({
           candidate: indieInput,
           evidence: indie.evidence,
@@ -238,7 +239,7 @@ export function buildReplayedDecisionView(corpus = {}) {
           )
         }
       },
-      eligible: secondPassEligible(indie),
+      eligible,
       first_admission: indie,
       transaction,
       first_pass: {
@@ -291,7 +292,7 @@ export function buildReplayedDecisionView(corpus = {}) {
     const attempted = attemptedIds.includes(candidate.candidate_id);
     return {
       candidate_id: candidate.candidate_id,
-      ...(collectorV2
+      ...(collectorV2 && candidate.eligible
         ? {
             ranking_inputs: {
               actionable_gate_count: candidate.ranking_inputs.actionable_gate_count

@@ -52,21 +52,29 @@ Repair the independent-QA binding defects and strict source-role review finding 
   - offline replay imports the pure availability analyzer and recomputes actionability from frozen first-pass inputs, evaluator-derived requested actions, and run-level bounded signals; stored and replay views expose the count so recomputed count/order mutations raise `REPLAY_MISMATCH`;
   - independent quality now accepts only explicitly classified `media` or `trusted_creator` signals for every origin; `official`, `developer`, `keyword`, and `unclassified` are rejected.
 - Repair focused GREEN: 85 tests passed, 0 failed. Historical collector v1 replay remains covered, and no live network/provider/workflow/CRM/Supabase action was used.
+- Published the checkpointed repair GREEN at `31aeb0dc3d7a7d95e0323064cd8ff53c3c1f2707` (tree `ffc75c07d3fef5cea3bf641686ba72315f2abc13`).
+- Tightened the replay view after GREEN so independently recomputed actionability is exposed only for eligible candidates, matching the v2 schema requirement and avoiding irrelevant noneligible ranking state.
+- Final validation on the repaired code and tests:
+  - focused V7.3 suites: 85 passed, 0 failed;
+  - `npm run test:daily-v4`: 296 passed, 0 failed;
+  - `npm run verify:all`: exit 0, including automation tests, typechecks, production build, Daily contract, and `git diff --check`;
+  - the replay corpus JSON Schema compiles under Ajv 2020 with formats enabled.
+- No scope pressure appeared: no V7.2 admission, provider-contract, workflow, CRM/Supabase, generated production data, or media-rule Wave 2 file was touched.
 
 ## Remaining
 
-- Publish the checkpointed GREEN on the same branch, run `test:daily-v4` and `verify:all`, publish the final checkpoint, update PR #115, and resolve the review thread only after all fixes are pushed.
+- Publish this final validated snapshot to the same branch, update PR #115, verify remote checks, and resolve the review thread only after the fix is pushed.
 
 ## Next Action
 
-Publish the checkpointed GREEN through the GitHub API, then run the required full gates on the exact snapshot.
+Publish the final checkpoint, update and verify PR #115, resolve the fixed review thread, and stop without merge.
 
 ## Git Status
 
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote PR: ready PR #115, open and unmerged.
 - Branch: `codex/v73-evidence-actionability`.
-- Remote branch repair RED head: `8d69f43058764d97a4276f21dca0e875c927df3e`.
+- Remote branch checkpointed GREEN head before final validation: `31aeb0dc3d7a7d95e0323064cd8ff53c3c1f2707`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 
