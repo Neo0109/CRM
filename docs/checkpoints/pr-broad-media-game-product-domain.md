@@ -212,15 +212,16 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Machine rules and both active documents now record the bounded English numeral transition, extended classifiers, share/rank roles, and common English quantity frames. The updated `daily-report.json` Git blob is `a761c3c682d6f1dced76ee232f746bac99f2a765`, and the shadow integration behavior floor matches it.
 - Full local gates are GREEN: focused 34/34, impacted contracts 113/113, media/dedupe/audit regressions 68/68, and Daily V4 332/332. Exact shimmed `npm run verify:all` also exits successfully, including frontend/backend/functions typechecks, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
 - Machine JSON parsing, all changed JavaScript module syntax checks, exact behavior hash, and whitespace checks against accepted RED pass. No role-closure or P2 file was broadened.
+- Published the coherent code-bearing GREEN as `bc79c6aeb2d85e429d2824e0460550c6962c5322` with tree `cb144d92ee3e164c7ed2e9ee878abdfe7c3a2c16`, parented directly to accepted RED `1a8a755af544794b461f542d660f85e4d38a48b6`. Frozen compare remains based and merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 40 and behind 0, with 22 changed files and 22/22 exact-head remote blobs matching the verified snapshot.
+- All three exact code-head checks succeeded: Cloudflare Pages `93920237335`; pull-request Build `31533837796 / 93920066246`; push Build `31533832490 / 93920048440`.
 
 ## Remaining
 
-- Publish one coherent code-bearing GREEN from accepted RED `1a8a755af544794b461f542d660f85e4d38a48b6`, verify frozen-base and 22/22 remote-blob parity, then wait for that exact head's checks.
-- The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate. Do not merge from this task.
+- Release Captain independent acceptance and the root-owned merge gate only. The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate and are not merge blockers for this bounded wave. Do not merge from this task.
 
 ## Next Action
 
-Publish the coherent implementation from accepted RED, verify frozen-base/remote-blob parity and exact checks, and return the new head to independent QA without merging.
+Publish this status-only checkpoint from exact verified code head `bc79c6aeb2d85e429d2824e0460550c6962c5322`, pin the resulting head/tree and exact checks in the PR body, then hand it to Release Captain for independent acceptance and root-owned merge.
 
 ## Git Status
 
@@ -266,4 +267,5 @@ Publish the coherent implementation from accepted RED, verify frozen-base/remote
 - Fully verified shared-DP GREEN: `5807a7b1099f78925a8edcb622f7ee82000936e5` (tree `a9d710e7a04ecc24bac365a751526eac98c330af`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
 - Superseded final status-only head: `ad8bd94a07e4ffe0c5f1f011809cf470838509f1` (tree `90d7e9d58589a340d6d666306b15d46fca4ea193`); exact checks passed before extended quantity-role QA.
 - Accepted extended quantity-role RED: `1a8a755af544794b461f542d660f85e4d38a48b6` (tree `18356db00526b7a23cd18f292e38e4e2a9448e72`), exact parent `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`; focused result was 30/34 with exactly four expected failures.
-- Extended quantity-role GREEN: fully verified local disposable snapshot ready to publish from exact accepted RED `1a8a755af544794b461f542d660f85e4d38a48b6`.
+- Fully verified extended quantity-role GREEN: `bc79c6aeb2d85e429d2824e0460550c6962c5322` (tree `cb144d92ee3e164c7ed2e9ee878abdfe7c3a2c16`); frozen compare, 22/22 parity, and all three exact checks passed.
+- Final extended quantity-role status checkpoint: local docs-only snapshot ready to publish from exact verified code head `bc79c6aeb2d85e429d2824e0460550c6962c5322`; no behavior, machine-rule, fixture, or test blob changes.
