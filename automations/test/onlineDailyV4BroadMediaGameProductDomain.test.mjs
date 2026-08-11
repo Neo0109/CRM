@@ -101,8 +101,44 @@ const broadNegatives = [
 
 const broadPlatformAliases = ["B站", "哔哩哔哩", "bilibili", "Bili Bili", "B·站"];
 const insufficientPlatformTerms = ["官方", "授权", "发行", "合作", "需求", "上线"];
+const domesticCompanyNames = [
+  "网易", "腾讯", "字节", "字节跳动", "朝夕光年", "巨人", "西山居", "莉莉丝", "心动", "鹰角",
+  "米哈游", "散爆", "库洛", "叠纸", "沐瞳", "灵犀", "祖龙", "完美世界", "中手游",
+  "B站游戏", "哔哩哔哩游戏"
+];
+const organizationOnlyProjectDescriptors = domesticCompanyNames.flatMap((name) => [
+  name,
+  `${name}旗下`,
+  `${name}网络`,
+  `${name}游戏`,
+  `${name}科技`,
+  `${name}旗下游戏`
+]);
+const genericCountProjectDescriptors = [
+  "一批",
+  "一系列",
+  "若干批",
+  "第十款",
+  "第10个",
+  "约10款",
+  "近十款",
+  "超10款",
+  "超过10款",
+  "逾十款",
+  "至少10款",
+  "至多十个",
+  "最多3部",
+  "共十项",
+  "合计10款",
+  "累计十款",
+  "数十款"
+];
 
 const genericProjectDescriptors = [
+  "原创",
+  "自研",
+  "知名",
+  "头部",
   "最新消息",
   "行业动态",
   "多款新作",
@@ -189,25 +225,30 @@ const genericProjectDescriptors = [
   "尚未命名项目",
   "代号项目",
   "备受期待作品",
-  "腾讯",
-  "网易",
-  "米哈游",
-  "字节跳动",
   "某上市公司",
   "雪佛兰",
   "星河公司",
   "未来集团",
   "山海工作室",
+  "游戏日报",
+  ...organizationOnlyProjectDescriptors,
   "两款",
   "三款",
   "十款",
   "10款",
+  ...genericCountProjectDescriptors,
   "证券时报",
   "网络游戏管理办法",
   "未成年人保护条例",
   "手游测试规范",
   "合作备忘录",
   "2026中国游戏产业白皮书",
+  "关于促进网络游戏高质量发展的若干意见",
+  "游戏产业自律倡议",
+  "国产游戏发展要点",
+  "网络游戏管理决定",
+  "游戏产业发展规划",
+  "网络游戏治理纲要",
   "报道称",
   "消息称",
   "官方",
@@ -286,6 +327,11 @@ const modifierNoNameTitles = [
   "三款国产手游 一家开发团队最新更新 开启 Playtest",
   "十款独立游戏 公司最新消息 开放测试",
   "10款手游 多个游戏项目 公布实机",
+  "第十款手游 官方最新消息 公布 Demo",
+  "数十款国产手游 一家开发团队最新更新 开启 Playtest",
+  "约10款独立游戏 公司最新消息 开放测试",
+  "超过10款手游 多个游戏项目 公布实机",
+  "一批手游 官方最新消息 公布 Demo",
   ...broadPlatformAliases.flatMap((alias) => insufficientPlatformTerms.flatMap((term) => [
     `${alias}${term}手游 多个游戏项目 公布 Demo`,
     `${term}：${alias}手游 一家开发团队最新更新 开启 Playtest`
@@ -323,12 +369,29 @@ const connectorBindingCases = [
   ["星海远征 国产独立游戏正式公布 Demo", "星海远征"],
   ["星海远征 国产独立游戏即将开启 Playtest", "星海远征"],
   ["星海远征 国产独立游戏今日发布实机", "星海远征"],
+  ["星海远征 国产手游预计公布 Demo", "星海远征"],
+  ["星海远征 国产手游今日将开放测试", "星海远征"],
+  ["星海远征 国产手游将发布实机", "星海远征"],
+  ["星海远征 国产手游将会开放 Playtest", "星海远征"],
+  ["星海远征 国产手游计划于公布 Demo", "星海远征"],
+  ["星海远征 国产手游有望开放测试", "星海远征"],
+  ["星海远征 国产手游宣布将公布 Demo", "星海远征"],
   ["Project Echo mobile game announces Demo", "Project Echo"],
   ["Aether Echo PC game officially reveals Demo", "Aether Echo"],
   ["Project Echo console game launches Playtest", "Project Echo"],
+  ["Project Echo mobile game will announce Demo", "Project Echo"],
+  ["Project Echo mobile game shall reveal Demo", "Project Echo"],
+  ["Project Echo mobile game plans to launch Playtest", "Project Echo"],
+  ["Project Echo mobile game is set to reveal Demo", "Project Echo"],
+  ["Project Echo mobile game expected to launch Playtest", "Project Echo"],
   ["国产手游新作 星海远征公布 Demo", "星海远征"],
+  ["国产手游新作星海远征公布 Demo", "星海远征"],
   ["手游 星海远征 今日公布 Demo", "星海远征"],
+  ["国产手游 星海远征 预计公布 Demo", "星海远征"],
+  ["国产手游 星海远征 今日将开放 Playtest", "星海远征"],
   ["mobile game Project Echo announces Demo", "Project Echo"],
+  ["mobile game Project Echo will announce Demo", "Project Echo"],
+  ["mobile game Project Echo is set to reveal Demo", "Project Echo"],
   ["PC game Aether Echo officially reveals Demo", "Aether Echo"],
   ...explicitGameCategoryBindings.map((category) => [
     `星海远征 ${category} 公布 Demo`,
@@ -347,6 +410,40 @@ const connectorBindingCases = [
   },
   expectedProject
 }));
+
+function broadQaItem(title, slug, overrides = {}) {
+  return {
+    title,
+    summary: "固定离线 QA fixture，只验证 broad-media game-product domain gate。",
+    source: "IT之家",
+    link: `https://example.test/${slug}`,
+    source_quality: 7,
+    source_focus: ["china", "technology"],
+    candidate_domain_gate: "game_product",
+    score: 52,
+    ...overrides
+  };
+}
+
+const lexicalBoundaryNegativeItems = [
+  broadQaItem("Project Echo NPC game announces Demo", "category-boundary-npc-game"),
+  broadQaItem("Project Echo automobile game announces Demo", "category-boundary-automobile-game"),
+  broadQaItem("云端游戏公布 Demo", "category-boundary-cloud-end-game", { project_name: "星海远征" }),
+  broadQaItem("终端游戏开放 Playtest", "category-boundary-terminal-end-game", { project_name: "星海远征" }),
+  broadQaItem("高端游戏公开实机", "category-boundary-high-end-game", { project_name: "星海远征" })
+];
+
+const exactQaBlockingRows = [
+  broadQaItem("国产手游 原创 公布 Demo", "qa-exact-generic-original"),
+  broadQaItem("莉莉丝旗下 国产手游 公布 Demo", "qa-exact-company-affiliation"),
+  broadQaItem("国产手游《游戏日报》报道 Demo", "qa-exact-source-only-quote"),
+  broadQaItem("国产手游预计公布 Demo", "qa-exact-expected-connector"),
+  broadQaItem(
+    "国产手游《关于促进网络游戏高质量发展的若干意见》公布 Demo",
+    "qa-exact-document-opinion"
+  ),
+  broadQaItem("Project Echo NPC game announces Demo", "qa-exact-lexical-boundary")
+];
 
 describe("broad-media game-product candidate domain", () => {
   it("publishes the exact V7.2.1 machine/default source contract", async () => {
@@ -682,6 +779,16 @@ describe("broad-media game-product candidate domain", () => {
         project_name: "腾讯极光计划"
       },
       {
+        ...genericDescriptorItem("莉莉丝深空计划", "structured", "named-company-residue-cn"),
+        title: "国产手游公布试玩 Demo",
+        project_name: "莉莉丝深空计划"
+      },
+      {
+        ...genericDescriptorItem("原创之海", "structured", "named-generic-qualifier-residue-cn"),
+        title: "国产独立游戏开放测试",
+        project_name: "原创之海"
+      },
+      {
         ...genericDescriptorItem("武侠乂", "structured", "named-genre-residue-wuxia"),
         title: "国产手游开放测试",
         project_name: "武侠乂"
@@ -720,6 +827,11 @@ describe("broad-media game-product candidate domain", () => {
         ...genericDescriptorItem("纪元10：余烬", "structured", "named-numeric-residue-cn"),
         title: "国产网络游戏开放测试",
         project_name: "纪元10：余烬"
+      },
+      {
+        ...genericDescriptorItem("第七史诗", "structured", "named-count-prefix-residue-cn"),
+        title: "国产手游公布 Demo",
+        project_name: "第七史诗"
       }
     ];
     const namedLeads = await buildMediaLeadCandidates(namedItems, emptyIndex(), offlineContext({
@@ -840,6 +952,69 @@ describe("broad-media game-product candidate domain", () => {
     });
   });
 
+  it("requires a lexical category start instead of matching category substrings", async () => {
+    const evidence = lexicalBoundaryNegativeItems.map((item) =>
+      mediaRules.hasGameProductDomainEvidence(item)
+    );
+    const dispositions = lexicalBoundaryNegativeItems.map((item) =>
+      mediaRules.classifyMediaDisposition(item)
+    );
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      lexicalBoundaryNegativeItems,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += candidates.length;
+          return candidates;
+        }
+      })
+    );
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: lexicalBoundaryNegativeItems.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual({
+      evidence,
+      dispositions,
+      leadProjects: leads.map((lead) => lead.project),
+      enrichmentCalls,
+      auditRecords: artifact.scan_summary.records_total,
+      formalRecords: artifact.scan_summary.formal,
+      secondPassEligible: secondPass.eligible_order,
+      secondPassCalls
+    }, {
+      evidence: lexicalBoundaryNegativeItems.map(() => false),
+      dispositions: lexicalBoundaryNegativeItems.map(() => ({
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      })),
+      leadProjects: [],
+      enrichmentCalls: 0,
+      auditRecords: 0,
+      formalRecords: 0,
+      secondPassEligible: [],
+      secondPassCalls: 0
+    });
+  });
+
   it("selects the project quote while excluding source and document entities", async () => {
     const multiQuote = {
       title: "《证券时报》：国产手游《星海远征》公布 Demo",
@@ -851,30 +1026,52 @@ describe("broad-media game-product candidate domain", () => {
       candidate_domain_gate: "game_product",
       score: 52
     };
+    const projectThenSourceQuote = {
+      ...multiQuote,
+      title: "《星海远征》国产手游《游戏日报》报道 Demo",
+      summary: "项目实体在前，靠近事件的第二个书名号实体只是媒体来源。",
+      link: "https://example.test/project-then-source-quote-binding"
+    };
     assert.equal(mediaRules.extractGameProductDomainProjectName(multiQuote), "星海远征");
+    assert.equal(mediaRules.extractGameProductDomainProjectName(projectThenSourceQuote), "星海远征");
     const positiveLeads = await buildMediaLeadCandidates(
-      [multiQuote],
+      [multiQuote, projectThenSourceQuote],
       emptyIndex(),
       offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
     );
-    assert.equal(positiveLeads.length, 1);
-    assert.equal(positiveLeads[0].project, "星海远征");
+    assert.equal(positiveLeads.length, 2);
+    assert.deepEqual(new Set(positiveLeads.map((lead) => lead.project)), new Set(["星海远征"]));
 
-    const documentItems = [
-      "《网络游戏管理办法》明确手游测试规范",
-      "《未成年人保护条例》要求国产手游测试整改",
-      "《合作备忘录》涉及手游 Playtest 需求",
-      "《2026中国游戏产业白皮书》：国产手游 Demo 数量增长"
-    ].map((title, index) => ({
-      ...multiQuote,
-      title,
-      link: `https://example.test/quoted-document-${index + 1}`
-    }));
+    const documentDescriptors = [
+      "网络游戏管理办法",
+      "未成年人保护条例",
+      "手游测试规范",
+      "合作备忘录",
+      "2026中国游戏产业白皮书",
+      "关于促进网络游戏高质量发展的若干意见",
+      "游戏产业自律倡议",
+      "国产游戏发展要点",
+      "网络游戏管理决定",
+      "游戏产业发展规划",
+      "网络游戏治理纲要"
+    ];
+    const documentItems = documentDescriptors.flatMap((descriptor, index) => [
+      {
+        ...multiQuote,
+        title: `国产手游《${descriptor}》公布 Demo`,
+        link: `https://example.test/quoted-document-${index + 1}`
+      },
+      {
+        ...multiQuote,
+        title: "国产手游公布 Demo",
+        project_name: descriptor,
+        link: `https://example.test/structured-document-${index + 1}`
+      }
+    ]);
     documentItems.push({
       ...multiQuote,
-      title: "国产手游公布 Demo",
-      project_name: "网络游戏管理办法",
-      link: "https://example.test/structured-document-project"
+      title: "国产手游《游戏日报》公布 Demo",
+      link: "https://example.test/quoted-source-only"
     });
 
     for (const item of documentItems) {
@@ -921,6 +1118,76 @@ describe("broad-media game-product candidate domain", () => {
     assert.equal(artifact.scan_summary.formal, 0);
     assert.deepEqual(secondPass.eligible_order, []);
     assert.equal(secondPassCalls, 0);
+  });
+
+  it("keeps the six exact QA reproductions out of every candidate path", async () => {
+    const extractedProjects = exactQaBlockingRows.map((item) =>
+      mediaRules.extractGameProductDomainProjectName(item)
+    );
+    const evidence = exactQaBlockingRows.map((item) =>
+      mediaRules.hasGameProductDomainEvidence(item)
+    );
+    const dispositions = exactQaBlockingRows.map((item) =>
+      mediaRules.classifyMediaDisposition(item)
+    );
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      exactQaBlockingRows,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += candidates.length;
+          return candidates;
+        }
+      })
+    );
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: exactQaBlockingRows.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual({
+      extractedProjects,
+      evidence,
+      dispositions,
+      leadProjects: leads.map((lead) => lead.project),
+      enrichmentCalls,
+      auditCandidates: artifact.scan_summary.media_candidates_seen,
+      auditRecords: artifact.scan_summary.records_total,
+      formalRecords: artifact.scan_summary.formal,
+      secondPassEligible: secondPass.eligible_order,
+      secondPassCalls
+    }, {
+      extractedProjects: exactQaBlockingRows.map(() => null),
+      evidence: exactQaBlockingRows.map(() => false),
+      dispositions: exactQaBlockingRows.map(() => ({
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      })),
+      leadProjects: [],
+      enrichmentCalls: 0,
+      auditCandidates: 0,
+      auditRecords: 0,
+      formalRecords: 0,
+      secondPassEligible: [],
+      secondPassCalls: 0
+    });
   });
 
   it("accepts only narrow structured IDs and normalized product routes", () => {

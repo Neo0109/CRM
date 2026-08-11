@@ -100,13 +100,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Exact-head remote acceptance is GREEN: Cloudflare Pages passed, and both frontend runs passed (`31510367595 / 93842355279` and `31510362927 / 93842340064`). PR #116 has no unresolved review thread; the sole historical nullish-project thread remains resolved and outdated.
 - Deferred P2, deliberately not included in this P1: a real unquoted project name that itself contains a category token can make the first category match bind the wrong project, for example `手游模拟器 国产独立游戏公开 Demo` or `PC Game Tycoon 国产独立游戏公开 Demo`. This requires a separate category-selection design, not expansion of the modifier repair.
 
+### Organization, Framing, Lexical-Boundary, And Quote-Role P1 RED
+
+- Independent exact-head QA superseded validation-only head `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19`. Six provider-free end-to-end reproductions all entered candidate conversion and enrichment with incorrect projects: `原创`, `莉莉丝旗下`, `游戏日报`, `预计`, `关于促进网络游戏高质量发展的若干意见`, and `Project Echo N`.
+- The bounded repair covers five related admission-integrity gaps: generic/organization-only names across all three extraction paths; prefix-aware generic counts such as `第十款`, `约10款`, `超过10款`, and `一批`; missing Chinese/English event framing and glued category-first binding; substring category matches inside unrelated words; and quote-role selection that prefers a source/document entity over the real project.
+- Required negative matrices retain exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output. Positive controls retain exact `Lead.project` for both name/category orders, glued approved category-first forms, distinctive organization residue, and existing URL/dedupe behavior.
+- Accepted provider-free umbrella RED: the focused contract now has 19 subtests, with 6 expected failures and 13 existing controls green. The failures independently isolate shared generic/count validation, prefixed-count category fallback, Chinese/English connector and glued-slot binding, five lexical-boundary leaks, quote-role/document selection, and the combined six-row end-to-end invariant.
+- All six exact QA rows reproduce on the superseded head: extracted and stored projects are exactly `原创`, `莉莉丝旗下`, `游戏日报`, `预计`, `关于促进网络游戏高质量发展的若干意见`, and `Project Echo N`; all six become candidates, all six enter enrichment, and all six appear in the candidate audit. The accepted RED expects zero for every one of those paths.
+- Existing nonblocking follow-ups remain out of scope: secondary-link evidence union in non-Bilibili dedupe and category-token-in-project selection for names such as `手游模拟器` or `PC Game Tycoon`.
+
 ## Remaining
 
-- Publish this final validation-only checkpoint, wait for its exact-head GitHub checks, then leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish the accepted provider-free RED from parent `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19`.
+- Implement only the bounded P1 repair, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA.
 
 ## Next Action
 
-Publish the final validation-only checkpoint on top of coherent GREEN `91b4eedf0cf33e5f74c446357f39832c4abc7a4a`, then wait for exact-head GitHub checks.
+Publish the accepted tests-and-checkpoint-only RED, then implement the bounded repair without expanding either deferred P2.
 
 ## Git Status
 
@@ -129,3 +139,4 @@ Publish the final validation-only checkpoint on top of coherent GREEN `91b4eedf0
 - Superseded compositional validation-only checkpoint: `61dafb40861c366773ae4b4c42de5189ec9a039c` (tree `a9c38bf70d6ef63ded5c4b43c8fee95766b17285`).
 - Final expanded P1 RED: `b14c81889b198bb08b62c08c0d28fbf87b76a823` (tree `7add39f903d23bd44d526998c807e50211d2edd3`).
 - Coherent expanded P1 GREEN: `91b4eedf0cf33e5f74c446357f39832c4abc7a4a` (tree `d1d22e82e570fab869d630429fba8fdf7632e7e3`).
+- Superseded validation-only expanded P1 head: `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19` (tree `664351477eae85f48a5c7758d6711ba16a197c0a`).
