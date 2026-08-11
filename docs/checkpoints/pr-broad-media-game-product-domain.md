@@ -21,10 +21,11 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
   - failed disposition `radar_only`;
   - failed reason `non_game_broad_media`.
 - Frozen the approved evidence rule: broad media may enter candidate routing only with structured game identity, or a concrete project name plus explicit game-product category plus a concrete product event.
+- Added the RED fixture/test contract covering the exact Chevrolet false positive, generic company/financial news, five concrete broad-media game-event positives, structured identity, game-vertical and animation controls, Radar retention, candidate/audit/formal/second-pass exclusion, and strict/expanded duplicate processing.
+- Captured the expected RED result with no network/provider access: `node --test automations/test/onlineDailyV4BroadMediaGameProductDomain.test.mjs` failed 6/6 bounded subtests on the old version, missing gate helpers, missing Radar-only routing, missing enrichment seam, and duplicate lane processing.
 
 ## Remaining
 
-- Create RED fixtures and focused cross-layer tests.
 - Implement the game-product domain gate and disjoint strict/expanded/rescue routing.
 - Update current rule/version, heartbeat, canonical/current docs, and legitimate current-version tests while preserving historical fixture compatibility.
 - Run focused tests, Daily V4, full repository verification, schema validation where relevant, and diff checks.
@@ -32,7 +33,7 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 
 ## Next Action
 
-Create the checkpoint-first API branch, materialize a disposable non-git snapshot, then add the RED fixture/test contract before production code.
+Implement the smallest production path that turns the bounded RED suite GREEN without changing the formal V7.2 admission gates.
 
 ## Git Status
 
@@ -40,3 +41,4 @@ Create the checkpoint-first API branch, materialize a disposable non-git snapsho
 - Remote mutation method: GitHub Git Data API only.
 - Local CRM worktree: read-only and untouched.
 - Disposable snapshot: non-git temporary directory.
+- RED commit parent: `1034028cf6a481337794039e4752ddf01d0eb382`.
