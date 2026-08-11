@@ -70,6 +70,47 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(collector.isC5BShadowCaptureEligible({ event_name: "schedule", run_slot: "morning" }), false);
   });
 
+  it("emits collector v2 diagnostics without redefining empty allowlisted patches as transport failures", async () => {
+    requireCollector("collectV73ShadowCore");
+    const evidence = nearMissEvidence(14);
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9014" }),
+      steamCandidates: [steamCandidate(evidence)],
+      mediaCandidates: [],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async () => ({ quality_proofs: [] })
+    });
+
+    assert.equal(core.collector_contract_version, 2);
+    assert.equal(core.second_pass.selector_version, "actionability-v2");
+    assert.equal(core.second_pass.transactions[0].provider_status, "success");
+    assert.equal(core.second_pass.transactions[0].error, null);
+    assert.deepEqual(core.second_pass.transactions[0].evidence_diagnostics, {
+      matching_signal_count: 0,
+      eligible_source_role_count: 0,
+      quality_keyword_match_count: 0,
+      current_independent_source_count: 1,
+      projected_independent_source_count: 1,
+      actionable_gate_count: 0,
+      outcome: "no_actionable_evidence"
+    });
+    assert.deepEqual(core.summary.second_pass_outcome_counts, {
+      qualified: 0,
+      gate_changed: 0,
+      evidence_added: 0,
+      no_actionable_evidence: 1,
+      provider_failure: 0
+    });
+    assert.deepEqual(
+      validateReplayPrivacy(core.second_pass.transactions[0].evidence_diagnostics),
+      { valid: true, errors: [] }
+    );
+  });
+
   it("projects private candidate audit state out of the persisted pending core", async () => {
     requireCollector("runC5BShadowCollectorSafely");
     const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-private-state-"));

@@ -25,13 +25,20 @@ const BEHAVIOR_MANIFEST = {
 };
 const EVALUATOR_SHA = "d".repeat(64);
 
-describe("Replay Corpus Contract v1 schemas", () => {
+describe("Replay Corpus Contract v1/v2 schemas", () => {
   it("declares closed, versioned corpus and window contracts", () => {
     const corpusSchema = readSchema("../../schemas/sourcing_replay_corpus.schema.json");
     const windowSchema = readSchema("../../schemas/sourcing_replay_window.schema.json");
 
     assert.equal(corpusSchema.additionalProperties, false);
     assert.equal(corpusSchema.properties.contract_version.const, 1);
+    assert.deepEqual(corpusSchema.properties.collector_contract_version.enum, [1, 2]);
+    assert.ok(corpusSchema.$defs.transaction.properties.evidence_diagnostics);
+    assert.ok(corpusSchema.$defs.summary.properties.second_pass_outcome_counts);
+    const collectorV2 = corpusSchema.allOf.find((branch) => (
+      branch.if?.properties?.collector_contract_version?.const === 2
+    ));
+    assert.ok(collectorV2);
     assert.deepEqual(corpusSchema.properties.capture_status.enum, [
       "complete",
       "incomplete",
@@ -213,6 +220,37 @@ describe("Replay corpus validator", () => {
       validateReplayCorpus(invalid),
       "SCHEMA_ENUM",
       "/second_pass/transactions/0/requested_actions/0/action"
+    );
+  });
+
+  it("accepts historical v1 and requires privacy-safe diagnostics plus outcome counts in v2", () => {
+    assert.deepEqual(validateReplayCorpus(completeCorpusFixture()), {
+      valid: true,
+      errors: []
+    });
+
+    const v2 = mutateCorpus(upgradeCorpusToV2);
+    assert.deepEqual(validateReplayCorpus(v2), { valid: true, errors: [] });
+
+    const missingDiagnostics = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      delete value.second_pass.transactions[0].evidence_diagnostics;
+    });
+    expectInvalid(
+      validateReplayCorpus(missingDiagnostics),
+      "SCHEMA_REQUIRED",
+      "/second_pass/transactions/0/evidence_diagnostics"
+    );
+
+    const mismatchedSummary = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.summary.second_pass_outcome_counts.qualified = 0;
+      value.summary.second_pass_outcome_counts.no_actionable_evidence = 1;
+    });
+    expectInvalid(
+      validateReplayCorpus(mismatchedSummary),
+      "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
+      "/summary/second_pass_outcome_counts/qualified"
     );
   });
 
@@ -1052,6 +1090,27 @@ function transactionFixture() {
     decision_changed: true,
     changed_gate: "official_product",
     evaluator_dependency_sha256: EVALUATOR_SHA
+  };
+}
+
+function upgradeCorpusToV2(value) {
+  value.collector_contract_version = 2;
+  value.second_pass.selector_version = "actionability-v2";
+  value.second_pass.transactions[0].evidence_diagnostics = {
+    matching_signal_count: 1,
+    eligible_source_role_count: 1,
+    quality_keyword_match_count: 1,
+    current_independent_source_count: 1,
+    projected_independent_source_count: 2,
+    actionable_gate_count: 1,
+    outcome: "qualified"
+  };
+  value.summary.second_pass_outcome_counts = {
+    qualified: 1,
+    gate_changed: 0,
+    evidence_added: 0,
+    no_actionable_evidence: 0,
+    provider_failure: 0
   };
 }
 

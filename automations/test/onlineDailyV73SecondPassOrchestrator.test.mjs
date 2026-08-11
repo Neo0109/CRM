@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { after, describe, it } from "node:test";
 
 import { createEvidenceSnapshot } from "../jobs/online_daily_v4_candidate_state.mjs";
@@ -21,6 +21,9 @@ const runV73TargetedCandidateSecondPasses =
 const fetchV73TargetedEvidence =
   orchestratorModule.fetchV73TargetedEvidence
   ?? missingTargetedEvidenceProvider;
+const compareV73SecondPassPriority =
+  orchestratorModule.compareV73SecondPassPriority
+  ?? missingSecondPassPriorityComparator;
 const collectorUrl = new URL(
   "../jobs/online_daily_v7_3_shadow_collector.mjs",
   import.meta.url
@@ -133,6 +136,103 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     assert.equal(
       forward.results.some((item) => item.dedupe_key === wideGapEvidence.dedupe_key),
       false
+    );
+  });
+
+  it("prioritizes locally actionable gate changes and preserves the frozen order when none are actionable", async () => {
+    const highScoreEvidence = nearMissEvidence(15);
+    const actionableEvidence = nearMissEvidence(16);
+    const highScore = steamCandidate(highScoreEvidence, { score: 100 });
+    const actionable = steamCandidate(actionableEvidence, { score: 1 });
+    const actionableSignal = {
+      title: `${actionableEvidence.project} hands-on preview`,
+      summary: `${actionableEvidence.project} independent media playtest review`,
+      source: "Actionable Games Media",
+      link: "https://actionable-media.example/reviews/v73-actionability"
+    };
+
+    const prioritized = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [highScore, actionable],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 1,
+      mediaSignals: [actionableSignal]
+    });
+
+    assert.deepEqual(
+      prioritized.results.map((item) => item.dedupe_key),
+      [actionableEvidence.dedupe_key]
+    );
+    assert.deepEqual(prioritized.results[0].evidence_diagnostics, {
+      matching_signal_count: 1,
+      eligible_source_role_count: 1,
+      quality_keyword_match_count: 1,
+      current_independent_source_count: 1,
+      projected_independent_source_count: 2,
+      actionable_gate_count: 1,
+      outcome: "qualified"
+    });
+
+    const frozenOrder = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [actionable, highScore],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 2,
+      mediaSignals: [],
+      fetchEvidence: async () => ({ quality_proofs: [] })
+    });
+    assert.deepEqual(
+      frozenOrder.results.map((item) => item.dedupe_key),
+      [highScoreEvidence.dedupe_key, actionableEvidence.dedupe_key],
+      "the legacy action-count/score/dedupe/source order must remain exact when actionability ties"
+    );
+  });
+
+  it("compares the current sixty eligible candidates deterministically without network access", () => {
+    const corpus = JSON.parse(readFileSync(
+      new URL(
+        "../../data/sourcing_replay_corpus/2026-08-11/31469882089-1-afternoon.json",
+        import.meta.url
+      ),
+      "utf8"
+    ));
+    const eligible = new Set(corpus.second_pass.eligible_ids);
+    const rankItems = corpus.candidates
+      .filter((candidate) => eligible.has(candidate.candidate_id))
+      .map((candidate) => ({
+        actions: Array.from({ length: candidate.ranking_inputs.action_count }, () => ({})),
+        score: candidate.ranking_inputs.discovery_score,
+        dedupe_key: candidate.ranking_inputs.dedupe_key,
+        source_type: candidate.ranking_inputs.source_type,
+        evidence_diagnostics: { actionable_gate_count: 0 }
+      }));
+    const legacy = [...rankItems].sort((left, right) => (
+      left.actions.length - right.actions.length
+      || right.score - left.score
+      || left.dedupe_key.localeCompare(right.dedupe_key)
+      || left.source_type.localeCompare(right.source_type)
+    ));
+    const actionability = [...rankItems].sort(compareV73SecondPassPriority);
+
+    assert.equal(rankItems.length, 60);
+    assert.deepEqual(
+      legacy.map((item) => item.dedupe_key),
+      corpus.second_pass.eligible_ids
+    );
+    assert.deepEqual(
+      actionability.map((item) => item.dedupe_key),
+      legacy.map((item) => item.dedupe_key),
+      "all-zero actionability must preserve the exact natural-run ordering"
+    );
+
+    const promoted = structuredClone(rankItems);
+    promoted.at(-1).evidence_diagnostics.actionable_gate_count = 1;
+    assert.equal(
+      promoted.sort(compareV73SecondPassPriority)[0].dedupe_key,
+      rankItems.at(-1).dedupe_key,
+      "one locally actionable candidate must outrank legacy score without changing tie keys"
     );
   });
 
@@ -579,6 +679,10 @@ async function missingSecondPassOrchestrator({
 
 async function missingTargetedEvidenceProvider() {
   return {};
+}
+
+function missingSecondPassPriorityComparator() {
+  return 0;
 }
 
 assert.equal(
