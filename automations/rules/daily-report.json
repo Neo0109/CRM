@@ -297,8 +297,8 @@
       ],
       "category_prefix_modifier_policy": "consume_region_promotion_genre_platform_and_generic_count_modifiers",
       "generic_count_policy": "shared_generic_descriptor_dp_with_dynamic_numeral_transition",
-      "generic_numeral_transition_policy": "allow_arabic_chinese_几_or_若干_only_inside_generic_segmentation",
-      "generic_quantity_role_policy": "tokenize_connectors_classifiers_magnitude_vague_rank_and_english_quantity_roles",
+      "generic_numeral_transition_policy": "allow_arabic_chinese_几_若干_and_english_quantity_words_only_inside_generic_segmentation",
+      "generic_quantity_role_policy": "tokenize_connectors_extended_classifiers_share_rank_and_common_english_quantity_roles",
       "generic_category_prefix_quantity_policy": "longest_prefix_split_reuses_shared_generic_descriptor_dp",
       "generic_quantity_operator_policy": "repeatable_curated_operator_token_sequence",
       "generic_quantity_operator_tokens": [
@@ -349,7 +349,8 @@
       "generic_count_numeral_cores": [
         "arabic",
         "chinese_including_几",
-        "若干"
+        "若干",
+        "english_quantity_words"
       ],
       "generic_count_range_connectors": [
         "至",
@@ -378,7 +379,18 @@
         "个",
         "部",
         "项",
-        "批"
+        "批",
+        "位",
+        "种",
+        "类",
+        "家",
+        "名",
+        "组",
+        "支",
+        "套",
+        "份",
+        "则",
+        "篇"
       ],
       "generic_batch_quantifiers": [
         "一批",
@@ -396,6 +408,34 @@
         "多数"
       ],
       "generic_vague_quantity_policy": "segment_quantifier_token_plus_game_product_or_project_noun",
+      "generic_share_rank_tokens": [
+        "一半",
+        "半数",
+        "过半",
+        "很多",
+        "多种",
+        "多类",
+        "前",
+        "名",
+        "强"
+      ],
+      "generic_english_quantity_tokens": [
+        "over",
+        "under",
+        "about",
+        "nearly",
+        "approximately",
+        "atleast",
+        "upto",
+        "tensof",
+        "thousandsof",
+        "millionsof",
+        "adozen",
+        "severaldozen",
+        "topten",
+        "first",
+        "best"
+      ],
       "generic_descriptor_policy": "reject_when_entire_normalized_name_segments_into_generic_tokens",
       "generic_token_categories": [
         "qualifier_quantifier",

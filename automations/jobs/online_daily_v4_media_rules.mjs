@@ -329,17 +329,21 @@ const GENERIC_QUANTITY_ROLE_TOKENS = Object.freeze([
   // Count connectors, classifiers, range/approximation roles, and ranking frames.
   "以上", "以下", "以内", "左右", "上下", "数以", "约摸", "差不离", "首批", "最后",
   "起",
-  "前", "头", "余", "来", "且", "款", "个", "部", "项", "批", "位", "的", "佳", "系列",
+  "前", "头", "余", "来", "且", "款", "个", "部", "项", "批", "位", "种", "类", "家", "名",
+  "组", "支", "套", "份", "则", "篇", "的", "佳", "强", "系列",
   // Magnitude and count idioms remain tokens rather than complete descriptor denylist entries.
   "成百上千", "成千上万", "不计其数", "不胜枚举", "难以计数", "数不清", "屈指可数", "寥寥",
   // Vague quantity roles can compose with existing game/product/project nouns.
   "绝大多数", "大多数", "一小部分", "少部分", "一部分", "大批量",
   "许多", "诸多", "众多", "不少", "各类", "各种", "各款", "各个", "部分", "成批", "批量",
-  "全部", "所有",
+  "全部", "所有", "一半", "半数", "过半", "很多", "多种", "多类",
   // English quantity/rank roles after NFKC, case, whitespace, and punctuation normalization.
-  "morethan", "fewerthan", "around", "dozensof", "hundredsof", "mobilegames", "top"
+  "approximately", "severaldozen", "thousandsof", "millionsof", "morethan", "fewerthan",
+  "atleast", "dozensof", "hundredsof", "adozen", "topten", "nearly", "around", "about", "under",
+  "over", "upto", "first", "best", "mobilegames", "top", "several", "of", "a"
 ].sort((left, right) => right.length - left.length));
 const GENERIC_NUMERAL_AT_START_PATTERN = /^(?:\d+|[零〇一二两三四五六七八九十百千万亿几]+|若干)/u;
+const GENERIC_ENGLISH_NUMERAL_AT_START_PATTERN = /^(?:thousands|hundreds|millions|dozens|thousand|hundred|million|twelve|eleven|dozen|three|seven|eight|four|five|nine|tens|ten|one|two|six)/u;
 const GENERIC_GAME_PROJECT_SEGMENT_TOKENS = Object.freeze([
   ...new Set([...GENERIC_GAME_PROJECT_TOKENS, ...GENERIC_QUANTITY_ROLE_TOKENS])
 ].sort((left, right) => right.length - left.length));
@@ -350,7 +354,8 @@ const GENERIC_CATEGORY_PREFIX_QUANTITY_SIGNAL_TOKENS = new Set([
   "成百上千", "成千上万", "不计其数", "不胜枚举", "难以计数", "数不清", "屈指可数", "寥寥",
   "绝大多数", "大多数", "一小部分", "少部分", "一部分", "大批量",
   "许多", "诸多", "众多", "不少", "各类", "各种", "各款", "各个", "部分", "成批", "批量",
-  "全部", "所有", "dozensof", "hundredsof"
+  "全部", "所有", "一半", "半数", "过半", "很多", "多种", "多类", "数",
+  "dozensof", "hundredsof", "thousandsof", "millionsof", "adozen", "severaldozen", "topten"
 ]);
 const REGION_CATEGORY_SEGMENT_TOKENS = Object.freeze([
   ...new Set([...REGION_CATEGORY_PREFIX_TOKENS, ...GENERIC_QUANTITY_ROLE_TOKENS])
@@ -361,6 +366,7 @@ function isEntirelySegmentableProjectDescriptor(
   tokens,
   {
     allowGenericNumeral = false,
+    allowGenericEnglishNumeral = false,
     allowCalendarYear = false,
     signalTokens = null,
     requireSignal = false
@@ -373,6 +379,10 @@ function isEntirelySegmentableProjectDescriptor(
     if (!state) continue;
     if (allowGenericNumeral) {
       const numeral = key.slice(index).match(GENERIC_NUMERAL_AT_START_PATTERN)?.[0];
+      if (numeral) reachable[index + numeral.length] |= state | 2;
+    }
+    if (allowGenericEnglishNumeral) {
+      const numeral = key.slice(index).match(GENERIC_ENGLISH_NUMERAL_AT_START_PATTERN)?.[0];
       if (numeral) reachable[index + numeral.length] |= state | 2;
     }
     if (allowCalendarYear) {
@@ -395,7 +405,7 @@ function isGenericGameProjectDescriptor(value) {
   return isEntirelySegmentableProjectDescriptor(
     key,
     GENERIC_GAME_PROJECT_SEGMENT_TOKENS,
-    { allowGenericNumeral: true }
+    { allowGenericNumeral: true, allowGenericEnglishNumeral: true }
   );
 }
 
@@ -405,7 +415,7 @@ function isOnlyRegionOrCategoryModifiers(value) {
   return isEntirelySegmentableProjectDescriptor(
     key,
     REGION_CATEGORY_SEGMENT_TOKENS,
-    { allowGenericNumeral: true }
+    { allowGenericNumeral: true, allowGenericEnglishNumeral: true }
   );
 }
 
@@ -535,6 +545,7 @@ function isGenericCategoryPrefix(value) {
     GENERIC_CATEGORY_PREFIX_SEGMENT_TOKENS,
     {
       allowGenericNumeral: true,
+      allowGenericEnglishNumeral: true,
       signalTokens: GENERIC_CATEGORY_PREFIX_QUANTITY_SIGNAL_TOKENS,
       requireSignal: true
     }

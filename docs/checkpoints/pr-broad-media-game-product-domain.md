@@ -206,15 +206,21 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - The bounded repair may extend only the shared whole-name quantity-role tokens, dynamic numeral/word transitions, and the same category-prefix DP. Role closure, unmarked game-vertical behavior, formal V7.2 gates, and both existing P2 follow-ups remain unchanged.
 - Distinctive residue controls cover Chinese classifier/share tokens and English quantity-token prefixes across all three paths; structured category-prefix controls prove the same shared grammar consumes quantity prefixes without consuming the distinct project name.
 - The coherent provider/network-free RED is isolated on exact `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`: 34 focused subtests yield 30 prior/distinctive controls green and exactly four expected failures in the machine contract, 108-path matrix, 18-row material invariant, and category-prefix reuse. The 18-row baseline reproduces 13 leads, 13 enrichment calls, 13 audit candidates, and 6 audit records; formal and second-pass remain zero.
+- Published the accepted tests-and-checkpoint-only RED as `1a8a755af544794b461f542d660f85e4d38a48b6` with tree `18356db00526b7a23cd18f292e38e4e2a9448e72`, parented directly to superseded head `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`. Frozen compare remains merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 39 and behind 0, and both changed RED blobs match the disposable snapshot.
+- Implemented the bounded GREEN only in the shared quantity grammar: extended Chinese classifiers and share/rank roles are ordinary DP tokens; bounded English quantity words receive a dynamic numeral transition and compose with common English framing tokens. The same DP remains the sole category-prefix source, and distinctive residue is still required for rejection.
+- Focused behavior is GREEN before full gates: all 34 tests pass, including the 108-path exact disposition matrix, 18-row zero-downstream material invariant, 51 distinctive-residue paths, and seven category-prefix controls. Role closure and both P2 boundaries are unchanged.
+- Machine rules and both active documents now record the bounded English numeral transition, extended classifiers, share/rank roles, and common English quantity frames. The updated `daily-report.json` Git blob is `a761c3c682d6f1dced76ee232f746bac99f2a765`, and the shadow integration behavior floor matches it.
+- Full local gates are GREEN: focused 34/34, impacted contracts 113/113, media/dedupe/audit regressions 68/68, and Daily V4 332/332. Exact shimmed `npm run verify:all` also exits successfully, including frontend/backend/functions typechecks, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
+- Machine JSON parsing, all changed JavaScript module syntax checks, exact behavior hash, and whitespace checks against accepted RED pass. No role-closure or P2 file was broadened.
 
 ## Remaining
 
-- Publish the coherent tests-and-checkpoint-only RED from exact superseded head `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`, then implement and verify only the bounded shared quantity-role closure.
+- Publish one coherent code-bearing GREEN from accepted RED `1a8a755af544794b461f542d660f85e4d38a48b6`, verify frozen-base and 22/22 remote-blob parity, then wait for that exact head's checks.
 - The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate. Do not merge from this task.
 
 ## Next Action
 
-After independent QA confirms the exact matrix, publish this tests-and-checkpoint-only accepted RED from `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`; then implement only the shared quantity-role/category-prefix closure.
+Publish the coherent implementation from accepted RED, verify frozen-base/remote-blob parity and exact checks, and return the new head to independent QA without merging.
 
 ## Git Status
 
@@ -259,4 +265,5 @@ After independent QA confirms the exact matrix, publish this tests-and-checkpoin
 - Accepted shared quantity-segmentation RED: `0c76054e318eabb241fe3704c32d53de3e266167` (tree `06b12db1ba7aede3e6a36fee8133f7ac509ec4bc`), exact parent `222d8ac724fc60a506a74eb35c13c07b973a3d4b`; frozen compare and 22/22 parity passed.
 - Fully verified shared-DP GREEN: `5807a7b1099f78925a8edcb622f7ee82000936e5` (tree `a9d710e7a04ecc24bac365a751526eac98c330af`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
 - Superseded final status-only head: `ad8bd94a07e4ffe0c5f1f011809cf470838509f1` (tree `90d7e9d58589a340d6d666306b15d46fca4ea193`); exact checks passed before extended quantity-role QA.
-- Extended quantity-role RED: local tests-and-checkpoint-only snapshot is ready to publish from exact superseded head `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`; focused result is 30/34 with exactly four expected failures.
+- Accepted extended quantity-role RED: `1a8a755af544794b461f542d660f85e4d38a48b6` (tree `18356db00526b7a23cd18f292e38e4e2a9448e72`), exact parent `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`; focused result was 30/34 with exactly four expected failures.
+- Extended quantity-role GREEN: fully verified local disposable snapshot ready to publish from exact accepted RED `1a8a755af544794b461f542d660f85e4d38a48b6`.

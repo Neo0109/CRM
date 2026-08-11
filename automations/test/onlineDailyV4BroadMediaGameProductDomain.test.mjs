@@ -954,14 +954,14 @@ describe("broad-media game-product candidate domain", () => {
         category_prefix_modifier_policy: "consume_region_promotion_genre_platform_and_generic_count_modifiers",
         generic_count_policy: "shared_generic_descriptor_dp_with_dynamic_numeral_transition",
         generic_numeral_transition_policy:
-          "allow_arabic_chinese_几_or_若干_only_inside_generic_segmentation",
+          "allow_arabic_chinese_几_若干_and_english_quantity_words_only_inside_generic_segmentation",
         generic_quantity_role_policy:
           "tokenize_connectors_extended_classifiers_share_rank_and_common_english_quantity_roles",
         generic_category_prefix_quantity_policy:
           "longest_prefix_split_reuses_shared_generic_descriptor_dp",
         generic_quantity_operator_policy: "repeatable_curated_operator_token_sequence",
         generic_quantity_operator_tokens: genericQuantityOperatorTokens,
-        generic_count_numeral_cores: ["arabic", "chinese_including_几", "若干"],
+        generic_count_numeral_cores: ["arabic", "chinese_including_几", "若干", "english_quantity_words"],
         generic_count_range_connectors: genericQuantityRangeConnectors,
         generic_count_pre_classifier_suffixes: ["余", "多", "来"],
         generic_count_post_classifier_suffixes: ["以上", "以下", "以内", "左右", "上下", "起", "余"],
