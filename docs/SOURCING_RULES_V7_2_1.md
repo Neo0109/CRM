@@ -47,7 +47,7 @@ All three elements are required in the same item:
 2. an explicit game-product category such as independent game, domestic game, online game, mobile game, PC game, or console game;
 3. a concrete product event: Demo, 试玩, 实机, Playtest, 测试, 商店页, 愿望单, 版号, 首曝, or 开发日志.
 
-One pure named-project extractor validates structured project fields first, then a quoted name, then a conservative explicit unquoted title. It ignores missing and non-string fields and rejects literal missing markers, generic category nouns, and event-only phrases. The unquoted path supports a category-name-event form such as `国产独立游戏 星海远征 公布试玩 Demo`, plus the corresponding project-before-category form. The same extracted name is reused as the tagged media Lead project; identity-only admission may retain the legacy title fallback when no project name is required.
+One pure named-project extractor validates structured project fields first, then a quoted name, then a conservative explicit unquoted title. It ignores missing and non-string fields and rejects literal missing markers, generic category nouns, event-only phrases, and wholly generic descriptors after NFKC/case/separator normalization. The generic boundary covers exact news/update/team/product labels, placeholder and quantified forms such as `某公司`, `某工作室`, `一家团队`, `旗下新作`, `多款新作`, `一款游戏`, `多个项目`, `latest news`, `new title`, and `development team`; normalized spelling such as `最新 消息` or `行业：资讯` cannot bypass it. A distinctive name that merely contains an ordinary word remains valid. Reporting/attribution prefixes such as `报道称`, `消息称`, `官方`, `开发者`, `开发团队`, `团队`, and `制作组` are rejected at an explicit separator or end-of-text boundary rather than relying on a JavaScript word boundary after Han text. The unquoted path supports a category-name-event form such as `国产独立游戏 星海远征 公布试玩 Demo`, plus the corresponding project-before-category form. The same extracted name is reused as the tagged media Lead project; identity-only admission may retain the legacy title fallback when no project name is required.
 
 `B站`, `官方`, `授权`, `发行`, `合作`, `需求`, and `上线` are insufficient evidence, alone or in combination.
 
@@ -101,7 +101,7 @@ Fixed offline tests must prove:
 - generic financial/company reporting containing ambiguous business terms remains Radar-only;
 - concrete broad-media 版号, Demo, Playtest, 实机, and 商店页 examples remain candidate-eligible, including a domestic game without a Steam AppID;
 - normalized Steam and other supported structured identities remain eligible;
-- missing/generic/event-only names, arbitrary structured IDs, and non-product platform routes remain in Radar only;
+- missing/generic/event-only names, normalized generic descriptors across structured/quoted/unquoted paths, arbitrary structured IDs, and non-product platform routes remain in Radar only;
 - explicit unquoted project names are extracted into the stored Lead project;
 - marked failures use one reason before downstream topic taxonomy, and dedupe preserves the marker in both input orders;
 - a failed broad item creates no candidate, enrichment call, candidate-audit record, second-pass selection, or formal Lead;

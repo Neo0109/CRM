@@ -175,11 +175,119 @@ export function extractGameProductDomainProjectName(item) {
   return extractExplicitUnquotedGameProjectName(item?.title);
 }
 
+const GENERIC_GAME_PROJECT_DESCRIPTOR_KEYS = new Set([
+  "新闻",
+  "消息",
+  "资讯",
+  "动态",
+  "公告",
+  "最新消息",
+  "最新资讯",
+  "最新动态",
+  "行业动态",
+  "行业资讯",
+  "游戏新闻",
+  "游戏资讯",
+  "新游资讯",
+  "公司新闻",
+  "公司动态",
+  "企业新闻",
+  "企业动态",
+  "产品消息",
+  "产品动态",
+  "官方消息",
+  "官方公告",
+  "多款新作",
+  "一款新作",
+  "多款游戏",
+  "一款游戏",
+  "多个项目",
+  "一个项目",
+  "本作",
+  "该作",
+  "本项目",
+  "全新作品",
+  "全新游戏",
+  "某游戏",
+  "某项目",
+  "某公司",
+  "某团队",
+  "某工作室",
+  "一家团队",
+  "这款游戏",
+  "旗下新作",
+  "游戏项目",
+  "项目动态",
+  "公司项目",
+  "品牌项目",
+  "合作项目",
+  "发行项目",
+  "研发项目",
+  "开发项目",
+  "研发团队",
+  "开发团队",
+  "制作团队",
+  "开发者",
+  "团队",
+  "制作组",
+  "官方",
+  "官方授权",
+  "合作需求",
+  "报道称",
+  "消息称",
+  "latestnews",
+  "latestupdate",
+  "industrynews",
+  "industryupdate",
+  "gamenews",
+  "gameupdate",
+  "companynews",
+  "companyupdate",
+  "corporatenews",
+  "corporateupdate",
+  "officialnews",
+  "officialupdate",
+  "officialannouncement",
+  "productnews",
+  "productupdate",
+  "newtitle",
+  "newgame",
+  "newproject",
+  "gameproject",
+  "project",
+  "developmentteam",
+  "productionteam"
+]);
+
+function normalizeProjectDescriptorKey(value) {
+  return normalizeDisplayText(value)
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\s"'“”‘’《》【】()（）\[\]{}:：,，.。!！?？/_|｜—–-]+/gu, "");
+}
+
+function isGenericGameProjectDescriptor(value) {
+  const text = normalizeDisplayText(value);
+  if (/^(?:消息称|报道称|官方|开发者|开发团队|制作组|团队)(?:[\s:：—–|｜-]+|$)/i.test(text)) {
+    return true;
+  }
+  const key = normalizeProjectDescriptorKey(text);
+  if (!key || GENERIC_GAME_PROJECT_DESCRIPTOR_KEYS.has(key)) return true;
+  if (/^(?:多款|一款|多个|一个|多项|一项|数款|若干|某款|某个|某|本|该|这款|一家|旗下|全新|最新|一部|多部)(?:新作|游戏|项目|作品|产品|新游|手游|端游|主机游戏|公司|团队|工作室)$/.test(key)) {
+    return true;
+  }
+  if (/^(?:公司|企业|行业|品牌|产品|游戏|新游|项目|团队|工作室|官方|开发|研发|制作|发行|合作)(?:新闻|消息|资讯|动态|公告|团队|项目|需求|授权)$/.test(key)) {
+    return true;
+  }
+  return /^(?:(?:a|an|one|several|multiple|many|some|new|latest)(?:new)?(?:games?|titles?|projects?|products?)|(?:company|corporate|industry|game|product|official|developer|development|production)(?:news|update|announcement|team|project|message|information))$/.test(key);
+}
+
 function isConcreteProjectName(value) {
   if (typeof value !== "string") return false;
   const text = normalizeDisplayText(value);
   if (text.length < 2 || text.length > 64) return false;
   if (/^(?:undefined|null|unknown|untitled|未命名)$/i.test(text)) return false;
+  if (isGenericGameProjectDescriptor(text)) return false;
   const residue = text
     .replace(/(?:国产|中国|国人)?(?:独立游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏)|国产游戏|手游|端游|游戏项目|游戏|项目|新作|新品/gi, " ")
     .replace(/\b(?:demo|playtest)\b/gi, " ")
@@ -210,7 +318,7 @@ function cleanUnquotedProjectCandidate(value) {
     .replace(/^[\s:：—–|｜-]+|[\s:：—–|｜-]+$/g, "")
     .trim();
   if (!/^[\p{L}\p{N}][\p{L}\p{N} ·・:：'’&._-]{1,47}$/u.test(text)) return "";
-  if (/^(?:消息称|报道称|官方|开发者|开发团队|制作组|团队)\b/i.test(text)) return "";
+  if (/^(?:消息称|报道称|官方|开发者|开发团队|制作组|团队)(?:[\s:：—–|｜-]+|$)/i.test(text)) return "";
   return text;
 }
 

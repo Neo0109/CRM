@@ -58,16 +58,19 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Exact-head QA at `17151a4d2f8d296a68fc0a7b54b2f29482deffe2` found that wholly generic descriptors can still satisfy the shared project-name validator through structured, quoted, and explicit unquoted paths. Reproductions include news/update/team/product descriptors, quantified generic titles, and Han prefixes whose old trailing JavaScript `\b` check is not Chinese-safe.
 - Added one provider-free adversarial contract covering all three name paths for the required Chinese and English descriptors, plus end-to-end exclusion from candidate, enrichment, candidate audit/formal records, and V7.3 second pass. Distinctive controls retain exact project binding for `星海远征`, `雾港纪事`, `Lost Dream Chronicle`, and names that contain ordinary words without being wholly generic.
 - Accepted focused RED: 13 subtests produce exactly 1 new failure and 12 existing greens; the first observed leak is structured `最新消息` returning as the project name. The same test matrix contains quoted and unquoted variants for every descriptor and the Han-prefix cases.
+- Implemented one shared normalized predicate inside the existing concrete-project validator. It applies to structured, quoted, and explicit unquoted paths; performs NFKC/case/separator normalization; rejects exact news/update/team/product labels, placeholder/quantified descriptor grammar, and reporting/team prefixes at an explicit separator or end boundary; and does not reject a distinctive name merely because it contains an ordinary word.
+- Extended the same matrix for `某公司`, `某团队`, `某工作室`, `一家团队`, `一款产品`, `一款新游`, `这款游戏`, `旗下新作`, `项目动态`, and whitespace/punctuation variants such as `最新 消息` and `行业：资讯`. Machine rules and both active documents now declare the normalization, placeholder, generic-descriptor, prefix, extraction-order, and shared Lead-binding contract.
+- Final provider/network-free GREEN: focused passes 13/13; the expanded impacted union passes 92/92; `npm run test:daily-v4` passes 311/311; and the exact `npm run verify:all` passes every declared task, including typechecks, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
+- Machine/fixture JSON parsing, changed-module syntax checks, and the exact frozen-main whitespace check pass. The updated `daily-report.json` Git blob is `9c9170bb546bbf8529a5c2ba37ee4dd2b3b524d2`, and the shadow integration behavior floor matches it.
 - Nonblocking follow-up, deliberately not expanded into this repair: non-Bilibili dedupe currently preserves the conservative domain marker but does not union a valid Steam link carried only by the secondary duplicate, creating false-negative/input-order asymmetry. This should be addressed as a separate evidence-merge item after PR #116.
 
 ## Remaining
 
-- Implement the shared normalized generic-project predicate and Chinese-safe prefix boundary, then rerun the focused/impacted/Daily V4/full verification gates.
-- Publish the repaired checkpoint, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish the coherent generic-descriptor GREEN, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the generic-descriptor RED checkpoint, implement the bounded shared-validator repair, and rerun provider-free validation.
+Publish the coherent GREEN checkpoint, then complete exact remote-tree/check acceptance.
 
 ## Git Status
 
@@ -82,3 +85,4 @@ Publish the generic-descriptor RED checkpoint, implement the bounded shared-vali
 - Coherent P1 GREEN before full verification: `7e73727454a80f8c0bdba9fbdbdc80972446ef6f` (tree `f38345c24aaa42ac41744500d62c8389d4450514`).
 - Final binding/namespace RED: `20fad7acb082867ef3ff0ee54b7286ef823b7227` (tree `2eb97efa97b40c86cf34e23353dd49a223c49617`).
 - Last fully verified head before generic-descriptor QA: `17151a4d2f8d296a68fc0a7b54b2f29482deffe2` (tree `6df28f908dd569a12260d8af089dc1c4a1350112`).
+- Generic-descriptor RED: `644257e541dadf35c674a4e1b32b1bd09ec3e4ab` (tree `5471529422e5594f00f5336a5d47692746bf606e`).

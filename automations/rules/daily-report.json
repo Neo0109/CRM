@@ -253,6 +253,18 @@
       ],
       "kuaibao_product_id": "positive_numeric"
     },
+    "project_name_constraints": {
+      "extraction_order": [
+        "structured_string",
+        "quoted",
+        "explicit_unquoted"
+      ],
+      "normalization": "nfkc_casefold_strip_separators",
+      "generic_descriptor_policy": "reject_normalized_exact_token_and_quantified_generic",
+      "placeholder_policy": "reject_quantified_and_attribution_descriptors",
+      "reporting_prefix_policy": "reject_prefix_at_separator_or_end",
+      "lead_project_binding": "shared_extractor"
+    },
     "semantic_evidence_required": [
       "concrete_project_name",
       "explicit_game_product_category",

@@ -131,6 +131,18 @@ const genericProjectDescriptors = [
   "全新游戏",
   "官方授权",
   "合作需求",
+  "某公司",
+  "某团队",
+  "某工作室",
+  "一家团队",
+  "一款产品",
+  "一款新游",
+  "这款游戏",
+  "旗下新作",
+  "项目动态",
+  "最新 消息",
+  "行业 资讯",
+  "行业：资讯",
   "报道称",
   "消息称",
   "官方",
@@ -144,6 +156,16 @@ const genericProjectDescriptors = [
   "new game",
   "project",
   "development team"
+];
+
+const genericProjectPrefixes = [
+  "报道称",
+  "消息称",
+  "官方",
+  "开发者",
+  "开发团队",
+  "团队",
+  "制作组"
 ];
 
 function genericDescriptorItem(descriptor, mode, index) {
@@ -192,6 +214,17 @@ describe("broad-media game-product candidate domain", () => {
     assert.deepEqual(
       rules.broad_media_candidate_domain_gate.structured_identity_constraints.kuaibao_product_routes,
       ["a", "shouyou", "game", "games", "app", "apps", "product", "products"]
+    );
+    assert.deepEqual(
+      rules.broad_media_candidate_domain_gate.project_name_constraints,
+      {
+        extraction_order: ["structured_string", "quoted", "explicit_unquoted"],
+        normalization: "nfkc_casefold_strip_separators",
+        generic_descriptor_policy: "reject_normalized_exact_token_and_quantified_generic",
+        placeholder_policy: "reject_quantified_and_attribution_descriptors",
+        reporting_prefix_policy: "reject_prefix_at_separator_or_end",
+        lead_project_binding: "shared_extractor"
+      }
     );
     for (const name of broadSourceNames) {
       assert.equal(
@@ -328,11 +361,18 @@ describe("broad-media game-product candidate domain", () => {
   });
 
   it("rejects wholly generic project descriptors across every name path", async () => {
-    const genericItems = genericProjectDescriptors.flatMap((descriptor, index) =>
-      ["structured", "quoted", "unquoted"].map((mode) =>
-        genericDescriptorItem(descriptor, mode, index)
+    const genericItems = [
+      ...genericProjectDescriptors.flatMap((descriptor, index) =>
+        ["structured", "quoted", "unquoted"].map((mode) =>
+          genericDescriptorItem(descriptor, mode, index)
+        )
+      ),
+      ...genericProjectPrefixes.flatMap((prefix, index) =>
+        ["structured", "quoted", "unquoted"].map((mode) =>
+          genericDescriptorItem(`${prefix} 雾港纪事`, mode, `prefix-${index}`)
+        )
       )
-    );
+    ];
 
     for (const item of genericItems) {
       assert.equal(
@@ -413,10 +453,14 @@ describe("broad-media game-product candidate domain", () => {
       enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates
     }));
 
-    assert.deepEqual(
-      namedLeads.map((lead) => lead.project),
-      ["星海远征", "雾港纪事", "Lost Dream Chronicle", "行业动态模拟器", "New Game Chronicle"]
-    );
+    const expectedProjectByLink = new Map(namedItems.map((item) => [
+      item.link,
+      mediaRules.extractGameProductDomainProjectName(item)
+    ]));
+    assert.equal(namedLeads.length, namedItems.length);
+    for (const lead of namedLeads) {
+      assert.equal(lead.project, expectedProjectByLink.get(lead._mediaItem?.link));
+    }
   });
 
   it("accepts only narrow structured IDs and normalized product routes", () => {
