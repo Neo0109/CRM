@@ -379,11 +379,25 @@ describe("broad-media game-product candidate domain", () => {
       rules.broad_media_candidate_domain_gate.structured_identity_constraints.kuaibao_product_routes,
       ["a", "shouyou", "game", "games", "app", "apps", "product", "products"]
     );
+    assert.equal(
+      rules.broad_media_candidate_domain_gate.structured_identity_constraints.url_trailing_delimiter_policy,
+      "strip_prose_delimiters_before_strict_route_validation"
+    );
     assert.deepEqual(
       rules.broad_media_candidate_domain_gate.project_name_constraints,
       {
         extraction_order: ["structured_string", "quoted", "explicit_unquoted"],
         normalization: "nfkc_casefold_strip_separators",
+        explicit_category_matching: "shared_longest_first_vocabulary_no_bare_game",
+        explicit_category_vocabulary: [
+          "模拟经营游戏", "客户端游戏", "移动端游戏", "二次元游戏", "独立游戏", "网络游戏",
+          "电子游戏", "手机游戏", "主机游戏", "电脑游戏", "单机游戏", "国产游戏", "移动游戏",
+          "小游戏", "网页游戏", "策略游戏", "卡牌游戏", "武侠游戏", "肉鸽游戏", "Steam游戏",
+          "掌机游戏", "ARPG游戏", "PC游戏", "VR游戏", "手游", "端游",
+          "mobile game", "pc game", "console game"
+        ],
+        category_prefix_modifier_policy: "consume_region_promotion_genre_platform_and_generic_count_modifiers",
+        generic_count_policy: "arabic_or_chinese_numeral_plus_classifier",
         generic_descriptor_policy: "reject_when_entire_normalized_name_segments_into_generic_tokens",
         generic_token_categories: [
           "qualifier_quantifier",
@@ -395,9 +409,21 @@ describe("broad-media game-product candidate domain", () => {
         ],
         distinctive_residue_policy: "admit_when_non_generic_residue_remains",
         placeholder_policy: "reject_quantified_and_attribution_descriptors",
+        organization_only_policy: "reject_known_platform_publisher_or_organization_suffix_shape",
+        bilibili_alias_policy: "normalize_and_segment_as_insufficient_platform_terms",
         reporting_prefix_policy: "reject_prefix_at_separator_or_end",
+        quoted_entity_policy: "structured_first_then_event_bound_non_document_quote",
+        unquoted_slot_framing_policy: "strip_name_introducers_and_event_connectors_within_category_event_slot",
         lead_project_binding: "shared_extractor"
       }
+    );
+    assert.equal(
+      rules.broad_media_candidate_domain_gate.dedupe_component_policy,
+      "transitive_shared_key_component_with_conservative_gate_precedence"
+    );
+    assert.deepEqual(
+      rules.broad_media_candidate_domain_gate.insufficient_platform_aliases,
+      ["B站", "哔哩哔哩", "bilibili", "Bili Bili", "B·站"]
     );
     for (const name of broadSourceNames) {
       assert.equal(

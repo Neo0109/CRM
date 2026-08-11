@@ -111,7 +111,7 @@ function hasNormalizedGameProductLink(value) {
 
 function isNormalizedGameProductUrl(rawValue) {
   try {
-    const url = new URL(String(rawValue).replace(/[)\]}>、!?！？“”’]+$/g, ""));
+    const url = new URL(stripTrailingUrlProseDelimiters(rawValue));
     const host = url.hostname.toLowerCase().replace(/^(?:www|m)\./, "");
     const segments = url.pathname.split("/").filter(Boolean).map(decodeUrlPathSegment);
     if (segments.includes(null)) return false;
@@ -134,6 +134,12 @@ function isNormalizedGameProductUrl(rawValue) {
   } catch {
     return false;
   }
+}
+
+function stripTrailingUrlProseDelimiters(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/[)\]}>）】》」』、,.;:!?！？。，；：“”‘’]+$/gu, "");
 }
 
 function decodeUrlPathSegment(value) {
@@ -169,22 +175,58 @@ export function extractGameProductDomainProjectName(item) {
     .find(isConcreteProjectName);
   if (structuredProject) return structuredProject;
 
-  const quotedProject = semanticMediaContentText(item).match(/《([^》]{2,48})》/)?.[1];
-  if (isConcreteProjectName(quotedProject)) return normalizeDisplayText(quotedProject);
+  const quotedProject = extractQuotedGameProjectName(item);
+  if (quotedProject) return quotedProject;
 
   return extractExplicitUnquotedGameProjectName(item?.title);
 }
 
+const EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS = Object.freeze([
+  "模拟经营游戏", "客户端游戏", "移动端游戏", "二次元游戏", "独立游戏", "网络游戏",
+  "电子游戏", "手机游戏", "主机游戏", "电脑游戏", "单机游戏", "国产游戏", "移动游戏",
+  "小游戏", "网页游戏", "策略游戏", "卡牌游戏", "武侠游戏", "肉鸽游戏", "steam游戏",
+  "掌机游戏", "arpg游戏", "pc游戏", "vr游戏", "手游", "端游"
+].sort((left, right) => right.length - left.length));
+
+const CATEGORY_PREFIX_MODIFIER_TOKENS = Object.freeze([
+  "模拟经营", "二次元", "国产", "中国", "国人", "国内", "海外", "进口", "全球", "亚洲", "本土",
+  "首款", "热门", "精品", "重磅", "年度", "多款", "移动", "武侠", "卡牌", "策略", "肉鸽", "pc"
+].sort((left, right) => right.length - left.length));
+
+const REGION_CATEGORY_PREFIX_TOKENS = Object.freeze([
+  ...CATEGORY_PREFIX_MODIFIER_TOKENS,
+  ...EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS,
+  "新游", "游戏", "独立", "网络", "电子", "手机", "主机", "电脑", "单机"
+].sort((left, right) => right.length - left.length));
+
+const KNOWN_ORGANIZATION_ONLY_KEYS = new Set([
+  "腾讯", "网易", "米哈游", "字节跳动", "雪佛兰", "哔哩哔哩", "bilibili", "b站",
+  "证券时报", "it之家", "澎湃新闻", "gamelook", "游戏葡萄", "游戏陀螺", "触乐"
+]);
+
+const GENERIC_DOCUMENT_ENTITY_TOKENS = Object.freeze([
+  ...EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS,
+  "未成年人", "网络游戏", "中国", "游戏", "产业", "行业", "市场", "管理", "保护", "测试",
+  "合作", "发展", "年度", "工作", "实施", "暂行", "试行", "办法", "条例", "规范", "白皮书",
+  "报告", "备忘录", "协议", "通知", "指南", "政策", "规定", "细则", "标准", "方案", "公约",
+  "声明", "通报"
+].sort((left, right) => right.length - left.length));
+
 const GENERIC_GAME_PROJECT_TOKENS = Object.freeze([
   // Qualifiers and quantifiers.
   "最新", "全新", "某款", "某个", "多款", "一款", "多个", "一个", "多项", "一项",
-  "数款", "若干", "这款", "一家", "旗下", "一部", "多部", "某", "本", "该", "新",
+  "数款", "若干", "这款", "一家", "旗下", "一部", "多部", "首款", "热门", "精品",
+  "重磅", "年度", "神秘", "未命名", "尚未命名", "代号", "备受期待", "某", "本", "该", "新",
+  // Region, genre, and platform modifiers.
+  "模拟经营", "二次元", "国产", "中国", "国人", "国内", "海外", "进口", "全球", "亚洲", "本土",
+  "移动", "武侠", "卡牌", "策略", "肉鸽", "pc",
   // Organizations, teams, and attribution labels.
   "公司", "企业", "行业", "品牌", "官方", "开发者", "开发", "研发", "制作", "发行",
-  "团队", "工作室", "制作组", "厂商", "机构",
+  "团队", "工作室", "制作组", "厂商", "机构", "集团", "上市",
+  "腾讯", "网易", "米哈游", "字节跳动", "雪佛兰", "哔哩哔哩", "bilibili", "b站",
   // Game/product/project nouns.
-  "主机游戏", "手机游戏", "网络游戏", "独立游戏", "电子游戏", "电脑游戏", "单机游戏",
-  "国产游戏", "新游", "手游", "端游", "游戏", "项目", "作品", "产品", "新作", "新品", "作",
+  ...EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS,
+  "新游", "游戏", "项目", "作品", "产品", "新作", "新品", "力作", "作",
   // News, update, and message labels.
   "新闻", "消息", "资讯", "动态", "公告", "更新", "报道", "称", "通告", "说明",
   // Business, licensing, and publishing labels.
@@ -210,20 +252,68 @@ function normalizeProjectDescriptorKey(value) {
     .replace(/[\s\p{P}\p{S}]+/gu, "");
 }
 
-function isGenericGameProjectDescriptor(value) {
-  const key = normalizeProjectDescriptorKey(value);
-  if (!key) return true;
-
+function isEntirelySegmentableProjectDescriptor(
+  key,
+  tokens,
+  { allowGenericCount = false, allowCalendarYear = false } = {}
+) {
   const reachable = new Uint8Array(key.length + 1);
   reachable[0] = 1;
   for (let index = 0; index < key.length; index += 1) {
     if (!reachable[index]) continue;
-    for (const token of GENERIC_GAME_PROJECT_TOKENS) {
+    if (allowGenericCount) {
+      const count = key.slice(index).match(/^(?:(?:\d+)|(?:[零〇一二两三四五六七八九十百千万亿]+))(?:款|个|部|项)/u)?.[0];
+      if (count) reachable[index + count.length] = 1;
+    }
+    if (allowCalendarYear) {
+      const year = key.slice(index).match(/^(?:19|20)\d{2}/)?.[0];
+      if (year) reachable[index + year.length] = 1;
+    }
+    for (const token of tokens) {
       if (!key.startsWith(token, index)) continue;
       reachable[index + token.length] = 1;
     }
   }
   return reachable[key.length] === 1;
+}
+
+function isGenericGameProjectDescriptor(value) {
+  const key = normalizeProjectDescriptorKey(value);
+  if (!key) return true;
+  return isEntirelySegmentableProjectDescriptor(
+    key,
+    GENERIC_GAME_PROJECT_TOKENS,
+    { allowGenericCount: true }
+  );
+}
+
+function isOnlyRegionOrCategoryModifiers(value) {
+  const key = normalizeProjectDescriptorKey(value);
+  if (!key) return false;
+  return isEntirelySegmentableProjectDescriptor(
+    key,
+    REGION_CATEGORY_PREFIX_TOKENS,
+    { allowGenericCount: true }
+  );
+}
+
+function isOrganizationOnlyProjectDescriptor(value) {
+  const key = normalizeProjectDescriptorKey(value);
+  if (!key) return false;
+  if (KNOWN_ORGANIZATION_ONLY_KEYS.has(key)) return true;
+  return /^(?=.{2,48}$)[\p{L}\p{N}]+(?:公司|集团|工作室|团队|企业|厂商|制作组)$/u.test(key);
+}
+
+function isNonProjectDocumentEntity(value) {
+  const key = normalizeProjectDescriptorKey(value);
+  if (!/(?:办法|条例|规范|白皮书|报告|备忘录|协议|通知|指南|政策|规定|细则|标准|方案|公约|声明|通报)$/.test(key)) {
+    return false;
+  }
+  return isEntirelySegmentableProjectDescriptor(
+    key,
+    GENERIC_DOCUMENT_ENTITY_TOKENS,
+    { allowCalendarYear: true }
+  );
 }
 
 function hasDisallowedProjectAttributionPrefix(value) {
@@ -237,7 +327,9 @@ function isConcreteProjectName(value) {
   const text = normalizeDisplayText(value);
   if (text.length < 2 || text.length > 64) return false;
   if (/^(?:undefined|null|unknown|untitled|未命名)$/i.test(text)) return false;
+  if (isNonProjectDocumentEntity(text)) return false;
   if (hasDisallowedProjectAttributionPrefix(text)) return false;
+  if (isOrganizationOnlyProjectDescriptor(text)) return false;
   if (isGenericGameProjectDescriptor(text)) return false;
   const residue = text
     .replace(/(?:国产|中国|国人)?(?:独立游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏)|国产游戏|手游|端游|游戏项目|游戏|项目|新作|新品/gi, " ")
@@ -247,20 +339,56 @@ function isConcreteProjectName(value) {
   return residue.length >= 2 && /\p{L}/u.test(residue);
 }
 
+function escapeRegexToken(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿]+))(?:款|个|部|项)";
+const CATEGORY_PREFIX_PATTERN_SOURCE = [
+  ...CATEGORY_PREFIX_MODIFIER_TOKENS.map(escapeRegexToken),
+  GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE
+].join("|");
+const CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE = "[\\s·・:：—–|｜-]*";
+const CHINESE_GAME_CATEGORY_PATTERN_SOURCE = `(?:${EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS.map(escapeRegexToken).join("|")})`;
+const GAME_PRODUCT_CATEGORY_PATTERN = new RegExp(
+  `(?:(?:(?:${CATEGORY_PREFIX_PATTERN_SOURCE})${CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE})*${CHINESE_GAME_CATEGORY_PATTERN_SOURCE}|mobile\\s+game|pc\\s+game|console\\s+game)`,
+  "i"
+);
+
+function matchExplicitGameProductCategory(value) {
+  return GAME_PRODUCT_CATEGORY_PATTERN.exec(String(value ?? ""));
+}
+
+function extractQuotedGameProjectName(item) {
+  const text = semanticMediaContentText(item);
+  if (!matchExplicitGameProductCategory(text) || !hasConcreteGameProductEvent(text)) return null;
+
+  const candidates = [...text.matchAll(/《([^》]{2,48})》/g)]
+    .map((match) => {
+      const project = normalizeDisplayText(match[1]);
+      const end = Number(match.index ?? 0) + match[0].length;
+      const eventDistance = text.slice(end).search(/\bdemo\b|试玩|实机|\bplaytest\b|测试|商店页|愿望单|版号|首曝|开发日志/i);
+      return { project, eventDistance };
+    })
+    .filter(({ project, eventDistance }) => isConcreteProjectName(project) && eventDistance >= 0)
+    .sort((left, right) => left.eventDistance - right.eventDistance);
+  return candidates[0]?.project ?? null;
+}
+
 function extractExplicitUnquotedGameProjectName(value) {
   const title = normalizeDisplayText(value);
   if (!title || /[《》【】]/.test(title)) return null;
-  const categoryPattern = /(?:(?:国产|中国|国人)?(?:独立游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏)|国产游戏|手游|端游|mobile\s+game|pc\s+game|console\s+game)/i;
-  const category = categoryPattern.exec(title);
+  const category = matchExplicitGameProductCategory(title);
   if (!category) return null;
   const afterCategory = title.slice(category.index + category[0].length);
   const event = /(?:公开|公布|开放|开启|获批|通过|过审|发布|推出)?\s*(?:\bdemo\b|试玩|实机|\bplaytest\b|测试|商店页|愿望单|版号|首曝|开发日志)/i.exec(afterCategory);
   if (!event) return null;
 
-  const between = cleanUnquotedProjectCandidate(afterCategory.slice(0, event.index));
+  const between = stripUnquotedProjectSlotFraming(afterCategory.slice(0, event.index));
   if (isConcreteProjectName(between)) return between;
 
   const before = cleanUnquotedProjectCandidate(title.slice(0, category.index));
+  if (isOnlyRegionOrCategoryModifiers(before)) return null;
   return isConcreteProjectName(before) ? before : null;
 }
 
@@ -273,8 +401,26 @@ function cleanUnquotedProjectCandidate(value) {
   return text;
 }
 
+function stripUnquotedProjectSlotFraming(value) {
+  let text = cleanUnquotedProjectCandidate(value);
+  if (!text) return "";
+
+  text = text.replace(
+    /^(?:(?:新作|项目|作品|游戏)(?:[\s:：—–|｜-]+)|代号\s+)+/i,
+    ""
+  ).trim();
+  const trailingConnector = /(?:[\s:：—–|｜-]*)(?:正式|即将|今日|日前|现已|将于|宣布|首度|officially|announces?|announced|reveals?|revealed|launches?|launched|now)(?:[\s:：—–|｜-]*)$/i;
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(trailingConnector, "").trim();
+  } while (text !== previous);
+
+  return cleanUnquotedProjectCandidate(text);
+}
+
 function hasExplicitGameProductCategory(value) {
-  return /独立游戏|国产游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏|手游|端游|mobile\s+game|pc\s+game|console\s+game/i.test(String(value ?? ""));
+  return Boolean(matchExplicitGameProductCategory(value));
 }
 
 function hasConcreteGameProductEvent(value) {
