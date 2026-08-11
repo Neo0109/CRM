@@ -110,12 +110,27 @@ const organizationRoleTokens = [
   "旗下", "互娱", "娱乐", "互动", "数字", "文化", "信息", "软件", "传媒", "网络", "游戏", "科技",
   "股份", "控股", "事业群", "事业部", "部门", "中心"
 ];
+const organizationTerminalRoleSuffixes = [
+  "研发中心", "工作室群", "事业群", "事业部", "业务部", "实验室", "研究院", "项目组", "工作室",
+  "制作组", "部门", "中心", "团队", "公司", "集团", "企业", "厂商", "股份", "控股"
+];
 const organizationOnlyProjectDescriptors = domesticCompanyNames.flatMap((name) => [
   name,
   ...organizationRoleTokens.map((role) => `${name}${role}`),
   `${name}旗下游戏`,
   `${name}互娱科技`
 ]);
+const knownCompanyTerminalRoleDescriptors = [
+  "网易雷火事业群",
+  "网易伏羲实验室",
+  "腾讯光子工作室群",
+  "腾讯天美工作室群",
+  "腾讯魔方工作室群",
+  "字节游戏业务部",
+  "心动TapTap事业部",
+  "库洛上海研发中心",
+  "叠纸百面千相项目组"
+];
 const genericCountProjectDescriptors = [
   "一批",
   "一系列",
@@ -164,6 +179,18 @@ const genericCountProjectDescriptors = [
 const mediaSourceProjectDescriptors = [
   "央视新闻", "新华社", "游戏日报", "证券时报", "北京电视台", "中央广播", "中国通讯社",
   "游戏媒体", "中国新闻网", "产业资讯", "第一财经", "中国证券报", "南方周末", "经济观察报"
+];
+
+const documentRoleQualifiers = [
+  "投资", "战略", "隐私", "安全", "技术", "管理", "征求", "保密", "补充", "框架", "联合", "整改",
+  "用户", "数据", "信息", "网络", "内容", "平台", "开发", "运营", "推广", "营销", "合规", "治理",
+  "保护", "指导", "实施", "试行", "暂行", "自律", "服务", "使用", "授权", "发行", "合作", "许可",
+  "采购", "和解", "联运", "商务", "退款", "审核", "处理", "反馈"
+];
+const shortDocumentRoleDescriptors = [
+  "服务协议", "和解协议", "采购协议", "联运协议", "商务协议", "投资协议", "战略协议",
+  "隐私政策", "安全政策", "退款政策", "内容政策", "安全规范", "技术规范", "技术标准", "安全标准",
+  "审核标准", "管理办法", "实施办法", "暂行办法", "处理办法", "征求意见", "审核意见", "反馈意见"
 ];
 
 const genericProjectDescriptors = [
@@ -290,6 +317,7 @@ const genericProjectDescriptors = [
   "游戏日报",
   ...mediaSourceProjectDescriptors,
   ...organizationOnlyProjectDescriptors,
+  ...knownCompanyTerminalRoleDescriptors,
   "两款",
   "三款",
   "十款",
@@ -314,6 +342,7 @@ const genericProjectDescriptors = [
   "联合声明",
   "整改通知",
   "用户公约",
+  ...shortDocumentRoleDescriptors,
   "报道称",
   "消息称",
   "官方",
@@ -361,6 +390,32 @@ function genericDescriptorItem(descriptor, mode, index) {
   if (mode === "quoted") return { ...base, title: `国产独立游戏《${descriptor}》公布 Demo` };
   return { ...base, title: `国产独立游戏 ${descriptor} 公布 Demo` };
 }
+
+const roleClosureNegativeItems = [
+  ...shortDocumentRoleDescriptors,
+  ...knownCompanyTerminalRoleDescriptors
+].flatMap((descriptor, index) =>
+  ["structured", "quoted", "unquoted"].map((mode) =>
+    genericDescriptorItem(descriptor, mode, `role-closure-${index}`)
+  )
+);
+
+const roleClosurePositiveNames = [
+  "逆光协议", "灵魂协议", "深空协议", "星际协议",
+  "莉莉丝深空计划", "腾讯极光计划", "网易射雕", "米哈游原神"
+];
+const roleClosurePositiveItems = roleClosurePositiveNames.flatMap((project, index) =>
+  ["structured", "quoted", "unquoted"].map((mode) => {
+    const item = genericDescriptorItem(project, mode, `role-closure-positive-${index}`);
+    return {
+      ...item,
+      ...(mode === "structured"
+        ? { title: `国产独立游戏公布试玩 Demo fixture-${index + 1}` }
+        : {}),
+      expectedProject: project
+    };
+  })
+);
 
 const modifierNoNameTitles = [
   "国产手游 一家开发团队最新更新 开启 Playtest",
@@ -723,6 +778,8 @@ describe("broad-media game-product candidate domain", () => {
         domestic_company_vocabulary_source: "shared_runtime_helper",
         domestic_company_vocabulary: domesticCompanyNames,
         organization_affiliation_tokens: organizationRoleTokens,
+        organization_terminal_role_suffixes: organizationTerminalRoleSuffixes,
+        organization_terminal_role_policy: "reject_known_company_prefix_with_explicit_terminal_organization_role",
         organization_only_policy: "reject_known_platform_publisher_or_organization_suffix_shape",
         media_source_entity_policy: "reject_known_source_or_bounded_media_role_suffix",
         media_source_role_suffixes: [
@@ -743,8 +800,8 @@ describe("broad-media game-product candidate domain", () => {
           "办法", "条例", "规范", "白皮书", "报告", "备忘录", "协议", "通知", "指南", "政策", "规定",
           "细则", "标准", "方案", "公约", "声明", "通报", "意见", "倡议", "要点", "决定", "规划", "纲要"
         ],
-        document_role_qualifiers: ["保密", "补充", "框架", "联合", "整改", "用户"],
-        document_role_policy: "reject_role_suffix_with_bounded_length_or_generic_qualifier",
+        document_role_qualifiers: documentRoleQualifiers,
+        document_role_policy: "reject_role_suffix_with_bounded_length_or_fully_segmentable_generic_qualifier",
         unquoted_slot_framing_policy: "strip_name_introducers_and_event_connectors_within_category_event_slot",
         glued_category_first_policy: "strip_new_work_introducer_only_within_category_event_slot",
         event_connector_policy: "strip_bounded_chinese_english_temporal_announcement_phrases",
@@ -1384,7 +1441,9 @@ describe("broad-media game-product candidate domain", () => {
         title: "《星海远征》国产手游《雾港纪事》公布 Demo",
         link: "https://example.test/first-role-valid-project-quote"
       },
-      ...["保密协议", "第一财经", "中国证券报", "南方周末", "经济观察报"].map((role, index) => ({
+      ...[
+        "保密协议", "投资协议", "战略协议", "第一财经", "中国证券报", "南方周末", "经济观察报"
+      ].map((role, index) => ({
         ...multiQuote,
         title: `《星海远征》国产手游《${role}》公布 Demo`,
         link: `https://example.test/project-then-expanded-role-quote-${index + 1}`
@@ -1400,7 +1459,10 @@ describe("broad-media game-product candidate domain", () => {
       emptyIndex(),
       offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
     );
-    assert.equal(positiveLeads.length, 11);
+    assert.equal(
+      positiveLeads.length,
+      2 + projectThenMediaRoleQuotes.length
+    );
     assert.deepEqual(new Set(positiveLeads.map((lead) => lead.project)), new Set(["星海远征"]));
 
     const documentDescriptors = [
@@ -1420,7 +1482,8 @@ describe("broad-media game-product candidate domain", () => {
       "框架协议",
       "联合声明",
       "整改通知",
-      "用户公约"
+      "用户公约",
+      ...shortDocumentRoleDescriptors
     ];
     const documentItems = documentDescriptors.flatMap((descriptor, index) => [
       {
@@ -1625,6 +1688,47 @@ describe("broad-media game-product candidate domain", () => {
       secondPassEligible: [],
       secondPassCalls: 0
     });
+  });
+
+  it("closes short document and known-company terminal roles across every candidate path", async () => {
+    assert.deepEqual(
+      await observeBroadMediaCandidatePaths(roleClosureNegativeItems),
+      expectedZeroCandidatePaths(roleClosureNegativeItems)
+    );
+  });
+
+  it("retains distinctive document and company product names across every name path", async () => {
+    const expectedProjects = roleClosurePositiveItems.map((item) => item.expectedProject);
+    for (const item of roleClosurePositiveItems) {
+      assert.equal(
+        mediaRules.extractGameProductDomainProjectName(item),
+        item.expectedProject,
+        item.link
+      );
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.link);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "lead_candidate",
+        reason: null
+      }, item.link);
+    }
+
+    let enrichmentCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      roleClosurePositiveItems,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += candidates.length;
+          return candidates;
+        }
+      })
+    );
+    assert.equal(leads.length, roleClosurePositiveItems.length);
+    assert.equal(enrichmentCalls, roleClosurePositiveItems.length);
+    assert.deepEqual(
+      leads.map((lead) => lead.project),
+      expectedProjects
+    );
   });
 
   it("consumes the complete generic count phrase before every candidate path", async () => {

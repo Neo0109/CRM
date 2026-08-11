@@ -150,13 +150,21 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Machine/fixture JSON parsing, changed-module syntax, exact frozen-main whitespace, and behavior-floor checks pass. Machine rules and both active documents record the closed grammar. The updated `daily-report.json` Git blob is `91187a14242a0d143393b3678903bc91782e2310`, and the shadow integration floor matches it.
 - Both existing P2 follow-ups remain out of scope: secondary-link evidence union and category-token-in-project selection.
 
+### Short-Document And Known-Company Terminal-Role P1 RED
+
+- Independent exact-head QA superseded coherent GREEN `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6` despite its three successful remote checks. Short role names such as `投资协议`, `战略协议`, `隐私政策`, `安全规范`, `技术标准`, `管理办法`, and `征求意见` remained valid across structured, quoted, and unquoted paths; known-company organization labels such as `网易雷火事业群` also remained valid.
+- The accepted repair closes two bounded role grammars rather than enumerating leak headlines. Short document names are rejected only when the complete body before a document-role suffix is segmentable into a curated generic qualifier vocabulary; distinctive titles including `逆光协议`, `灵魂协议`, `深空协议`, and `星际协议` retain non-generic residue. Known-company labels are rejected when the remaining value ends in an explicit terminal organization role even when an arbitrary sub-brand sits in the middle; this covers `网易伏羲实验室`, `腾讯光子/天美/魔方工作室群`, `字节游戏业务部`, `心动TapTap事业部`, `库洛上海研发中心`, and `叠纸百面千相项目组`, while retaining `莉莉丝深空计划`, `腾讯极光计划`, `网易射雕`, and `米哈游原神`.
+- Three-path matrices now cover 23 short document compositions and 9 known-company terminal-role shapes. The combined 96-row provider/network-free end-to-end invariant requires exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output. Twenty-four positive controls require exact shared extractor and tagged `Lead.project` binding.
+- Accepted focused RED on the exact superseded implementation has 26 subtests: 22 prior and positive controls pass, while 4 fail only in the machine contract, the shared generic-role matrix, quoted/document role selection, and the new 96-row end-to-end role-closure invariant.
+- Count, media-source, lexical-category, connector, URL, dedupe, and unmarked game-vertical controls remain green. The two existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
+
 ## Remaining
 
-- Publish the exact verified coherent GREEN from the accepted closed-grammar RED, wait its exact remote checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
+- Publish the tests-and-checkpoint-only accepted role-closure RED from exact superseded head `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6`; implement only the bounded document-qualifier and known-company-terminal role grammar; then run focused, impacted, Daily V4, full verification, JSON/syntax/diff, and exact remote checks. Do not merge.
 
 ## Next Action
 
-Publish the verified disposable snapshot as one coherent GREEN child of `4276874b1c962ff9414bbec3bd2e846987a05631`, confirm the frozen-base compare and remote blob parity, then wait exact-head checks before independent QA.
+Publish the accepted RED, report its exact head/tree and 22/4 focused split, then implement the two shared role predicates without touching the two P2 follow-ups.
 
 ## Git Status
 
@@ -189,3 +197,5 @@ Publish the verified disposable snapshot as one coherent GREEN child of `4276874
 - Superseded role-grammar GREEN: `ec31f5a6493f7e9199a76137c0b75b027840d8e6` (tree `b3c1515d139c262b91a54de7b6397e658ae5db20`); exact checks passed before closed-grammar QA.
 - Accepted closed count/entity-role RED: `4276874b1c962ff9414bbec3bd2e846987a05631` (tree `3964dc0887667b7bd5ac6a72c923daed1b9f7a80`).
 - Fully verified closed-grammar GREEN: local disposable snapshot ready to publish from exact accepted RED `4276874b1c962ff9414bbec3bd2e846987a05631`.
+- Superseded fully verified closed-grammar GREEN: `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6` (tree `1322bae9cc09435afed19a875a3ccefa6a1759da`); exact checks passed before short-document/company-terminal role QA.
+- Accepted short-document/company-terminal role RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6`.
