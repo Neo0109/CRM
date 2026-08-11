@@ -53,13 +53,21 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Steam/TapTap/快爆/3839 namespaced IDs now require positive numeric suffixes; indienova reuses the concrete non-reserved slug validator, including an explicit `indienova:news` negative. Focused passes 12/12, impacted union 59/59, and Daily V4 passes 310/310.
 - The repeated exact `npm run verify:all` after the final binding repair passes all declared tasks with Daily V4 310/310.
 
+### Generic Project Descriptor P1 RED
+
+- Exact-head QA at `17151a4d2f8d296a68fc0a7b54b2f29482deffe2` found that wholly generic descriptors can still satisfy the shared project-name validator through structured, quoted, and explicit unquoted paths. Reproductions include news/update/team/product descriptors, quantified generic titles, and Han prefixes whose old trailing JavaScript `\b` check is not Chinese-safe.
+- Added one provider-free adversarial contract covering all three name paths for the required Chinese and English descriptors, plus end-to-end exclusion from candidate, enrichment, candidate audit/formal records, and V7.3 second pass. Distinctive controls retain exact project binding for `星海远征`, `雾港纪事`, `Lost Dream Chronicle`, and names that contain ordinary words without being wholly generic.
+- Accepted focused RED: 13 subtests produce exactly 1 new failure and 12 existing greens; the first observed leak is structured `最新消息` returning as the project name. The same test matrix contains quoted and unquoted variants for every descriptor and the Han-prefix cases.
+- Nonblocking follow-up, deliberately not expanded into this repair: non-Bilibili dedupe currently preserves the conservative domain marker but does not union a valid Steam link carried only by the secondary duplicate, creating false-negative/input-order asymmetry. This should be addressed as a separate evidence-merge item after PR #116.
+
 ## Remaining
 
-- Publish the final validated binding checkpoint, then verify exact remote blobs/tree and PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Implement the shared normalized generic-project predicate and Chinese-safe prefix boundary, then rerun the focused/impacted/Daily V4/full verification gates.
+- Publish the repaired checkpoint, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the final validated binding checkpoint, then complete exact remote-tree/check acceptance.
+Publish the generic-descriptor RED checkpoint, implement the bounded shared-validator repair, and rerun provider-free validation.
 
 ## Git Status
 
@@ -73,3 +81,4 @@ Publish the final validated binding checkpoint, then complete exact remote-tree/
 - Blocking P1 RED: `2e54d5d4884f9ebcb57f29e8303c871b67e983ec`.
 - Coherent P1 GREEN before full verification: `7e73727454a80f8c0bdba9fbdbdc80972446ef6f` (tree `f38345c24aaa42ac41744500d62c8389d4450514`).
 - Final binding/namespace RED: `20fad7acb082867ef3ff0ee54b7286ef823b7227` (tree `2eb97efa97b40c86cf34e23353dd49a223c49617`).
+- Last fully verified head before generic-descriptor QA: `17151a4d2f8d296a68fc0a7b54b2f29482deffe2` (tree `6df28f908dd569a12260d8af089dc1c4a1350112`).

@@ -99,6 +99,69 @@ const broadNegatives = [
   ...fixture.marked_domain_reason_precedence
 ];
 
+const genericProjectDescriptors = [
+  "最新消息",
+  "行业动态",
+  "多款新作",
+  "一款新作",
+  "新游资讯",
+  "研发团队",
+  "多个项目",
+  "本作",
+  "全新作品",
+  "游戏新闻",
+  "公司新闻",
+  "企业动态",
+  "开发团队",
+  "制作团队",
+  "产品消息",
+  "官方消息",
+  "公告",
+  "某游戏",
+  "某项目",
+  "游戏项目",
+  "公司项目",
+  "品牌项目",
+  "合作项目",
+  "发行项目",
+  "多款游戏",
+  "一款游戏",
+  "该作",
+  "本项目",
+  "全新游戏",
+  "官方授权",
+  "合作需求",
+  "报道称",
+  "消息称",
+  "官方",
+  "开发者",
+  "团队",
+  "制作组",
+  "latest news",
+  "industry update",
+  "game news",
+  "new title",
+  "new game",
+  "project",
+  "development team"
+];
+
+function genericDescriptorItem(descriptor, mode, index) {
+  const base = {
+    title: "国产独立游戏公布试玩 Demo",
+    summary: "报道包含游戏类别与产品事件，但没有具体项目名称。",
+    source: "IT之家",
+    link: `https://example.test/generic-project-${mode}-${index}`,
+    source_quality: 7,
+    source_focus: ["china", "technology"],
+    candidate_domain_gate: "game_product",
+    score: 52
+  };
+  if (mode === "structured") return { ...base, project_name: descriptor };
+  if (mode === "quoted") return { ...base, title: `国产独立游戏《${descriptor}》公布 Demo` };
+  return { ...base, title: `国产独立游戏 ${descriptor} 公布 Demo` };
+}
+
 describe("broad-media game-product candidate domain", () => {
   it("publishes the exact V7.2.1 machine/default source contract", async () => {
     const rules = await loadDailyRules({ rootDir: new URL("../..", import.meta.url) });
@@ -262,6 +325,98 @@ describe("broad-media game-product candidate domain", () => {
     );
     assert.equal(leads.length, 1);
     assert.equal(leads[0].project, "雾港纪事");
+  });
+
+  it("rejects wholly generic project descriptors across every name path", async () => {
+    const genericItems = genericProjectDescriptors.flatMap((descriptor, index) =>
+      ["structured", "quoted", "unquoted"].map((mode) =>
+        genericDescriptorItem(descriptor, mode, index)
+      )
+    );
+
+    for (const item of genericItems) {
+      assert.equal(
+        mediaRules.extractGameProductDomainProjectName(item),
+        null,
+        `${item.link} must not expose a generic descriptor as a project name`
+      );
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.link);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      }, item.link);
+    }
+
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(genericItems, emptyIndex(), offlineContext({
+      enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+        enrichmentCalls += 1;
+        return candidates;
+      }
+    }));
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: genericItems.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual(leads, []);
+    assert.equal(enrichmentCalls, 0);
+    assert.equal(artifact.scan_summary.media_candidates_seen, 0);
+    assert.equal(artifact.scan_summary.records_total, 0);
+    assert.equal(artifact.scan_summary.formal, 0);
+    assert.deepEqual(secondPass.eligible_order, []);
+    assert.equal(secondPassCalls, 0);
+
+    const namedItems = [
+      {
+        ...genericDescriptorItem("星海远征", "structured", "named-structured-cn"),
+        title: "国产独立游戏公布试玩 Demo",
+        project_name: "星海远征"
+      },
+      {
+        ...genericDescriptorItem("雾港纪事", "unquoted", "named-unquoted-cn"),
+        title: "国产独立游戏 雾港纪事 公布 Demo"
+      },
+      {
+        ...genericDescriptorItem("Lost Dream Chronicle", "structured", "named-structured-en"),
+        title: "PC game announced Playtest",
+        project_name: "Lost Dream Chronicle"
+      },
+      {
+        ...genericDescriptorItem("行业动态模拟器", "structured", "named-generic-word-cn"),
+        title: "国产独立游戏公开实机",
+        project_name: "行业动态模拟器"
+      },
+      {
+        ...genericDescriptorItem("New Game Chronicle", "structured", "named-generic-word-en"),
+        title: "国产游戏开放商店页愿望单",
+        project_name: "New Game Chronicle"
+      }
+    ];
+    const namedLeads = await buildMediaLeadCandidates(namedItems, emptyIndex(), offlineContext({
+      enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates
+    }));
+
+    assert.deepEqual(
+      namedLeads.map((lead) => lead.project),
+      ["星海远征", "雾港纪事", "Lost Dream Chronicle", "行业动态模拟器", "New Game Chronicle"]
+    );
   });
 
   it("accepts only narrow structured IDs and normalized product routes", () => {
