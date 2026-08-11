@@ -178,14 +178,16 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Local provider/network-free GREEN is complete: focused 29/29, impacted 108/108, media/dedupe/audit 63/63, and Daily V4 327/327. All 147 quantity negatives fail with exact broad-media Radar-only disposition and zero downstream paths; all 18 numeric-title controls and 7 category-prefix reuse controls pass.
 - Machine rules and both active documents describe the implemented repeatable operator/range grammar and vague-token composition. The updated `daily-report.json` Git blob is `21d71841f631c331c39b6fbd047751e2ea3d5ffc`, and the shadow integration behavior floor matches it.
 - Exact shimmed `npm run verify:all` exits successfully after the documented quantity GREEN, including frontend/backend/functions typechecks, Daily V4 327/327, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, all 17 changed-module syntax checks, exact machine hash, and the frozen-main whitespace check also pass.
+- Published the coherent quantity GREEN as `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd` with tree `5c40111de79bf88ddcbcd03214adfa3ce5e31744`, parented directly to final accepted RED `12e4b39cce0b0c8641cecbc09d01c912b5451e40`. Frozen compare remains based and merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 34 and behind 0, with 22 changed files and 22/22 exact-head remote blobs matching the verified snapshot.
+- All three exact code-head checks succeeded: Cloudflare Pages `93874469894`; pull-request Build `31519967654 / 93874313479`; push Build `31519963108 / 93874297510`.
 
 ## Remaining
 
-- Publish one coherent GREEN child of final accepted RED `12e4b39cce0b0c8641cecbc09d01c912b5451e40`, verify frozen-base compare and 22/22 exact remote blob parity, wait exact remote checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
+- Release Captain independent acceptance and the root-owned merge gate only. The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate and are not merge blockers for this bounded wave. Do not merge from this task.
 
 ## Next Action
 
-Publish the exact verified coherent quantity GREEN, pin its head/tree/compare/parity, then wait exact checks before independent QA.
+Publish this status-only checkpoint from exact verified code head `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd`, pin the resulting head/tree and its exact checks, then hand the PR to Release Captain for independent acceptance and root-owned merge.
 
 ## Git Status
 
@@ -225,4 +227,5 @@ Publish the exact verified coherent quantity GREEN, pin its head/tree/compare/pa
 - Superseded final status-only head: `b89631b1db90efb517ebf60a112dfce510fbe318` (tree `ffbc87c4a85c9e8725d6a811c2d005679b33fbc6`); exact checks passed before complete quantity-grammar QA.
 - Initial complete quantity-grammar RED: `49b8bbd53c9465eb39f4199bf75004d54ad41d22` (tree `70d3dda2e3de9c72553b99743a3fda5f5f6386e1`).
 - Final accepted quantity/category-prefix RED: `12e4b39cce0b0c8641cecbc09d01c912b5451e40` (tree `0c062b2f64c03a96553fba757e9f03af1767fda9`).
-- Fully verified complete-quantity GREEN: local disposable snapshot ready to publish from exact accepted RED `12e4b39cce0b0c8641cecbc09d01c912b5451e40`.
+- Fully verified complete-quantity GREEN: `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd` (tree `5c40111de79bf88ddcbcd03214adfa3ce5e31744`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
+- Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd`; no behavior, machine-rule, fixture, or test blob changes.
