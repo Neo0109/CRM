@@ -91,7 +91,13 @@ function offlineContext(overrides = {}) {
   };
 }
 
-const broadNegatives = [fixture.exact_false_positive, ...fixture.generic_non_game];
+const broadNegatives = [
+  fixture.exact_false_positive,
+  ...fixture.generic_non_game,
+  ...fixture.generic_game_product_no_name,
+  ...fixture.malformed_identity,
+  ...fixture.marked_domain_reason_precedence
+];
 
 describe("broad-media game-product candidate domain", () => {
   it("publishes the exact V7.2.1 machine/default source contract", async () => {
@@ -142,7 +148,11 @@ describe("broad-media game-product candidate domain", () => {
   });
 
   it("admits only structured identity or concrete project + category + product event on broad media", async () => {
-    const positives = [...fixture.broad_media_positive, fixture.structured_identity_positive];
+    const positives = [
+      ...fixture.broad_media_positive,
+      fixture.structured_identity_positive,
+      ...fixture.unquoted_title_positive
+    ];
     for (const item of positives) {
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.title);
       assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.title);
@@ -162,6 +172,119 @@ describe("broad-media game-product candidate domain", () => {
     );
     assert.equal(mediaRules.classifyMediaDisposition(fixture.game_vertical_control).kind, "lead_candidate");
     assert.equal(isProductSourcingSignal(fixture.game_vertical_control), true);
+  });
+
+  it("rejects missing, generic, event-only, and non-string project fields", () => {
+    const generic = fixture.generic_game_product_no_name[0];
+    const invalidProjectNames = [
+      undefined,
+      null,
+      42,
+      { name: "雾港纪事" },
+      "undefined",
+      "null",
+      "unknown",
+      "untitled",
+      "游戏",
+      "项目",
+      "新作",
+      "Demo",
+      "公布试玩 Demo",
+      "获批版号",
+      "开放商店页愿望单"
+    ];
+
+    for (const projectName of invalidProjectNames) {
+      assert.equal(
+        mediaRules.hasGameProductDomainEvidence({ ...generic, project_name: projectName }),
+        false,
+        `invalid project field must not qualify: ${String(projectName)}`
+      );
+    }
+    assert.equal(
+      mediaRules.hasGameProductDomainEvidence({ ...generic, project_name: "雾港纪事" }),
+      true,
+      "a concrete structured project name still satisfies the named-project requirement"
+    );
+    for (const item of fixture.unquoted_title_positive) {
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.title);
+      assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.title);
+    }
+  });
+
+  it("accepts only narrow structured IDs and normalized product routes", () => {
+    const identityBase = {
+      ...fixture.exact_false_positive,
+      title: "企业身份字段测试",
+      summary: "没有游戏类别或产品事件。",
+      link: "https://example.test/identity-field-test"
+    };
+    const validStructuredIdentity = [
+      { steam_app_id: 123456 },
+      { steamAppId: "234567" },
+      { taptap_app_id: 345678 },
+      { taptapAppId: "456789" },
+      { game_id: 567890 },
+      { gameId: "steam:123456" },
+      { game_id: "taptap:345678" },
+      { game_id: "indienova:fog-harbor" },
+      { game_id: "kuaibao:456789" },
+      { game_id: "3839:567890" }
+    ];
+
+    for (const identity of validStructuredIdentity) {
+      assert.equal(mediaRules.hasGameProductDomainEvidence({ ...identityBase, ...identity }), true);
+    }
+    for (const item of fixture.normalized_identity_positive) {
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.links[0]);
+      assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.links[0]);
+    }
+    for (const item of fixture.malformed_identity) {
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.title);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      });
+    }
+  });
+
+  it("uses one uniform broad-media failure reason before downstream topic taxonomy", () => {
+    for (const item of fixture.marked_domain_reason_precedence) {
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.title);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      }, item.title);
+    }
+  });
+
+  it("preserves a broad-media gate through non-Bilibili dedupe in both input orders", async () => {
+    const marked = {
+      ...fixture.generic_game_product_no_name[0],
+      summary: "开发者公布试玩安排，但报道没有给出任何具体项目名称。",
+      source_focus: ["china", "domestic_sourcing"]
+    };
+    const unmarked = { ...marked, source: "GameLook" };
+    delete unmarked.candidate_domain_gate;
+
+    for (const input of [[marked, unmarked], [unmarked, marked]]) {
+      let enrichmentCalls = 0;
+      const [merged] = dedupeMediaSignals(input);
+      const leads = await buildMediaLeadCandidates(input, emptyIndex(), offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += 1;
+          return candidates;
+        }
+      }));
+
+      assert.equal(merged.candidate_domain_gate, "game_product");
+      assert.deepEqual(mediaRules.classifyMediaDisposition(merged), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      });
+      assert.deepEqual(leads, []);
+      assert.equal(enrichmentCalls, 0);
+    }
   });
 
   it("keeps failed broad media in Radar but out of candidate, enrichment, audit, second pass, and formal Lead", async () => {

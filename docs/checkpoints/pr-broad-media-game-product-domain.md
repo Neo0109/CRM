@@ -33,13 +33,19 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Machine rules and the focused JSON fixture parse successfully; the exact frozen-main-to-snapshot whitespace check is GREEN.
 - Historical replay/window fixtures and the V7.2 baseline document retain their producing version; Heartbeat keeps the old version allowlisted for historical compatibility while recognizing V7.2.1.
 
+### PR #116 Blocking P1 Repair
+
+- Exact-head QA at `a7fe1e3eedb9489d0a34a5a99cdf908ad44c1157` found four bounded admission defects: missing project fields normalized to the literal `undefined`; arbitrary structured IDs and broad 3839/好游快爆 paths counted as identity; marked-source failures could receive legacy downstream reasons instead of the exact broad-media reason; and non-Bilibili dedupe could discard the marker based on input order.
+- Added adversarial fixtures for the three exact unnamed generic headlines, malformed Steam/TapTap/game IDs, `/news/` and arbitrary 快爆 routes, valid normalized platform identities, two explicit unquoted-title forms, marked film/animation/update/approval/unresolved-store failures, and both marked/unmarked dedupe orders.
+- Accepted provider-free RED: the focused contract now has 11 subtests, with 7 failing on the old head and 4 legacy controls green. Failures independently prove helper false positives, missing unquoted extraction, non-uniform reason precedence, order-dependent marker loss, and one leaked end-to-end candidate/enrichment path.
+
 ## Remaining
 
-- Push one ready PR; do not merge or deploy.
+- Implement the bounded P1 repair, then repeat focused/full verification on the same PR; do not merge or deploy.
 
 ## Next Action
 
-Publish the post-review validation checkpoint, verify the exact remote tree, and open one ready PR.
+Publish the accepted P1 RED checkpoint, then implement the smallest GREEN that closes only those admission and dedupe paths.
 
 ## Git Status
 
