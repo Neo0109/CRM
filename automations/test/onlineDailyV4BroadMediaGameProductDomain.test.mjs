@@ -234,7 +234,16 @@ describe("broad-media game-product candidate domain", () => {
       {
         extraction_order: ["structured_string", "quoted", "explicit_unquoted"],
         normalization: "nfkc_casefold_strip_separators",
-        generic_descriptor_policy: "reject_normalized_exact_token_and_quantified_generic",
+        generic_descriptor_policy: "reject_when_entire_normalized_name_segments_into_generic_tokens",
+        generic_token_categories: [
+          "qualifier_quantifier",
+          "organization_team",
+          "game_product_project",
+          "news_update_message",
+          "business_license_publishing",
+          "english_equivalent"
+        ],
+        distinctive_residue_policy: "admit_when_non_generic_residue_remains",
         placeholder_policy: "reject_quantified_and_attribution_descriptors",
         reporting_prefix_policy: "reject_prefix_at_separator_or_end",
         lead_project_binding: "shared_extractor"

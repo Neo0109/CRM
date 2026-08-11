@@ -71,15 +71,18 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Follow-up QA superseded coherent GREEN `48e4e09e838746b6c59d46db90708ec926db3ef7` and its validation-only child after reproducing compositional descriptor bypasses that were not matched by a one-layer exact/regex grammar: `全新游戏项目`, `最新游戏项目`, `多个游戏项目`, `一款全新游戏`, `这款新游戏`, `某公司项目`, `公司最新消息`, `官方最新消息`, and `游戏最新消息`.
 - Extended the same structured/quoted/unquoted and end-to-end zero-candidate matrix with every reproduced Chinese composition and English equivalents such as `latest game project`, `company latest news`, `official game update`, `new publishing project`, and `development team update`. Added distinctive residue controls `新月计划` and `Project Echo` alongside the existing real-name controls.
 - Accepted provider-free RED: the focused contract remains 13 subtests with exactly the generic-name subtest failing and 12 existing subtests green; the first observed leak is structured `全新游戏项目` returning as the project name.
+- Replaced the one-layer exact/regex grammar with one whole-string dynamic-program segmentation predicate shared by structured, quoted, and explicit unquoted project-name validation. It normalizes NFKC, case, whitespace, punctuation, and symbols, then attempts complete coverage with a curated vocabulary for qualifiers/quantifiers, organizations/teams, game/product/project nouns, news/update/message labels, business/license/publishing labels, and English equivalents.
+- The predicate rejects only a fully segmentable normalized descriptor; any non-generic residue prevents generic classification. Exact project binding stays green for `星海远征`, `雾港纪事`, `Lost Dream Chronicle`, `行业动态模拟器`, `New Game Chronicle`, `新月计划`, and `Project Echo`. The separately approved reporting-prefix boundary remains explicit and Chinese-safe.
+- Final provider/network-free GREEN after the DP repair: focused passes 13/13; the expanded impacted union passes 92/92; `npm run test:daily-v4` passes 311/311; and the exact `npm run verify:all` passes every declared task. Machine/fixture JSON parsing, changed-module syntax checks, and the exact frozen-main whitespace check pass.
+- Machine rules and both active documents now declare whole-name segmentation, the six vocabulary categories, and distinctive-residue admission. The updated `daily-report.json` Git blob is `154950188e56135a43368be06b79a5044e6e1873`, and the shadow integration behavior floor matches it.
 
 ## Remaining
 
-- Publish the compositional RED checkpoint, replace the one-layer generic grammar with whole-string generic-token segmentation, and rerun focused/impacted/Daily V4/full verification.
-- Publish a new coherent GREEN and complete exact remote acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish the coherent DP GREEN and complete exact remote blob/tree/check acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the compositional RED checkpoint, implement the bounded shared segmentation predicate, then rerun provider-free validation.
+Publish the coherent DP GREEN, then complete exact remote-tree/check acceptance.
 
 ## Git Status
 
@@ -97,3 +100,4 @@ Publish the compositional RED checkpoint, implement the bounded shared segmentat
 - Generic-descriptor RED: `644257e541dadf35c674a4e1b32b1bd09ec3e4ab` (tree `5471529422e5594f00f5336a5d47692746bf606e`).
 - Coherent generic-descriptor GREEN before final validation-only checkpoint: `48e4e09e838746b6c59d46db90708ec926db3ef7` (tree `a76fb036d8602e564e3fe7be14577f19e6f11605`).
 - Superseded validation-only checkpoint: `de05087f83f9e6e36b0526eecdb18b0869e2a692` (tree `6df27c14fc24219618151c507d3d9da329425614`).
+- Compositional generic-token RED: `1636646a7695d21777c47ca0dc7ca9afb98928bf` (tree `9fad837148cbdc674f4a2e37bc94a5b99edc9852`).
