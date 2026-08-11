@@ -157,14 +157,18 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Three-path matrices now cover 23 short document compositions and 9 known-company terminal-role shapes. The combined 96-row provider/network-free end-to-end invariant requires exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output. Twenty-four positive controls require exact shared extractor and tagged `Lead.project` binding.
 - Accepted focused RED on the exact superseded implementation has 26 subtests: 22 prior and positive controls pass, while 4 fail only in the machine contract, the shared generic-role matrix, quoted/document role selection, and the new 96-row end-to-end role-closure invariant.
 - Count, media-source, lexical-category, connector, URL, dedupe, and unmarked game-vertical controls remain green. The two existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
+- Published the tests-and-checkpoint-only accepted RED as `9bd4335b6acb855372f6d4b9af918da28e9535f4` with tree `b9d212a9ee5879054c7e50e61652355a8612e61e`, parented directly to exact superseded head `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6`.
+- Implemented the bounded GREEN with two shared predicates. The document-role predicate keeps the existing conservative long-name boundary and segments the entire short body against the curated qualifier vocabulary before rejecting a role suffix. The known-company predicate keeps its existing complete affiliation segmentation and adds an explicit terminal-role check only after a known company prefix, allowing arbitrary middle sub-brands without turning the suffix rule into a global project-name filter.
+- Local provider/network-free validation is green: focused 26/26, impacted 105/105, media/dedupe/audit 60/60, and Daily V4 324/324. Machine JSON and active docs record the same bounded grammar; the updated machine-rule Git blob is `e14c5a5c9855111aa71a51272d5178e7c2a510cb`, and the shadow integration floor matches it.
+- Exact shimmed `npm run verify:all` exits successfully after the documented GREEN, including frontend/backend/functions typechecks, Daily V4 324/324, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, all 17 changed-module syntax checks, and the exact frozen-main whitespace check also pass.
 
 ## Remaining
 
-- Publish the tests-and-checkpoint-only accepted role-closure RED from exact superseded head `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6`; implement only the bounded document-qualifier and known-company-terminal role grammar; then run focused, impacted, Daily V4, full verification, JSON/syntax/diff, and exact remote checks. Do not merge.
+- Publish one coherent GREEN child of `9bd4335b6acb855372f6d4b9af918da28e9535f4`, verify frozen-base compare and 22/22 remote blob parity, wait exact remote checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
 
 ## Next Action
 
-Publish the accepted RED, report its exact head/tree and 22/4 focused split, then implement the two shared role predicates without touching the two P2 follow-ups.
+Publish the exact verified coherent GREEN from the accepted RED, pin its head/tree/compare/blob parity, then wait exact checks before independent QA.
 
 ## Git Status
 
@@ -198,4 +202,5 @@ Publish the accepted RED, report its exact head/tree and 22/4 focused split, the
 - Accepted closed count/entity-role RED: `4276874b1c962ff9414bbec3bd2e846987a05631` (tree `3964dc0887667b7bd5ac6a72c923daed1b9f7a80`).
 - Fully verified closed-grammar GREEN: local disposable snapshot ready to publish from exact accepted RED `4276874b1c962ff9414bbec3bd2e846987a05631`.
 - Superseded fully verified closed-grammar GREEN: `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6` (tree `1322bae9cc09435afed19a875a3ccefa6a1759da`); exact checks passed before short-document/company-terminal role QA.
-- Accepted short-document/company-terminal role RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6`.
+- Accepted short-document/company-terminal role RED: `9bd4335b6acb855372f6d4b9af918da28e9535f4` (tree `b9d212a9ee5879054c7e50e61652355a8612e61e`).
+- Fully verified short-document/company-terminal role GREEN: local disposable snapshot ready to publish from exact accepted RED `9bd4335b6acb855372f6d4b9af918da28e9535f4`.

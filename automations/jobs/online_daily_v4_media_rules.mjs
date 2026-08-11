@@ -225,6 +225,11 @@ const ORGANIZATION_AFFILIATION_TOKENS = Object.freeze([
   "股份", "控股", "事业群", "事业部", "部门", "中心"
 ]);
 
+const ORGANIZATION_TERMINAL_ROLE_SUFFIXES = Object.freeze([
+  "研发中心", "工作室群", "事业群", "事业部", "业务部", "实验室", "研究院", "项目组", "工作室",
+  "制作组", "部门", "中心", "团队", "公司", "集团", "企业", "厂商", "股份", "控股"
+].sort((left, right) => right.length - left.length));
+
 const KNOWN_ORGANIZATION_ONLY_KEYS = new Set([
   ...DOMESTIC_GAME_COMPANY_NAME_KEYS,
   "腾讯", "网易", "米哈游", "字节跳动", "雪佛兰", "哔哩哔哩", "bilibili", "b站",
@@ -251,7 +256,10 @@ const DOCUMENT_ROLE_SUFFIXES = Object.freeze([
 ].sort((left, right) => right.length - left.length));
 
 const DOCUMENT_ROLE_QUALIFIER_TOKENS = Object.freeze([
-  "保密", "补充", "框架", "联合", "整改", "用户"
+  "投资", "战略", "隐私", "安全", "技术", "管理", "征求", "保密", "补充", "框架", "联合", "整改",
+  "用户", "数据", "信息", "网络", "内容", "平台", "开发", "运营", "推广", "营销", "合规", "治理",
+  "保护", "指导", "实施", "试行", "暂行", "自律", "服务", "使用", "授权", "发行", "合作", "许可",
+  "采购", "和解", "联运", "商务", "退款", "审核", "处理", "反馈"
 ].sort((left, right) => right.length - left.length));
 
 const ATTRIBUTION_ROLE_SUFFIXES = Object.freeze([
@@ -371,6 +379,9 @@ function isOrganizationOnlyProjectDescriptor(value) {
     if (affiliation && isEntirelySegmentableProjectDescriptor(
       affiliation,
       ORGANIZATION_AFFILIATION_TOKENS
+    )) return true;
+    if (affiliation && ORGANIZATION_TERMINAL_ROLE_SUFFIXES.some(
+      (suffix) => affiliation.endsWith(suffix)
     )) return true;
   }
   return /^(?=.{2,48}$)[\p{L}\p{N}]+(?:公司|集团|工作室|团队|企业|厂商|制作组)$/u.test(key);
