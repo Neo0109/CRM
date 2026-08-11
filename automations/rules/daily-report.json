@@ -296,7 +296,7 @@
         "console game"
       ],
       "category_prefix_modifier_policy": "consume_region_promotion_genre_platform_and_generic_count_modifiers",
-      "generic_count_policy": "optional_prefix_plus_arabic_or_chinese_numeral_plus_classifier_or_batch_quantifier",
+      "generic_count_policy": "prefix_or_magnitude_plus_numeral_optional_approximation_plus_classifier_or_batch_quantifier",
       "generic_count_prefixes": [
         "第",
         "约",
@@ -310,7 +310,16 @@
         "共",
         "合计",
         "累计",
-        "数"
+        "数",
+        "上"
+      ],
+      "generic_count_suffixes": [
+        "余",
+        "多",
+        "来"
+      ],
+      "generic_count_magnitude_quantifiers": [
+        "成百上千"
       ],
       "generic_count_classifiers": [
         "款",
@@ -328,6 +337,7 @@
         "qualifier_quantifier",
         "organization_team",
         "game_product_project",
+        "market_platform_industry",
         "news_update_message",
         "business_license_publishing",
         "english_equivalent"
@@ -366,14 +376,55 @@
       ],
       "organization_affiliation_tokens": [
         "旗下",
+        "互娱",
+        "娱乐",
+        "互动",
+        "数字",
+        "文化",
+        "信息",
+        "软件",
+        "传媒",
         "网络",
         "游戏",
         "科技"
       ],
       "organization_only_policy": "reject_known_platform_publisher_or_organization_suffix_shape",
+      "media_source_entity_policy": "reject_known_source_or_bounded_media_role_suffix",
+      "media_source_role_suffixes": [
+        "新闻",
+        "日报",
+        "时报",
+        "周报",
+        "晚报",
+        "电视台",
+        "广播",
+        "通讯社",
+        "媒体",
+        "新闻网",
+        "资讯"
+      ],
+      "attribution_role_policy": "reject_bounded_source_or_attribution_phrase_suffix",
+      "attribution_role_suffixes": [
+        "消息",
+        "报道",
+        "显示",
+        "称",
+        "宣布",
+        "透露",
+        "指出",
+        "表示"
+      ],
+      "generic_role_nouns": [
+        "市场",
+        "平台",
+        "产业",
+        "market",
+        "platform",
+        "industry"
+      ],
       "bilibili_alias_policy": "normalize_and_segment_as_insufficient_platform_terms",
       "reporting_prefix_policy": "reject_prefix_at_separator_or_end",
-      "quoted_entity_policy": "structured_first_then_role_filtered_event_bound_project_quote",
+      "quoted_entity_policy": "structured_first_then_first_role_valid_project_quote_with_later_event",
       "document_role_suffixes": [
         "办法",
         "条例",
@@ -399,9 +450,10 @@
         "规划",
         "纲要"
       ],
+      "document_role_policy": "reject_bounded_role_suffix_without_body_segmentation",
       "unquoted_slot_framing_policy": "strip_name_introducers_and_event_connectors_within_category_event_slot",
       "glued_category_first_policy": "strip_new_work_introducer_only_within_category_event_slot",
-      "event_connector_policy": "strip_bounded_chinese_english_temporal_announcement_tokens",
+      "event_connector_policy": "strip_bounded_chinese_english_temporal_announcement_phrases",
       "lead_project_binding": "shared_extractor"
     },
     "dedupe_component_policy": "transitive_shared_key_component_with_conservative_gate_precedence",

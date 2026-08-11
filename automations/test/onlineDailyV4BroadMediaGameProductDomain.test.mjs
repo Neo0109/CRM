@@ -608,7 +608,7 @@ describe("broad-media game-product candidate domain", () => {
         generic_role_nouns: ["市场", "平台", "产业", "market", "platform", "industry"],
         bilibili_alias_policy: "normalize_and_segment_as_insufficient_platform_terms",
         reporting_prefix_policy: "reject_prefix_at_separator_or_end",
-        quoted_entity_policy: "structured_first_then_role_filtered_event_bound_project_quote",
+        quoted_entity_policy: "structured_first_then_first_role_valid_project_quote_with_later_event",
         document_role_suffixes: [
           "办法", "条例", "规范", "白皮书", "报告", "备忘录", "协议", "通知", "指南", "政策", "规定",
           "细则", "标准", "方案", "公约", "声明", "通报", "意见", "倡议", "要点", "决定", "规划", "纲要"
@@ -616,7 +616,7 @@ describe("broad-media game-product candidate domain", () => {
         document_role_policy: "reject_bounded_role_suffix_without_body_segmentation",
         unquoted_slot_framing_policy: "strip_name_introducers_and_event_connectors_within_category_event_slot",
         glued_category_first_policy: "strip_new_work_introducer_only_within_category_event_slot",
-        event_connector_policy: "strip_bounded_chinese_english_temporal_announcement_tokens",
+        event_connector_policy: "strip_bounded_chinese_english_temporal_announcement_phrases",
         lead_project_binding: "shared_extractor"
       }
     );

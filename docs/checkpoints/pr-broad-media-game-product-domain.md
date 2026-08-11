@@ -127,14 +127,20 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Expanded connector fixtures cover `即将于/拟于/计划在/宣布将在` and `plans on launching/is expected to/is going to announce`, with exact tagged `Lead.project` binding. Attribution fixtures cover source/provenance phrases ending in `消息/报道/显示/称/宣布/透露/指出/表示`; category-tail fixtures cover `市场/平台/产业` and English equivalents; multi-quote fixtures keep `星海远征` when a later quote is a media/document role and when a later role-valid project is nearer the event.
 - Final accepted provider/network-free umbrella RED: focused now has 21 subtests, with exactly 6 failing and 15 prior controls green. Failures isolate the stale machine contract, shared three-path role validation, before-category attribution, connector binding, quote role/order, and the exact six-row end-to-end invariant. All six exact rows still reproduce 6/6 candidates, 6 enrichment entries, and 6 candidate-audit records on the exact superseded implementation.
 - Both existing nonblocking P2 follow-ups remain explicitly out of scope: secondary-link evidence union and category-token-in-project selection.
+- Implemented the bounded role grammar without enumerating full leak phrases. Count recognition composes optional outer and magnitude prefixes, Arabic/Chinese numerals, optional approximation suffixes, classifiers, and bounded magnitude/batch forms; known-company affiliation uses role-token segmentation and still admits distinctive residue.
+- One shared media-source predicate rejects known sources or bounded media-role suffixes, while one attribution predicate rejects source/provenance phrases by their terminal role. Generic segmentation now includes market/platform/industry roles in Chinese and English. All three project-name paths use the same predicates.
+- Document/policy recognition now uses an explicit terminal role plus conservative length, with short wholly generic forms covered by the shared segmentation. This closes arbitrary long `…指导意见` variants without enumerating their body while retaining the existing concrete game title `逆光协议`.
+- Slot-only connector grammar now covers the expanded Chinese/English auxiliary-and-event phrases in both name/category orders. Quote selection preserves text order after role filtering and chooses the first valid project with a later product event; nearer media, document, or second-project quotes cannot override it.
+- Fully verified provider/network-free GREEN: focused passes 21/21; impacted contracts pass 100/100; media/dedupe/audit regressions pass 55/55; and `npm run test:daily-v4` passes 319/319. Exact shimmed `npm run verify:all` passes every declared task, including all typechecks, Daily V4 319/319, historical replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
+- Machine/fixture JSON parsing, changed-module syntax, exact frozen-main whitespace, and behavior-floor checks pass. Machine rules and both active documents record the same role grammar. The updated `daily-report.json` Git blob is `525ba36be2febd46915b140dbe9ae3cb56e83181`, and the shadow integration floor matches it.
 
 ## Remaining
 
-- Publish the expanded tests-and-checkpoint-only role-grammar RED, implement only the bounded role/connector/quote-order grammar, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA. Do not merge.
+- Publish this fully verified coherent role-grammar GREEN from exact expanded RED, confirm every remote branch blob and exact-head check, and hand it to Release Captain independent QA. Do not merge.
 
 ## Next Action
 
-Publish the expanded accepted role-grammar RED from first role RED `cbc846d4d11bc4b36528b76cbb576c5c2f137ab5`, then implement the bounded grammar without expanding either deferred P2.
+Publish the verified snapshot through the GitHub Git Data API from expanded RED `e88606403565818aeb0c971ca1ceb3e5148306d5`, confirm remote readback, then wait for exact-head checks and independent QA.
 
 ## Git Status
 
@@ -162,3 +168,5 @@ Publish the expanded accepted role-grammar RED from first role RED `cbc846d4d11b
 - Superseded organization/framing/boundary/quote-role P1 GREEN: `8d88feecc89436fe9c3263f63c0b4e8234fc345f` (tree `b19533b8ffc11f39eefb1cdb08d424b3b6dc0db3`); exact checks passed before role-grammar QA.
 - Accepted count/entity-role P1 RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `8d88feecc89436fe9c3263f63c0b4e8234fc345f`.
 - Expanded connector/attribution/quote-order RED: local tests-and-checkpoint snapshot ready to publish from first role RED `cbc846d4d11bc4b36528b76cbb576c5c2f137ab5`.
+- Accepted expanded role-grammar RED: `e88606403565818aeb0c971ca1ceb3e5148306d5` (tree `9fa2358ca26a802db6de8db2ecd8a3832e113328`).
+- Fully verified role-grammar GREEN: local disposable snapshot ready to publish from exact expanded RED `e88606403565818aeb0c971ca1ceb3e5148306d5`.
