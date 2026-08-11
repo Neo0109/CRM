@@ -62,15 +62,17 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Extended the same matrix for `某公司`, `某团队`, `某工作室`, `一家团队`, `一款产品`, `一款新游`, `这款游戏`, `旗下新作`, `项目动态`, and whitespace/punctuation variants such as `最新 消息` and `行业：资讯`. Machine rules and both active documents now declare the normalization, placeholder, generic-descriptor, prefix, extraction-order, and shared Lead-binding contract.
 - Final provider/network-free GREEN: focused passes 13/13; the expanded impacted union passes 92/92; `npm run test:daily-v4` passes 311/311; and the exact `npm run verify:all` passes every declared task, including typechecks, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
 - Machine/fixture JSON parsing, changed-module syntax checks, and the exact frozen-main whitespace check pass. The updated `daily-report.json` Git blob is `9c9170bb546bbf8529a5c2ba37ee4dd2b3b524d2`, and the shadow integration behavior floor matches it.
+- Published coherent GREEN `48e4e09e838746b6c59d46db90708ec926db3ef7` with tree `a76fb036d8602e564e3fe7be14577f19e6f11605`. GitHub compare confirms the exact frozen base, 22 changed files, and 22/22 remote blobs match the verified disposable snapshot with zero mismatches.
+- Exact-head remote acceptance is GREEN: Cloudflare Pages passed, and both frontend check runs passed (`31506242107 / 93828423157` and `31506246645 / 93828438916`). The only remaining review thread was an outdated nullish-project P1 already closed by string filtering, literal sentinel rejection, focused unit coverage, and end-to-end zero-candidate coverage; thread `PRRT_kwDOSiiYJ86YQzlH` is now resolved.
 - Nonblocking follow-up, deliberately not expanded into this repair: non-Bilibili dedupe currently preserves the conservative domain marker but does not union a valid Steam link carried only by the secondary duplicate, creating false-negative/input-order asymmetry. This should be addressed as a separate evidence-merge item after PR #116.
 
 ## Remaining
 
-- Publish the coherent generic-descriptor GREEN, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish this validation-only checkpoint and wait for its exact-head PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the coherent GREEN checkpoint, then complete exact remote-tree/check acceptance.
+Publish the validation-only checkpoint, wait for exact-head checks, then report the ready PR without merging.
 
 ## Git Status
 
@@ -86,3 +88,4 @@ Publish the coherent GREEN checkpoint, then complete exact remote-tree/check acc
 - Final binding/namespace RED: `20fad7acb082867ef3ff0ee54b7286ef823b7227` (tree `2eb97efa97b40c86cf34e23353dd49a223c49617`).
 - Last fully verified head before generic-descriptor QA: `17151a4d2f8d296a68fc0a7b54b2f29482deffe2` (tree `6df28f908dd569a12260d8af089dc1c4a1350112`).
 - Generic-descriptor RED: `644257e541dadf35c674a4e1b32b1bd09ec3e4ab` (tree `5471529422e5594f00f5336a5d47692746bf606e`).
+- Coherent generic-descriptor GREEN before final validation-only checkpoint: `48e4e09e838746b6c59d46db90708ec926db3ef7` (tree `a76fb036d8602e564e3fe7be14577f19e6f11605`).
