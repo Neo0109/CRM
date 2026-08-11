@@ -247,6 +247,32 @@ export function analyzeV73EvidenceAvailability({
   };
 }
 
+export function recomputeV73EvidenceDiagnostics({
+  firstPassInput = {},
+  mediaSignals = [],
+  evaluate = evaluateV73IndiePrelaunchAdmission
+} = {}) {
+  if (typeof evaluate !== "function") {
+    throw new TypeError("V7.3 evidence diagnostics evaluator must be a function.");
+  }
+  const input = cloneValue(firstPassInput);
+  const admission = evaluate(input);
+  const requestedActions = Array.isArray(admission?.next_evidence_actions)
+    ? admission.next_evidence_actions.map(cloneValue)
+    : [];
+  return {
+    admission,
+    requested_actions: requestedActions,
+    evidence_diagnostics: analyzeV73EvidenceAvailability({
+      candidate: input,
+      evidence: admission?.evidence ?? {},
+      actions: requestedActions,
+      mediaSignals,
+      evaluate
+    })
+  };
+}
+
 export async function fetchV73TargetedEvidence({
   candidate = {},
   source_type: sourceType = "steam",

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { recomputeV73EvidenceDiagnostics } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 
 const CAPTURE_STATUSES = ["complete", "incomplete", "corrupt", "unreplayable"];
 const EVENT_NAMES = ["schedule", "watchdog", "workflow_dispatch"];
@@ -1649,6 +1650,12 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
     "DUPLICATE_TRANSACTION_ID",
     errors
   );
+  const recomputedSecondPass = recomputeCollectorV2SecondPass(
+    corpus,
+    candidateById,
+    transactions,
+    errors
+  );
 
   if (isPlainObject(corpus.summary)) {
     validateCount(
@@ -1666,7 +1673,7 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
       errors
     );
     validateDecisionSummary(corpus, candidates, errors);
-    validateSecondPassSummary(corpus, errors);
+    validateSecondPassSummary(corpus, recomputedSecondPass, errors);
   }
   if (isPlainObject(corpus.discovery_summary)) {
     validateCount(
@@ -1718,6 +1725,7 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
     candidateById,
     transactions,
     transactionById,
+    recomputedSecondPass,
     errors
   );
   validateBudgetIntegrity(corpus, candidateById, transactionById, errors);
@@ -1816,7 +1824,7 @@ function validateDecisionSummary(corpus, candidates, errors) {
   }
 }
 
-function validateSecondPassSummary(corpus, errors) {
+function validateSecondPassSummary(corpus, recomputedSecondPass, errors) {
   const fields = [
     ["eligible_ids", "second_pass_eligible_count"],
     ["selected_ids", "second_pass_selected_count"],
@@ -1837,14 +1845,11 @@ function validateSecondPassSummary(corpus, errors) {
     );
   }
   if (corpus.collector_contract_version === 2) {
-    const transactions = Array.isArray(corpus.second_pass?.transactions)
-      ? corpus.second_pass.transactions
-      : [];
     const expectedOutcomes = Object.fromEntries(
       EVIDENCE_DIAGNOSTIC_OUTCOMES.map((outcome) => [outcome, 0])
     );
-    for (const transaction of transactions) {
-      const outcome = transaction?.evidence_diagnostics?.outcome;
+    for (const recomputed of recomputedSecondPass) {
+      const outcome = recomputed?.evidence_diagnostics?.outcome;
       if (Object.hasOwn(expectedOutcomes, outcome)) expectedOutcomes[outcome] += 1;
     }
     for (const outcome of EVIDENCE_DIAGNOSTIC_OUTCOMES) {
@@ -1857,6 +1862,46 @@ function validateSecondPassSummary(corpus, errors) {
       );
     }
   }
+}
+
+function recomputeCollectorV2SecondPass(corpus, candidateById, transactions, errors) {
+  if (corpus.collector_contract_version !== 2) return [];
+  const mediaSignals = Array.isArray(corpus.second_pass?.bounded_signals)
+    ? cloneCanonicalJson(corpus.second_pass.bounded_signals)
+    : [];
+  return transactions.map((transaction, index) => {
+    const transactionPath = `/second_pass/transactions/${index}`;
+    const candidate = candidateById.get(transaction?.candidate_id);
+    const firstPassInput = candidate?.first_pass?.indie_prelaunch?.input;
+    if (!candidate || !isPlainObject(firstPassInput)) return null;
+    try {
+      const recomputed = recomputeV73EvidenceDiagnostics({
+        firstPassInput: cloneCanonicalJson(firstPassInput),
+        mediaSignals: cloneCanonicalJson(mediaSignals)
+      });
+      if (
+        Array.isArray(transaction?.requested_actions)
+        && canonicalJson(transaction.requested_actions)
+          !== canonicalJson(recomputed.requested_actions)
+      ) {
+        addError(
+          errors,
+          "SECOND_PASS_REQUESTED_ACTIONS_MISMATCH",
+          `${transactionPath}/requested_actions`,
+          "transaction actions must equal evaluator-derived next evidence actions"
+        );
+      }
+      return recomputed;
+    } catch {
+      addError(
+        errors,
+        "SECOND_PASS_EVIDENCE_DIAGNOSTICS_RECOMPUTE_FAILED",
+        `${transactionPath}/evidence_diagnostics`,
+        "evidence diagnostics could not be recomputed from frozen public inputs"
+      );
+      return null;
+    }
+  });
 }
 
 function validateEvidenceReferences(candidates, evidenceById, errors) {
@@ -1988,6 +2033,7 @@ function validateSecondPassIntegrity(
   candidateById,
   transactions,
   transactionById,
+  recomputedSecondPass,
   errors
 ) {
   const secondPass = corpus.second_pass;
@@ -2104,6 +2150,20 @@ function validateSecondPassIntegrity(
     const candidate = candidateById.get(transaction?.candidate_id);
     if (!candidate) return;
     if (corpus.collector_contract_version === 2) {
+      const recomputedDiagnostics = recomputedSecondPass[index]?.evidence_diagnostics;
+      if (
+        recomputedDiagnostics
+        && isPlainObject(transaction.evidence_diagnostics)
+        && canonicalJson(transaction.evidence_diagnostics)
+          !== canonicalJson(recomputedDiagnostics)
+      ) {
+        addError(
+          errors,
+          "SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH",
+          `${transactionPath}/evidence_diagnostics`,
+          "transaction diagnostics must equal the independent frozen-input recomputation"
+        );
+      }
       const candidateActionability = candidate.ranking_inputs?.actionable_gate_count;
       const transactionActionability =
         transaction.evidence_diagnostics?.actionable_gate_count;

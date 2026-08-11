@@ -66,14 +66,22 @@ Repair the final-head adversarial-QA full-diagnostics binding defect on the exis
 - Second-repair RED command: `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
 - Second-repair RED result: 49 tests, 47 passed, 2 expected failures. The failures are exactly the missing `SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH` contract binding and the still-equal stored/replayed views after the full diagnostics forgery; the upgraded honest v2 fixture remains valid.
 - Second-repair frozen starting point: PR #115 head `2869ab2e6c8656f48f04d3bb2db5e830dd97d86d`, tree `a72fd09d0453c5be1ae394507dc0e799357a1b6e`; remote `main` remains `1a660c049503058a5746a58e2ceed4ef27f351b9`.
+- Published the coherent second-repair RED at `40dbb11ee91ae8a61d3e59201a6b3ce5a74ad6e2` (tree `c35e029dea52b4f04aedd2e31b7bb09891509b6d`).
+- Implemented the minimal second-repair GREEN:
+  - one shared pure `recomputeV73EvidenceDiagnostics` derives the evaluator admission, exact `next_evidence_actions`, and the complete approved diagnostics object from frozen first-pass input plus the run-level bounded signal projection;
+  - collector-v2 validation independently recomputes every transaction, canonical-compares all six counts plus `outcome`, binds transaction actions to evaluator-derived actions, and emits the specific `SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH` without exposing payload values;
+  - the summary histogram is now calculated from independently recomputed outcomes, never retained transaction outcome strings;
+  - stored and replayed decision views carry the full transaction diagnostics, while replay derives its copy from the shared pure recomputation, so contract-validation bypass no longer hides a resealed forgery.
+- Second-repair focused GREEN command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
+- Second-repair focused GREEN result: 87 tests passed, 0 failed. Historical v1 coverage and provider transport semantics remain unchanged; no network/provider/workflow/CRM/Supabase action was made.
 
 ## Remaining
 
-- Publish the coherent second-repair RED, implement independent full-diagnostics recomputation/binding, then rerun focused, Daily V4, `verify:all`, and Ajv gates on the exact same branch.
+- Publish the checkpointed second-repair GREEN, then rerun Daily V4, `verify:all`, Ajv, and diff/scope checks on the exact branch snapshot.
 
 ## Next Action
 
-Run the second-repair RED, checkpoint its expected failures on the existing branch, then implement the minimal pure recomputation binding.
+Publish the checkpointed second-repair GREEN to the existing branch, then run every required final gate without merging.
 
 ## Git Status
 

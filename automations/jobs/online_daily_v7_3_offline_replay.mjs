@@ -8,7 +8,7 @@ import {
   validateReplayPrivacy
 } from "./online_daily_v7_3_replay_corpus_contract.mjs";
 import { evaluateV73IndiePrelaunchAdmission } from "./online_daily_v7_3_obtainable_evidence.mjs";
-import { analyzeV73EvidenceAvailability } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
+import { recomputeV73EvidenceDiagnostics } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 import { evaluateChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
 import { selectRegularAdmission } from "./online_daily_v7_2_regular_admission.mjs";
 import { normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mjs";
@@ -178,6 +178,9 @@ export function buildStoredDecisionView(corpus = {}) {
         },
         second_pass: secondPassCandidateView(candidate?.second_pass),
         final_output: transaction ? decisionOutput(transaction.final_output) : null,
+        ...(collectorV2 && transaction
+          ? { evidence_diagnostics: cloneJson(transaction.evidence_diagnostics) }
+          : {}),
         publication: publicationView(candidate?.publication)
       };
     }),
@@ -191,16 +194,18 @@ export function buildReplayedDecisionView(corpus = {}) {
   const collectorV2 = corpus.collector_contract_version === 2;
   const candidates = (corpus.candidates ?? []).map((candidate) => {
     const indieInput = cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {});
-    const indie = evaluateV73IndiePrelaunchAdmission(indieInput);
-    const eligible = secondPassEligible(indie);
-    const evidenceDiagnostics = collectorV2 && eligible
-      ? analyzeV73EvidenceAvailability({
-          candidate: indieInput,
-          evidence: indie.evidence,
-          actions: indie.next_evidence_actions,
+    const recomputedEvidence = collectorV2
+      ? recomputeV73EvidenceDiagnostics({
+          firstPassInput: indieInput,
           mediaSignals: corpus.second_pass?.bounded_signals ?? [],
           evaluate: evaluateV73IndiePrelaunchAdmission
         })
+      : null;
+    const indie = recomputedEvidence?.admission
+      ?? evaluateV73IndiePrelaunchAdmission(indieInput);
+    const eligible = secondPassEligible(indie);
+    const evidenceDiagnostics = collectorV2 && eligible
+      ? recomputedEvidence.evidence_diagnostics
       : null;
     const china = evaluateChinaJointAdmission(
       cloneJson(candidate?.first_pass?.china_joint?.input ?? {})
@@ -242,6 +247,7 @@ export function buildReplayedDecisionView(corpus = {}) {
       eligible,
       first_admission: indie,
       transaction,
+      evidence_diagnostics: transaction ? evidenceDiagnostics : null,
       first_pass: {
         indie_prelaunch: { output: decisionOutput(indie) },
         china_joint: { output: decisionOutput(china) },
@@ -310,6 +316,9 @@ export function buildReplayedDecisionView(corpus = {}) {
         transaction_id: attempted ? candidate.transaction?.transaction_id ?? null : null
       },
       final_output: candidate.final_output,
+      ...(collectorV2 && candidate.transaction
+        ? { evidence_diagnostics: cloneJson(candidate.evidence_diagnostics) }
+        : {}),
       publication: publicationByCandidateId.get(candidate.candidate_id)
     };
   });
@@ -771,8 +780,8 @@ function replayedSummary(corpus, candidates, secondPass) {
   };
   if (corpus.collector_contract_version === 2) {
     const outcomeCounts = normalizedSecondPassOutcomeCounts({});
-    for (const transaction of corpus.second_pass?.transactions ?? []) {
-      const outcome = transaction?.evidence_diagnostics?.outcome;
+    for (const candidate of candidates) {
+      const outcome = candidate?.evidence_diagnostics?.outcome;
       if (Object.hasOwn(outcomeCounts, outcome)) outcomeCounts[outcome] += 1;
     }
     summary.second_pass_outcome_counts = outcomeCounts;
