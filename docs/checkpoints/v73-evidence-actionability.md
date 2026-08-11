@@ -19,23 +19,30 @@ Implement privacy-safe V7.3 evidence diagnostics, actionability-first second-pas
 - Corrected the RED interface to the approved evidence outcomes: `evidence_found`, `no_project_match`, `source_role_rejected`, `quality_keyword_missing`, `insufficient_independent_sources`, and `not_requested`. Provider failures remain exclusively in `provider_status` and `second_pass_failed_count`.
 - RED command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`.
 - Corrected RED result: 65 tests, 59 passed, 6 expected failures. Failures are limited to the missing pure analyzer, v2 schema/validator, selector prioritization/comparator, and collector v2 diagnostics.
+- Implemented GREEN without expanding the provider contract:
+  - pure evidence-availability diagnostics with the six approved outcomes and privacy-safe counts;
+  - `actionability-v2` ranking before the exact frozen legacy tie keys;
+  - collector contract v2 transactions and summary outcome histogram while retaining historical v1 validation;
+  - offline replay support for the v2 ranking input and outcome summary.
+- Evidence-derived 60-candidate comparison re-evaluates every stored first-pass input with the real V7.3 evaluator and the natural transaction's bounded signals. Repeated results are identical, all 60 currently have `actionable_gate_count=0`, and their exact legacy order is preserved.
+- GREEN command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
+- GREEN result: 81 tests passed, 0 failed. No live fetch, provider, workflow, CRM, or Supabase call was made.
 
 ## Remaining
 
-- Implement the bounded V7.3 changes and update the replay-corpus schema.
 - Run focused tests, `npm run test:daily-v4`, and `npm run verify:all` in the disposable exact-base snapshot.
-- Publish one GitHub-API commit on `codex/v73-evidence-actionability` and open one ready PR to `main`.
+- Publish the GREEN checkpoint and implementation through the GitHub API, run final exact-head validation, then open one ready PR to `main`.
 
 ## Next Action
 
-Implement the minimal orchestrator, collector, replay-contract, schema, and offline-replay changes required to turn the frozen RED contracts GREEN without expanding the provider contract or changing V7.2.
+Run the required full validation gates, publish the exact tested snapshot, and stop at one ready PR without merge or deploy.
 
 ## Git Status
 
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote open PRs: `0`.
 - Planned branch: `codex/v73-evidence-actionability`.
-- Remote branch RED head before the corrected interface publication: `8d6d50bb934e2d4fbfaeeca44b86961f6405aed0`.
+- Remote branch corrected RED head: `d7d924da1bdd68673a9089cf1abfe6d81e0fd860`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 

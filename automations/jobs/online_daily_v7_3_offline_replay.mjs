@@ -49,6 +49,14 @@ const MERGED_EVIDENCE_LIST_FIELDS = new Set([
   "quality_proofs",
   "business_entrypoints"
 ]);
+const EVIDENCE_DIAGNOSTIC_OUTCOMES = [
+  "evidence_found",
+  "no_project_match",
+  "source_role_rejected",
+  "quality_keyword_missing",
+  "insufficient_independent_sources",
+  "not_requested"
+];
 
 export class OfflineReplayError extends Error {
   constructor(code, message, details = null) {
@@ -193,6 +201,9 @@ export function buildReplayedDecisionView(corpus = {}) {
         action_count: Array.isArray(indie.next_evidence_actions)
           ? indie.next_evidence_actions.length
           : 0,
+        actionable_gate_count: nonNegativeInteger(
+          candidate?.ranking_inputs?.actionable_gate_count
+        ),
         discovery_score: finiteNumber(candidate?.ranking_inputs?.discovery_score),
         dedupe_key: String(candidate?.ranking_inputs?.dedupe_key ?? candidate?.candidate_id ?? ""),
         source_type: String(candidate?.ranking_inputs?.source_type ?? ""),
@@ -223,7 +234,11 @@ export function buildReplayedDecisionView(corpus = {}) {
   const rankedEligible = candidates
     .filter((candidate) => candidate.eligible)
     .sort((left, right) => (
-      left.ranking_inputs.action_count - right.ranking_inputs.action_count
+      (corpus.second_pass?.selector_version === "actionability-v2"
+        ? right.ranking_inputs.actionable_gate_count
+          - left.ranking_inputs.actionable_gate_count
+        : 0)
+      || left.ranking_inputs.action_count - right.ranking_inputs.action_count
       || right.ranking_inputs.discovery_score - left.ranking_inputs.discovery_score
       || left.ranking_inputs.dedupe_key.localeCompare(right.ranking_inputs.dedupe_key)
       || left.ranking_inputs.source_type.localeCompare(right.ranking_inputs.source_type)
@@ -684,7 +699,7 @@ function secondPassRunView(value = {}) {
 }
 
 function summaryView(value = {}) {
-  return {
+  const summary = {
     candidate_count: nonNegativeInteger(value?.candidate_count),
     evidence_count: nonNegativeInteger(value?.evidence_count),
     second_pass_eligible_count: nonNegativeInteger(value?.second_pass_eligible_count),
@@ -697,13 +712,19 @@ function summaryView(value = {}) {
     excluded_count: nonNegativeInteger(value?.excluded_count),
     shadow_push_pool_count: nonNegativeInteger(value?.shadow_push_pool_count)
   };
+  if (isPlainObject(value?.second_pass_outcome_counts)) {
+    summary.second_pass_outcome_counts = normalizedSecondPassOutcomeCounts(
+      value.second_pass_outcome_counts
+    );
+  }
+  return summary;
 }
 
 function replayedSummary(corpus, candidates, secondPass) {
   const countDecision = (decision) => candidates
     .filter((candidate) => candidate.publication.decision === decision)
     .length;
-  return {
+  const summary = {
     candidate_count: candidates.length,
     evidence_count: Array.isArray(corpus.evidence_catalog) ? corpus.evidence_catalog.length : 0,
     second_pass_eligible_count: secondPass.eligible_ids.length,
@@ -718,6 +739,22 @@ function replayedSummary(corpus, candidates, secondPass) {
       .filter((candidate) => candidate.publication.shadow_push_pool)
       .length
   };
+  if (corpus.collector_contract_version === 2) {
+    const outcomeCounts = normalizedSecondPassOutcomeCounts({});
+    for (const transaction of corpus.second_pass?.transactions ?? []) {
+      const outcome = transaction?.evidence_diagnostics?.outcome;
+      if (Object.hasOwn(outcomeCounts, outcome)) outcomeCounts[outcome] += 1;
+    }
+    summary.second_pass_outcome_counts = outcomeCounts;
+  }
+  return summary;
+}
+
+function normalizedSecondPassOutcomeCounts(value) {
+  return Object.fromEntries(EVIDENCE_DIAGNOSTIC_OUTCOMES.map((outcome) => [
+    outcome,
+    nonNegativeInteger(value?.[outcome])
+  ]));
 }
 
 function secondPassEligible(admission = {}) {
