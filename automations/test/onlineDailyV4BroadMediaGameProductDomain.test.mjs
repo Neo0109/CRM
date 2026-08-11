@@ -184,6 +184,14 @@ const genericQuantityOperatorTokens = [
 ];
 const genericQuantityRangeConnectors = ["至", "到"];
 const genericVagueQuantityTokens = ["少量", "大量", "海量", "一众", "大批", "一些", "少数", "多数"];
+const genericCountClassifierTokens = [
+  "款", "个", "部", "项", "批", "位", "种", "类", "家", "名", "组", "支", "套", "份", "则", "篇"
+];
+const genericShareRankTokens = ["一半", "半数", "过半", "很多", "多种", "多类", "前", "名", "强"];
+const genericEnglishQuantityTokens = [
+  "over", "under", "about", "nearly", "approximately", "atleast", "upto", "tensof",
+  "thousandsof", "millionsof", "adozen", "severaldozen", "topten", "first", "best"
+];
 
 const quantityOperatorProjectDescriptors = [
   // Totals.
@@ -232,9 +240,32 @@ const completeQuantityGrammarDescriptors = Object.values(
   completeQuantityGrammarDescriptorGroups
 ).flat();
 
+const extendedQuantityRoleDescriptorGroups = {
+  classifier_extension: [
+    "十余种游戏", "数百种游戏", "若干类游戏", "十余家游戏公司", "数十家游戏厂商", "若干名开发者",
+    "十组游戏项目", "数支开发团队", "百套游戏", "十份作品", "数十则游戏新闻", "数篇游戏报道"
+  ],
+  share_and_rank: [
+    "前十名游戏", "十强游戏", "一半游戏", "半数游戏", "过半游戏", "很多游戏", "多种游戏", "多类游戏"
+  ],
+  english_quantity: [
+    "over 10 games", "under 10 games", "about 10 games", "nearly 10 games",
+    "approximately 10 games", "at least 10 games", "up to 10 games", "tens of games",
+    "thousands of games", "millions of games", "a dozen games", "several dozen games",
+    "top ten games", "first 10 games", "best 10 games", "10 best games"
+  ]
+};
+const extendedQuantityRoleDescriptors = Object.values(extendedQuantityRoleDescriptorGroups).flat();
+
 const numericProjectNameControls = [
   "纪元10：余烬", "第七史诗", "十字军之王", "百分百鲜橙汁", "好久不见", "两点之间",
   "十万个冷笑话", "所有人的天空", "十大掌门人", "前十传奇", "众多回忆"
+];
+
+const extendedQuantityDistinctiveControls = [
+  "半条命", "十强争霸", "很久以后", "种地勇者", "分类奇谭", "匿名代码", "组装大师", "套娃奇兵",
+  "十份遗产", "Overland", "UnderMine", "About an Elf", "Nearly Dead", "First Class Trouble",
+  "Top Ten Dreams", "A Dozen Dreams", "10 Best Nights"
 ];
 
 const mediaSourceProjectDescriptors = [
@@ -528,6 +559,61 @@ const quantityCategoryPrefixPositiveItems = [
 ].map(([prefix, project], index) => broadQaItem(
   `${prefix}国产手游公布 Demo`,
   `quantity-category-prefix-positive-${index + 1}`,
+  { project_name: project, expectedProject: project }
+));
+
+function postFinalQuantityDescriptorItem(descriptor, family, index, mode) {
+  const base = {
+    title: "国产独立游戏公布试玩 Demo",
+    summary: "qa",
+    source: "IT之家",
+    candidate_domain_gate: "game_product",
+    link: `https://example.test/post-final-${family}-${index}-${mode}`
+  };
+  if (mode === "structured") return { ...base, project_name: descriptor };
+  if (mode === "quoted") return { ...base, title: `国产独立游戏《${descriptor}》公布 Demo` };
+  return { ...base, title: `国产独立游戏 ${descriptor} 公布 Demo` };
+}
+
+const extendedQuantityRoleNegativeItems = Object.entries(extendedQuantityRoleDescriptorGroups)
+  .flatMap(([family, descriptors]) => descriptors.flatMap((descriptor, index) =>
+    ["structured", "quoted", "unquoted"].map((mode) =>
+      postFinalQuantityDescriptorItem(descriptor, family, index, mode)
+    )
+  ));
+
+const extendedQuantityMaterialDescriptors = [
+  "十余种游戏", "若干名开发者", "前十名游戏", "一半游戏", "很多游戏", "over 10 games"
+];
+const extendedQuantityMaterialItems = extendedQuantityMaterialDescriptors.flatMap((descriptor, descriptorIndex) =>
+  ["structured", "quoted", "unquoted"].map((mode) => ({
+    ...postFinalQuantityDescriptorItem(descriptor, "material", descriptorIndex, mode),
+    summary: "综合媒体离线对抗样本",
+    source_quality: 7,
+    source_focus: ["china", "technology"],
+    score: 52,
+    link: `https://example.test/closure-e2e-${descriptorIndex}-${mode}`
+  }))
+);
+
+const extendedQuantityDistinctiveItems = extendedQuantityDistinctiveControls.flatMap((project, index) =>
+  ["structured", "quoted", "unquoted"].map((mode) => ({
+    ...genericDescriptorItem(project, mode, `extended-quantity-distinctive-${index}`),
+    expectedProject: project
+  }))
+);
+
+const extendedQuantityCategoryPrefixItems = [
+  ["十余种", "星海新章"],
+  ["前十名", "雾都回响"],
+  ["一半", "月岛物语"],
+  ["很多", "远星计划"],
+  ["over 10", "深海回声"],
+  ["a dozen", "晨雾纪事"],
+  ["top ten", "余烬长歌"]
+].map(([prefix, project], index) => broadQaItem(
+  `${prefix}国产手游公布 Demo`,
+  `extended-quantity-category-prefix-${index + 1}`,
   { project_name: project, expectedProject: project }
 ));
 
@@ -870,7 +956,7 @@ describe("broad-media game-product candidate domain", () => {
         generic_numeral_transition_policy:
           "allow_arabic_chinese_几_or_若干_only_inside_generic_segmentation",
         generic_quantity_role_policy:
-          "tokenize_connectors_classifiers_magnitude_vague_rank_and_english_quantity_roles",
+          "tokenize_connectors_extended_classifiers_share_rank_and_common_english_quantity_roles",
         generic_category_prefix_quantity_policy:
           "longest_prefix_split_reuses_shared_generic_descriptor_dp",
         generic_quantity_operator_policy: "repeatable_curated_operator_token_sequence",
@@ -880,10 +966,12 @@ describe("broad-media game-product candidate domain", () => {
         generic_count_pre_classifier_suffixes: ["余", "多", "来"],
         generic_count_post_classifier_suffixes: ["以上", "以下", "以内", "左右", "上下", "起", "余"],
         generic_count_magnitude_quantifiers: ["成百上千", "成千上万"],
-        generic_count_classifiers: ["款", "个", "部", "项", "批"],
+        generic_count_classifiers: genericCountClassifierTokens,
         generic_batch_quantifiers: ["一批", "一系列", "若干批"],
         generic_vague_quantity_tokens: genericVagueQuantityTokens,
         generic_vague_quantity_policy: "segment_quantifier_token_plus_game_product_or_project_noun",
+        generic_share_rank_tokens: genericShareRankTokens,
+        generic_english_quantity_tokens: genericEnglishQuantityTokens,
         generic_descriptor_policy: "reject_when_entire_normalized_name_segments_into_generic_tokens",
         generic_token_categories: [
           "qualifier_quantifier",
@@ -1930,6 +2018,65 @@ describe("broad-media game-product candidate domain", () => {
         item.link
       );
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.link);
+    }
+  });
+
+  it("closes extended classifier, share, rank, and common English quantity roles across every candidate path", async () => {
+    assert.deepEqual(
+      Object.fromEntries(
+        Object.entries(extendedQuantityRoleDescriptorGroups)
+          .map(([family, descriptors]) => [family, descriptors.length])
+      ),
+      {
+        classifier_extension: 12,
+        share_and_rank: 8,
+        english_quantity: 16
+      }
+    );
+    assert.equal(extendedQuantityRoleDescriptors.length, 36);
+    assert.equal(extendedQuantityRoleNegativeItems.length, 108);
+    assert.deepEqual(
+      await observeBroadMediaCandidatePaths(extendedQuantityRoleNegativeItems),
+      expectedZeroCandidatePaths(extendedQuantityRoleNegativeItems)
+    );
+  });
+
+  it("keeps the 18-row extended quantity materiality fixture out of every candidate path", async () => {
+    assert.equal(extendedQuantityMaterialItems.length, 18);
+    assert.deepEqual(
+      await observeBroadMediaCandidatePaths(extendedQuantityMaterialItems),
+      expectedZeroCandidatePaths(extendedQuantityMaterialItems)
+    );
+  });
+
+  it("retains distinctive residue after extended Chinese and English quantity tokens", () => {
+    assert.equal(extendedQuantityDistinctiveItems.length, 51);
+    for (const item of extendedQuantityDistinctiveItems) {
+      assert.equal(
+        mediaRules.extractGameProductDomainProjectName(item),
+        item.expectedProject,
+        item.link
+      );
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.link);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "lead_candidate",
+        reason: null
+      }, item.link);
+    }
+  });
+
+  it("reuses extended quantity roles as category prefixes without consuming a distinct project", () => {
+    for (const item of extendedQuantityCategoryPrefixItems) {
+      assert.equal(
+        mediaRules.extractGameProductDomainProjectName(item),
+        item.expectedProject,
+        item.link
+      );
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.link);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "lead_candidate",
+        reason: null
+      }, item.link);
     }
   });
 

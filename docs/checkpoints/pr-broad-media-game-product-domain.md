@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-eligible while preventing it from becoming a media candidate, entering enrichment, or becoming a V7.3 second-pass target.
+Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-eligible while preventing it from becoming a media candidate, entering enrichment, or becoming a V7.3 second-pass target. The current blocking phase closes classifier/share/rank/common-English quantity roles in the already shared descriptor/category-prefix dynamic program.
 
 ## Overall Progress Checkpoint
 
@@ -198,13 +198,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - All three exact code-head checks succeeded: Cloudflare Pages `93887124556`; pull-request Build `31523765269 / 93886947666`; push Build `31523762772 / 93886939085`.
 - Both existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
 
+### Extended Quantity-Role P1 RED
+
+- Independent QA superseded final status head `ad8bd94a07e4ffe0c5f1f011809cf470838509f1` despite its exact checks. The shared DP still lacks bounded classifier extensions, share/rank roles, and common English quantity forms: 93 of 108 structured/quoted/unquoted paths leak on the exact head.
+- The accepted audit is exactly 36 descriptors across three families: 12 classifier extensions, 8 share/rank phrases, and 16 common English quantity phrases. Every descriptor is generated through structured, quoted, and unquoted project-name paths, yielding 108 direct/domain and end-to-end assertions.
+- The material boundary is exactly six descriptors (`十余种游戏`, `若干名开发者`, `前十名游戏`, `一半游戏`, `很多游戏`, and `over 10 games`) across the same three paths. All 18 rows must remain exact `radar_only/non_game_broad_media` with zero candidate, enrichment, candidate-audit/formal record, or V7.3 second pass and untouched provider/network sentinels.
+- The bounded repair may extend only the shared whole-name quantity-role tokens, dynamic numeral/word transitions, and the same category-prefix DP. Role closure, unmarked game-vertical behavior, formal V7.2 gates, and both existing P2 follow-ups remain unchanged.
+- Distinctive residue controls cover Chinese classifier/share tokens and English quantity-token prefixes across all three paths; structured category-prefix controls prove the same shared grammar consumes quantity prefixes without consuming the distinct project name.
+- The coherent provider/network-free RED is isolated on exact `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`: 34 focused subtests yield 30 prior/distinctive controls green and exactly four expected failures in the machine contract, 108-path matrix, 18-row material invariant, and category-prefix reuse. The 18-row baseline reproduces 13 leads, 13 enrichment calls, 13 audit candidates, and 6 audit records; formal and second-pass remain zero.
+
 ## Remaining
 
-- Release Captain independent acceptance and the root-owned merge gate only. The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate and are not merge blockers for this bounded wave. Do not merge from this task.
+- Publish the coherent tests-and-checkpoint-only RED from exact superseded head `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`, then implement and verify only the bounded shared quantity-role closure.
+- The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate. Do not merge from this task.
 
 ## Next Action
 
-Publish this status-only checkpoint from exact verified code head `5807a7b1099f78925a8edcb622f7ee82000936e5`, pin the resulting head/tree and exact checks in the PR body, then hand it to Release Captain for independent acceptance and root-owned merge.
+After independent QA confirms the exact matrix, publish this tests-and-checkpoint-only accepted RED from `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`; then implement only the shared quantity-role/category-prefix closure.
 
 ## Git Status
 
@@ -248,4 +258,5 @@ Publish this status-only checkpoint from exact verified code head `5807a7b1099f7
 - Superseded final status-only head: `222d8ac724fc60a506a74eb35c13c07b973a3d4b` (tree `5d748c060336f99de6ea8f347c6c4459d51700f0`); exact checks passed before shared quantity-segmentation QA.
 - Accepted shared quantity-segmentation RED: `0c76054e318eabb241fe3704c32d53de3e266167` (tree `06b12db1ba7aede3e6a36fee8133f7ac509ec4bc`), exact parent `222d8ac724fc60a506a74eb35c13c07b973a3d4b`; frozen compare and 22/22 parity passed.
 - Fully verified shared-DP GREEN: `5807a7b1099f78925a8edcb622f7ee82000936e5` (tree `a9d710e7a04ecc24bac365a751526eac98c330af`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
-- Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `5807a7b1099f78925a8edcb622f7ee82000936e5`; no behavior, machine-rule, fixture, or test blob changes.
+- Superseded final status-only head: `ad8bd94a07e4ffe0c5f1f011809cf470838509f1` (tree `90d7e9d58589a340d6d666306b15d46fca4ea193`); exact checks passed before extended quantity-role QA.
+- Extended quantity-role RED: local tests-and-checkpoint-only snapshot is ready to publish from exact superseded head `ad8bd94a07e4ffe0c5f1f011809cf470838509f1`; focused result is 30/34 with exactly four expected failures.
