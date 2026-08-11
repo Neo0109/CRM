@@ -173,14 +173,19 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Forty-nine negative descriptors across all three name paths produce a 147-row provider/network-free end-to-end invariant requiring exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second pass. Eighteen three-path numeric-title controls retain exact extraction and tagged `Lead.project` for `纪元10：余烬`, `第七史诗`, `十字军之王`, `百分百鲜橙汁`, `好久不见`, and `两点之间`. Seven structured-name controls require the same quantity source to recognize a glued category prefix without consuming the distinct project.
 - Final accepted focused RED on the exact superseded implementation has 29 subtests: 25 prior and numeric-title controls pass, while 4 fail only in the machine contract, shared three-path generic descriptor matrix, the 147-row quantity-closure E2E invariant, and behavioral category-prefix reuse. Role closure, connectors, URL, dedupe, media, lexical-category boundaries, animation, audit, and Radar controls remain green.
 - Both existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
+- Published the initial quantity RED as `49b8bbd53c9465eb39f4199bf75004d54ad41d22` (tree `70d3dda2e3de9c72553b99743a3fda5f5f6386e1`) and the final accepted category-prefix RED as `12e4b39cce0b0c8641cecbc09d01c912b5451e40` (tree `0c062b2f64c03a96553fba757e9f03af1767fda9`).
+- Implemented one shared regex source built from a repeatable curated operator-token sequence, optional numeric range, approximation, classifier, and post-classifier range. That exact source is consumed both as a dynamic-program transition for whole-name validation and by the lexical category-prefix scanner. Bounded `成千上万` magnitude and vague-quantity tokens compose separately; no complete QA leak phrase is hard-coded as a project-name denylist.
+- Local provider/network-free GREEN is complete: focused 29/29, impacted 108/108, media/dedupe/audit 63/63, and Daily V4 327/327. All 147 quantity negatives fail with exact broad-media Radar-only disposition and zero downstream paths; all 18 numeric-title controls and 7 category-prefix reuse controls pass.
+- Machine rules and both active documents describe the implemented repeatable operator/range grammar and vague-token composition. The updated `daily-report.json` Git blob is `21d71841f631c331c39b6fbd047751e2ea3d5ffc`, and the shadow integration behavior floor matches it.
+- Exact shimmed `npm run verify:all` exits successfully after the documented quantity GREEN, including frontend/backend/functions typechecks, Daily V4 327/327, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, all 17 changed-module syntax checks, exact machine hash, and the frozen-main whitespace check also pass.
 
 ## Remaining
 
-- Publish the tests-and-checkpoint-only complete quantity RED from exact superseded head `b89631b1db90efb517ebf60a112dfce510fbe318`; implement only the shared repeatable quantity source and vague-quantifier tokens; then run focused, impacted, Daily V4, full verification, JSON/syntax/diff, exact remote parity/checks, and Release Captain independent acceptance. Do not merge.
+- Publish one coherent GREEN child of final accepted RED `12e4b39cce0b0c8641cecbc09d01c912b5451e40`, verify frozen-base compare and 22/22 exact remote blob parity, wait exact remote checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
 
 ## Next Action
 
-Publish the accepted quantity RED with the 25/3 focused split, then implement the bounded shared grammar without touching the role closure or two P2 follow-ups.
+Publish the exact verified coherent quantity GREEN, pin its head/tree/compare/parity, then wait exact checks before independent QA.
 
 ## Git Status
 
@@ -219,4 +224,5 @@ Publish the accepted quantity RED with the 25/3 focused split, then implement th
 - Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `923033be97b893d8287ba08ba3058fb5d3603429`; no behavior, machine-rule, or test blob changes.
 - Superseded final status-only head: `b89631b1db90efb517ebf60a112dfce510fbe318` (tree `ffbc87c4a85c9e8725d6a811c2d005679b33fbc6`); exact checks passed before complete quantity-grammar QA.
 - Initial complete quantity-grammar RED: `49b8bbd53c9465eb39f4199bf75004d54ad41d22` (tree `70d3dda2e3de9c72553b99743a3fda5f5f6386e1`).
-- Final accepted quantity/category-prefix RED: local tests-and-checkpoint snapshot ready to publish from exact initial RED `49b8bbd53c9465eb39f4199bf75004d54ad41d22`.
+- Final accepted quantity/category-prefix RED: `12e4b39cce0b0c8641cecbc09d01c912b5451e40` (tree `0c062b2f64c03a96553fba757e9f03af1767fda9`).
+- Fully verified complete-quantity GREEN: local disposable snapshot ready to publish from exact accepted RED `12e4b39cce0b0c8641cecbc09d01c912b5451e40`.

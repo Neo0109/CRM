@@ -296,30 +296,61 @@
         "console game"
       ],
       "category_prefix_modifier_policy": "consume_region_promotion_genre_platform_and_generic_count_modifiers",
-      "generic_count_policy": "repeatable_quantifier_prefix_plus_arabic_chinese_or_indefinite_numeral_with_pre_and_post_classifier_approximation_or_series",
-      "generic_count_prefixes": [
-        "大约",
+      "generic_count_policy": "repeatable_quantity_operator_sequence_plus_numeric_or_range_core_with_classifier_and_approximation",
+      "generic_quantity_operator_policy": "repeatable_curated_operator_token_sequence",
+      "generic_quantity_operator_tokens": [
+        "累计",
+        "整整",
+        "一共",
+        "总",
+        "共",
+        "合",
+        "计",
+        "多",
+        "达",
+        "高",
+        "大",
         "约",
+        "有",
+        "莫",
+        "将",
         "近",
-        "不下",
-        "不少于",
-        "至少",
-        "至多",
-        "最多",
-        "超过",
+        "接",
+        "差",
+        "不",
         "超",
+        "过",
+        "足",
+        "满",
+        "低",
+        "少",
+        "小",
+        "于",
+        "仅",
         "逾",
+        "好",
+        "至",
+        "最",
+        "下",
+        "到",
         "上",
         "数",
         "第",
-        "共",
-        "合计",
-        "累计"
+        "乎",
+        "致",
+        "概",
+        "出",
+        "止",
+        "只"
       ],
       "generic_count_numeral_cores": [
         "arabic",
         "chinese_including_几",
         "若干"
+      ],
+      "generic_count_range_connectors": [
+        "至",
+        "到"
       ],
       "generic_count_pre_classifier_suffixes": [
         "余",
@@ -336,7 +367,8 @@
         "余"
       ],
       "generic_count_magnitude_quantifiers": [
-        "成百上千"
+        "成百上千",
+        "成千上万"
       ],
       "generic_count_classifiers": [
         "款",
@@ -350,6 +382,17 @@
         "一系列",
         "若干批"
       ],
+      "generic_vague_quantity_tokens": [
+        "少量",
+        "大量",
+        "海量",
+        "一众",
+        "大批",
+        "一些",
+        "少数",
+        "多数"
+      ],
+      "generic_vague_quantity_policy": "segment_quantifier_token_plus_game_product_or_project_noun",
       "generic_descriptor_policy": "reject_when_entire_normalized_name_segments_into_generic_tokens",
       "generic_token_categories": [
         "qualifier_quantifier",

@@ -194,6 +194,10 @@ export const DOMESTIC_GAME_COMPANY_NAMES = Object.freeze([
   "B站游戏", "哔哩哔哩游戏"
 ]);
 
+const GENERIC_VAGUE_QUANTITY_TOKENS = Object.freeze([
+  "少量", "大量", "海量", "一众", "大批", "一些", "少数", "多数"
+]);
+
 const DOMESTIC_GAME_COMPANY_PATTERN = new RegExp(
   DOMESTIC_GAME_COMPANY_NAMES
     .map(escapeRegexToken)
@@ -208,7 +212,8 @@ export function hasDomesticGameCompanySignal(value) {
 
 const CATEGORY_PREFIX_MODIFIER_TOKENS = Object.freeze([
   "模拟经营", "二次元", "国产", "中国", "国人", "国内", "海外", "进口", "全球", "亚洲", "本土",
-  "首款", "热门", "精品", "重磅", "年度", "多款", "移动", "武侠", "卡牌", "策略", "肉鸽", "pc"
+  "首款", "热门", "精品", "重磅", "年度", "多款", "移动", "武侠", "卡牌", "策略", "肉鸽", "pc",
+  ...GENERIC_VAGUE_QUANTITY_TOKENS
 ].sort((left, right) => right.length - left.length));
 
 const REGION_CATEGORY_PREFIX_TOKENS = Object.freeze([
@@ -271,7 +276,7 @@ const GENERIC_GAME_PROJECT_TOKENS = Object.freeze([
   "最新", "全新", "某款", "某个", "多款", "一款", "多个", "一个", "多项", "一项",
   "数款", "若干", "一批", "一系列", "若干批", "这款", "一家", "旗下", "一部", "多部", "首款",
   "热门", "精品", "重磅", "年度", "神秘", "未命名", "尚未命名", "代号", "备受期待",
-  "原创", "自研", "知名", "头部", "某", "本", "该", "新",
+  "原创", "自研", "知名", "头部", "某", "本", "该", "新", ...GENERIC_VAGUE_QUANTITY_TOKENS,
   // Region, genre, and platform modifiers.
   "模拟经营", "二次元", "国产", "中国", "国人", "国内", "海外", "进口", "全球", "亚洲", "本土",
   "移动", "武侠", "卡牌", "策略", "肉鸽", "pc",
@@ -313,16 +318,23 @@ function normalizeProjectDescriptorKey(value) {
     .replace(/[\s\p{P}\p{S}]+/gu, "");
 }
 
-const GENERIC_COUNT_PREFIX_TOKEN_PATTERN_SOURCE = "(?:不少于|大约|超过|至少|至多|最多|合计|累计|不下|约|近|超|逾|上|数|第|共)";
-const GENERIC_COUNT_PREFIX_SEQUENCE_PATTERN_SOURCE = `(?:${GENERIC_COUNT_PREFIX_TOKEN_PATTERN_SOURCE}){0,2}`;
+const GENERIC_QUANTITY_OPERATOR_TOKENS = Object.freeze([
+  "累计", "整整", "一共",
+  "总", "共", "合", "计", "多", "达", "高", "大", "约", "有", "莫", "将", "近", "接", "差",
+  "不", "超", "过", "足", "满", "低", "少", "小", "于", "仅", "逾", "好", "至", "最", "下",
+  "到", "上", "数", "第", "乎", "致", "概", "出", "止", "只"
+].sort((left, right) => right.length - left.length));
+const GENERIC_QUANTITY_OPERATOR_PATTERN_SOURCE = `(?:${GENERIC_QUANTITY_OPERATOR_TOKENS.join("|")})`;
+const GENERIC_QUANTITY_OPERATOR_SEQUENCE_PATTERN_SOURCE = `(?:${GENERIC_QUANTITY_OPERATOR_PATTERN_SOURCE})*`;
 const GENERIC_NUMERAL_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿几]+)|(?:若干))";
+const GENERIC_COUNT_RANGE_PATTERN_SOURCE = `(?:(?:至|到)${GENERIC_NUMERAL_PATTERN_SOURCE})?`;
 const GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE = "(?:余|多|来)?";
 const GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE = "(?:款|个|部|项|批)";
 const GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE = "(?:以上|以下|以内|左右|上下|起|余)?";
-const GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE = "(?:成百上千)";
-const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = `(?:${GENERIC_COUNT_PREFIX_SEQUENCE_PATTERN_SOURCE}${GENERIC_NUMERAL_PATTERN_SOURCE}${GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE}${GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE}|${GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE})`;
+const GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE = "(?:成百上千|成千上万)";
+const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = `(?:${GENERIC_QUANTITY_OPERATOR_SEQUENCE_PATTERN_SOURCE}${GENERIC_NUMERAL_PATTERN_SOURCE}${GENERIC_COUNT_RANGE_PATTERN_SOURCE}${GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE}${GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE}|${GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE})`;
 const GENERIC_COUNT_AT_START_PATTERN = new RegExp(`^${GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE}`, "u");
-const GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE = "(?:一批|一系列|若干批|成百上千款)";
+const GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE = "(?:一批|一系列|若干批|成百上千款|成千上万款)";
 
 function isEntirelySegmentableProjectDescriptor(
   key,
