@@ -99,6 +99,9 @@ const broadNegatives = [
   ...fixture.marked_domain_reason_precedence
 ];
 
+const broadPlatformAliases = ["B站", "哔哩哔哩", "bilibili", "Bili Bili", "B·站"];
+const insufficientPlatformTerms = ["官方", "授权", "发行", "合作", "需求", "上线"];
+
 const genericProjectDescriptors = [
   "最新消息",
   "行业动态",
@@ -157,6 +160,48 @@ const genericProjectDescriptors = [
   "official game update",
   "new publishing project",
   "development team update",
+  "国产",
+  "中国",
+  "国人",
+  "国内",
+  "海外",
+  "进口",
+  "全球",
+  "亚洲",
+  "本土",
+  "首款",
+  "热门",
+  "精品",
+  "重磅",
+  "年度新游",
+  "二次元",
+  "武侠",
+  "卡牌",
+  "策略",
+  "肉鸽",
+  "模拟经营",
+  "移动",
+  "PC",
+  "神秘新作",
+  "重磅新作",
+  "年度力作",
+  "未命名新作",
+  "尚未命名项目",
+  "代号项目",
+  "备受期待作品",
+  "腾讯",
+  "网易",
+  "米哈游",
+  "字节跳动",
+  "某上市公司",
+  "雪佛兰",
+  "星河公司",
+  "未来集团",
+  "山海工作室",
+  "两款",
+  "三款",
+  "十款",
+  "10款",
   "报道称",
   "消息称",
   "官方",
@@ -169,7 +214,14 @@ const genericProjectDescriptors = [
   "new title",
   "new game",
   "project",
-  "development team"
+  "development team",
+  ...broadPlatformAliases,
+  ...broadPlatformAliases.flatMap((alias) => insufficientPlatformTerms.flatMap((term) => [
+    `${alias}${term}`,
+    `${term}${alias}`,
+    `${alias}·${term}`,
+    `${term}：${alias}`
+  ]))
 ];
 
 const genericProjectPrefixes = [
@@ -197,6 +249,53 @@ function genericDescriptorItem(descriptor, mode, index) {
   if (mode === "quoted") return { ...base, title: `国产独立游戏《${descriptor}》公布 Demo` };
   return { ...base, title: `国产独立游戏 ${descriptor} 公布 Demo` };
 }
+
+const modifierNoNameTitles = [
+  "国产手游 一家开发团队最新更新 开启 Playtest",
+  "国产端游 官方最新消息 公布 Demo",
+  "中国手游 多个游戏项目 开放测试",
+  "国人端游 公司最新消息 公布实机",
+  "国内手游 一款全新游戏 开启 Playtest",
+  "海外独立游戏 官方最新消息 公布 Demo",
+  "进口网络游戏 一家开发团队最新更新 开放测试",
+  "首款手游 一家开发团队最新更新 开启 Playtest",
+  "热门独立游戏 官方最新消息 公布 Demo",
+  "多款国产手游 公司最新消息 开放测试",
+  "海外网络游戏 多个游戏项目 公布实机",
+  "二次元手游 官方最新消息 公布 Demo",
+  "武侠手游 一家开发团队最新更新 开启 Playtest",
+  "卡牌手游 公司最新消息 开放测试",
+  "策略手游 多个游戏项目 公布实机",
+  "肉鸽手游 官方最新消息 公布 Demo",
+  "模拟经营手游 一家开发团队最新更新 开启 Playtest",
+  "移动手游 公司最新消息 开放测试",
+  "PC手游 多个游戏项目 公布实机",
+  "腾讯手游 官方最新消息 公布 Demo",
+  "网易手游 一家开发团队最新更新 开启 Playtest",
+  "米哈游手游 公司最新消息 开放测试",
+  "字节跳动手游 多个游戏项目 公布实机",
+  "某上市公司手游 官方最新消息 公布 Demo",
+  "雪佛兰手游 一家开发团队最新更新 开启 Playtest",
+  "两款手游 官方最新消息 公布 Demo",
+  "三款国产手游 一家开发团队最新更新 开启 Playtest",
+  "十款独立游戏 公司最新消息 开放测试",
+  "10款手游 多个游戏项目 公布实机",
+  ...broadPlatformAliases.flatMap((alias) => insufficientPlatformTerms.flatMap((term) => [
+    `${alias}${term}手游 多个游戏项目 公布 Demo`,
+    `${term}：${alias}手游 一家开发团队最新更新 开启 Playtest`
+  ]))
+];
+
+const modifierNoNameItems = modifierNoNameTitles.map((title, index) => ({
+  title,
+  summary: "报道包含地区修饰、游戏类别和产品事件，但没有具体项目名称。",
+  source: "IT之家",
+  link: `https://example.test/category-modifier-${index + 1}`,
+  source_quality: 7,
+  source_focus: ["china", "technology"],
+  candidate_domain_gate: "game_product",
+  score: 52
+}));
 
 describe("broad-media game-product candidate domain", () => {
   it("publishes the exact V7.2.1 machine/default source contract", async () => {
@@ -480,6 +579,70 @@ describe("broad-media game-product candidate domain", () => {
         ...genericDescriptorItem("Project Echo", "structured", "named-generic-token-fragments-en"),
         title: "PC game announced Demo",
         project_name: "Project Echo"
+      },
+      {
+        ...genericDescriptorItem("代号：鸢", "unquoted", "named-codename-residue-cn"),
+        title: "国产手游 代号：鸢 公布 Demo"
+      },
+      {
+        ...genericDescriptorItem("神秘海域", "structured", "named-placeholder-residue-cn"),
+        title: "国产独立游戏开放测试",
+        project_name: "神秘海域"
+      },
+      {
+        ...genericDescriptorItem("中国式家长", "structured", "named-region-residue-cn"),
+        title: "国产手游公布试玩 Demo",
+        project_name: "中国式家长"
+      },
+      {
+        ...genericDescriptorItem("上海之夏", "structured", "named-place-residue-cn"),
+        title: "国产端游公开实机",
+        project_name: "上海之夏"
+      },
+      {
+        ...genericDescriptorItem("腾讯极光计划", "structured", "named-brand-residue-cn"),
+        title: "国产网络游戏公布开发日志",
+        project_name: "腾讯极光计划"
+      },
+      {
+        ...genericDescriptorItem("武侠乂", "structured", "named-genre-residue-wuxia"),
+        title: "国产手游开放测试",
+        project_name: "武侠乂"
+      },
+      {
+        ...genericDescriptorItem("卡牌迷境", "structured", "named-genre-residue-card"),
+        title: "国产端游公布 Demo",
+        project_name: "卡牌迷境"
+      },
+      {
+        ...genericDescriptorItem("策略之王", "structured", "named-genre-residue-strategy"),
+        title: "国产游戏公开实机",
+        project_name: "策略之王"
+      },
+      {
+        ...genericDescriptorItem("肉鸽地牢", "structured", "named-genre-residue-roguelike"),
+        title: "国产独立游戏开启 Playtest",
+        project_name: "肉鸽地牢"
+      },
+      {
+        ...genericDescriptorItem("模拟经营物语", "structured", "named-genre-residue-sim"),
+        title: "国产手游开放商店页愿望单",
+        project_name: "模拟经营物语"
+      },
+      {
+        ...genericDescriptorItem("移动迷城", "structured", "named-platform-residue-mobile"),
+        title: "国产端游公布试玩 Demo",
+        project_name: "移动迷城"
+      },
+      {
+        ...genericDescriptorItem("PC小队", "structured", "named-platform-residue-pc"),
+        title: "国产主机游戏公布首曝",
+        project_name: "PC小队"
+      },
+      {
+        ...genericDescriptorItem("纪元10：余烬", "structured", "named-numeric-residue-cn"),
+        title: "国产网络游戏开放测试",
+        project_name: "纪元10：余烬"
       }
     ];
     const namedLeads = await buildMediaLeadCandidates(namedItems, emptyIndex(), offlineContext({
@@ -494,6 +657,82 @@ describe("broad-media game-product candidate domain", () => {
     for (const lead of namedLeads) {
       assert.equal(lead.project, expectedProjectByLink.get(lead._mediaItem?.link));
     }
+  });
+
+  it("consumes category modifiers without losing valid before-category project names", async () => {
+    for (const item of modifierNoNameItems) {
+      assert.equal(mediaRules.extractGameProductDomainProjectName(item), null, item.title);
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.title);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      }, item.title);
+    }
+
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      modifierNoNameItems,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += 1;
+          return candidates;
+        }
+      })
+    );
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: modifierNoNameItems.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual(leads, []);
+    assert.equal(enrichmentCalls, 0);
+    assert.equal(artifact.scan_summary.media_candidates_seen, 0);
+    assert.equal(artifact.scan_summary.records_total, 0);
+    assert.equal(artifact.scan_summary.formal, 0);
+    assert.deepEqual(secondPass.eligible_order, []);
+    assert.equal(secondPassCalls, 0);
+
+    const beforeCategoryNamedItems = [
+      {
+        ...modifierNoNameItems[0],
+        title: "星海远征 国产手游开启 Playtest",
+        link: "https://example.test/starsea-before-domestic-mobile-category"
+      },
+      {
+        ...modifierNoNameItems[5],
+        title: "雾港纪事 海外独立游戏开放 Demo",
+        link: "https://example.test/fog-harbor-before-overseas-indie-category"
+      }
+    ];
+    const namedLeads = await buildMediaLeadCandidates(
+      beforeCategoryNamedItems,
+      emptyIndex(),
+      offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
+    );
+
+    assert.deepEqual(
+      beforeCategoryNamedItems.map((item) => mediaRules.extractGameProductDomainProjectName(item)),
+      ["星海远征", "雾港纪事"]
+    );
+    assert.equal(namedLeads.length, 2);
+    assert.deepEqual(new Set(namedLeads.map((lead) => lead.project)), new Set(["星海远征", "雾港纪事"]));
   });
 
   it("accepts only narrow structured IDs and normalized product routes", () => {

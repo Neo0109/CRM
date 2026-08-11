@@ -78,13 +78,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Published coherent DP GREEN `7ae72dd0c6800bb6f64b50a7c718bf723f6c5afb` with tree `6ccfad3167b23c35e619c29922bdd28db8103561`. GitHub compare confirms the exact frozen base, and all 22 remote changed-file blobs match the verified disposable snapshot with zero mismatches.
 - Exact-head remote acceptance is GREEN: Cloudflare Pages passed, and both frontend check runs passed (`31507098943 / 93831355404` and `31507102754 / 93831368992`). The PR has no unresolved review threads.
 
+### Region, Promotion, Organization, And Count Modifier P1 RED
+
+- Independent QA superseded validation-only head `61dafb40861c366773ae4b4c42de5189ec9a039c`. Exact reproduction: `国产手游 一家开发团队最新更新 开启 Playtest` matched the short `手游` category, rejected the generic between-category/event text, then incorrectly accepted the leftover pre-category `国产` as the project, producing domain evidence, a candidate, and enrichment eligibility.
+- Added one bounded three-path matrix for region modifiers (`国产/中国/国人/国内/海外/进口/全球/亚洲/本土`), promotion/placeholder modifiers (`首款/热门/精品/重磅/年度新游/神秘新作/年度力作/未命名新作/尚未命名项目/代号项目/备受期待作品`), high-frequency genre/platform modifiers (`二次元/武侠/卡牌/策略/肉鸽/模拟经营/移动/PC`), organization-only values, Bilibili aliases, and generic count shapes.
+- The unquoted end-to-end matrix covers short categories after region/promotion/genre/platform/organization/platform-alias modifiers; both orders and punctuation for every `B站/哔哩哔哩/bilibili/Bili Bili/B·站` plus `官方/授权/发行/合作/需求/上线`; and `两款/三款/十款/10款 + 手游/国产手游/独立游戏`. Every negative must return exact `radar_only/non_game_broad_media` and produce zero candidate, enrichment, audit/formal record, or V7.3 second pass.
+- Distinctive-residue controls preserve true names and before-category forms, including `星海远征 国产手游开启 Playtest`, `雾港纪事 海外独立游戏开放 Demo`, `代号：鸢`, `神秘海域`, `中国式家长`, `上海之夏`, `腾讯极光计划`, genre-token names, `PC小队`, `纪元10：余烬`, and `Project Echo`.
+- Accepted provider-free RED: the focused contract now has 14 subtests, with exactly 2 failing and 12 existing subtests green. The failures independently show structured `国产` accepted as a project and the exact unquoted production reproduction extracting `国产`.
+- Deferred P2, deliberately not included in this P1: a real unquoted project name that itself contains a category token can make the first category match bind the wrong project, for example `手游模拟器 国产独立游戏公开 Demo` or `PC Game Tycoon 国产独立游戏公开 Demo`. This requires a separate category-selection design, not expansion of the modifier repair.
+
 ## Remaining
 
-- Publish this final validation-only checkpoint and wait for its exact-head PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish the modifier RED checkpoint, implement shared generic modifier/count/organization handling and approved category-prefix consumption, then rerun focused/impacted/Daily V4/full verification.
+- Publish a new coherent GREEN and complete exact remote acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the validation-only checkpoint, wait for exact-head checks, then report the ready PR without merging.
+Publish the modifier RED checkpoint, implement the bounded P1 repair, then rerun provider-free validation.
 
 ## Git Status
 
@@ -104,3 +114,4 @@ Publish the validation-only checkpoint, wait for exact-head checks, then report 
 - Superseded validation-only checkpoint: `de05087f83f9e6e36b0526eecdb18b0869e2a692` (tree `6df27c14fc24219618151c507d3d9da329425614`).
 - Compositional generic-token RED: `1636646a7695d21777c47ca0dc7ca9afb98928bf` (tree `9fad837148cbdc674f4a2e37bc94a5b99edc9852`).
 - Coherent compositional generic-token GREEN before final validation-only checkpoint: `7ae72dd0c6800bb6f64b50a7c718bf723f6c5afb` (tree `6ccfad3167b23c35e619c29922bdd28db8103561`).
+- Superseded compositional validation-only checkpoint: `61dafb40861c366773ae4b4c42de5189ec9a039c` (tree `a9c38bf70d6ef63ded5c4b43c8fee95766b17285`).
