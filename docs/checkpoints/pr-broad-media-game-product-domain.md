@@ -96,16 +96,17 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Focused provider/network-free GREEN passes 17/17. The machine contract now records the exact category, modifier/count, organization/Bilibili, quote/unquoted binding, URL normalization, and transitive-component policies; both active rule documents describe the same boundary.
 - Expanded local validation is GREEN: the impacted contract passes 96/96, the dedicated media/dedupe/audit regression union passes 51/51, and `npm run test:daily-v4` passes 315/315. The exact shimmed `npm run verify:all` passes every declared task, including frontend/backend/functions typechecks, Daily V4 315/315, historical liveness replay, Daily contract validation, the temporary frontend build, and frozen-base diff-check.
 - Machine/fixture JSON parsing and changed-module syntax checks pass. The updated `daily-report.json` Git blob is `50709e1fac5ce055bc8917cec4d31b8a4e16d1c1`, and the shadow integration behavior floor matches it.
+- Published coherent GREEN `91b4eedf0cf33e5f74c446357f39832c4abc7a4a` with tree `d1d22e82e570fab869d630429fba8fdf7632e7e3`, parented directly to final expanded RED `b14c81889b198bb08b62c08c0d28fbf87b76a823`. GitHub compare confirms the exact frozen base, 22 changed files, and 22/22 remote blobs match the verified disposable snapshot with zero mismatches.
+- Exact-head remote acceptance is GREEN: Cloudflare Pages passed, and both frontend runs passed (`31510367595 / 93842355279` and `31510362927 / 93842340064`). PR #116 has no unresolved review thread; the sole historical nullish-project thread remains resolved and outdated.
 - Deferred P2, deliberately not included in this P1: a real unquoted project name that itself contains a category token can make the first category match bind the wrong project, for example `手游模拟器 国产独立游戏公开 Demo` or `PC Game Tycoon 国产独立游戏公开 Demo`. This requires a separate category-selection design, not expansion of the modifier repair.
 
 ## Remaining
 
-- Publish the coherent GREEN from exact expanded RED `b14c81889b198bb08b62c08c0d28fbf87b76a823`, then complete exact remote acceptance and publish the final validation checkpoint.
-- Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish this final validation-only checkpoint, wait for its exact-head GitHub checks, then leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the verified coherent GREEN from expanded RED `b14c81889b198bb08b62c08c0d28fbf87b76a823`, then wait for exact-head GitHub checks.
+Publish the final validation-only checkpoint on top of coherent GREEN `91b4eedf0cf33e5f74c446357f39832c4abc7a4a`, then wait for exact-head GitHub checks.
 
 ## Git Status
 
@@ -127,3 +128,4 @@ Publish the verified coherent GREEN from expanded RED `b14c81889b198bb08b62c08c0
 - Coherent compositional generic-token GREEN before final validation-only checkpoint: `7ae72dd0c6800bb6f64b50a7c718bf723f6c5afb` (tree `6ccfad3167b23c35e619c29922bdd28db8103561`).
 - Superseded compositional validation-only checkpoint: `61dafb40861c366773ae4b4c42de5189ec9a039c` (tree `a9c38bf70d6ef63ded5c4b43c8fee95766b17285`).
 - Final expanded P1 RED: `b14c81889b198bb08b62c08c0d28fbf87b76a823` (tree `7add39f903d23bd44d526998c807e50211d2edd3`).
+- Coherent expanded P1 GREEN: `91b4eedf0cf33e5f74c446357f39832c4abc7a4a` (tree `d1d22e82e570fab869d630429fba8fdf7632e7e3`).
