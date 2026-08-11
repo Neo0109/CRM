@@ -75,14 +75,16 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - The predicate rejects only a fully segmentable normalized descriptor; any non-generic residue prevents generic classification. Exact project binding stays green for `星海远征`, `雾港纪事`, `Lost Dream Chronicle`, `行业动态模拟器`, `New Game Chronicle`, `新月计划`, and `Project Echo`. The separately approved reporting-prefix boundary remains explicit and Chinese-safe.
 - Final provider/network-free GREEN after the DP repair: focused passes 13/13; the expanded impacted union passes 92/92; `npm run test:daily-v4` passes 311/311; and the exact `npm run verify:all` passes every declared task. Machine/fixture JSON parsing, changed-module syntax checks, and the exact frozen-main whitespace check pass.
 - Machine rules and both active documents now declare whole-name segmentation, the six vocabulary categories, and distinctive-residue admission. The updated `daily-report.json` Git blob is `154950188e56135a43368be06b79a5044e6e1873`, and the shadow integration behavior floor matches it.
+- Published coherent DP GREEN `7ae72dd0c6800bb6f64b50a7c718bf723f6c5afb` with tree `6ccfad3167b23c35e619c29922bdd28db8103561`. GitHub compare confirms the exact frozen base, and all 22 remote changed-file blobs match the verified disposable snapshot with zero mismatches.
+- Exact-head remote acceptance is GREEN: Cloudflare Pages passed, and both frontend check runs passed (`31507098943 / 93831355404` and `31507102754 / 93831368992`). The PR has no unresolved review threads.
 
 ## Remaining
 
-- Publish the coherent DP GREEN and complete exact remote blob/tree/check acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish this final validation-only checkpoint and wait for its exact-head PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the coherent DP GREEN, then complete exact remote-tree/check acceptance.
+Publish the validation-only checkpoint, wait for exact-head checks, then report the ready PR without merging.
 
 ## Git Status
 
@@ -101,3 +103,4 @@ Publish the coherent DP GREEN, then complete exact remote-tree/check acceptance.
 - Coherent generic-descriptor GREEN before final validation-only checkpoint: `48e4e09e838746b6c59d46db90708ec926db3ef7` (tree `a76fb036d8602e564e3fe7be14577f19e6f11605`).
 - Superseded validation-only checkpoint: `de05087f83f9e6e36b0526eecdb18b0869e2a692` (tree `6df27c14fc24219618151c507d3d9da329425614`).
 - Compositional generic-token RED: `1636646a7695d21777c47ca0dc7ca9afb98928bf` (tree `9fad837148cbdc674f4a2e37bc94a5b99edc9852`).
+- Coherent compositional generic-token GREEN before final validation-only checkpoint: `7ae72dd0c6800bb6f64b50a7c718bf723f6c5afb` (tree `6ccfad3167b23c35e619c29922bdd28db8103561`).
