@@ -33,6 +33,11 @@ export type CommunicationFilters = {
 
 export type InteractionDraftErrors = Partial<Record<keyof InteractionDraft, string>>;
 
+export type PendingInteractionRequest = {
+  requestId: string;
+  fingerprint: string;
+};
+
 const statusLabels: Record<CommunicationFollowUpStatus, string> = {
   overdue: "已逾期",
   today: "今日到期",
@@ -151,6 +156,22 @@ export function buildInteractionInput(
 export function createInteractionRequestId(now = Date.now(), randomValue = Math.random()) {
   const random = Math.floor(randomValue * Number.MAX_SAFE_INTEGER).toString(36);
   return `web-${now.toString(36)}-${random}`;
+}
+
+export function resolveInteractionRequest(
+  pending: PendingInteractionRequest | undefined,
+  leadId: string,
+  draft: InteractionDraft,
+  createRequestId: () => string = createInteractionRequestId
+): PendingInteractionRequest {
+  const { request_id: _requestId, ...payload } = buildInteractionInput(
+    leadId,
+    "request-fingerprint",
+    draft
+  );
+  const fingerprint = JSON.stringify(payload);
+  if (pending?.fingerprint === fingerprint) return pending;
+  return { requestId: createRequestId(), fingerprint };
 }
 
 export function mergeInteractionPage(

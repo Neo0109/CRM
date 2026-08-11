@@ -22,17 +22,18 @@ import {
   communicationOwners,
   communicationStatusForLead,
   communicationStatusLabel,
-  createInteractionRequestId,
   filterCommunicationLeads,
   interactionOccurredDate,
   mergeInteractionPage,
   newInteractionDraft,
+  resolveInteractionRequest,
   shouldCommitTimelineResponse,
   validateInteractionDraft,
   type CommunicationDueFilter,
   type CommunicationFilters,
   type CommunicationPoolFilter,
-  type InteractionDraftErrors
+  type InteractionDraftErrors,
+  type PendingInteractionRequest
 } from "./communicationFollowUp";
 import { priorityLabel } from "./leadPriority";
 import type { ContactMethod, InteractionDraft, InteractionEvent, Lead } from "./types";
@@ -96,7 +97,7 @@ export function CommunicationFollowUpPage({
   const [workspaceNotice, setWorkspaceNotice] = useState<string | null>(null);
   const timelineRequestId = useRef(0);
   const selectedLeadIdRef = useRef<string | null>(selectedLeadId);
-  const requestIdByLead = useRef<Record<string, string>>({});
+  const pendingRequestByLead = useRef<Record<string, PendingInteractionRequest>>({});
 
   selectedLeadIdRef.current = selectedLeadId;
 
@@ -242,16 +243,20 @@ export function CommunicationFollowUpPage({
       return;
     }
 
-    const requestId = requestIdByLead.current[lead.id] ?? createInteractionRequestId();
-    requestIdByLead.current[lead.id] = requestId;
+    const pendingRequest = resolveInteractionRequest(
+      pendingRequestByLead.current[lead.id],
+      lead.id,
+      draft
+    );
+    pendingRequestByLead.current[lead.id] = pendingRequest;
     setSavingLeadId(lead.id);
     setSaveError(null);
     setSaveSuccess(null);
     setWorkspaceNotice(null);
 
     try {
-      const result = await createInteraction(buildInteractionInput(lead.id, requestId, draft));
-      delete requestIdByLead.current[lead.id];
+      const result = await createInteraction(buildInteractionInput(lead.id, pendingRequest.requestId, draft));
+      delete pendingRequestByLead.current[lead.id];
       onLeadUpdated(result.lead);
       setTimelineByLead((current) => ({
         ...current,

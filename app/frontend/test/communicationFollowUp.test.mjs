@@ -8,6 +8,7 @@ import {
   filterCommunicationLeads,
   mergeInteractionPage,
   newInteractionDraft,
+  resolveInteractionRequest,
   shouldCommitTimelineResponse,
   validateInteractionDraft
 } from "../src/communicationFollowUp.ts";
@@ -129,6 +130,35 @@ describe("interaction form contract", () => {
       next_follow_up_date: "2026-08-18"
     });
     assert.match(createInteractionRequestId(1234, 0.5), /^web-[a-z0-9]+-[a-z0-9]+$/);
+  });
+
+  it("reuses a failed request id only while the normalized payload is unchanged", () => {
+    const draft = {
+      ...newInteractionDraft(now),
+      summary: "确认本周进展"
+    };
+    const first = resolveInteractionRequest(
+      undefined,
+      "lead-1",
+      draft,
+      () => "request-web-001"
+    );
+    const unchangedRetry = resolveInteractionRequest(
+      first,
+      "lead-1",
+      { ...draft },
+      () => "request-web-002"
+    );
+    const editedRetry = resolveInteractionRequest(
+      first,
+      "lead-1",
+      { ...draft, summary: "确认本周进展并补充新条款" },
+      () => "request-web-002"
+    );
+
+    assert.strictEqual(unchangedRetry, first);
+    assert.equal(editedRetry.requestId, "request-web-002");
+    assert.notEqual(editedRetry.fingerprint, first.fingerprint);
   });
 });
 
