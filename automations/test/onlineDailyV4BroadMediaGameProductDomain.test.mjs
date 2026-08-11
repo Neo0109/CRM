@@ -213,6 +213,21 @@ const genericProjectDescriptors = [
   "official game update",
   "new publishing project",
   "development team update",
+  "IT之家消息",
+  "IT之家报道",
+  "据报道",
+  "数据显示",
+  "报告显示",
+  "业内人士称",
+  "公司宣布",
+  "官方透露",
+  "机构指出",
+  "团队表示",
+  "手游市场",
+  "PC游戏平台",
+  "console game market",
+  "国产游戏产业",
+  "网络游戏市场",
   "国产",
   "中国",
   "国人",
@@ -368,6 +383,24 @@ const modifierNoNameItems = modifierNoNameTitles.map((title, index) => ({
   score: 52
 }));
 
+const attributionNoNameTitles = [
+  "IT之家消息 国产手游公布 Demo",
+  "IT之家报道 国产手游开放 Playtest",
+  "据报道 国产手游公开实机",
+  "数据显示 国产手游公布 Demo",
+  "报告显示 国产手游开放测试",
+  "业内人士称 国产手游公布 Demo",
+  "公司宣布 国产手游开放 Playtest",
+  "官方透露 国产手游公开实机",
+  "机构指出 国产手游公布 Demo",
+  "团队表示 国产手游开放测试"
+];
+
+const attributionNoNameItems = attributionNoNameTitles.map((title, index) => broadQaItem(
+  title,
+  `attribution-before-category-${index + 1}`
+));
+
 const explicitGameCategoryBindings = [
   "PC游戏",
   "移动游戏",
@@ -395,6 +428,10 @@ const connectorBindingCases = [
   ["星海远征 国产手游计划于公布 Demo", "星海远征"],
   ["星海远征 国产手游有望开放测试", "星海远征"],
   ["星海远征 国产手游宣布将公布 Demo", "星海远征"],
+  ["星海远征 国产手游即将于公布 Demo", "星海远征"],
+  ["星海远征 国产手游拟于开放 Playtest", "星海远征"],
+  ["星海远征 国产手游计划在发布实机", "星海远征"],
+  ["星海远征 国产手游宣布将在公布 Demo", "星海远征"],
   ["Project Echo mobile game announces Demo", "Project Echo"],
   ["Aether Echo PC game officially reveals Demo", "Aether Echo"],
   ["Project Echo console game launches Playtest", "Project Echo"],
@@ -403,14 +440,24 @@ const connectorBindingCases = [
   ["Project Echo mobile game plans to launch Playtest", "Project Echo"],
   ["Project Echo mobile game is set to reveal Demo", "Project Echo"],
   ["Project Echo mobile game expected to launch Playtest", "Project Echo"],
+  ["Project Echo mobile game plans on launching Demo", "Project Echo"],
+  ["Project Echo mobile game is expected to reveal Demo", "Project Echo"],
+  ["Project Echo mobile game is going to announce Demo", "Project Echo"],
   ["国产手游新作 星海远征公布 Demo", "星海远征"],
   ["国产手游新作星海远征公布 Demo", "星海远征"],
   ["手游 星海远征 今日公布 Demo", "星海远征"],
   ["国产手游 星海远征 预计公布 Demo", "星海远征"],
   ["国产手游 星海远征 今日将开放 Playtest", "星海远征"],
+  ["国产手游 星海远征 即将于公布 Demo", "星海远征"],
+  ["国产手游 星海远征 拟于开放 Playtest", "星海远征"],
+  ["国产手游 星海远征 计划在发布实机", "星海远征"],
+  ["国产手游 星海远征 宣布将在公布 Demo", "星海远征"],
   ["mobile game Project Echo announces Demo", "Project Echo"],
   ["mobile game Project Echo will announce Demo", "Project Echo"],
   ["mobile game Project Echo is set to reveal Demo", "Project Echo"],
+  ["mobile game Project Echo plans on launching Demo", "Project Echo"],
+  ["mobile game Project Echo is expected to reveal Demo", "Project Echo"],
+  ["mobile game Project Echo is going to announce Demo", "Project Echo"],
   ["PC game Aether Echo officially reveals Demo", "Aether Echo"],
   ...explicitGameCategoryBindings.map((category) => [
     `星海远征 ${category} 公布 Demo`,
@@ -540,6 +587,7 @@ describe("broad-media game-product candidate domain", () => {
           "qualifier_quantifier",
           "organization_team",
           "game_product_project",
+          "market_platform_industry",
           "news_update_message",
           "business_license_publishing",
           "english_equivalent"
@@ -555,6 +603,9 @@ describe("broad-media game-product candidate domain", () => {
         media_source_role_suffixes: [
           "新闻", "日报", "时报", "周报", "晚报", "电视台", "广播", "通讯社", "媒体", "新闻网", "资讯"
         ],
+        attribution_role_policy: "reject_bounded_source_or_attribution_phrase_suffix",
+        attribution_role_suffixes: ["消息", "报道", "显示", "称", "宣布", "透露", "指出", "表示"],
+        generic_role_nouns: ["市场", "平台", "产业", "market", "platform", "industry"],
         bilibili_alias_policy: "normalize_and_segment_as_insufficient_platform_terms",
         reporting_prefix_policy: "reject_prefix_at_separator_or_end",
         quoted_entity_policy: "structured_first_then_role_filtered_event_bound_project_quote",
@@ -570,6 +621,9 @@ describe("broad-media game-product candidate domain", () => {
       }
     );
     assert.deepEqual(mediaRules.DOMESTIC_GAME_COMPANY_NAMES, domesticCompanyNames);
+    assert.equal(typeof mediaRules.isMediaSourceEntity, "function");
+    assert.equal(mediaRules.isMediaSourceEntity("央视新闻"), true);
+    assert.equal(mediaRules.isMediaSourceEntity("新闻大亨"), false);
     const mediaEntitiesSource = readFileSync(
       new URL("../jobs/online_daily_v4_media_entities.mjs", import.meta.url),
       "utf8"
@@ -1005,6 +1059,56 @@ describe("broad-media game-product candidate domain", () => {
     assert.deepEqual(new Set(namedLeads.map((lead) => lead.project)), new Set(["星海远征", "雾港纪事"]));
   });
 
+  it("rejects bounded attribution prose before a category and across every name path", async () => {
+    for (const item of attributionNoNameItems) {
+      assert.equal(mediaRules.extractGameProductDomainProjectName(item), null, item.title);
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.title);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      }, item.title);
+    }
+
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      attributionNoNameItems,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += candidates.length;
+          return candidates;
+        }
+      })
+    );
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: attributionNoNameItems.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual(leads, []);
+    assert.equal(enrichmentCalls, 0);
+    assert.equal(artifact.scan_summary.records_total, 0);
+    assert.equal(artifact.scan_summary.formal, 0);
+    assert.deepEqual(secondPass.eligible_order, []);
+    assert.equal(secondPassCalls, 0);
+  });
+
   it("strips only unquoted name-slot framing and binds both category orders exactly", async () => {
     for (const { item, expectedProject } of connectorBindingCases) {
       assert.equal(mediaRules.extractGameProductDomainProjectName(item), expectedProject, item.title);
@@ -1113,14 +1217,39 @@ describe("broad-media game-product candidate domain", () => {
       summary: "项目实体在前，靠近事件的第二个书名号实体只是媒体来源。",
       link: "https://example.test/project-then-source-quote-binding"
     };
+    const projectThenMediaRoleQuotes = [
+      {
+        ...multiQuote,
+        title: "《星海远征》国产手游《央视新闻》报道 Demo",
+        link: "https://example.test/project-then-cctv-news-quote"
+      },
+      {
+        ...multiQuote,
+        title: "《星海远征》国产手游《界面新闻》报道 Demo",
+        link: "https://example.test/project-then-jiemian-news-quote"
+      },
+      {
+        ...multiQuote,
+        title: "《星海远征》国产手游《关于游戏产业发展的指导意见》公布 Demo",
+        link: "https://example.test/project-then-policy-quote"
+      },
+      {
+        ...multiQuote,
+        title: "《星海远征》国产手游《雾港纪事》公布 Demo",
+        link: "https://example.test/first-role-valid-project-quote"
+      }
+    ];
     assert.equal(mediaRules.extractGameProductDomainProjectName(multiQuote), "星海远征");
     assert.equal(mediaRules.extractGameProductDomainProjectName(projectThenSourceQuote), "星海远征");
+    for (const item of projectThenMediaRoleQuotes) {
+      assert.equal(mediaRules.extractGameProductDomainProjectName(item), "星海远征", item.title);
+    }
     const positiveLeads = await buildMediaLeadCandidates(
-      [multiQuote, projectThenSourceQuote],
+      [multiQuote, projectThenSourceQuote, ...projectThenMediaRoleQuotes],
       emptyIndex(),
       offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
     );
-    assert.equal(positiveLeads.length, 2);
+    assert.equal(positiveLeads.length, 6);
     assert.deepEqual(new Set(positiveLeads.map((lead) => lead.project)), new Set(["星海远征"]));
 
     const documentDescriptors = [

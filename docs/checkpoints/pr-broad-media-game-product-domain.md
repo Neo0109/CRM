@@ -123,16 +123,18 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - The bounded role-grammar repair extends whole-name count recognition to magnitude and approximation shapes, known-company affiliation roles to entertainment/media/technology suffixes, media-source entities to known sources or conservative media-role suffixes, and document-policy entities to a bounded role suffix independent of body token enumeration.
 - Three-path structured/quoted/unquoted matrices cover every new count, organization-role, media-source, and document-role shape. End-to-end assertions require exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output for the six exact QA rows.
 - Distinctive-residue controls retain real names containing ordinary count/company/media/document fragments, including `余烬10`, `灵犀互娱：星火`, `新闻大亨`, and `规划师传奇`, in addition to the existing numeric and organization controls.
-- Accepted provider/network-free RED: the focused contract now has 20 subtests, with exactly 3 failing and 17 prior controls green. The failures isolate the stale machine contract, shared three-path project-role validation, and the exact six-row end-to-end invariant. All six exact rows reproduce 6/6 candidates, 6 enrichment entries, and 6 candidate-audit records on the superseded head.
+- The first provider/network-free role RED had 20 subtests with 3 failures and 17 prior controls green. Release Captain QA then expanded the same role boundary before GREEN: bounded Chinese/English temporal connectors in both name/category orders; before-category attribution prose and the same role across all name paths; generic market/platform/industry tails; and quote selection ordered by the first role-valid project rather than nearest-event distance.
+- Expanded connector fixtures cover `即将于/拟于/计划在/宣布将在` and `plans on launching/is expected to/is going to announce`, with exact tagged `Lead.project` binding. Attribution fixtures cover source/provenance phrases ending in `消息/报道/显示/称/宣布/透露/指出/表示`; category-tail fixtures cover `市场/平台/产业` and English equivalents; multi-quote fixtures keep `星海远征` when a later quote is a media/document role and when a later role-valid project is nearer the event.
+- Final accepted provider/network-free umbrella RED: focused now has 21 subtests, with exactly 6 failing and 15 prior controls green. Failures isolate the stale machine contract, shared three-path role validation, before-category attribution, connector binding, quote role/order, and the exact six-row end-to-end invariant. All six exact rows still reproduce 6/6 candidates, 6 enrichment entries, and 6 candidate-audit records on the exact superseded implementation.
 - Both existing nonblocking P2 follow-ups remain explicitly out of scope: secondary-link evidence union and category-token-in-project selection.
 
 ## Remaining
 
-- Publish the tests-and-checkpoint-only role-grammar RED, implement only the bounded role grammar, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA. Do not merge.
+- Publish the expanded tests-and-checkpoint-only role-grammar RED, implement only the bounded role/connector/quote-order grammar, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA. Do not merge.
 
 ## Next Action
 
-Publish the accepted role-grammar RED from exact superseded head `8d88feecc89436fe9c3263f63c0b4e8234fc345f`, then implement count/entity roles without expanding either deferred P2.
+Publish the expanded accepted role-grammar RED from first role RED `cbc846d4d11bc4b36528b76cbb576c5c2f137ab5`, then implement the bounded grammar without expanding either deferred P2.
 
 ## Git Status
 
@@ -159,3 +161,4 @@ Publish the accepted role-grammar RED from exact superseded head `8d88feecc89436
 - Accepted organization/framing/boundary/quote-role P1 RED: `de403f730fdacf14439073a47d18468a091634ca` (tree `ece6b543b75a462c5bfb63c9846c0de1c2246035`).
 - Superseded organization/framing/boundary/quote-role P1 GREEN: `8d88feecc89436fe9c3263f63c0b4e8234fc345f` (tree `b19533b8ffc11f39eefb1cdb08d424b3b6dc0db3`); exact checks passed before role-grammar QA.
 - Accepted count/entity-role P1 RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `8d88feecc89436fe9c3263f63c0b4e8234fc345f`.
+- Expanded connector/attribution/quote-order RED: local tests-and-checkpoint snapshot ready to publish from first role RED `cbc846d4d11bc4b36528b76cbb576c5c2f137ab5`.
