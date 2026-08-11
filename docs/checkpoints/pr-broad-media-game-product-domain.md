@@ -194,15 +194,17 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Provider/network-free GREEN is complete: focused 30/30, impacted contracts 109/109, media/dedupe/audit regressions 64/64, and Daily V4 328/328. The 219-row matrix and 21-row material invariant produce exact broad-media Radar-only dispositions and zero downstream paths; all 33 distinctive-name paths and 14 category-prefix controls pass.
 - Machine rules and both active documents describe the shared DP, dynamic numeral transition, quantity-role tokenization, and longest-prefix reuse without claiming a separate count regex. The updated `daily-report.json` Git blob is `032133358a01ce11a0cdd49160c4c8328c48e166`, and the shadow integration behavior floor matches it.
 - Exact shimmed `npm run verify:all` exits successfully, including frontend/backend/functions typechecks, Daily V4 328/328, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, all 17 changed-module syntax checks, exact behavior hash, and the frozen-main whitespace check also pass.
+- Published the coherent shared-DP GREEN as `5807a7b1099f78925a8edcb622f7ee82000936e5` with tree `a9d710e7a04ecc24bac365a751526eac98c330af`, parented directly to accepted RED `0c76054e318eabb241fe3704c32d53de3e266167`. Frozen compare remains based and merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 37 and behind 0, with 22 changed files and 22/22 exact-head remote blobs matching the verified snapshot.
+- All three exact code-head checks succeeded: Cloudflare Pages `93887124556`; pull-request Build `31523765269 / 93886947666`; push Build `31523762772 / 93886939085`.
 - Both existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
 
 ## Remaining
 
-- Publish one coherent GREEN child of accepted RED `0c76054e318eabb241fe3704c32d53de3e266167`, verify frozen-base compare and 22/22 remote blob parity, wait its exact checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
+- Release Captain independent acceptance and the root-owned merge gate only. The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate and are not merge blockers for this bounded wave. Do not merge from this task.
 
 ## Next Action
 
-Publish and pin the exact verified shared-DP GREEN, then wait its exact remote checks before independent QA.
+Publish this status-only checkpoint from exact verified code head `5807a7b1099f78925a8edcb622f7ee82000936e5`, pin the resulting head/tree and exact checks in the PR body, then hand it to Release Captain for independent acceptance and root-owned merge.
 
 ## Git Status
 
@@ -245,4 +247,5 @@ Publish and pin the exact verified shared-DP GREEN, then wait its exact remote c
 - Fully verified complete-quantity GREEN: `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd` (tree `5c40111de79bf88ddcbcd03214adfa3ce5e31744`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
 - Superseded final status-only head: `222d8ac724fc60a506a74eb35c13c07b973a3d4b` (tree `5d748c060336f99de6ea8f347c6c4459d51700f0`); exact checks passed before shared quantity-segmentation QA.
 - Accepted shared quantity-segmentation RED: `0c76054e318eabb241fe3704c32d53de3e266167` (tree `06b12db1ba7aede3e6a36fee8133f7ac509ec4bc`), exact parent `222d8ac724fc60a506a74eb35c13c07b973a3d4b`; frozen compare and 22/22 parity passed.
-- Fully verified shared-DP GREEN: local disposable snapshot ready to publish from exact accepted RED `0c76054e318eabb241fe3704c32d53de3e266167`.
+- Fully verified shared-DP GREEN: `5807a7b1099f78925a8edcb622f7ee82000936e5` (tree `a9d710e7a04ecc24bac365a751526eac98c330af`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
+- Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `5807a7b1099f78925a8edcb622f7ee82000936e5`; no behavior, machine-rule, fixture, or test blob changes.
