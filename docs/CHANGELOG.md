@@ -4,6 +4,7 @@
 
 ### 产品变化
 
+- 产品可见版本升级为 `v2.8`（`v2.8-communication-follow-up`）：新增沟通跟进工作台，并将下次跟进同步到日历
 - 日报规则升级到 `sourcing-rules-v6.7-non-game-animation-gate`：无独立游戏证据的动画/动漫/番剧/剧集/季度/PV 线索只进入 Radar，不再从来源查询名借用游戏属性进入 strict、expanded 或 rescue Lead；含 Steam/TapTap/indienova/好游快爆、明确游戏品类或“游戏 + Demo/试玩/实机/测试”等独立证据的项目继续沿用原有规则。Runner 同步改为复用唯一规则版本常量。本次不改评分、来源查询、Steam、去重、发行窗口、现有 Lead、Supabase、UI 或产品版本。
 
 - 产品可见版本升级为 `v2.7.6`（`v2.7.6-sourcing-evidence-integrity`）：B站完整详情中的 Steam URL 先进入统一结构化证据层再生成 Lead；Demo AppID 解析至正式本体，缺失 Steam 结构化字段的候选会自动补齐或阻断同步，避免再次出现“详情有 Steam、Lead 只有 B站链接”。

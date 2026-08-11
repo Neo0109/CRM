@@ -1,6 +1,6 @@
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260713-sourcing-evidence-integrity-v276";
+const assetVersion = "20260810-communication-follow-up-v28";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;

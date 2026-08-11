@@ -5,6 +5,7 @@ export type RegionPriority = "国内优先" | "海外-高视觉" | "海外-强�
 export type Region = "中国" | "海外";
 export type ReviewStatus = "未处理" | "已查看" | "跟进中" | "已淘汰";
 export type ContactType = "微信/QQ" | "Email" | "电话" | "官网" | "Steam" | "Discord" | "B站" | "X/Twitter" | "其他";
+export type InteractionChannel = "微信/QQ" | "Email" | "电话" | "会议" | "Discord" | "B站" | "X/Twitter" | "其他";
 export type EvaluationGrade = "S" | "A+" | "A" | "A-" | "B+" | "B" | "B-" | "C+" | "C" | "C-";
 
 export type ContactMethod = {
@@ -61,6 +62,60 @@ export type Lead = {
   follow_up_interval: string | null;
   first_seen: string;
   notes: string | null;
+};
+
+export type InteractionActor = {
+  username: string;
+  display_name: string;
+  role: string;
+};
+
+export type InteractionEvent = {
+  id: string;
+  type: "crm_interaction_event";
+  request_id: string;
+  lead_id: string;
+  project_snapshot: Pick<Lead, "project" | "team" | "owner" | "bucket">;
+  actor: InteractionActor;
+  created_at: string;
+  channel: InteractionChannel;
+  contact_label: string | null;
+  occurred_at: string;
+  summary: string;
+  next_action: string | null;
+  next_follow_up_date: string | null;
+  calendar_synced: boolean;
+};
+
+export type InteractionPage = {
+  interactions: InteractionEvent[];
+  next_cursor: string | null;
+};
+
+export type InteractionDraft = {
+  channel: InteractionChannel;
+  contact_label: string;
+  occurred_at: string;
+  summary: string;
+  next_action: string;
+  next_follow_up_date: string;
+};
+
+export type InteractionCreateInput = {
+  request_id: string;
+  lead_id: string;
+  channel: InteractionChannel;
+  contact_label: string | null;
+  occurred_at: string;
+  summary: string;
+  next_action: string | null;
+  next_follow_up_date: string | null;
+};
+
+export type InteractionCreateResult = {
+  interaction: InteractionEvent;
+  lead: Lead;
+  calendar_synced: boolean;
 };
 
 export type ImportResult = {

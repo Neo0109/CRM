@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   buildBackendUsers,
+  getBackendSessionUser,
   validateBackendLogin,
   validateBackendSession
 } from "../src/lib/backendUsers.ts";
@@ -126,5 +127,13 @@ describe("backend user helpers", () => {
       true
     );
     assert.equal(validateBackendSession(config, { usernameHeader: "neo", tokenHeader: "wrong" }), false);
+    assert.deepEqual(
+      getBackendSessionUser(config, { usernameHeader: "neo", tokenHeader: "token" }),
+      { username: "neo", display_name: "Neo", role: "member", permissions: [] }
+    );
+    assert.equal(
+      getBackendSessionUser(config, { usernameHeader: "neo", tokenHeader: "wrong" }),
+      null
+    );
   });
 });

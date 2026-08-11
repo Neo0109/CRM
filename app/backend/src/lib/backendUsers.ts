@@ -73,10 +73,18 @@ export function validateBackendLogin(
   };
 }
 
-export function validateBackendSession(input: BackendUsersInput, credentials: BackendSessionCredentials) {
+export function getBackendSessionUser(
+  input: BackendUsersInput,
+  credentials: BackendSessionCredentials
+): BackendAccessUser | null {
   const username = firstHeaderValue(credentials.usernameHeader) || readCookie(credentials.cookieHeader ?? undefined, "crm_username") || "";
   const token = firstHeaderValue(credentials.tokenHeader) || readCookie(credentials.cookieHeader ?? undefined, "crm_access_token") || "";
-  return validateBackendLogin(input, { username, password: token }).ok;
+  const result = validateBackendLogin(input, { username, password: token });
+  return result.ok ? result.user : null;
+}
+
+export function validateBackendSession(input: BackendUsersInput, credentials: BackendSessionCredentials) {
+  return Boolean(getBackendSessionUser(input, credentials));
 }
 
 export const cleanBackendAuthValue = cleanAuthValue;

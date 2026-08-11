@@ -22,7 +22,7 @@ describe("follow-up loop product contract", () => {
     assert.match(calendarSource, /followUpQueue\.count/);
     assert.match(calendarSource, /onAddToCalendar/);
     assert.match(calendarSource, /加入日历/);
-    assert.match(calendarSource, /日历只显示你手动加入/);
+    assert.match(calendarSource, /手动确认提醒，或在沟通记录中设置下次日期/);
     assert.doesNotMatch(calendarSource, /followUpQueue\.items\.forEach[\s\S]*calendar_enabled:\s*true/);
   });
 
