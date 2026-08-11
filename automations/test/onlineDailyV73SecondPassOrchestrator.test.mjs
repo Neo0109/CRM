@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { after, describe, it } from "node:test";
 
 import { createEvidenceSnapshot } from "../jobs/online_daily_v4_candidate_state.mjs";
@@ -21,6 +21,12 @@ const runV73TargetedCandidateSecondPasses =
 const fetchV73TargetedEvidence =
   orchestratorModule.fetchV73TargetedEvidence
   ?? missingTargetedEvidenceProvider;
+const compareV73SecondPassPriority =
+  orchestratorModule.compareV73SecondPassPriority
+  ?? missingSecondPassPriorityComparator;
+const analyzeV73EvidenceAvailability =
+  orchestratorModule.analyzeV73EvidenceAvailability
+  ?? missingEvidenceAvailabilityAnalyzer;
 const collectorUrl = new URL(
   "../jobs/online_daily_v7_3_shadow_collector.mjs",
   import.meta.url
@@ -133,6 +139,285 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     assert.equal(
       forward.results.some((item) => item.dedupe_key === wideGapEvidence.dedupe_key),
       false
+    );
+  });
+
+  it("prioritizes locally actionable gate changes and preserves the frozen order when none are actionable", async () => {
+    const highScoreEvidence = nearMissEvidence(15);
+    const actionableEvidence = nearMissEvidence(16);
+    const highScore = steamCandidate(highScoreEvidence, { score: 100 });
+    const actionable = steamCandidate(actionableEvidence, { score: 1 });
+    const actionableSignal = {
+      title: `${actionableEvidence.project} hands-on preview`,
+      summary: `${actionableEvidence.project} independent media playtest review`,
+      source: "Actionable Games Media",
+      source_role: "media",
+      link: "https://actionable-media.example/reviews/v73-actionability"
+    };
+
+    const prioritized = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [highScore, actionable],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 1,
+      mediaSignals: [actionableSignal]
+    });
+
+    assert.deepEqual(
+      prioritized.results.map((item) => item.dedupe_key),
+      [actionableEvidence.dedupe_key]
+    );
+    assert.deepEqual(prioritized.results[0].evidence_diagnostics, {
+      project_matching_signal_count: 1,
+      eligible_source_role_signal_count: 1,
+      quality_keyword_signal_count: 1,
+      independent_source_count: 2,
+      accepted_proof_count: 1,
+      actionable_gate_count: 1,
+      outcome: "evidence_found"
+    });
+
+    const frozenOrder = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [actionable, highScore],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 2,
+      mediaSignals: [],
+      fetchEvidence: async () => ({ quality_proofs: [] })
+    });
+    assert.deepEqual(
+      frozenOrder.results.map((item) => item.dedupe_key),
+      [highScoreEvidence.dedupe_key, actionableEvidence.dedupe_key],
+      "the legacy action-count/score/dedupe/source order must remain exact when actionability ties"
+    );
+  });
+
+  it("prioritizes unique provider-backed requested gates even when quality evidence is unavailable locally", async () => {
+    const qualityOnlyEvidence = nearMissEvidence(21);
+    const officialLookupEvidence = nearMissEvidence(22, {
+      official_demo_evidence: [],
+      official_gameplay_evidence: [],
+      quality_proofs: [firstQualityProof, secondQualityProof]
+    });
+    let evaluatorCalls = 0;
+    const evaluate = (input) => {
+      evaluatorCalls += 1;
+      return evaluateV73IndiePrelaunchAdmission(input);
+    };
+    const outcome = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [
+        steamCandidate(qualityOnlyEvidence, { score: 100 }),
+        steamCandidate(officialLookupEvidence, { score: 1 })
+      ],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 1,
+      mediaSignals: [],
+      evaluate,
+      fetchEvidence: async () => ({ official_demo_evidence: [] })
+    });
+
+    assert.deepEqual(
+      outcome.results.map((item) => item.dedupe_key),
+      [officialLookupEvidence.dedupe_key]
+    );
+    assert.equal(outcome.results[0].evidence_diagnostics.actionable_gate_count, 1);
+    assert.equal(outcome.results[0].evidence_diagnostics.outcome, "not_requested");
+    assert.ok(evaluatorCalls > 2, "the injected evaluator must also drive actionability analysis");
+    const duplicateGateDiagnostics = analyzeV73EvidenceAvailability({
+      candidate: officialLookupEvidence,
+      evidence: officialLookupEvidence,
+      actions: [
+        {
+          gate_id: "official_playable_or_gameplay",
+          action: "fetch_official_playable_or_gameplay"
+        },
+        {
+          gate_id: "official_playable_or_gameplay",
+          action: "fetch_official_playable_or_gameplay"
+        }
+      ],
+      mediaSignals: [],
+      evaluate
+    });
+    assert.equal(duplicateGateDiagnostics.actionable_gate_count, 1);
+    assert.equal(duplicateGateDiagnostics.outcome, "not_requested");
+  });
+
+  it("classifies approved evidence availability outcomes without provider or network access", () => {
+    const withOneExistingProof = nearMissEvidence(17);
+    const withNoExistingProof = nearMissEvidence(18, { quality_proofs: [] });
+    const qualityActions = evaluateV73IndiePrelaunchAdmission(withOneExistingProof)
+      .next_evidence_actions;
+    const matchingRejectedRole = {
+      title: `${withOneExistingProof.project} 试玩评测`,
+      summary: `${withOneExistingProof.project} hands-on review`,
+      source: "Keyword probe",
+      url: "https://www.bilibili.com/video/BV1RejectedRole/",
+      source_role: "keyword"
+    };
+    const matchingNoKeyword = {
+      title: `${withOneExistingProof.project} announcement`,
+      summary: `${withOneExistingProof.project} launch information`,
+      source: "Independent Games Media",
+      url: "https://media.example/announcements/no-quality-keyword",
+      source_role: "media"
+    };
+    const matchingQuality = {
+      title: `${withOneExistingProof.project} hands-on preview`,
+      summary: `${withOneExistingProof.project} independent review`,
+      source: "Independent Games Media",
+      url: "https://media.example/reviews/one-independent-source",
+      source_role: "media"
+    };
+
+    const analyze = (evidence, actions, mediaSignals) => analyzeV73EvidenceAvailability({
+      candidate: evidence,
+      evidence,
+      actions,
+      mediaSignals
+    });
+
+    assert.equal(analyze(withOneExistingProof, [], [matchingQuality]).outcome, "not_requested");
+    assert.equal(analyze(withOneExistingProof, qualityActions, []).outcome, "no_project_match");
+    assert.equal(
+      analyze(withOneExistingProof, qualityActions, [matchingRejectedRole]).outcome,
+      "source_role_rejected"
+    );
+    for (const sourceRole of ["official", "developer", "keyword", "unclassified"]) {
+      const rejectedNonBilibili = analyze(withOneExistingProof, qualityActions, [{
+        ...matchingQuality,
+        source_role: sourceRole,
+        url: `https://${sourceRole}.example/reviews/rejected-independent-role`
+      }]);
+      assert.equal(
+        rejectedNonBilibili.outcome,
+        "source_role_rejected",
+        `${sourceRole} must not occupy an independent-quality slot`
+      );
+      assert.equal(rejectedNonBilibili.eligible_source_role_signal_count, 0);
+      assert.equal(rejectedNonBilibili.accepted_proof_count, 0);
+      assert.equal(rejectedNonBilibili.actionable_gate_count, 0);
+    }
+    assert.equal(
+      analyze(withOneExistingProof, qualityActions, [matchingNoKeyword]).outcome,
+      "quality_keyword_missing"
+    );
+    assert.equal(
+      analyze(withNoExistingProof, qualityActions, [{
+        ...matchingQuality,
+        title: `${withNoExistingProof.project} hands-on preview`,
+        summary: `${withNoExistingProof.project} independent review`
+      }]).outcome,
+      "insufficient_independent_sources"
+    );
+    assert.equal(
+      analyze(withOneExistingProof, qualityActions, [matchingQuality]).outcome,
+      "evidence_found"
+    );
+    let injectedEvaluatorCalls = 0;
+    const qualityForcedPassEvaluator = (input) => {
+      injectedEvaluatorCalls += 1;
+      const admission = evaluateV73IndiePrelaunchAdmission(input);
+      return {
+        ...admission,
+        gate_results: admission.gate_results.map((gate) => (
+          gate.id === "independent_quality_proof"
+            ? { ...gate, status: "pass" }
+            : gate
+        ))
+      };
+    };
+    assert.equal(analyzeV73EvidenceAvailability({
+      candidate: withOneExistingProof,
+      evidence: withOneExistingProof,
+      actions: qualityActions,
+      mediaSignals: [matchingQuality],
+      evaluate: qualityForcedPassEvaluator
+    }).actionable_gate_count, 0);
+    assert.ok(injectedEvaluatorCalls >= 1);
+  });
+
+  it("compares the current sixty eligible candidates deterministically without network access", () => {
+    const corpus = JSON.parse(readFileSync(
+      new URL(
+        "../../data/sourcing_replay_corpus/2026-08-11/31469882089-1-afternoon.json",
+        import.meta.url
+      ),
+      "utf8"
+    ));
+    const eligible = new Set(corpus.second_pass.eligible_ids);
+    const boundedSignals = corpus.second_pass.transactions[0].bounded_signals;
+    const buildRankItems = () => corpus.candidates
+      .filter((candidate) => eligible.has(candidate.candidate_id))
+      .map((candidate) => {
+        const evidence = structuredClone(candidate.first_pass.indie_prelaunch.input);
+        const admission = evaluateV73IndiePrelaunchAdmission(evidence);
+        return {
+          actions: admission.next_evidence_actions,
+          score: candidate.ranking_inputs.discovery_score,
+          dedupe_key: candidate.ranking_inputs.dedupe_key,
+          source_type: candidate.ranking_inputs.source_type,
+          evidence_diagnostics: analyzeV73EvidenceAvailability({
+            candidate: evidence,
+            evidence: admission.evidence,
+            actions: admission.next_evidence_actions,
+            mediaSignals: boundedSignals
+          })
+        };
+      });
+    const rankItems = buildRankItems();
+    assert.deepEqual(buildRankItems(), rankItems, "the pure comparison inputs must repeat exactly");
+    assert.ok(rankItems.every((item) => (
+      Number.isInteger(item.evidence_diagnostics.actionable_gate_count)
+      && typeof item.evidence_diagnostics.outcome === "string"
+    )));
+    assert.deepEqual({
+      zero: rankItems.filter((item) => item.evidence_diagnostics.actionable_gate_count === 0).length,
+      one: rankItems.filter((item) => item.evidence_diagnostics.actionable_gate_count === 1).length,
+      two: rankItems.filter((item) => item.evidence_diagnostics.actionable_gate_count === 2).length
+    }, { zero: 20, one: 37, two: 3 });
+    const legacy = [...rankItems].sort((left, right) => (
+      left.actions.length - right.actions.length
+      || right.score - left.score
+      || left.dedupe_key.localeCompare(right.dedupe_key)
+      || left.source_type.localeCompare(right.source_type)
+    ));
+    const actionability = [...rankItems].sort(compareV73SecondPassPriority);
+
+    assert.equal(rankItems.length, 60);
+    assert.deepEqual(
+      legacy.map((item) => item.dedupe_key),
+      corpus.second_pass.eligible_ids
+    );
+    assert.deepEqual(
+      actionability.map((item) => item.evidence_diagnostics.actionable_gate_count),
+      [...actionability]
+        .map((item) => item.evidence_diagnostics.actionable_gate_count)
+        .toSorted((left, right) => right - left),
+      "provider-backed gates must define the primary priority tier"
+    );
+    for (const actionableGateCount of [0, 1, 2]) {
+      assert.deepEqual(
+        actionability
+          .filter((item) => item.evidence_diagnostics.actionable_gate_count === actionableGateCount)
+          .map((item) => item.dedupe_key),
+        legacy
+          .filter((item) => item.evidence_diagnostics.actionable_gate_count === actionableGateCount)
+          .map((item) => item.dedupe_key),
+        `legacy order must remain exact inside actionability tier ${actionableGateCount}`
+      );
+    }
+
+    const promoted = structuredClone(rankItems);
+    promoted.at(-1).evidence_diagnostics.actionable_gate_count = 3;
+    assert.equal(
+      promoted.sort(compareV73SecondPassPriority)[0].dedupe_key,
+      rankItems.at(-1).dedupe_key,
+      "one locally actionable candidate must outrank legacy score without changing tie keys"
     );
   });
 
@@ -284,6 +569,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       title: `${evidence.project} hands-on preview`,
       summary: "Independent media played the public demo",
       source: "Trusted Games Media",
+      source_role: "media",
       link: "https://media.example/previews/independent-quality-fixture"
     };
     const bilibiliMedia = {
@@ -367,6 +653,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       title: `${evidence.project} hands-on preview`,
       summary: "Independent media played the public demo",
       source: "Trusted Games Media",
+      source_role: "media",
       link: "https://media.example/previews/orchestrator-fixture"
     }, {
       title: "Unrelated project preview",
@@ -578,6 +865,14 @@ async function missingSecondPassOrchestrator({
 }
 
 async function missingTargetedEvidenceProvider() {
+  return {};
+}
+
+function missingSecondPassPriorityComparator() {
+  return 0;
+}
+
+function missingEvidenceAvailabilityAnalyzer() {
   return {};
 }
 

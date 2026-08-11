@@ -24,13 +24,15 @@ import {
   evaluateSteamV73RegularAdmission
 } from "./online_daily_v7_3_regular_admission.mjs";
 import {
+  V73_EVIDENCE_DIAGNOSTIC_OUTCOMES,
+  V73_SECOND_PASS_SELECTOR_VERSION,
   fetchV73TargetedEvidence,
   runV73TargetedCandidateSecondPasses
 } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 import { buildSourcingCandidateArtifact } from "./online_daily_v7_3_shadow_candidate_audit.mjs";
 import { buildPools } from "./online_daily_v7_3_shadow_decision.mjs";
 
-export const C5B_COLLECTOR_CONTRACT_VERSION = 1;
+export const C5B_COLLECTOR_CONTRACT_VERSION = 2;
 export const C5B_SECOND_PASS_MAX_CANDIDATES = 12;
 export const C5B_PROVIDER_RETRY_LIMIT = 0;
 export const C5B_DEFAULT_PROVIDER_TIMEOUT_MS = 15_000;
@@ -175,7 +177,7 @@ export async function collectV73ShadowCore({
   const steamBefore = cloneValue(steamCandidates);
   const mediaBefore = cloneValue(mediaCandidates);
   const statesBefore = cloneMap(candidateStates);
-  const mediaSignalsSafe = publicSignals(mediaSignals);
+  const mediaSignalsSafe = projectV73BoundedSignals(mediaSignals);
   const captureErrors = [];
   const providerRecords = new Map();
   const boundedTimeout = boundedInteger(providerTimeoutMs, C5B_DEFAULT_PROVIDER_TIMEOUT_MS, 1, 60_000);
@@ -231,6 +233,7 @@ export async function collectV73ShadowCore({
     shadowPools,
     shadowCandidateArtifact,
     secondPassResults: secondPassOutcome.results,
+    selectionDiagnostics: secondPassOutcome.selection_diagnostics,
     providerRecords,
     mediaSignals: mediaSignalsSafe,
     evaluatorDependencySha256
@@ -244,7 +247,10 @@ export async function collectV73ShadowCore({
   const secondPass = buildSecondPass(
     universe.candidates,
     universe.transactions,
-    selectionOrder
+    secondPassOutcome.eligible_order,
+    selectionOrder,
+    secondPassOutcome.selector_version,
+    mediaSignalsSafe
   );
   const limits = normalizedBudgetLimits(budgetLimits);
   const usage = normalizedBudgetUsage({
@@ -579,6 +585,7 @@ function buildDecisionUniverse({
   shadowPools,
   shadowCandidateArtifact,
   secondPassResults,
+  selectionDiagnostics,
   providerRecords,
   mediaSignals,
   evaluatorDependencySha256
@@ -587,6 +594,9 @@ function buildDecisionUniverse({
   addUniverseEntries(entries, "steam", steamBefore, steamAfter, candidateStates);
   addUniverseEntries(entries, "media", mediaBefore, mediaAfter, candidateStates);
   const resultByKey = new Map(secondPassResults.map((item) => [item.dedupe_key, item]));
+  const selectionDiagnosticByKey = new Map(
+    (selectionDiagnostics ?? []).map((item) => [item.dedupe_key, item])
+  );
   const auditByKey = new Map(
     shadowCandidateArtifact.candidates.map((item) => [item.dedupe_key, item])
   );
@@ -657,6 +667,9 @@ function buildDecisionUniverse({
         discovery_score: Number(entry.discoveryScore) || 0,
         dedupe_key: entry.dedupeKey,
         source_type: entry.sourceTypes.size > 1 ? "multi_source" : [...entry.sourceTypes][0],
+        actionable_gate_count: nonNegativeInteger(
+          selectionDiagnosticByKey.get(entry.dedupeKey)?.actionable_gate_count
+        ),
         publication_order: publicationOrder(entry)
       },
       qualification_affected_by_ranking: false,
@@ -853,6 +866,7 @@ function transactionFromResult({
     filtered_patch: providerRecord.filtered_patch,
     provider_status: providerRecord.provider_status,
     error: providerRecord.error,
+    evidence_diagnostics: cloneValue(result.evidence_diagnostics),
     merged_final_input: {
       ...safeAdmissionEvidence(result.final_pass?.evidence ?? result.first_pass?.evidence ?? {}),
       qualified: first.qualified
@@ -888,17 +902,16 @@ function publicationForEntry({ candidateId, entry, admission, audit, shadowPools
   };
 }
 
-function buildSecondPass(candidates, transactions, selectionOrder) {
-  const eligibleIds = candidates
-    .filter((item) => item.second_pass.eligible)
-    .sort((left, right) => (
-      left.ranking_inputs.action_count - right.ranking_inputs.action_count
-      || right.ranking_inputs.discovery_score - left.ranking_inputs.discovery_score
-      || left.ranking_inputs.dedupe_key.localeCompare(right.ranking_inputs.dedupe_key)
-      || left.ranking_inputs.source_type.localeCompare(right.ranking_inputs.source_type)
-    ))
-    .map((item) => item.candidate_id);
+function buildSecondPass(
+  candidates,
+  transactions,
+  eligibleOrder,
+  selectionOrder,
+  selectorVersion,
+  boundedSignals
+) {
   const candidateIds = new Set(candidates.map((item) => item.candidate_id));
+  const eligibleIds = eligibleOrder.filter((id) => candidateIds.has(id));
   const selectedIds = selectionOrder.filter((id) => candidateIds.has(id));
   const attemptedSet = new Set(
     candidates.filter((item) => item.second_pass.attempted).map((item) => item.candidate_id)
@@ -911,7 +924,7 @@ function buildSecondPass(candidates, transactions, selectionOrder) {
     .filter((item) => item.final_output.qualified === true)
     .map((item) => item.candidate_id);
   return {
-    selector_version: "targeted-v1",
+    selector_version: selectorVersion || V73_SECOND_PASS_SELECTOR_VERSION,
     max_candidates: C5B_SECOND_PASS_MAX_CANDIDATES,
     eligible_ids: eligibleIds,
     selected_ids: selectedIds,
@@ -919,12 +932,22 @@ function buildSecondPass(candidates, transactions, selectionOrder) {
     attempted_ids: attemptedIds,
     failed_ids: failedIds,
     qualified_ids: qualifiedIds,
+    bounded_signals: cloneValue(boundedSignals),
     transactions
   };
 }
 
 function buildSummary(candidates, evidenceCatalog, secondPass) {
   const countDecision = (decision) => candidates.filter((item) => item.publication.decision === decision).length;
+  const secondPassOutcomeCounts = Object.fromEntries(
+    V73_EVIDENCE_DIAGNOSTIC_OUTCOMES.map((outcome) => [outcome, 0])
+  );
+  for (const transaction of secondPass.transactions) {
+    const outcome = transaction?.evidence_diagnostics?.outcome;
+    if (Object.hasOwn(secondPassOutcomeCounts, outcome)) {
+      secondPassOutcomeCounts[outcome] += 1;
+    }
+  }
   return {
     candidate_count: candidates.length,
     evidence_count: evidenceCatalog.length,
@@ -933,6 +956,7 @@ function buildSummary(candidates, evidenceCatalog, secondPass) {
     second_pass_attempted_count: secondPass.attempted_ids.length,
     second_pass_failed_count: secondPass.failed_ids.length,
     second_pass_qualified_count: secondPass.qualified_ids.length,
+    second_pass_outcome_counts: secondPassOutcomeCounts,
     formal_count: countDecision("formal"),
     candidate_decision_count: countDecision("candidate"),
     excluded_count: countDecision("excluded"),
@@ -1091,7 +1115,7 @@ function safeProviderRequest(request = {}) {
     candidate_id: String(request.evidence?.dedupe_key ?? ""),
     source_type: String(request.source_type ?? ""),
     actions: cloneValue(request.actions ?? []),
-    bounded_signals: publicSignals(request.mediaSignals ?? []).slice(0, 24)
+    bounded_signals: projectV73BoundedSignals(request.mediaSignals ?? [])
   };
 }
 
@@ -1133,6 +1157,10 @@ function publicProviderContext(value = {}) {
     ...(typeof value.fetchTextImpl === "function" ? { fetchTextImpl: value.fetchTextImpl } : {}),
     ...(typeof value.sleepImpl === "function" ? { sleepImpl: value.sleepImpl } : {})
   };
+}
+
+export function projectV73BoundedSignals(items) {
+  return publicSignals(items).slice(0, 24);
 }
 
 function publicSignals(items) {

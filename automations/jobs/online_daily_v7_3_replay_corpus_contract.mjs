@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { recomputeV73EvidenceDiagnostics } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 
 const CAPTURE_STATUSES = ["complete", "incomplete", "corrupt", "unreplayable"];
 const EVENT_NAMES = ["schedule", "watchdog", "workflow_dispatch"];
@@ -41,6 +42,22 @@ const REQUESTED_ACTION_VALUES = [
   "fetch_independent_quality_evidence",
   "fetch_non_steam_business_entry",
   "research_china_bilibili_value"
+];
+const EVIDENCE_DIAGNOSTIC_COUNT_FIELDS = [
+  "project_matching_signal_count",
+  "eligible_source_role_signal_count",
+  "quality_keyword_signal_count",
+  "independent_source_count",
+  "accepted_proof_count",
+  "actionable_gate_count"
+];
+const EVIDENCE_DIAGNOSTIC_OUTCOMES = [
+  "evidence_found",
+  "no_project_match",
+  "source_role_rejected",
+  "quality_keyword_missing",
+  "insufficient_independent_sources",
+  "not_requested"
 ];
 const INDEPENDENT_SOURCE_ROLES = new Set(["media", "trusted_creator"]);
 const CORPUS_REASON_CODES = [
@@ -272,7 +289,7 @@ export function validateReplayCorpus(corpus) {
       "/shadow_rule_version",
       errors
     );
-    validateConst(corpus.collector_contract_version, 1, "/collector_contract_version", errors);
+    validateEnum(corpus.collector_contract_version, [1, 2], "/collector_contract_version", errors);
     validateBehaviorManifest(corpus.behavior_manifest, "/behavior_manifest", errors);
     validateSha256(corpus.behavior_contract_sha256, "/behavior_contract_sha256", errors);
     validateEnum(corpus.capture_status, CAPTURE_STATUSES, "/capture_status", errors);
@@ -282,9 +299,19 @@ export function validateReplayCorpus(corpus) {
     validateBudgets(corpus.budgets, "/budgets", errors);
     validateDiscoverySummary(corpus.discovery_summary, "/discovery_summary", errors);
     validateEvidenceCatalog(corpus.evidence_catalog, "/evidence_catalog", errors);
-    validateCandidates(corpus.candidates, "/candidates", errors);
-    validateRunSecondPass(corpus.second_pass, "/second_pass", errors);
-    validateSummary(corpus.summary, "/summary", errors);
+    validateCandidates(
+      corpus.candidates,
+      "/candidates",
+      errors,
+      corpus.collector_contract_version
+    );
+    validateRunSecondPass(
+      corpus.second_pass,
+      "/second_pass",
+      errors,
+      corpus.collector_contract_version
+    );
+    validateSummary(corpus.summary, "/summary", errors, corpus.collector_contract_version);
     validateCorpusIntegrity(corpus.integrity, "/integrity", errors);
   }
 
@@ -808,12 +835,17 @@ function validateEvidence(value, path, errors) {
   );
 }
 
-function validateCandidates(value, path, errors) {
+function validateCandidates(value, path, errors, collectorContractVersion) {
   if (!validateArray(value, path, errors)) return;
-  value.forEach((item, index) => validateCandidate(item, appendPath(path, index), errors));
+  value.forEach((item, index) => validateCandidate(
+    item,
+    appendPath(path, index),
+    errors,
+    collectorContractVersion
+  ));
 }
 
-function validateCandidate(value, path, errors) {
+function validateCandidate(value, path, errors, collectorContractVersion) {
   const fields = [
     "candidate_id",
     "project",
@@ -886,6 +918,22 @@ function validateCandidate(value, path, errors) {
   validateJsonObject(value.normalized_candidate, appendPath(path, "normalized_candidate"), errors);
   validateNumber(value.discovery_score, appendPath(path, "discovery_score"), errors);
   validateJsonObject(value.ranking_inputs, appendPath(path, "ranking_inputs"), errors);
+  if (collectorContractVersion === 2 && value.second_pass?.eligible === true) {
+    const actionabilityPath = appendPath(
+      appendPath(path, "ranking_inputs"),
+      "actionable_gate_count"
+    );
+    if (!Object.hasOwn(value.ranking_inputs ?? {}, "actionable_gate_count")) {
+      addError(
+        errors,
+        "SCHEMA_REQUIRED",
+        actionabilityPath,
+        "required property actionable_gate_count is missing"
+      );
+    } else {
+      validateInteger(value.ranking_inputs.actionable_gate_count, actionabilityPath, errors, 0);
+    }
+  }
   validatePublicationOrder(
     value.ranking_inputs?.publication_order,
     appendPath(appendPath(path, "ranking_inputs"), "publication_order"),
@@ -1041,8 +1089,8 @@ function validatePublication(value, path, errors) {
   );
 }
 
-function validateRunSecondPass(value, path, errors) {
-  const fields = [
+function validateRunSecondPass(value, path, errors, collectorContractVersion) {
+  const baseFields = [
     "selector_version",
     "max_candidates",
     "eligible_ids",
@@ -1053,15 +1101,40 @@ function validateRunSecondPass(value, path, errors) {
     "qualified_ids",
     "transactions"
   ];
+  const fields = collectorContractVersion === 2
+    ? [...baseFields, "bounded_signals"]
+    : baseFields;
   if (!validateClosedObject(value, path, fields, fields, errors)) return;
   validateNonEmptyString(value.selector_version, appendPath(path, "selector_version"), errors);
+  if (collectorContractVersion === 2) {
+    validateConst(
+      value.selector_version,
+      "actionability-v2",
+      appendPath(path, "selector_version"),
+      errors
+    );
+    validateJsonArray(value.bounded_signals, appendPath(path, "bounded_signals"), errors);
+    if (Array.isArray(value.bounded_signals) && value.bounded_signals.length > 24) {
+      addError(
+        errors,
+        "SCHEMA_MAX_ITEMS",
+        appendPath(path, "bounded_signals"),
+        "allows at most 24 items"
+      );
+    }
+  }
   validateInteger(value.max_candidates, appendPath(path, "max_candidates"), errors, 0);
-  for (const field of fields.slice(2, 8)) {
+  for (const field of baseFields.slice(2, 8)) {
     validateStringArray(value[field], appendPath(path, field), errors);
   }
   if (!validateArray(value.transactions, appendPath(path, "transactions"), errors)) return;
   value.transactions.forEach((item, index) => {
-    validateTransaction(item, appendPath(appendPath(path, "transactions"), index), errors);
+    validateTransaction(
+      item,
+      appendPath(appendPath(path, "transactions"), index),
+      errors,
+      collectorContractVersion
+    );
   });
 }
 
@@ -1109,8 +1182,8 @@ function validateRequestedActions(value, path, errors) {
   });
 }
 
-function validateTransaction(value, path, errors) {
-  const fields = [
+function validateTransaction(value, path, errors, collectorContractVersion) {
+  const baseFields = [
     "transaction_id",
     "candidate_id",
     "requested_actions",
@@ -1128,7 +1201,11 @@ function validateTransaction(value, path, errors) {
     "changed_gate",
     "evaluator_dependency_sha256"
   ];
-  if (!validateClosedObject(value, path, fields, fields, errors)) return;
+  const allowedFields = [...baseFields, "evidence_diagnostics"];
+  const requiredFields = collectorContractVersion === 2
+    ? allowedFields
+    : baseFields;
+  if (!validateClosedObject(value, path, requiredFields, allowedFields, errors)) return;
   validateNonEmptyString(value.transaction_id, appendPath(path, "transaction_id"), errors);
   validateNonEmptyString(value.candidate_id, appendPath(path, "candidate_id"), errors);
   validateRequestedActions(
@@ -1163,6 +1240,13 @@ function validateTransaction(value, path, errors) {
     errors
   );
   validateNullableString(value.error, appendPath(path, "error"), errors);
+  if (Object.hasOwn(value, "evidence_diagnostics")) {
+    validateEvidenceDiagnostics(
+      value.evidence_diagnostics,
+      appendPath(path, "evidence_diagnostics"),
+      errors
+    );
+  }
   validateJsonObject(value.merged_final_input, appendPath(path, "merged_final_input"), errors);
   validateJsonObject(value.final_output, appendPath(path, "final_output"), errors);
   validateBoolean(value.decision_changed, appendPath(path, "decision_changed"), errors);
@@ -1174,8 +1258,35 @@ function validateTransaction(value, path, errors) {
   );
 }
 
-function validateSummary(value, path, errors) {
-  const fields = [
+function validateEvidenceDiagnostics(value, path, errors) {
+  const fields = [...EVIDENCE_DIAGNOSTIC_COUNT_FIELDS, "outcome"];
+  if (!validateClosedObject(value, path, fields, fields, errors)) return;
+  for (const field of EVIDENCE_DIAGNOSTIC_COUNT_FIELDS) {
+    validateInteger(value[field], appendPath(path, field), errors, 0);
+  }
+  validateEnum(
+    value.outcome,
+    EVIDENCE_DIAGNOSTIC_OUTCOMES,
+    appendPath(path, "outcome"),
+    errors
+  );
+}
+
+function validateSecondPassOutcomeCounts(value, path, errors) {
+  if (!validateClosedObject(
+    value,
+    path,
+    EVIDENCE_DIAGNOSTIC_OUTCOMES,
+    EVIDENCE_DIAGNOSTIC_OUTCOMES,
+    errors
+  )) return;
+  for (const outcome of EVIDENCE_DIAGNOSTIC_OUTCOMES) {
+    validateInteger(value[outcome], appendPath(path, outcome), errors, 0);
+  }
+}
+
+function validateSummary(value, path, errors, collectorContractVersion) {
+  const baseFields = [
     "candidate_count",
     "evidence_count",
     "second_pass_eligible_count",
@@ -1188,8 +1299,21 @@ function validateSummary(value, path, errors) {
     "excluded_count",
     "shadow_push_pool_count"
   ];
-  if (!validateClosedObject(value, path, fields, fields, errors)) return;
-  for (const field of fields) validateInteger(value[field], appendPath(path, field), errors, 0);
+  const allowedFields = [...baseFields, "second_pass_outcome_counts"];
+  const requiredFields = collectorContractVersion === 2
+    ? allowedFields
+    : baseFields;
+  if (!validateClosedObject(value, path, requiredFields, allowedFields, errors)) return;
+  for (const field of baseFields) {
+    validateInteger(value[field], appendPath(path, field), errors, 0);
+  }
+  if (Object.hasOwn(value, "second_pass_outcome_counts")) {
+    validateSecondPassOutcomeCounts(
+      value.second_pass_outcome_counts,
+      appendPath(path, "second_pass_outcome_counts"),
+      errors
+    );
+  }
 }
 
 function validateCorpusIntegrity(value, path, errors) {
@@ -1526,6 +1650,12 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
     "DUPLICATE_TRANSACTION_ID",
     errors
   );
+  const recomputedSecondPass = recomputeCollectorV2SecondPass(
+    corpus,
+    candidateById,
+    transactions,
+    errors
+  );
 
   if (isPlainObject(corpus.summary)) {
     validateCount(
@@ -1543,7 +1673,7 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
       errors
     );
     validateDecisionSummary(corpus, candidates, errors);
-    validateSecondPassSummary(corpus, errors);
+    validateSecondPassSummary(corpus, recomputedSecondPass, errors);
   }
   if (isPlainObject(corpus.discovery_summary)) {
     validateCount(
@@ -1595,6 +1725,7 @@ function validateCorpusCrossRecordIntegrity(corpus, canonical, errors) {
     candidateById,
     transactions,
     transactionById,
+    recomputedSecondPass,
     errors
   );
   validateBudgetIntegrity(corpus, candidateById, transactionById, errors);
@@ -1693,7 +1824,7 @@ function validateDecisionSummary(corpus, candidates, errors) {
   }
 }
 
-function validateSecondPassSummary(corpus, errors) {
+function validateSecondPassSummary(corpus, recomputedSecondPass, errors) {
   const fields = [
     ["eligible_ids", "second_pass_eligible_count"],
     ["selected_ids", "second_pass_selected_count"],
@@ -1713,6 +1844,64 @@ function validateSecondPassSummary(corpus, errors) {
       errors
     );
   }
+  if (corpus.collector_contract_version === 2) {
+    const expectedOutcomes = Object.fromEntries(
+      EVIDENCE_DIAGNOSTIC_OUTCOMES.map((outcome) => [outcome, 0])
+    );
+    for (const recomputed of recomputedSecondPass) {
+      const outcome = recomputed?.evidence_diagnostics?.outcome;
+      if (Object.hasOwn(expectedOutcomes, outcome)) expectedOutcomes[outcome] += 1;
+    }
+    for (const outcome of EVIDENCE_DIAGNOSTIC_OUTCOMES) {
+      validateCount(
+        corpus.summary?.second_pass_outcome_counts?.[outcome],
+        expectedOutcomes[outcome],
+        "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
+        `/summary/second_pass_outcome_counts/${outcome}`,
+        errors
+      );
+    }
+  }
+}
+
+function recomputeCollectorV2SecondPass(corpus, candidateById, transactions, errors) {
+  if (corpus.collector_contract_version !== 2) return [];
+  const mediaSignals = Array.isArray(corpus.second_pass?.bounded_signals)
+    ? cloneCanonicalJson(corpus.second_pass.bounded_signals)
+    : [];
+  return transactions.map((transaction, index) => {
+    const transactionPath = `/second_pass/transactions/${index}`;
+    const candidate = candidateById.get(transaction?.candidate_id);
+    const firstPassInput = candidate?.first_pass?.indie_prelaunch?.input;
+    if (!candidate || !isPlainObject(firstPassInput)) return null;
+    try {
+      const recomputed = recomputeV73EvidenceDiagnostics({
+        firstPassInput: cloneCanonicalJson(firstPassInput),
+        mediaSignals: cloneCanonicalJson(mediaSignals)
+      });
+      if (
+        Array.isArray(transaction?.requested_actions)
+        && canonicalJson(transaction.requested_actions)
+          !== canonicalJson(recomputed.requested_actions)
+      ) {
+        addError(
+          errors,
+          "SECOND_PASS_REQUESTED_ACTIONS_MISMATCH",
+          `${transactionPath}/requested_actions`,
+          "transaction actions must equal evaluator-derived next evidence actions"
+        );
+      }
+      return recomputed;
+    } catch {
+      addError(
+        errors,
+        "SECOND_PASS_EVIDENCE_DIAGNOSTICS_RECOMPUTE_FAILED",
+        `${transactionPath}/evidence_diagnostics`,
+        "evidence diagnostics could not be recomputed from frozen public inputs"
+      );
+      return null;
+    }
+  });
 }
 
 function validateEvidenceReferences(candidates, evidenceById, errors) {
@@ -1844,6 +2033,7 @@ function validateSecondPassIntegrity(
   candidateById,
   transactions,
   transactionById,
+  recomputedSecondPass,
   errors
 ) {
   const secondPass = corpus.second_pass;
@@ -1959,6 +2149,46 @@ function validateSecondPassIntegrity(
     }
     const candidate = candidateById.get(transaction?.candidate_id);
     if (!candidate) return;
+    if (corpus.collector_contract_version === 2) {
+      const recomputedDiagnostics = recomputedSecondPass[index]?.evidence_diagnostics;
+      if (
+        recomputedDiagnostics
+        && isPlainObject(transaction.evidence_diagnostics)
+        && canonicalJson(transaction.evidence_diagnostics)
+          !== canonicalJson(recomputedDiagnostics)
+      ) {
+        addError(
+          errors,
+          "SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH",
+          `${transactionPath}/evidence_diagnostics`,
+          "transaction diagnostics must equal the independent frozen-input recomputation"
+        );
+      }
+      const candidateActionability = candidate.ranking_inputs?.actionable_gate_count;
+      const transactionActionability =
+        transaction.evidence_diagnostics?.actionable_gate_count;
+      if (candidateActionability !== transactionActionability) {
+        addError(
+          errors,
+          "SECOND_PASS_ACTIONABILITY_MISMATCH",
+          `${transactionPath}/evidence_diagnostics/actionable_gate_count`,
+          "selected candidate and transaction actionability must match"
+        );
+      }
+      if (
+        Array.isArray(secondPass.bounded_signals)
+        && Array.isArray(transaction.bounded_signals)
+        && canonicalJson(secondPass.bounded_signals)
+          !== canonicalJson(transaction.bounded_signals)
+      ) {
+        addError(
+          errors,
+          "SECOND_PASS_BOUNDED_SIGNALS_MISMATCH",
+          `${transactionPath}/bounded_signals`,
+          "transaction signals must equal the frozen run projection"
+        );
+      }
+    }
     if (
       transaction.evaluator_dependency_sha256
       !== candidate.first_pass?.evaluator_dependency_sha256

@@ -70,6 +70,86 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(collector.isC5BShadowCaptureEligible({ event_name: "schedule", run_slot: "morning" }), false);
   });
 
+  it("emits collector v2 diagnostics without redefining empty allowlisted patches as transport failures", async () => {
+    requireCollector("collectV73ShadowCore");
+    const evidence = nearMissEvidence(14);
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9014" }),
+      steamCandidates: [steamCandidate(evidence)],
+      mediaCandidates: [],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async () => ({ quality_proofs: [] })
+    });
+
+    assert.equal(core.collector_contract_version, 2);
+    assert.equal(core.second_pass.selector_version, "actionability-v2");
+    assert.equal(core.second_pass.transactions[0].provider_status, "success");
+    assert.equal(core.second_pass.transactions[0].error, null);
+    assert.deepEqual(core.second_pass.transactions[0].evidence_diagnostics, {
+      project_matching_signal_count: 0,
+      eligible_source_role_signal_count: 0,
+      quality_keyword_signal_count: 0,
+      independent_source_count: 1,
+      accepted_proof_count: 0,
+      actionable_gate_count: 0,
+      outcome: "no_project_match"
+    });
+    assert.deepEqual(core.summary.second_pass_outcome_counts, {
+      evidence_found: 0,
+      no_project_match: 1,
+      source_role_rejected: 0,
+      quality_keyword_missing: 0,
+      insufficient_independent_sources: 0,
+      not_requested: 0
+    });
+    assert.deepEqual(
+      validateReplayPrivacy(core.second_pass.transactions[0].evidence_diagnostics),
+      { valid: true, errors: [] }
+    );
+  });
+
+  it("freezes one capped privacy-safe bounded signal projection for analyzer, provider, and replay", async () => {
+    requireCollector("collectV73ShadowCore");
+    const evidence = nearMissEvidence(24);
+    const mediaSignals = Array.from({ length: 26 }, (_, index) => ({
+      title: `${evidence.project} independent hands-on review ${index}`,
+      source: `Fixture media ${index}`,
+      source_role: "media",
+      link: `https://media-${index}.example/reviews/v73-bounded-signal`
+    }));
+    const providerRequests = [];
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9024" }),
+      steamCandidates: [steamCandidate(evidence)],
+      mediaCandidates: [],
+      mediaSignals,
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async (request) => {
+        providerRequests.push(structuredClone(request));
+        return { quality_proofs: [] };
+      }
+    });
+
+    assert.equal(providerRequests.length, 1);
+    assert.equal(core.second_pass.bounded_signals.length, 24);
+    assert.deepEqual(providerRequests[0].mediaSignals, core.second_pass.bounded_signals);
+    assert.deepEqual(
+      core.second_pass.transactions[0].bounded_signals,
+      core.second_pass.bounded_signals
+    );
+    assert.deepEqual(validateReplayPrivacy(core.second_pass.bounded_signals), {
+      valid: true,
+      errors: []
+    });
+  });
+
   it("projects private candidate audit state out of the persisted pending core", async () => {
     requireCollector("runC5BShadowCollectorSafely");
     const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-private-state-"));
@@ -311,6 +391,7 @@ describe("C5-B V7.3 shadow collector", () => {
       title: `${evidence.project} hands-on preview`,
       summary: `${evidence.project} independent media playtest review`,
       source: "Fixture Games Media",
+      source_role: "media",
       link: "https://media.example/reviews/c5b-role-fixture"
     };
     const core = await collector.collectV73ShadowCore({

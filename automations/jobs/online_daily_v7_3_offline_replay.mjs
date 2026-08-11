@@ -8,6 +8,7 @@ import {
   validateReplayPrivacy
 } from "./online_daily_v7_3_replay_corpus_contract.mjs";
 import { evaluateV73IndiePrelaunchAdmission } from "./online_daily_v7_3_obtainable_evidence.mjs";
+import { recomputeV73EvidenceDiagnostics } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 import { evaluateChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
 import { selectRegularAdmission } from "./online_daily_v7_2_regular_admission.mjs";
 import { normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mjs";
@@ -49,6 +50,14 @@ const MERGED_EVIDENCE_LIST_FIELDS = new Set([
   "quality_proofs",
   "business_entrypoints"
 ]);
+const EVIDENCE_DIAGNOSTIC_OUTCOMES = [
+  "evidence_found",
+  "no_project_match",
+  "source_role_rejected",
+  "quality_keyword_missing",
+  "insufficient_independent_sources",
+  "not_requested"
+];
 
 export class OfflineReplayError extends Error {
   constructor(code, message, details = null) {
@@ -137,6 +146,7 @@ export function replayOfflineCorpus({
 
 export function buildStoredDecisionView(corpus = {}) {
   const transactions = transactionIndex(corpus);
+  const collectorV2 = corpus.collector_contract_version === 2;
   return {
     engine_contract_version: C5C_REPLAY_ENGINE_CONTRACT_VERSION,
     corpus_contract_version: corpus.contract_version ?? null,
@@ -146,6 +156,15 @@ export function buildStoredDecisionView(corpus = {}) {
       const transaction = transactions.get(candidate?.second_pass?.transaction_id) ?? null;
       return {
         candidate_id: candidate?.candidate_id ?? null,
+        ...(collectorV2 && candidate?.second_pass?.eligible === true
+          ? {
+              ranking_inputs: {
+                actionable_gate_count: nonNegativeInteger(
+                  candidate?.ranking_inputs?.actionable_gate_count
+                )
+              }
+            }
+          : {}),
         first_pass: {
           indie_prelaunch: {
             output: decisionOutput(candidate?.first_pass?.indie_prelaunch?.output)
@@ -159,6 +178,9 @@ export function buildStoredDecisionView(corpus = {}) {
         },
         second_pass: secondPassCandidateView(candidate?.second_pass),
         final_output: transaction ? decisionOutput(transaction.final_output) : null,
+        ...(collectorV2 && transaction
+          ? { evidence_diagnostics: cloneJson(transaction.evidence_diagnostics) }
+          : {}),
         publication: publicationView(candidate?.publication)
       };
     }),
@@ -169,10 +191,22 @@ export function buildStoredDecisionView(corpus = {}) {
 
 export function buildReplayedDecisionView(corpus = {}) {
   const transactions = transactionIndex(corpus);
+  const collectorV2 = corpus.collector_contract_version === 2;
   const candidates = (corpus.candidates ?? []).map((candidate) => {
-    const indie = evaluateV73IndiePrelaunchAdmission(
-      cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {})
-    );
+    const indieInput = cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {});
+    const recomputedEvidence = collectorV2
+      ? recomputeV73EvidenceDiagnostics({
+          firstPassInput: indieInput,
+          mediaSignals: corpus.second_pass?.bounded_signals ?? [],
+          evaluate: evaluateV73IndiePrelaunchAdmission
+        })
+      : null;
+    const indie = recomputedEvidence?.admission
+      ?? evaluateV73IndiePrelaunchAdmission(indieInput);
+    const eligible = secondPassEligible(indie);
+    const evidenceDiagnostics = collectorV2 && eligible
+      ? recomputedEvidence.evidence_diagnostics
+      : null;
     const china = evaluateChinaJointAdmission(
       cloneJson(candidate?.first_pass?.china_joint?.input ?? {})
     );
@@ -193,6 +227,11 @@ export function buildReplayedDecisionView(corpus = {}) {
         action_count: Array.isArray(indie.next_evidence_actions)
           ? indie.next_evidence_actions.length
           : 0,
+        actionable_gate_count: nonNegativeInteger(
+          collectorV2
+            ? evidenceDiagnostics?.actionable_gate_count
+            : candidate?.ranking_inputs?.actionable_gate_count
+        ),
         discovery_score: finiteNumber(candidate?.ranking_inputs?.discovery_score),
         dedupe_key: String(candidate?.ranking_inputs?.dedupe_key ?? candidate?.candidate_id ?? ""),
         source_type: String(candidate?.ranking_inputs?.source_type ?? ""),
@@ -205,9 +244,10 @@ export function buildReplayedDecisionView(corpus = {}) {
           )
         }
       },
-      eligible: secondPassEligible(indie),
+      eligible,
       first_admission: indie,
       transaction,
+      evidence_diagnostics: transaction ? evidenceDiagnostics : null,
       first_pass: {
         indie_prelaunch: { output: decisionOutput(indie) },
         china_joint: { output: decisionOutput(china) },
@@ -223,7 +263,11 @@ export function buildReplayedDecisionView(corpus = {}) {
   const rankedEligible = candidates
     .filter((candidate) => candidate.eligible)
     .sort((left, right) => (
-      left.ranking_inputs.action_count - right.ranking_inputs.action_count
+      (corpus.second_pass?.selector_version === "actionability-v2"
+        ? right.ranking_inputs.actionable_gate_count
+          - left.ranking_inputs.actionable_gate_count
+        : 0)
+      || left.ranking_inputs.action_count - right.ranking_inputs.action_count
       || right.ranking_inputs.discovery_score - left.ranking_inputs.discovery_score
       || left.ranking_inputs.dedupe_key.localeCompare(right.ranking_inputs.dedupe_key)
       || left.ranking_inputs.source_type.localeCompare(right.ranking_inputs.source_type)
@@ -254,6 +298,13 @@ export function buildReplayedDecisionView(corpus = {}) {
     const attempted = attemptedIds.includes(candidate.candidate_id);
     return {
       candidate_id: candidate.candidate_id,
+      ...(collectorV2 && candidate.eligible
+        ? {
+            ranking_inputs: {
+              actionable_gate_count: candidate.ranking_inputs.actionable_gate_count
+            }
+          }
+        : {}),
       first_pass: candidate.first_pass,
       second_pass: {
         eligible: candidate.eligible,
@@ -265,6 +316,9 @@ export function buildReplayedDecisionView(corpus = {}) {
         transaction_id: attempted ? candidate.transaction?.transaction_id ?? null : null
       },
       final_output: candidate.final_output,
+      ...(collectorV2 && candidate.transaction
+        ? { evidence_diagnostics: cloneJson(candidate.evidence_diagnostics) }
+        : {}),
       publication: publicationByCandidateId.get(candidate.candidate_id)
     };
   });
@@ -684,7 +738,7 @@ function secondPassRunView(value = {}) {
 }
 
 function summaryView(value = {}) {
-  return {
+  const summary = {
     candidate_count: nonNegativeInteger(value?.candidate_count),
     evidence_count: nonNegativeInteger(value?.evidence_count),
     second_pass_eligible_count: nonNegativeInteger(value?.second_pass_eligible_count),
@@ -697,13 +751,19 @@ function summaryView(value = {}) {
     excluded_count: nonNegativeInteger(value?.excluded_count),
     shadow_push_pool_count: nonNegativeInteger(value?.shadow_push_pool_count)
   };
+  if (isPlainObject(value?.second_pass_outcome_counts)) {
+    summary.second_pass_outcome_counts = normalizedSecondPassOutcomeCounts(
+      value.second_pass_outcome_counts
+    );
+  }
+  return summary;
 }
 
 function replayedSummary(corpus, candidates, secondPass) {
   const countDecision = (decision) => candidates
     .filter((candidate) => candidate.publication.decision === decision)
     .length;
-  return {
+  const summary = {
     candidate_count: candidates.length,
     evidence_count: Array.isArray(corpus.evidence_catalog) ? corpus.evidence_catalog.length : 0,
     second_pass_eligible_count: secondPass.eligible_ids.length,
@@ -718,6 +778,22 @@ function replayedSummary(corpus, candidates, secondPass) {
       .filter((candidate) => candidate.publication.shadow_push_pool)
       .length
   };
+  if (corpus.collector_contract_version === 2) {
+    const outcomeCounts = normalizedSecondPassOutcomeCounts({});
+    for (const candidate of candidates) {
+      const outcome = candidate?.evidence_diagnostics?.outcome;
+      if (Object.hasOwn(outcomeCounts, outcome)) outcomeCounts[outcome] += 1;
+    }
+    summary.second_pass_outcome_counts = outcomeCounts;
+  }
+  return summary;
+}
+
+function normalizedSecondPassOutcomeCounts(value) {
+  return Object.fromEntries(EVIDENCE_DIAGNOSTIC_OUTCOMES.map((outcome) => [
+    outcome,
+    nonNegativeInteger(value?.[outcome])
+  ]));
 }
 
 function secondPassEligible(admission = {}) {

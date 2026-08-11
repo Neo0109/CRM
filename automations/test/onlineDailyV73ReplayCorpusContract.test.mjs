@@ -25,13 +25,45 @@ const BEHAVIOR_MANIFEST = {
 };
 const EVALUATOR_SHA = "d".repeat(64);
 
-describe("Replay Corpus Contract v1 schemas", () => {
+describe("Replay Corpus Contract v1/v2 schemas", () => {
   it("declares closed, versioned corpus and window contracts", () => {
     const corpusSchema = readSchema("../../schemas/sourcing_replay_corpus.schema.json");
     const windowSchema = readSchema("../../schemas/sourcing_replay_window.schema.json");
 
     assert.equal(corpusSchema.additionalProperties, false);
     assert.equal(corpusSchema.properties.contract_version.const, 1);
+    assert.deepEqual(corpusSchema.properties.collector_contract_version.enum, [1, 2]);
+    assert.ok(corpusSchema.$defs.transaction.properties.evidence_diagnostics);
+    assert.ok(corpusSchema.$defs.summary.properties.second_pass_outcome_counts);
+    assert.deepEqual(corpusSchema.$defs.evidenceDiagnostics.required, [
+      "project_matching_signal_count",
+      "eligible_source_role_signal_count",
+      "quality_keyword_signal_count",
+      "independent_source_count",
+      "accepted_proof_count",
+      "actionable_gate_count",
+      "outcome"
+    ]);
+    assert.deepEqual(corpusSchema.$defs.evidenceDiagnostics.properties.outcome.enum, [
+      "evidence_found",
+      "no_project_match",
+      "source_role_rejected",
+      "quality_keyword_missing",
+      "insufficient_independent_sources",
+      "not_requested"
+    ]);
+    const collectorV2 = corpusSchema.allOf.find((branch) => (
+      branch.if?.properties?.collector_contract_version?.const === 2
+    ));
+    assert.ok(collectorV2);
+    assert.ok(corpusSchema.$defs.runSecondPass.properties.bounded_signals);
+    assert.ok(
+      collectorV2.then.properties.second_pass.required?.includes("bounded_signals")
+    );
+    assert.equal(
+      collectorV2.then.properties.second_pass.properties.selector_version.const,
+      "actionability-v2"
+    );
     assert.deepEqual(corpusSchema.properties.capture_status.enum, [
       "complete",
       "incomplete",
@@ -213,6 +245,120 @@ describe("Replay corpus validator", () => {
       validateReplayCorpus(invalid),
       "SCHEMA_ENUM",
       "/second_pass/transactions/0/requested_actions/0/action"
+    );
+  });
+
+  it("accepts historical v1 and requires privacy-safe diagnostics plus outcome counts in v2", () => {
+    assert.deepEqual(validateReplayCorpus(completeCorpusFixture()), {
+      valid: true,
+      errors: []
+    });
+
+    const v2 = mutateCorpus(upgradeCorpusToV2);
+    assert.deepEqual(validateReplayCorpus(v2), { valid: true, errors: [] });
+
+    const missingDiagnostics = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      delete value.second_pass.transactions[0].evidence_diagnostics;
+    });
+    expectInvalid(
+      validateReplayCorpus(missingDiagnostics),
+      "SCHEMA_REQUIRED",
+      "/second_pass/transactions/0/evidence_diagnostics"
+    );
+
+    const mismatchedSummary = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.summary.second_pass_outcome_counts.not_requested = 0;
+      value.summary.second_pass_outcome_counts.evidence_found = 1;
+    });
+    expectInvalid(
+      validateReplayCorpus(mismatchedSummary),
+      "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
+      "/summary/second_pass_outcome_counts/not_requested"
+    );
+  });
+
+  it("recomputes and binds every collector v2 evidence diagnostic before summary counts", () => {
+    const forgedDiagnostics = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      Object.assign(value.second_pass.transactions[0].evidence_diagnostics, {
+        project_matching_signal_count: 17,
+        eligible_source_role_signal_count: 11,
+        quality_keyword_signal_count: 9,
+        independent_source_count: 8,
+        accepted_proof_count: 7,
+        outcome: "evidence_found"
+      });
+      value.summary.second_pass_outcome_counts.not_requested = 0;
+      value.summary.second_pass_outcome_counts.evidence_found = 1;
+    });
+
+    const result = validateReplayCorpus(forgedDiagnostics);
+    expectInvalid(
+      result,
+      "SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH",
+      "/second_pass/transactions/0/evidence_diagnostics"
+    );
+    expectInvalid(
+      result,
+      "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
+      "/summary/second_pass_outcome_counts/not_requested"
+    );
+  });
+
+  it("cross-binds collector v2 actionability and the frozen bounded signal projection", () => {
+    const missingGlobalSignals = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      delete value.second_pass.bounded_signals;
+    });
+    expectInvalid(
+      validateReplayCorpus(missingGlobalSignals),
+      "SCHEMA_REQUIRED",
+      "/second_pass/bounded_signals"
+    );
+
+    const legacySelector = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.second_pass.selector_version = "targeted-v1";
+    });
+    expectInvalid(
+      validateReplayCorpus(legacySelector),
+      "SCHEMA_CONST",
+      "/second_pass/selector_version"
+    );
+
+    const missingCandidateCount = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      delete value.candidates[0].ranking_inputs.actionable_gate_count;
+    });
+    expectInvalid(
+      validateReplayCorpus(missingCandidateCount),
+      "SCHEMA_REQUIRED",
+      "/candidates/0/ranking_inputs/actionable_gate_count"
+    );
+
+    const countMismatch = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.second_pass.transactions[0].evidence_diagnostics.actionable_gate_count = 0;
+    });
+    expectInvalid(
+      validateReplayCorpus(countMismatch),
+      "SECOND_PASS_ACTIONABILITY_MISMATCH",
+      "/second_pass/transactions/0/evidence_diagnostics/actionable_gate_count"
+    );
+
+    const signalMismatch = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.second_pass.transactions[0].bounded_signals = [{
+        source_id: "tampered",
+        title: "different bounded projection"
+      }];
+    });
+    expectInvalid(
+      validateReplayCorpus(signalMismatch),
+      "SECOND_PASS_BOUNDED_SIGNALS_MISMATCH",
+      "/second_pass/transactions/0/bounded_signals"
     );
   });
 
@@ -935,7 +1081,34 @@ function candidateFixture() {
     first_pass: {
       evaluator_dependency_sha256: EVALUATOR_SHA,
       indie_prelaunch: {
-        input: { release_state: "prelaunch", quality_proof_count: 2 },
+        input: {
+          project: "Game One",
+          steam_app_id: "100",
+          dedupe_key: "steam:100",
+          region: "domestic",
+          release_state: "prelaunch",
+          release_window: "over_60",
+          early_access_state: "no",
+          publisher_occupancy: "clear",
+          narrative_state: "no",
+          india_team_state: "no",
+          official_demo_evidence: [],
+          official_gameplay_evidence: [],
+          quality_proofs: [
+            {
+              source_id: "media-one",
+              value: "review one",
+              url: "https://one.example/review"
+            },
+            {
+              source_id: "media-two",
+              value: "review two",
+              url: "https://two.example/review"
+            }
+          ],
+          business_entrypoints: [{ type: "website", url: "https://game.example/contact" }],
+          china_bilibili_value: "Systemic gameplay supports creator challenges."
+        },
         output: { qualified: true, disposition: "formal" },
         gate_results: [
           {
@@ -1052,6 +1225,32 @@ function transactionFixture() {
     decision_changed: true,
     changed_gate: "official_product",
     evaluator_dependency_sha256: EVALUATOR_SHA
+  };
+}
+
+function upgradeCorpusToV2(value) {
+  value.collector_contract_version = 2;
+  value.second_pass.selector_version = "actionability-v2";
+  value.second_pass.bounded_signals = structuredClone(
+    value.second_pass.transactions[0].bounded_signals
+  );
+  value.candidates[0].ranking_inputs.actionable_gate_count = 1;
+  value.second_pass.transactions[0].evidence_diagnostics = {
+    project_matching_signal_count: 0,
+    eligible_source_role_signal_count: 0,
+    quality_keyword_signal_count: 0,
+    independent_source_count: 2,
+    accepted_proof_count: 0,
+    actionable_gate_count: 1,
+    outcome: "not_requested"
+  };
+  value.summary.second_pass_outcome_counts = {
+    evidence_found: 0,
+    no_project_match: 0,
+    source_role_rejected: 0,
+    quality_keyword_missing: 0,
+    insufficient_independent_sources: 0,
+    not_requested: 1
   };
 }
 

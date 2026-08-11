@@ -13,11 +13,27 @@ import {
 
 const DAILY_SECOND_PASS_LIMIT = 12;
 const MAX_ACTIONS_PER_CANDIDATE = 3;
+const QUALITY_SIGNAL_PATTERN = /hands-on|playtest|preview|review|showcase|festival|试玩|試玩|测评|測評|评测|評測/i;
 const SUPPORTED_PUBLIC_ACTIONS = new Set([
   "fetch_official_playable_or_gameplay",
   "fetch_independent_quality_evidence",
   "fetch_non_steam_business_entry",
   "research_china_bilibili_value"
+]);
+const PROVIDER_LOOKUP_ACTIONS = new Set([
+  "fetch_official_playable_or_gameplay",
+  "fetch_non_steam_business_entry",
+  "research_china_bilibili_value"
+]);
+
+export const V73_SECOND_PASS_SELECTOR_VERSION = "actionability-v2";
+export const V73_EVIDENCE_DIAGNOSTIC_OUTCOMES = Object.freeze([
+  "evidence_found",
+  "no_project_match",
+  "source_role_rejected",
+  "quality_keyword_missing",
+  "insufficient_independent_sources",
+  "not_requested"
 ]);
 
 export async function runV73TargetedCandidateSecondPasses({
@@ -51,13 +67,15 @@ export async function runV73TargetedCandidateSecondPasses({
       candidate,
       index,
       sourceType: "steam",
-      evaluate
+      evaluate,
+      mediaSignals
     })),
     ...media.map((candidate, index) => candidateForSecondPass({
       candidate,
       index,
       sourceType: "media",
-      evaluate
+      evaluate,
+      mediaSignals
     }))
   ].filter(Boolean));
   const selected = eligible.slice(0, boundedCandidateLimit(maxCandidates));
@@ -109,6 +127,7 @@ export async function runV73TargetedCandidateSecondPasses({
         final_pass: outcome.final_pass,
         requested_actions: outcome.requested_actions,
         second_pass_attempted: outcome.second_pass_attempted,
+        evidence_diagnostics: cloneValue(item.evidence_diagnostics),
         error: null
       });
     } catch (error) {
@@ -120,6 +139,7 @@ export async function runV73TargetedCandidateSecondPasses({
         final_pass: item.first_pass,
         requested_actions: item.actions,
         second_pass_attempted: true,
+        evidence_diagnostics: cloneValue(item.evidence_diagnostics),
         error: error instanceof Error ? error.message : String(error)
       });
     }
@@ -129,8 +149,127 @@ export async function runV73TargetedCandidateSecondPasses({
     steam_candidates: steam,
     media_candidates: media,
     candidate_states: states,
+    selector_version: V73_SECOND_PASS_SELECTOR_VERSION,
+    eligible_order: eligible.map((item) => item.dedupe_key),
+    selection_diagnostics: eligible.map((item) => ({
+      dedupe_key: item.dedupe_key,
+      actionable_gate_count: item.evidence_diagnostics.actionable_gate_count
+    })),
     metrics,
     results
+  };
+}
+
+export function analyzeV73EvidenceAvailability({
+  candidate = {},
+  evidence = {},
+  actions = [],
+  mediaSignals = [],
+  evaluate = evaluateV73IndiePrelaunchAdmission
+} = {}) {
+  if (typeof evaluate !== "function") {
+    throw new TypeError("V7.3 evidence availability evaluator must be a function.");
+  }
+  const requested = new Set(
+    (Array.isArray(actions) ? actions : [])
+      .map((item) => item?.action)
+      .filter((action) => SUPPORTED_PUBLIC_ACTIONS.has(action))
+  );
+  const project = String(evidence?.project ?? candidate?.title ?? candidate?.project ?? "").trim();
+  const matchingSignals = project
+    ? uniquePublicSignals(
+        (Array.isArray(mediaSignals) ? mediaSignals : [])
+          .filter((item) => signalMatchesProject(item, project))
+      )
+    : [];
+  const eligibleSignals = matchingSignals.filter(isIndependentQualitySignal);
+  const qualitySignals = eligibleSignals.filter(hasQualitySignalKeyword);
+  const acceptedProofs = uniqueEvidence([
+    ...qualityEvidenceFromSignals(
+      qualitySignals.filter(isBilibiliSignal),
+      "bilibili"
+    ),
+    ...qualityEvidenceFromSignals(
+      qualitySignals.filter((item) => !isBilibiliSignal(item)),
+      "media"
+    )
+  ]);
+  const existingProofs = Array.isArray(evidence?.quality_proofs)
+    ? evidence.quality_proofs
+    : [];
+  const mergedProofs = mergeQualityProofs(existingProofs, acceptedProofs);
+  const independentSourceCount = new Set(
+    mergedProofs.map(qualityProofSourceId).filter(Boolean)
+  ).size;
+  const qualityRequested = requested.has("fetch_independent_quality_evidence");
+  let outcome = "not_requested";
+  if (qualityRequested) {
+    if (matchingSignals.length === 0) outcome = "no_project_match";
+    else if (eligibleSignals.length === 0) outcome = "source_role_rejected";
+    else if (qualitySignals.length === 0) outcome = "quality_keyword_missing";
+    else if (independentSourceCount < 2) outcome = "insufficient_independent_sources";
+    else outcome = "evidence_found";
+  }
+
+  const currentGate = evaluate(evidence)
+    .gate_results
+    .find((gate) => gate.id === "independent_quality_proof");
+  const projectedGate = qualityRequested && acceptedProofs.length > 0
+    ? evaluate({
+        ...cloneValue(evidence),
+        quality_proofs: cloneValue(mergedProofs)
+      }).gate_results.find((gate) => gate.id === "independent_quality_proof")
+    : currentGate;
+  const actionableGateIds = new Set(
+    project
+      ? (Array.isArray(actions) ? actions : [])
+          .filter((item) => PROVIDER_LOOKUP_ACTIONS.has(item?.action))
+          .map((item) => String(item?.gate_id ?? item?.action ?? "").trim())
+          .filter(Boolean)
+      : []
+  );
+  if (
+    qualityRequested
+    && currentGate?.status !== "pass"
+    && projectedGate?.status === "pass"
+  ) {
+    actionableGateIds.add("independent_quality_proof");
+  }
+
+  return {
+    project_matching_signal_count: matchingSignals.length,
+    eligible_source_role_signal_count: eligibleSignals.length,
+    quality_keyword_signal_count: qualitySignals.length,
+    independent_source_count: independentSourceCount,
+    accepted_proof_count: acceptedProofs.length,
+    actionable_gate_count: actionableGateIds.size,
+    outcome
+  };
+}
+
+export function recomputeV73EvidenceDiagnostics({
+  firstPassInput = {},
+  mediaSignals = [],
+  evaluate = evaluateV73IndiePrelaunchAdmission
+} = {}) {
+  if (typeof evaluate !== "function") {
+    throw new TypeError("V7.3 evidence diagnostics evaluator must be a function.");
+  }
+  const input = cloneValue(firstPassInput);
+  const admission = evaluate(input);
+  const requestedActions = Array.isArray(admission?.next_evidence_actions)
+    ? admission.next_evidence_actions.map(cloneValue)
+    : [];
+  return {
+    admission,
+    requested_actions: requestedActions,
+    evidence_diagnostics: analyzeV73EvidenceAvailability({
+      candidate: input,
+      evidence: admission?.evidence ?? {},
+      actions: requestedActions,
+      mediaSignals,
+      evaluate
+    })
   };
 }
 
@@ -218,7 +357,7 @@ export async function fetchV73TargetedEvidence({
   return patch;
 }
 
-function candidateForSecondPass({ candidate, index, sourceType, evaluate }) {
+function candidateForSecondPass({ candidate, index, sourceType, evaluate, mediaSignals }) {
   const evidence = sourceType === "steam"
     ? steamIndieAdmissionEvidence(candidate)
     : mediaIndieAdmissionEvidence(candidate);
@@ -245,23 +384,36 @@ function candidateForSecondPass({ candidate, index, sourceType, evaluate }) {
     evidence: firstPass.evidence,
     first_pass: firstPass,
     actions,
+    evidence_diagnostics: analyzeV73EvidenceAvailability({
+      candidate,
+      evidence: firstPass.evidence,
+      actions,
+      mediaSignals,
+      evaluate
+    }),
     score: Number(candidate?.score ?? candidate?.media_score ?? 0)
   };
 }
 
 function uniqueEligibleCandidates(items) {
-  const ranked = [...items].sort((left, right) => (
-    left.actions.length - right.actions.length
-    || right.score - left.score
-    || left.dedupe_key.localeCompare(right.dedupe_key)
-    || left.source_type.localeCompare(right.source_type)
-  ));
+  const ranked = [...items].sort(compareV73SecondPassPriority);
   const seen = new Set();
   return ranked.filter((item) => {
     if (seen.has(item.dedupe_key)) return false;
     seen.add(item.dedupe_key);
     return true;
   });
+}
+
+export function compareV73SecondPassPriority(left = {}, right = {}) {
+  return (
+    Number(right?.evidence_diagnostics?.actionable_gate_count ?? 0)
+    - Number(left?.evidence_diagnostics?.actionable_gate_count ?? 0)
+    || Number(left?.actions?.length ?? 0) - Number(right?.actions?.length ?? 0)
+    || Number(right?.score ?? 0) - Number(left?.score ?? 0)
+    || String(left?.dedupe_key ?? "").localeCompare(String(right?.dedupe_key ?? ""))
+    || String(left?.source_type ?? "").localeCompare(String(right?.source_type ?? ""))
+  );
 }
 
 function boundedCandidateLimit(value) {
@@ -331,8 +483,9 @@ function publicSignalUrl(item) {
 }
 
 function isIndependentQualitySignal(item) {
-  if (!isBilibiliSignal(item)) return true;
-  const sourceKind = String(item?.bilibili_probe?.source_kind ?? "")
+  const sourceKind = String(
+    item?.source_role ?? item?.bilibili_probe?.source_kind ?? ""
+  )
     .trim()
     .toLowerCase();
   return sourceKind === "media" || sourceKind === "trusted_creator";
@@ -365,6 +518,10 @@ function isGameplaySignal(item) {
   );
 }
 
+function hasQualitySignalKeyword(item) {
+  return QUALITY_SIGNAL_PATTERN.test(`${item?.title ?? ""} ${item?.summary ?? ""}`);
+}
+
 function evidenceFromSignals(signals, type) {
   return uniqueEvidence(signals.map((item) => ({
     type,
@@ -375,9 +532,7 @@ function evidenceFromSignals(signals, type) {
 
 function qualityEvidenceFromSignals(signals, family) {
   return signals
-    .filter((item) => /hands-on|playtest|preview|review|showcase|festival|试玩|試玩|测评|測評|评测|評測/i.test(
-      `${item?.title ?? ""} ${item?.summary ?? ""}`
-    ))
+    .filter(hasQualitySignalKeyword)
     .map((item) => ({
       type: family === "bilibili"
         ? "bilibili_public_playtest"
@@ -388,6 +543,36 @@ function qualityEvidenceFromSignals(signals, family) {
       value: String(item.title ?? item.summary ?? "public quality evidence").trim(),
       url: publicSignalUrl(item)
     }));
+}
+
+function mergeQualityProofs(current, incoming) {
+  const seen = new Set();
+  const merged = [];
+  for (const item of [...current, ...incoming]) {
+    const key = normalizeText(item?.source_id)
+      || normalizeText(item?.url)
+      || normalizeText(`${item?.type ?? ""}:${item?.value ?? ""}`);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(cloneValue(item));
+  }
+  return merged;
+}
+
+function qualityProofSourceId(proof) {
+  if (!proof || typeof proof !== "object" || Array.isArray(proof)) return null;
+  for (const field of ["source_id", "source", "publisher", "outlet"]) {
+    const value = normalizeText(proof[field]);
+    if (value) return `${field}:${value}`;
+  }
+  const url = String(proof.url ?? "").trim();
+  if (!url) return null;
+  try {
+    const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+    return hostname ? `host:${hostname}` : null;
+  } catch {
+    return null;
+  }
 }
 
 function independentQualitySourceRole(item, family) {

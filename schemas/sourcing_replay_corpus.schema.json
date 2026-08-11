@@ -60,7 +60,7 @@
     "shadow_rule_version": {
       "const": "sourcing-rules-v7.3-obtainable-evidence"
     },
-    "collector_contract_version": { "const": 1 },
+    "collector_contract_version": { "type": "integer", "enum": [1, 2] },
     "behavior_manifest": {
       "type": "object",
       "minProperties": 1,
@@ -120,6 +120,56 @@
               "reason_codes": { "minItems": 1 }
             }
           }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "collector_contract_version": { "const": 2 } },
+        "required": ["collector_contract_version"]
+      },
+      "then": {
+        "properties": {
+          "second_pass": {
+            "required": ["bounded_signals"],
+            "properties": {
+              "selector_version": { "const": "actionability-v2" },
+              "transactions": {
+                "items": { "required": ["evidence_diagnostics"] }
+              }
+            }
+          },
+          "candidates": {
+            "items": {
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "second_pass": {
+                        "properties": { "eligible": { "const": true } },
+                        "required": ["eligible"]
+                      }
+                    },
+                    "required": ["second_pass"]
+                  },
+                  "then": {
+                    "properties": {
+                      "ranking_inputs": {
+                        "required": ["actionable_gate_count"],
+                        "properties": {
+                          "actionable_gate_count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "summary": { "required": ["second_pass_outcome_counts"] }
         }
       }
     }
@@ -683,6 +733,58 @@
       },
       "additionalProperties": false
     },
+    "evidenceDiagnostics": {
+      "type": "object",
+      "required": [
+        "project_matching_signal_count",
+        "eligible_source_role_signal_count",
+        "quality_keyword_signal_count",
+        "independent_source_count",
+        "accepted_proof_count",
+        "actionable_gate_count",
+        "outcome"
+      ],
+      "properties": {
+        "project_matching_signal_count": { "type": "integer", "minimum": 0 },
+        "eligible_source_role_signal_count": { "type": "integer", "minimum": 0 },
+        "quality_keyword_signal_count": { "type": "integer", "minimum": 0 },
+        "independent_source_count": { "type": "integer", "minimum": 0 },
+        "accepted_proof_count": { "type": "integer", "minimum": 0 },
+        "actionable_gate_count": { "type": "integer", "minimum": 0 },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "evidence_found",
+            "no_project_match",
+            "source_role_rejected",
+            "quality_keyword_missing",
+            "insufficient_independent_sources",
+            "not_requested"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "secondPassOutcomeCounts": {
+      "type": "object",
+      "required": [
+        "evidence_found",
+        "no_project_match",
+        "source_role_rejected",
+        "quality_keyword_missing",
+        "insufficient_independent_sources",
+        "not_requested"
+      ],
+      "properties": {
+        "evidence_found": { "type": "integer", "minimum": 0 },
+        "no_project_match": { "type": "integer", "minimum": 0 },
+        "source_role_rejected": { "type": "integer", "minimum": 0 },
+        "quality_keyword_missing": { "type": "integer", "minimum": 0 },
+        "insufficient_independent_sources": { "type": "integer", "minimum": 0 },
+        "not_requested": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
     "transaction": {
       "type": "object",
       "required": [
@@ -732,6 +834,7 @@
           "enum": ["success", "error", "timeout"]
         },
         "error": { "type": ["string", "null"] },
+        "evidence_diagnostics": { "$ref": "#/$defs/evidenceDiagnostics" },
         "merged_final_input": { "$ref": "#/$defs/jsonObject" },
         "final_output": { "$ref": "#/$defs/jsonObject" },
         "decision_changed": { "type": "boolean" },
@@ -762,6 +865,11 @@
         "attempted_ids": { "$ref": "#/$defs/stringArray" },
         "failed_ids": { "$ref": "#/$defs/stringArray" },
         "qualified_ids": { "$ref": "#/$defs/stringArray" },
+        "bounded_signals": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/jsonValue" }
+        },
         "transactions": {
           "type": "array",
           "items": { "$ref": "#/$defs/transaction" }
@@ -795,7 +903,8 @@
         "formal_count": { "type": "integer", "minimum": 0 },
         "candidate_decision_count": { "type": "integer", "minimum": 0 },
         "excluded_count": { "type": "integer", "minimum": 0 },
-        "shadow_push_pool_count": { "type": "integer", "minimum": 0 }
+        "shadow_push_pool_count": { "type": "integer", "minimum": 0 },
+        "second_pass_outcome_counts": { "$ref": "#/$defs/secondPassOutcomeCounts" }
       },
       "additionalProperties": false
     },
