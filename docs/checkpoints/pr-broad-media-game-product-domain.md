@@ -85,16 +85,18 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - The unquoted end-to-end matrix covers short categories after region/promotion/genre/platform/organization/platform-alias modifiers; both orders and punctuation for every `B站/哔哩哔哩/bilibili/Bili Bili/B·站` plus `官方/授权/发行/合作/需求/上线`; and `两款/三款/十款/10款 + 手游/国产手游/独立游戏`. Every negative must return exact `radar_only/non_game_broad_media` and produce zero candidate, enrichment, audit/formal record, or V7.3 second pass.
 - Distinctive-residue controls preserve true names and before-category forms, including `星海远征 国产手游开启 Playtest`, `雾港纪事 海外独立游戏开放 Demo`, `代号：鸢`, `神秘海域`, `中国式家长`, `上海之夏`, `腾讯极光计划`, genre-token names, `PC小队`, `纪元10：余烬`, and `Project Echo`.
 - Accepted provider-free RED: the focused contract now has 14 subtests, with exactly 2 failing and 12 existing subtests green. The failures independently show structured `国产` accepted as a project and the exact unquoted production reproduction extracting `国产`.
+- Expanded the same P1 before overall GREEN with an unquoted slot-framing contract. Name-before-category reproductions cover Chinese temporal/announcement connectors (`正式/即将/今日`) and English connectors (`announces/officially reveals/launches`); category-before-name controls cover leading `新作` and trailing `今日`, in both Chinese and English. Each case must bind the exact project into `Lead.project`.
+- Accepted the connector RED after the modifier implementation turned its two failures green: focused now has 15 subtests with exactly the new connector subtest failing and 14 green; `星海远征 国产独立游戏正式公布 Demo` incorrectly extracts `正式` instead of `星海远征`.
 - Deferred P2, deliberately not included in this P1: a real unquoted project name that itself contains a category token can make the first category match bind the wrong project, for example `手游模拟器 国产独立游戏公开 Demo` or `PC Game Tycoon 国产独立游戏公开 Demo`. This requires a separate category-selection design, not expansion of the modifier repair.
 
 ## Remaining
 
-- Publish the modifier RED checkpoint, implement shared generic modifier/count/organization handling and approved category-prefix consumption, then rerun focused/impacted/Daily V4/full verification.
+- Publish the expanded RED checkpoint, finish shared unquoted slot-framing cleanup on top of the modifier/count/organization and approved category-prefix repair, then rerun focused/impacted/Daily V4/full verification.
 - Publish a new coherent GREEN and complete exact remote acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the modifier RED checkpoint, implement the bounded P1 repair, then rerun provider-free validation.
+Publish the expanded RED checkpoint, finish the bounded P1 repair, then rerun provider-free validation.
 
 ## Git Status
 

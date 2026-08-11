@@ -297,6 +297,31 @@ const modifierNoNameItems = modifierNoNameTitles.map((title, index) => ({
   score: 52
 }));
 
+const connectorBindingCases = [
+  ["星海远征 国产独立游戏正式公布 Demo", "星海远征"],
+  ["星海远征 国产独立游戏即将开启 Playtest", "星海远征"],
+  ["星海远征 国产独立游戏今日发布实机", "星海远征"],
+  ["Project Echo mobile game announces Demo", "Project Echo"],
+  ["Aether Echo PC game officially reveals Demo", "Aether Echo"],
+  ["Project Echo console game launches Playtest", "Project Echo"],
+  ["国产手游新作 星海远征公布 Demo", "星海远征"],
+  ["手游 星海远征 今日公布 Demo", "星海远征"],
+  ["mobile game Project Echo announces Demo", "Project Echo"],
+  ["PC game Aether Echo officially reveals Demo", "Aether Echo"]
+].map(([title, expectedProject], index) => ({
+  item: {
+    title,
+    summary: "固定离线 fixture，用于验证无引号项目名与事件连接词的边界。",
+    source: "IT之家",
+    link: `https://example.test/unquoted-event-framing-${index + 1}`,
+    source_quality: 7,
+    source_focus: ["china", "technology"],
+    candidate_domain_gate: "game_product",
+    score: 52
+  },
+  expectedProject
+}));
+
 describe("broad-media game-product candidate domain", () => {
   it("publishes the exact V7.2.1 machine/default source contract", async () => {
     const rules = await loadDailyRules({ rootDir: new URL("../..", import.meta.url) });
@@ -733,6 +758,22 @@ describe("broad-media game-product candidate domain", () => {
     );
     assert.equal(namedLeads.length, 2);
     assert.deepEqual(new Set(namedLeads.map((lead) => lead.project)), new Set(["星海远征", "雾港纪事"]));
+  });
+
+  it("strips only unquoted name-slot framing and binds both category orders exactly", async () => {
+    for (const { item, expectedProject } of connectorBindingCases) {
+      assert.equal(mediaRules.extractGameProductDomainProjectName(item), expectedProject, item.title);
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.title);
+      assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.title);
+
+      const leads = await buildMediaLeadCandidates(
+        [item],
+        emptyIndex(),
+        offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
+      );
+      assert.equal(leads.length, 1, item.title);
+      assert.equal(leads[0].project, expectedProject, item.title);
+    }
   });
 
   it("accepts only narrow structured IDs and normalized product routes", () => {
