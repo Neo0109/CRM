@@ -13,11 +13,12 @@ Implement privacy-safe V7.3 evidence diagnostics, actionability-first second-pas
 - Created remote branch `codex/v73-evidence-actionability` and committed this initial checkpoint at `6656fff7a8c1ee2891ad4aeb68ef37346cf26699`.
 - Added focused RED contracts for:
   - actionability-first selection plus exact legacy ordering on actionability ties;
-  - deterministic no-network comparison across the real 2026-08-11 corpus's 60 eligible candidates;
+  - deterministic no-network comparison across the real 2026-08-11 corpus's 60 eligible candidates by re-evaluating each frozen first-pass input and analyzing the recorded bounded signals;
   - collector v2 evidence diagnostics while preserving `provider_status=success` for an empty allowlisted patch;
   - historical collector v1 acceptance and mandatory v2 transaction/summary diagnostics.
+- Corrected the RED interface to the approved evidence outcomes: `evidence_found`, `no_project_match`, `source_role_rejected`, `quality_keyword_missing`, `insufficient_independent_sources`, and `not_requested`. Provider failures remain exclusively in `provider_status` and `second_pass_failed_count`.
 - RED command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs`.
-- RED result: 64 tests, 59 passed, 5 expected failures. Failures are limited to the missing v2 schema/validator, selector prioritization/comparator, and collector v2 diagnostics.
+- Corrected RED result: 65 tests, 59 passed, 6 expected failures. Failures are limited to the missing pure analyzer, v2 schema/validator, selector prioritization/comparator, and collector v2 diagnostics.
 
 ## Remaining
 
@@ -34,7 +35,7 @@ Implement the minimal orchestrator, collector, replay-contract, schema, and offl
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote open PRs: `0`.
 - Planned branch: `codex/v73-evidence-actionability`.
-- Remote branch checkpoint head before RED publication: `6656fff7a8c1ee2891ad4aeb68ef37346cf26699`.
+- Remote branch RED head before the corrected interface publication: `8d6d50bb934e2d4fbfaeeca44b86961f6405aed0`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 

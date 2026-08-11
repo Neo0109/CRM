@@ -24,6 +24,9 @@ const fetchV73TargetedEvidence =
 const compareV73SecondPassPriority =
   orchestratorModule.compareV73SecondPassPriority
   ?? missingSecondPassPriorityComparator;
+const analyzeV73EvidenceAvailability =
+  orchestratorModule.analyzeV73EvidenceAvailability
+  ?? missingEvidenceAvailabilityAnalyzer;
 const collectorUrl = new URL(
   "../jobs/online_daily_v7_3_shadow_collector.mjs",
   import.meta.url
@@ -165,13 +168,13 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       [actionableEvidence.dedupe_key]
     );
     assert.deepEqual(prioritized.results[0].evidence_diagnostics, {
-      matching_signal_count: 1,
-      eligible_source_role_count: 1,
-      quality_keyword_match_count: 1,
-      current_independent_source_count: 1,
-      projected_independent_source_count: 2,
+      project_matching_signal_count: 1,
+      eligible_source_role_signal_count: 1,
+      quality_keyword_signal_count: 1,
+      independent_source_count: 2,
+      accepted_proof_count: 1,
       actionable_gate_count: 1,
-      outcome: "qualified"
+      outcome: "evidence_found"
     });
 
     const frozenOrder = await runV73TargetedCandidateSecondPasses({
@@ -190,6 +193,64 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     );
   });
 
+  it("classifies approved evidence availability outcomes without provider or network access", () => {
+    const withOneExistingProof = nearMissEvidence(17);
+    const withNoExistingProof = nearMissEvidence(18, { quality_proofs: [] });
+    const qualityActions = evaluateV73IndiePrelaunchAdmission(withOneExistingProof)
+      .next_evidence_actions;
+    const matchingRejectedRole = {
+      title: `${withOneExistingProof.project} 试玩评测`,
+      summary: `${withOneExistingProof.project} hands-on review`,
+      source: "Keyword probe",
+      url: "https://www.bilibili.com/video/BV1RejectedRole/",
+      source_role: "keyword"
+    };
+    const matchingNoKeyword = {
+      title: `${withOneExistingProof.project} announcement`,
+      summary: `${withOneExistingProof.project} launch information`,
+      source: "Independent Games Media",
+      url: "https://media.example/announcements/no-quality-keyword",
+      source_role: "media"
+    };
+    const matchingQuality = {
+      title: `${withOneExistingProof.project} hands-on preview`,
+      summary: `${withOneExistingProof.project} independent review`,
+      source: "Independent Games Media",
+      url: "https://media.example/reviews/one-independent-source",
+      source_role: "media"
+    };
+
+    const analyze = (evidence, actions, mediaSignals) => analyzeV73EvidenceAvailability({
+      candidate: evidence,
+      evidence,
+      actions,
+      mediaSignals
+    });
+
+    assert.equal(analyze(withOneExistingProof, [], [matchingQuality]).outcome, "not_requested");
+    assert.equal(analyze(withOneExistingProof, qualityActions, []).outcome, "no_project_match");
+    assert.equal(
+      analyze(withOneExistingProof, qualityActions, [matchingRejectedRole]).outcome,
+      "source_role_rejected"
+    );
+    assert.equal(
+      analyze(withOneExistingProof, qualityActions, [matchingNoKeyword]).outcome,
+      "quality_keyword_missing"
+    );
+    assert.equal(
+      analyze(withNoExistingProof, qualityActions, [{
+        ...matchingQuality,
+        title: `${withNoExistingProof.project} hands-on preview`,
+        summary: `${withNoExistingProof.project} independent review`
+      }]).outcome,
+      "insufficient_independent_sources"
+    );
+    assert.equal(
+      analyze(withOneExistingProof, qualityActions, [matchingQuality]).outcome,
+      "evidence_found"
+    );
+  });
+
   it("compares the current sixty eligible candidates deterministically without network access", () => {
     const corpus = JSON.parse(readFileSync(
       new URL(
@@ -199,15 +260,35 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       "utf8"
     ));
     const eligible = new Set(corpus.second_pass.eligible_ids);
-    const rankItems = corpus.candidates
+    const boundedSignals = corpus.second_pass.transactions[0].bounded_signals;
+    const buildRankItems = () => corpus.candidates
       .filter((candidate) => eligible.has(candidate.candidate_id))
-      .map((candidate) => ({
-        actions: Array.from({ length: candidate.ranking_inputs.action_count }, () => ({})),
-        score: candidate.ranking_inputs.discovery_score,
-        dedupe_key: candidate.ranking_inputs.dedupe_key,
-        source_type: candidate.ranking_inputs.source_type,
-        evidence_diagnostics: { actionable_gate_count: 0 }
-      }));
+      .map((candidate) => {
+        const evidence = structuredClone(candidate.first_pass.indie_prelaunch.input);
+        const admission = evaluateV73IndiePrelaunchAdmission(evidence);
+        return {
+          actions: admission.next_evidence_actions,
+          score: candidate.ranking_inputs.discovery_score,
+          dedupe_key: candidate.ranking_inputs.dedupe_key,
+          source_type: candidate.ranking_inputs.source_type,
+          evidence_diagnostics: analyzeV73EvidenceAvailability({
+            candidate: evidence,
+            evidence: admission.evidence,
+            actions: admission.next_evidence_actions,
+            mediaSignals: boundedSignals
+          })
+        };
+      });
+    const rankItems = buildRankItems();
+    assert.deepEqual(buildRankItems(), rankItems, "the pure comparison inputs must repeat exactly");
+    assert.ok(rankItems.every((item) => (
+      Number.isInteger(item.evidence_diagnostics.actionable_gate_count)
+      && typeof item.evidence_diagnostics.outcome === "string"
+    )));
+    assert.ok(
+      rankItems.every((item) => item.evidence_diagnostics.actionable_gate_count === 0),
+      "the natural corpus bounded evidence currently makes none of the sixty eligible records actionable"
+    );
     const legacy = [...rankItems].sort((left, right) => (
       left.actions.length - right.actions.length
       || right.score - left.score
@@ -683,6 +764,10 @@ async function missingTargetedEvidenceProvider() {
 
 function missingSecondPassPriorityComparator() {
   return 0;
+}
+
+function missingEvidenceAvailabilityAnalyzer() {
+  return {};
 }
 
 assert.equal(

@@ -35,6 +35,23 @@ describe("Replay Corpus Contract v1/v2 schemas", () => {
     assert.deepEqual(corpusSchema.properties.collector_contract_version.enum, [1, 2]);
     assert.ok(corpusSchema.$defs.transaction.properties.evidence_diagnostics);
     assert.ok(corpusSchema.$defs.summary.properties.second_pass_outcome_counts);
+    assert.deepEqual(corpusSchema.$defs.evidenceDiagnostics.required, [
+      "project_matching_signal_count",
+      "eligible_source_role_signal_count",
+      "quality_keyword_signal_count",
+      "independent_source_count",
+      "accepted_proof_count",
+      "actionable_gate_count",
+      "outcome"
+    ]);
+    assert.deepEqual(corpusSchema.$defs.evidenceDiagnostics.properties.outcome.enum, [
+      "evidence_found",
+      "no_project_match",
+      "source_role_rejected",
+      "quality_keyword_missing",
+      "insufficient_independent_sources",
+      "not_requested"
+    ]);
     const collectorV2 = corpusSchema.allOf.find((branch) => (
       branch.if?.properties?.collector_contract_version?.const === 2
     ));
@@ -244,13 +261,13 @@ describe("Replay corpus validator", () => {
 
     const mismatchedSummary = mutateCorpus((value) => {
       upgradeCorpusToV2(value);
-      value.summary.second_pass_outcome_counts.qualified = 0;
-      value.summary.second_pass_outcome_counts.no_actionable_evidence = 1;
+      value.summary.second_pass_outcome_counts.evidence_found = 0;
+      value.summary.second_pass_outcome_counts.no_project_match = 1;
     });
     expectInvalid(
       validateReplayCorpus(mismatchedSummary),
       "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
-      "/summary/second_pass_outcome_counts/qualified"
+      "/summary/second_pass_outcome_counts/evidence_found"
     );
   });
 
@@ -1097,20 +1114,21 @@ function upgradeCorpusToV2(value) {
   value.collector_contract_version = 2;
   value.second_pass.selector_version = "actionability-v2";
   value.second_pass.transactions[0].evidence_diagnostics = {
-    matching_signal_count: 1,
-    eligible_source_role_count: 1,
-    quality_keyword_match_count: 1,
-    current_independent_source_count: 1,
-    projected_independent_source_count: 2,
+    project_matching_signal_count: 1,
+    eligible_source_role_signal_count: 1,
+    quality_keyword_signal_count: 1,
+    independent_source_count: 2,
+    accepted_proof_count: 1,
     actionable_gate_count: 1,
-    outcome: "qualified"
+    outcome: "evidence_found"
   };
   value.summary.second_pass_outcome_counts = {
-    qualified: 1,
-    gate_changed: 0,
-    evidence_added: 0,
-    no_actionable_evidence: 0,
-    provider_failure: 0
+    evidence_found: 1,
+    no_project_match: 0,
+    source_role_rejected: 0,
+    quality_keyword_missing: 0,
+    insufficient_independent_sources: 0,
+    not_requested: 0
   };
 }
 

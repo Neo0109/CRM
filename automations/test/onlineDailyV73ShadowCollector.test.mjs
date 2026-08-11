@@ -90,20 +90,21 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(core.second_pass.transactions[0].provider_status, "success");
     assert.equal(core.second_pass.transactions[0].error, null);
     assert.deepEqual(core.second_pass.transactions[0].evidence_diagnostics, {
-      matching_signal_count: 0,
-      eligible_source_role_count: 0,
-      quality_keyword_match_count: 0,
-      current_independent_source_count: 1,
-      projected_independent_source_count: 1,
+      project_matching_signal_count: 0,
+      eligible_source_role_signal_count: 0,
+      quality_keyword_signal_count: 0,
+      independent_source_count: 1,
+      accepted_proof_count: 0,
       actionable_gate_count: 0,
-      outcome: "no_actionable_evidence"
+      outcome: "no_project_match"
     });
     assert.deepEqual(core.summary.second_pass_outcome_counts, {
-      qualified: 0,
-      gate_changed: 0,
-      evidence_added: 0,
-      no_actionable_evidence: 1,
-      provider_failure: 0
+      evidence_found: 0,
+      no_project_match: 1,
+      source_role_rejected: 0,
+      quality_keyword_missing: 0,
+      insufficient_independent_sources: 0,
+      not_requested: 0
     });
     assert.deepEqual(
       validateReplayPrivacy(core.second_pass.transactions[0].evidence_diagnostics),
