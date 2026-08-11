@@ -391,6 +391,7 @@ describe("C5-B V7.3 shadow collector", () => {
       title: `${evidence.project} hands-on preview`,
       summary: `${evidence.project} independent media playtest review`,
       source: "Fixture Games Media",
+      source_role: "media",
       link: "https://media.example/reviews/c5b-role-fixture"
     };
     const core = await collector.collectV73ShadowCore({

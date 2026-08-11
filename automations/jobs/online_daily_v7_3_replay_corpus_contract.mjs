@@ -298,7 +298,12 @@ export function validateReplayCorpus(corpus) {
     validateBudgets(corpus.budgets, "/budgets", errors);
     validateDiscoverySummary(corpus.discovery_summary, "/discovery_summary", errors);
     validateEvidenceCatalog(corpus.evidence_catalog, "/evidence_catalog", errors);
-    validateCandidates(corpus.candidates, "/candidates", errors);
+    validateCandidates(
+      corpus.candidates,
+      "/candidates",
+      errors,
+      corpus.collector_contract_version
+    );
     validateRunSecondPass(
       corpus.second_pass,
       "/second_pass",
@@ -829,12 +834,17 @@ function validateEvidence(value, path, errors) {
   );
 }
 
-function validateCandidates(value, path, errors) {
+function validateCandidates(value, path, errors, collectorContractVersion) {
   if (!validateArray(value, path, errors)) return;
-  value.forEach((item, index) => validateCandidate(item, appendPath(path, index), errors));
+  value.forEach((item, index) => validateCandidate(
+    item,
+    appendPath(path, index),
+    errors,
+    collectorContractVersion
+  ));
 }
 
-function validateCandidate(value, path, errors) {
+function validateCandidate(value, path, errors, collectorContractVersion) {
   const fields = [
     "candidate_id",
     "project",
@@ -907,6 +917,22 @@ function validateCandidate(value, path, errors) {
   validateJsonObject(value.normalized_candidate, appendPath(path, "normalized_candidate"), errors);
   validateNumber(value.discovery_score, appendPath(path, "discovery_score"), errors);
   validateJsonObject(value.ranking_inputs, appendPath(path, "ranking_inputs"), errors);
+  if (collectorContractVersion === 2 && value.second_pass?.eligible === true) {
+    const actionabilityPath = appendPath(
+      appendPath(path, "ranking_inputs"),
+      "actionable_gate_count"
+    );
+    if (!Object.hasOwn(value.ranking_inputs ?? {}, "actionable_gate_count")) {
+      addError(
+        errors,
+        "SCHEMA_REQUIRED",
+        actionabilityPath,
+        "required property actionable_gate_count is missing"
+      );
+    } else {
+      validateInteger(value.ranking_inputs.actionable_gate_count, actionabilityPath, errors, 0);
+    }
+  }
   validatePublicationOrder(
     value.ranking_inputs?.publication_order,
     appendPath(appendPath(path, "ranking_inputs"), "publication_order"),
@@ -1063,7 +1089,7 @@ function validatePublication(value, path, errors) {
 }
 
 function validateRunSecondPass(value, path, errors, collectorContractVersion) {
-  const fields = [
+  const baseFields = [
     "selector_version",
     "max_candidates",
     "eligible_ids",
@@ -1074,10 +1100,30 @@ function validateRunSecondPass(value, path, errors, collectorContractVersion) {
     "qualified_ids",
     "transactions"
   ];
+  const fields = collectorContractVersion === 2
+    ? [...baseFields, "bounded_signals"]
+    : baseFields;
   if (!validateClosedObject(value, path, fields, fields, errors)) return;
   validateNonEmptyString(value.selector_version, appendPath(path, "selector_version"), errors);
+  if (collectorContractVersion === 2) {
+    validateConst(
+      value.selector_version,
+      "actionability-v2",
+      appendPath(path, "selector_version"),
+      errors
+    );
+    validateJsonArray(value.bounded_signals, appendPath(path, "bounded_signals"), errors);
+    if (Array.isArray(value.bounded_signals) && value.bounded_signals.length > 24) {
+      addError(
+        errors,
+        "SCHEMA_MAX_ITEMS",
+        appendPath(path, "bounded_signals"),
+        "allows at most 24 items"
+      );
+    }
+  }
   validateInteger(value.max_candidates, appendPath(path, "max_candidates"), errors, 0);
-  for (const field of fields.slice(2, 8)) {
+  for (const field of baseFields.slice(2, 8)) {
     validateStringArray(value[field], appendPath(path, field), errors);
   }
   if (!validateArray(value.transactions, appendPath(path, "transactions"), errors)) return;
@@ -2057,6 +2103,32 @@ function validateSecondPassIntegrity(
     }
     const candidate = candidateById.get(transaction?.candidate_id);
     if (!candidate) return;
+    if (corpus.collector_contract_version === 2) {
+      const candidateActionability = candidate.ranking_inputs?.actionable_gate_count;
+      const transactionActionability =
+        transaction.evidence_diagnostics?.actionable_gate_count;
+      if (candidateActionability !== transactionActionability) {
+        addError(
+          errors,
+          "SECOND_PASS_ACTIONABILITY_MISMATCH",
+          `${transactionPath}/evidence_diagnostics/actionable_gate_count`,
+          "selected candidate and transaction actionability must match"
+        );
+      }
+      if (
+        Array.isArray(secondPass.bounded_signals)
+        && Array.isArray(transaction.bounded_signals)
+        && canonicalJson(secondPass.bounded_signals)
+          !== canonicalJson(transaction.bounded_signals)
+      ) {
+        addError(
+          errors,
+          "SECOND_PASS_BOUNDED_SIGNALS_MISMATCH",
+          `${transactionPath}/bounded_signals`,
+          "transaction signals must equal the frozen run projection"
+        );
+      }
+    }
     if (
       transaction.evaluator_dependency_sha256
       !== candidate.first_pass?.evaluator_dependency_sha256

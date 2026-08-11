@@ -177,7 +177,7 @@ export async function collectV73ShadowCore({
   const steamBefore = cloneValue(steamCandidates);
   const mediaBefore = cloneValue(mediaCandidates);
   const statesBefore = cloneMap(candidateStates);
-  const mediaSignalsSafe = publicSignals(mediaSignals);
+  const mediaSignalsSafe = projectV73BoundedSignals(mediaSignals);
   const captureErrors = [];
   const providerRecords = new Map();
   const boundedTimeout = boundedInteger(providerTimeoutMs, C5B_DEFAULT_PROVIDER_TIMEOUT_MS, 1, 60_000);
@@ -249,7 +249,8 @@ export async function collectV73ShadowCore({
     universe.transactions,
     secondPassOutcome.eligible_order,
     selectionOrder,
-    secondPassOutcome.selector_version
+    secondPassOutcome.selector_version,
+    mediaSignalsSafe
   );
   const limits = normalizedBudgetLimits(budgetLimits);
   const usage = normalizedBudgetUsage({
@@ -906,7 +907,8 @@ function buildSecondPass(
   transactions,
   eligibleOrder,
   selectionOrder,
-  selectorVersion
+  selectorVersion,
+  boundedSignals
 ) {
   const candidateIds = new Set(candidates.map((item) => item.candidate_id));
   const eligibleIds = eligibleOrder.filter((id) => candidateIds.has(id));
@@ -930,6 +932,7 @@ function buildSecondPass(
     attempted_ids: attemptedIds,
     failed_ids: failedIds,
     qualified_ids: qualifiedIds,
+    bounded_signals: cloneValue(boundedSignals),
     transactions
   };
 }
@@ -1112,7 +1115,7 @@ function safeProviderRequest(request = {}) {
     candidate_id: String(request.evidence?.dedupe_key ?? ""),
     source_type: String(request.source_type ?? ""),
     actions: cloneValue(request.actions ?? []),
-    bounded_signals: publicSignals(request.mediaSignals ?? []).slice(0, 24)
+    bounded_signals: projectV73BoundedSignals(request.mediaSignals ?? [])
   };
 }
 
@@ -1154,6 +1157,10 @@ function publicProviderContext(value = {}) {
     ...(typeof value.fetchTextImpl === "function" ? { fetchTextImpl: value.fetchTextImpl } : {}),
     ...(typeof value.sleepImpl === "function" ? { sleepImpl: value.sleepImpl } : {})
   };
+}
+
+export function projectV73BoundedSignals(items) {
+  return publicSignals(items).slice(0, 24);
 }
 
 function publicSignals(items) {

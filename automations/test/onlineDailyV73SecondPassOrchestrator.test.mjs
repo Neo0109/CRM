@@ -151,6 +151,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       title: `${actionableEvidence.project} hands-on preview`,
       summary: `${actionableEvidence.project} independent media playtest review`,
       source: "Actionable Games Media",
+      source_role: "media",
       link: "https://actionable-media.example/reviews/v73-actionability"
     };
 
@@ -568,6 +569,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       title: `${evidence.project} hands-on preview`,
       summary: "Independent media played the public demo",
       source: "Trusted Games Media",
+      source_role: "media",
       link: "https://media.example/previews/independent-quality-fixture"
     };
     const bilibiliMedia = {
@@ -651,6 +653,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       title: `${evidence.project} hands-on preview`,
       summary: "Independent media played the public demo",
       source: "Trusted Games Media",
+      source_role: "media",
       link: "https://media.example/previews/orchestrator-fixture"
     }, {
       title: "Unrelated project preview",

@@ -8,6 +8,7 @@ import {
   validateReplayPrivacy
 } from "./online_daily_v7_3_replay_corpus_contract.mjs";
 import { evaluateV73IndiePrelaunchAdmission } from "./online_daily_v7_3_obtainable_evidence.mjs";
+import { analyzeV73EvidenceAvailability } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 import { evaluateChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
 import { selectRegularAdmission } from "./online_daily_v7_2_regular_admission.mjs";
 import { normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mjs";
@@ -145,6 +146,7 @@ export function replayOfflineCorpus({
 
 export function buildStoredDecisionView(corpus = {}) {
   const transactions = transactionIndex(corpus);
+  const collectorV2 = corpus.collector_contract_version === 2;
   return {
     engine_contract_version: C5C_REPLAY_ENGINE_CONTRACT_VERSION,
     corpus_contract_version: corpus.contract_version ?? null,
@@ -154,6 +156,15 @@ export function buildStoredDecisionView(corpus = {}) {
       const transaction = transactions.get(candidate?.second_pass?.transaction_id) ?? null;
       return {
         candidate_id: candidate?.candidate_id ?? null,
+        ...(collectorV2
+          ? {
+              ranking_inputs: {
+                actionable_gate_count: nonNegativeInteger(
+                  candidate?.ranking_inputs?.actionable_gate_count
+                )
+              }
+            }
+          : {}),
         first_pass: {
           indie_prelaunch: {
             output: decisionOutput(candidate?.first_pass?.indie_prelaunch?.output)
@@ -177,10 +188,19 @@ export function buildStoredDecisionView(corpus = {}) {
 
 export function buildReplayedDecisionView(corpus = {}) {
   const transactions = transactionIndex(corpus);
+  const collectorV2 = corpus.collector_contract_version === 2;
   const candidates = (corpus.candidates ?? []).map((candidate) => {
-    const indie = evaluateV73IndiePrelaunchAdmission(
-      cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {})
-    );
+    const indieInput = cloneJson(candidate?.first_pass?.indie_prelaunch?.input ?? {});
+    const indie = evaluateV73IndiePrelaunchAdmission(indieInput);
+    const evidenceDiagnostics = collectorV2
+      ? analyzeV73EvidenceAvailability({
+          candidate: indieInput,
+          evidence: indie.evidence,
+          actions: indie.next_evidence_actions,
+          mediaSignals: corpus.second_pass?.bounded_signals ?? [],
+          evaluate: evaluateV73IndiePrelaunchAdmission
+        })
+      : null;
     const china = evaluateChinaJointAdmission(
       cloneJson(candidate?.first_pass?.china_joint?.input ?? {})
     );
@@ -202,7 +222,9 @@ export function buildReplayedDecisionView(corpus = {}) {
           ? indie.next_evidence_actions.length
           : 0,
         actionable_gate_count: nonNegativeInteger(
-          candidate?.ranking_inputs?.actionable_gate_count
+          collectorV2
+            ? evidenceDiagnostics?.actionable_gate_count
+            : candidate?.ranking_inputs?.actionable_gate_count
         ),
         discovery_score: finiteNumber(candidate?.ranking_inputs?.discovery_score),
         dedupe_key: String(candidate?.ranking_inputs?.dedupe_key ?? candidate?.candidate_id ?? ""),
@@ -269,6 +291,13 @@ export function buildReplayedDecisionView(corpus = {}) {
     const attempted = attemptedIds.includes(candidate.candidate_id);
     return {
       candidate_id: candidate.candidate_id,
+      ...(collectorV2
+        ? {
+            ranking_inputs: {
+              actionable_gate_count: candidate.ranking_inputs.actionable_gate_count
+            }
+          }
+        : {}),
       first_pass: candidate.first_pass,
       second_pass: {
         eligible: candidate.eligible,

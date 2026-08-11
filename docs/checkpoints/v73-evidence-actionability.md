@@ -45,21 +45,28 @@ Repair the independent-QA binding defects and strict source-role review finding 
   - rejection of `official`, `developer`, `keyword`, and `unclassified` independent-quality signals across all signal origins.
 - Repair RED command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
 - Repair RED result: 85 tests, 79 passed, 6 expected failures. Failures are confined to the missing global bounded-signal field/schema, v2 validator binding, independent replay recomputation, and strict non-media source-role rejection.
+- Published the coherent repair RED to the existing branch at `8d69f43058764d97a4276f21dca0e875c927df3e` (tree `aa51a661f8de67bc97b411e97f5fa55b77ecb16c`).
+- Implemented repair GREEN within the approved Wave 1 files:
+  - collector v2 now creates one privacy-safe 24-signal projection and reuses it unchanged for analysis, provider input, run-level `second_pass.bounded_signals`, and every transaction;
+  - schema and validator require `actionability-v2` plus nonnegative counts for every v2 eligible candidate, bind selected candidate counts to transaction diagnostics, and require canonical global/transaction signal equality;
+  - offline replay imports the pure availability analyzer and recomputes actionability from frozen first-pass inputs, evaluator-derived requested actions, and run-level bounded signals; stored and replay views expose the count so recomputed count/order mutations raise `REPLAY_MISMATCH`;
+  - independent quality now accepts only explicitly classified `media` or `trusted_creator` signals for every origin; `official`, `developer`, `keyword`, and `unclassified` are rejected.
+- Repair focused GREEN: 85 tests passed, 0 failed. Historical collector v1 replay remains covered, and no live network/provider/workflow/CRM/Supabase action was used.
 
 ## Remaining
 
-- Publish this RED checkpoint on the same branch, implement the minimal GREEN, run focused/full gates, update PR #115, and resolve the review thread only after the fix is pushed.
+- Publish the checkpointed GREEN on the same branch, run `test:daily-v4` and `verify:all`, publish the final checkpoint, update PR #115, and resolve the review thread only after all fixes are pushed.
 
 ## Next Action
 
-Publish the repair RED checkpoint and tests through the GitHub API, then implement the bounded GREEN.
+Publish the checkpointed GREEN through the GitHub API, then run the required full gates on the exact snapshot.
 
 ## Git Status
 
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote PR: ready PR #115, open and unmerged.
 - Branch: `codex/v73-evidence-actionability`.
-- Remote branch pre-repair head: `c6f5c9f2c001ce45ed7a119b8e3e73aa48821570`.
+- Remote branch repair RED head: `8d69f43058764d97a4276f21dca0e875c927df3e`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 

@@ -131,10 +131,42 @@
       "then": {
         "properties": {
           "second_pass": {
+            "required": ["bounded_signals"],
             "properties": {
+              "selector_version": { "const": "actionability-v2" },
               "transactions": {
                 "items": { "required": ["evidence_diagnostics"] }
               }
+            }
+          },
+          "candidates": {
+            "items": {
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "second_pass": {
+                        "properties": { "eligible": { "const": true } },
+                        "required": ["eligible"]
+                      }
+                    },
+                    "required": ["second_pass"]
+                  },
+                  "then": {
+                    "properties": {
+                      "ranking_inputs": {
+                        "required": ["actionable_gate_count"],
+                        "properties": {
+                          "actionable_gate_count": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
             }
           },
           "summary": { "required": ["second_pass_outcome_counts"] }
@@ -833,6 +865,11 @@
         "attempted_ids": { "$ref": "#/$defs/stringArray" },
         "failed_ids": { "$ref": "#/$defs/stringArray" },
         "qualified_ids": { "$ref": "#/$defs/stringArray" },
+        "bounded_signals": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/jsonValue" }
+        },
         "transactions": {
           "type": "array",
           "items": { "$ref": "#/$defs/transaction" }

@@ -457,8 +457,9 @@ function publicSignalUrl(item) {
 }
 
 function isIndependentQualitySignal(item) {
-  if (!isBilibiliSignal(item)) return true;
-  const sourceKind = String(item?.bilibili_probe?.source_kind ?? "")
+  const sourceKind = String(
+    item?.source_role ?? item?.bilibili_probe?.source_kind ?? ""
+  )
     .trim()
     .toLowerCase();
   return sourceKind === "media" || sourceKind === "trusted_creator";
