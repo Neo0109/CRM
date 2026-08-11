@@ -30,22 +30,26 @@ Implement privacy-safe V7.3 evidence diagnostics, actionability-first second-pas
 - Evidence-derived 60-candidate comparison re-evaluates every stored first-pass input with the real V7.3 evaluator and the natural transaction's bounded signals. Repeated results are identical; the corrected actual histogram is 20 candidates at actionability 0, 37 at 1, and 3 at 2. Provider-backed tiers sort first while exact legacy order remains unchanged within each tier.
 - GREEN command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
 - Post-review GREEN result: 82 tests passed, 0 failed. No live fetch, provider, workflow, CRM, or Supabase call was made.
+- Required final gates on the corrected exact snapshot:
+  - `npm run test:daily-v4`: 293 passed, 0 failed;
+  - `npm run verify:all`: exit 0, including frontend/backend/Functions tests, automation tests, typechecks, production build, Daily contract, and `git diff --check`.
+- Final remote compare from the frozen base is 9 allowed files, +881/-44, with no workflow, V7.2 admission, provider-contract, CRM, Supabase, or generated-data file.
+- Reconfirmed remote `main@1a660c049503058a5746a58e2ceed4ef27f351b9`, branch head `058fa58d2825351a0c3897b899b74b3047b8f98a`, and open PR count 0 before final checkpoint publication.
 
 ## Remaining
 
-- Run focused tests, `npm run test:daily-v4`, and `npm run verify:all` in the disposable exact-base snapshot.
-- Publish the GREEN checkpoint and implementation through the GitHub API, run final exact-head validation, then open one ready PR to `main`.
+- Publish this final checkpoint through the GitHub API and open one ready PR to `main`.
 
 ## Next Action
 
-Run the required full validation gates, publish the exact tested snapshot, and stop at one ready PR without merge or deploy.
+Publish the final checkpoint and stop at one ready PR without merge or deploy.
 
 ## Git Status
 
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote open PRs: `0`.
-- Planned branch: `codex/v73-evidence-actionability`.
-- Remote branch pre-review GREEN head: `bc06c7f7f7cfe083921168f17388760d818749da`.
+- Branch: `codex/v73-evidence-actionability`.
+- Remote branch corrected implementation head before final checkpoint: `058fa58d2825351a0c3897b899b74b3047b8f98a`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 
