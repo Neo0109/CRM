@@ -87,16 +87,21 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Accepted provider-free RED: the focused contract now has 14 subtests, with exactly 2 failing and 12 existing subtests green. The failures independently show structured `国产` accepted as a project and the exact unquoted production reproduction extracting `国产`.
 - Expanded the same P1 before overall GREEN with an unquoted slot-framing contract. Name-before-category reproductions cover Chinese temporal/announcement connectors (`正式/即将/今日`) and English connectors (`announces/officially reveals/launches`); category-before-name controls cover leading `新作` and trailing `今日`, in both Chinese and English. Each case must bind the exact project into `Lead.project`.
 - Accepted the connector RED after the modifier implementation turned its two failures green: focused now has 15 subtests with exactly the new connector subtest failing and 14 green; `星海远征 国产独立游戏正式公布 Demo` incorrectly extracts `正式` instead of `星海远征`.
+- Added a longest-first explicit-category contract shared by category detection and unquoted extraction. It covers PC/移动/小/网页/VR/ARPG/二次元/策略/模拟经营/Steam/掌机/客户端/移动端游戏, proves exact `Lead.project` binding, prevents `客户端游戏` or `移动端游戏` from being split at the internal `端游`, and keeps bare `游戏` outside the category vocabulary.
+- Added quoted-role tests: multiple `《…》` entities must reject source/organization and document/policy/report roles before choosing the project nearest the product event; single document entities such as 办法、条例、规范、白皮书、报告、备忘录、协议、通知、指南 must create zero candidate/enrichment/second-pass/formal records. The same document boundary applies to structured names.
+- Added URL-integrity tests for valid product URLs followed by ASCII comma/period/semicolon/colon, `),`, `).`, or Chinese closing punctuation, plus indienova reserved slugs followed by punctuation. Prose delimiters must be stripped before the existing strict host/path/ID validation, never used to relax it.
+- Added a six-permutation transitive dedupe bridge contract. One title↔link connected component must collapse to one row, conservatively retain `candidate_domain_gate=game_product`, partition once, and create zero negative candidates or enrichment calls. The repair must not union secondary Steam-link evidence, which remains a separate P2.
+- Final expanded provider-free RED before implementation completion: focused has 17 subtests, 5 failing and 12 green. The five failures isolate document/source name acceptance, event-framing misbinding, first-quote misselection, punctuated normalized-URL rejection, and transitive dedupe bridge fragmentation; the expanded modifier/category-prefix matrix is already green in the working repair.
 - Deferred P2, deliberately not included in this P1: a real unquoted project name that itself contains a category token can make the first category match bind the wrong project, for example `手游模拟器 国产独立游戏公开 Demo` or `PC Game Tycoon 国产独立游戏公开 Demo`. This requires a separate category-selection design, not expansion of the modifier repair.
 
 ## Remaining
 
-- Publish the expanded RED checkpoint, finish shared unquoted slot-framing cleanup on top of the modifier/count/organization and approved category-prefix repair, then rerun focused/impacted/Daily V4/full verification.
+- Publish the final expanded RED checkpoint; finish shared unquoted slot framing, quote roles, longest-first category vocabulary, URL delimiter normalization, and transitive dedupe components on top of the modifier/count/organization repair; then rerun focused/impacted/Daily V4/full verification.
 - Publish a new coherent GREEN and complete exact remote acceptance. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the expanded RED checkpoint, finish the bounded P1 repair, then rerun provider-free validation.
+Publish the final expanded RED checkpoint, finish the bounded P1 repair, then rerun provider-free validation.
 
 ## Git Status
 

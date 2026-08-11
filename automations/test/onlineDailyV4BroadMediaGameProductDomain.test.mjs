@@ -202,6 +202,12 @@ const genericProjectDescriptors = [
   "三款",
   "十款",
   "10款",
+  "证券时报",
+  "网络游戏管理办法",
+  "未成年人保护条例",
+  "手游测试规范",
+  "合作备忘录",
+  "2026中国游戏产业白皮书",
   "报道称",
   "消息称",
   "官方",
@@ -297,6 +303,22 @@ const modifierNoNameItems = modifierNoNameTitles.map((title, index) => ({
   score: 52
 }));
 
+const explicitGameCategoryBindings = [
+  "PC游戏",
+  "移动游戏",
+  "小游戏",
+  "网页游戏",
+  "VR游戏",
+  "ARPG游戏",
+  "二次元游戏",
+  "策略游戏",
+  "模拟经营游戏",
+  "Steam游戏",
+  "掌机游戏",
+  "客户端游戏",
+  "移动端游戏"
+];
+
 const connectorBindingCases = [
   ["星海远征 国产独立游戏正式公布 Demo", "星海远征"],
   ["星海远征 国产独立游戏即将开启 Playtest", "星海远征"],
@@ -307,7 +329,11 @@ const connectorBindingCases = [
   ["国产手游新作 星海远征公布 Demo", "星海远征"],
   ["手游 星海远征 今日公布 Demo", "星海远征"],
   ["mobile game Project Echo announces Demo", "Project Echo"],
-  ["PC game Aether Echo officially reveals Demo", "Aether Echo"]
+  ["PC game Aether Echo officially reveals Demo", "Aether Echo"],
+  ...explicitGameCategoryBindings.map((category) => [
+    `星海远征 ${category} 公布 Demo`,
+    "星海远征"
+  ])
 ].map(([title, expectedProject], index) => ({
   item: {
     title,
@@ -774,6 +800,101 @@ describe("broad-media game-product candidate domain", () => {
       assert.equal(leads.length, 1, item.title);
       assert.equal(leads[0].project, expectedProject, item.title);
     }
+
+    const arbitraryGameNoun = {
+      ...connectorBindingCases[0].item,
+      title: "星海远征 游戏 公布 Demo",
+      link: "https://example.test/arbitrary-game-noun-is-not-category"
+    };
+    assert.equal(mediaRules.extractGameProductDomainProjectName(arbitraryGameNoun), null);
+    assert.equal(mediaRules.hasGameProductDomainEvidence(arbitraryGameNoun), false);
+    assert.deepEqual(mediaRules.classifyMediaDisposition(arbitraryGameNoun), {
+      kind: "radar_only",
+      reason: "non_game_broad_media"
+    });
+  });
+
+  it("selects the project quote while excluding source and document entities", async () => {
+    const multiQuote = {
+      title: "《证券时报》：国产手游《星海远征》公布 Demo",
+      summary: "固定离线 fixture，首个书名号实体是来源，第二个才是项目。",
+      source: "IT之家",
+      link: "https://example.test/multi-quote-project-binding",
+      source_quality: 7,
+      source_focus: ["china", "technology"],
+      candidate_domain_gate: "game_product",
+      score: 52
+    };
+    assert.equal(mediaRules.extractGameProductDomainProjectName(multiQuote), "星海远征");
+    const positiveLeads = await buildMediaLeadCandidates(
+      [multiQuote],
+      emptyIndex(),
+      offlineContext({ enrichMediaLeadsWithSteamContextImpl: async (candidates) => candidates })
+    );
+    assert.equal(positiveLeads.length, 1);
+    assert.equal(positiveLeads[0].project, "星海远征");
+
+    const documentItems = [
+      "《网络游戏管理办法》明确手游测试规范",
+      "《未成年人保护条例》要求国产手游测试整改",
+      "《合作备忘录》涉及手游 Playtest 需求",
+      "《2026中国游戏产业白皮书》：国产手游 Demo 数量增长"
+    ].map((title, index) => ({
+      ...multiQuote,
+      title,
+      link: `https://example.test/quoted-document-${index + 1}`
+    }));
+    documentItems.push({
+      ...multiQuote,
+      title: "国产手游公布 Demo",
+      project_name: "网络游戏管理办法",
+      link: "https://example.test/structured-document-project"
+    });
+
+    for (const item of documentItems) {
+      assert.equal(mediaRules.extractGameProductDomainProjectName(item), null, item.title);
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.title);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      }, item.title);
+    }
+
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(documentItems, emptyIndex(), offlineContext({
+      enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+        enrichmentCalls += 1;
+        return candidates;
+      }
+    }));
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: documentItems.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual(leads, []);
+    assert.equal(enrichmentCalls, 0);
+    assert.equal(artifact.scan_summary.media_candidates_seen, 0);
+    assert.equal(artifact.scan_summary.records_total, 0);
+    assert.equal(artifact.scan_summary.formal, 0);
+    assert.deepEqual(secondPass.eligible_order, []);
+    assert.equal(secondPassCalls, 0);
   });
 
   it("accepts only narrow structured IDs and normalized product routes", () => {
@@ -802,6 +923,33 @@ describe("broad-media game-product candidate domain", () => {
     for (const item of fixture.normalized_identity_positive) {
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.links[0]);
       assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.links[0]);
+    }
+    const punctuatedProductUrls = [
+      "https://store.steampowered.com/app/123456,",
+      "https://store.steampowered.com/app/123456.",
+      "https://www.taptap.cn/app/234567;",
+      "https://steamdb.info/app/345678:",
+      "https://store.steampowered.com/app/456789),",
+      "https://www.taptap.cn/game/567890).",
+      "https://indienova.com/g/Lost%20Dream%20Chronicle】"
+    ];
+    for (const url of punctuatedProductUrls) {
+      const item = { ...identityBase, links: [url] };
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, url);
+      assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", url);
+    }
+    const punctuatedReservedUrls = [
+      "https://indienova.com/g/news.",
+      "https://indienova.com/g/groups.",
+      "https://indienova.com/g/search."
+    ];
+    for (const url of punctuatedReservedUrls) {
+      const item = { ...identityBase, links: [url] };
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, url);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      }, url);
     }
     for (const item of fixture.malformed_identity) {
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), false, item.title);
@@ -857,6 +1005,60 @@ describe("broad-media game-product candidate domain", () => {
       plainPrimary,
       "two unmarked non-Bilibili duplicates retain the legacy primary object byte-semantics"
     );
+  });
+
+  it("collapses transitive dedupe bridges into one conservatively marked component", async () => {
+    const bridgeA = {
+      title: "官方B站国产游戏 公布 Demo",
+      summary: "通用平台与产品措辞，没有具体项目名。",
+      source: "GameLook",
+      link: "https://gamelook.com.cn/article/bridge-a",
+      source_quality: 8,
+      source_focus: ["china", "product"],
+      score: 52
+    };
+    const bridgeB = {
+      ...bridgeA,
+      title: "国产游戏 官方B站 公布 Demo",
+      source: "IT之家",
+      link: "https://www.ithome.com/bridge-b",
+      candidate_domain_gate: "game_product"
+    };
+    const bridgeC = {
+      ...bridgeA,
+      source: "游戏葡萄",
+      link: bridgeB.link
+    };
+    const inputOrders = [
+      [bridgeA, bridgeB, bridgeC],
+      [bridgeA, bridgeC, bridgeB],
+      [bridgeB, bridgeA, bridgeC],
+      [bridgeB, bridgeC, bridgeA],
+      [bridgeC, bridgeA, bridgeB],
+      [bridgeC, bridgeB, bridgeA]
+    ];
+
+    for (const input of inputOrders) {
+      let enrichmentCalls = 0;
+      const deduped = dedupeMediaSignals(input);
+      const lanes = partitionMediaLeadSourceItems(deduped);
+      const leads = await buildMediaLeadCandidates(input, emptyIndex(), offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += 1;
+          return candidates;
+        }
+      }));
+
+      assert.equal(deduped.length, 1);
+      assert.equal(deduped[0].candidate_domain_gate, "game_product");
+      assert.deepEqual(mediaRules.classifyMediaDisposition(deduped[0]), {
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      });
+      assert.deepEqual(lanes, { strict: [], expanded: [], rescue: [] });
+      assert.deepEqual(leads, []);
+      assert.equal(enrichmentCalls, 0);
+    }
   });
 
   it("keeps failed broad media in Radar but out of candidate, enrichment, audit, second pass, and formal Lead", async () => {
