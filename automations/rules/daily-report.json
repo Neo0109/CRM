@@ -208,7 +208,7 @@
     ],
     "structured_identity_constraints": {
       "platform_ids": "positive_numeric",
-      "generic_game_id": "positive_numeric_or_recognized_namespace",
+      "generic_game_id": "positive_numeric_or_platform_valid_namespace",
       "game_id_namespaces": [
         "steam",
         "taptap",
@@ -216,6 +216,13 @@
         "kuaibao",
         "3839"
       ],
+      "namespaced_game_id_constraints": {
+        "steam": "positive_numeric",
+        "taptap": "positive_numeric",
+        "indienova": "concrete_non_reserved_slug",
+        "kuaibao": "positive_numeric",
+        "3839": "positive_numeric"
+      },
       "taptap_product_id": "positive_numeric",
       "indienova_reserved_routes_rejected": [
         "news",

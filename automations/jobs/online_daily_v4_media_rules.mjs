@@ -83,7 +83,7 @@ export function hasGameProductDomainEvidence(item) {
   const identityText = `${text} ${structuredUrls}`;
   if (hasNormalizedGameProductLink(identityText)) return true;
 
-  return hasExtractableConcreteGameProject(item, text)
+  return Boolean(extractGameProductDomainProjectName(item))
     && hasExplicitGameProductCategory(text)
     && hasConcreteGameProductEvent(text);
 }
@@ -97,7 +97,11 @@ function isPositiveNumericGameId(value) {
 function isRecognizedGenericGameId(value) {
   if (isPositiveNumericGameId(value)) return true;
   if (typeof value !== "string") return false;
-  return /^(?:steam|taptap|indienova|kuaibao|3839):[a-z0-9][a-z0-9._-]{0,127}$/i.test(value.trim());
+  const match = value.trim().match(/^(steam|taptap|indienova|kuaibao|3839):(.+)$/i);
+  if (!match) return false;
+  return match[1].toLowerCase() === "indienova"
+    ? isConcreteIndienovaProductId(match[2])
+    : isPositiveNumericGameId(match[2]);
 }
 
 function hasNormalizedGameProductLink(value) {
@@ -154,7 +158,7 @@ function isCanonicalKuaibaoProductPath(segments) {
   return isPositiveNumericGameId(id);
 }
 
-function hasExtractableConcreteGameProject(item, text) {
+export function extractGameProductDomainProjectName(item) {
   const structuredProject = [
     item?.project_name,
     item?.projectName,
@@ -163,12 +167,12 @@ function hasExtractableConcreteGameProject(item, text) {
   ].filter((value) => typeof value === "string")
     .map((value) => normalizeDisplayText(value))
     .find(isConcreteProjectName);
-  if (structuredProject) return true;
+  if (structuredProject) return structuredProject;
 
-  const quotedProject = String(text ?? "").match(/《([^》]{2,48})》/)?.[1];
-  if (isConcreteProjectName(quotedProject)) return true;
+  const quotedProject = semanticMediaContentText(item).match(/《([^》]{2,48})》/)?.[1];
+  if (isConcreteProjectName(quotedProject)) return normalizeDisplayText(quotedProject);
 
-  return Boolean(extractExplicitUnquotedGameProjectName(item?.title));
+  return extractExplicitUnquotedGameProjectName(item?.title);
 }
 
 function isConcreteProjectName(value) {
@@ -184,7 +188,7 @@ function isConcreteProjectName(value) {
   return residue.length >= 2 && /\p{L}/u.test(residue);
 }
 
-export function extractExplicitUnquotedGameProjectName(value) {
+function extractExplicitUnquotedGameProjectName(value) {
   const title = normalizeDisplayText(value);
   if (!title || /[《》【】]/.test(title)) return null;
   const categoryPattern = /(?:(?:国产|中国|国人)?(?:独立游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏)|国产游戏|手游|端游|mobile\s+game|pc\s+game|console\s+game)/i;

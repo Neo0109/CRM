@@ -49,14 +49,16 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Review of coherent GREEN `7e73727454a80f8c0bdba9fbdbdc80972446ef6f` found one named-project binding asymmetry and one namespace-validity gap: structured names admitted the item but were not reused as tagged `Lead.project`; namespace prefixes allowed arbitrary non-product suffixes.
 - Added a structured `project_name: "雾港纪事"` end-to-end fixture and invalid `steam:abc`, `taptap:company-news`, `kuaibao:news`, and `3839:report` identities.
 - Accepted focused RED: 12 subtests produced 3 failures and 9 legacy greens, proving the absent shared extractor export, false namespace admission, and resulting broad-negative disposition leak.
+- Final bounded GREEN exports one pure `extractGameProductDomainProjectName(item)` and reuses it in both the gate and tagged Lead conversion, ordered as validated structured name, quoted name, then explicit unquoted name. Identity-only admission falls back to legacy title extraction.
+- Steam/TapTap/快爆/3839 namespaced IDs now require positive numeric suffixes; indienova reuses the concrete non-reserved slug validator. Focused passes 12/12, impacted union 59/59, and Daily V4 passes 310/310.
 
 ## Remaining
 
-- Publish the final validation checkpoint, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance. Do not merge or deploy.
+- Publish the final binding GREEN, repeat full repository/config/diff verification, then verify exact remote blobs/tree and PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the final P1 validation checkpoint, then prove the exact remote tree/check status and hand back to Release Captain.
+Publish the final binding GREEN checkpoint, then repeat full verification and exact remote-tree acceptance.
 
 ## Git Status
 
@@ -69,3 +71,4 @@ Publish the final P1 validation checkpoint, then prove the exact remote tree/che
 - Published coherent GREEN before review: `4faf9101eec936822e9610ef8f856846bc5f1d10`.
 - Blocking P1 RED: `2e54d5d4884f9ebcb57f29e8303c871b67e983ec`.
 - Coherent P1 GREEN before full verification: `7e73727454a80f8c0bdba9fbdbdc80972446ef6f` (tree `f38345c24aaa42ac41744500d62c8389d4450514`).
+- Final binding/namespace RED: `20fad7acb082867ef3ff0ee54b7286ef823b7227` (tree `2eb97efa97b40c86cf34e23353dd49a223c49617`).

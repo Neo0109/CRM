@@ -35,7 +35,7 @@ At least one normalized game-product identity exists:
 - indienova `g`, `game`, or `games` product link with a concrete non-reserved product identifier, including percent-encoded names;
 - 3839/好游快爆 canonical numeric product paths: `a`, `shouyou`, `game(s)`, `app(s)`, or `product(s)`;
 - a positive numeric structured Steam/TapTap ID;
-- a positive numeric generic game ID, or a non-empty ID namespaced by `steam:`, `taptap:`, `indienova:`, `kuaibao:`, or `3839:`.
+- a positive numeric generic game ID; namespaced `steam:`, `taptap:`, `kuaibao:`, and `3839:` IDs also require a positive numeric suffix, while `indienova:` requires the same concrete non-reserved slug grammar as its product URL.
 
 A bare platform word, arbitrary company/news identifier, TapTap nonnumeric path, indienova reserved route such as `/games/news`, 3839/好游快爆 `/news/` route, or arbitrary domain path is not a normalized identity.
 
@@ -47,7 +47,7 @@ All three elements are required in the same item:
 2. an explicit game-product category such as independent game, domestic game, online game, mobile game, PC game, or console game;
 3. a concrete product event: Demo, 试玩, 实机, Playtest, 测试, 商店页, 愿望单, 版号, 首曝, or 开发日志.
 
-Structured project fields ignore missing and non-string values and reject literal missing markers, generic category nouns, and event-only phrases. Quoted names remain supported. A conservative unquoted-title extractor also supports an explicit category-name-event form such as `国产独立游戏 星海远征 公布试玩 Demo`, plus the corresponding project-before-category form; the extracted name is reused as the tagged media Lead project.
+One pure named-project extractor validates structured project fields first, then a quoted name, then a conservative explicit unquoted title. It ignores missing and non-string fields and rejects literal missing markers, generic category nouns, and event-only phrases. The unquoted path supports a category-name-event form such as `国产独立游戏 星海远征 公布试玩 Demo`, plus the corresponding project-before-category form. The same extracted name is reused as the tagged media Lead project; identity-only admission may retain the legacy title fallback when no project name is required.
 
 `B站`, `官方`, `授权`, `发行`, `合作`, `需求`, and `上线` are insufficient evidence, alone or in combination.
 

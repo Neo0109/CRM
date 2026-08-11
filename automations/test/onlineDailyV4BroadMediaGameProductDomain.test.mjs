@@ -117,6 +117,16 @@ describe("broad-media game-product candidate domain", () => {
       ["steam", "taptap", "indienova", "kuaibao", "3839"]
     );
     assert.deepEqual(
+      rules.broad_media_candidate_domain_gate.structured_identity_constraints.namespaced_game_id_constraints,
+      {
+        steam: "positive_numeric",
+        taptap: "positive_numeric",
+        indienova: "concrete_non_reserved_slug",
+        kuaibao: "positive_numeric",
+        3839: "positive_numeric"
+      }
+    );
+    assert.deepEqual(
       rules.broad_media_candidate_domain_gate.structured_identity_constraints.kuaibao_product_routes,
       ["a", "shouyou", "game", "games", "app", "apps", "product", "products"]
     );
@@ -175,7 +185,9 @@ describe("broad-media game-product candidate domain", () => {
     }));
     assert.equal(positiveLeads.length, positives.length);
     assert.equal(
-      mediaRules.extractExplicitUnquotedGameProjectName("国产独立游戏 星海远征 公布试玩 Demo"),
+      mediaRules.extractGameProductDomainProjectName({
+        title: "国产独立游戏 星海远征 公布试玩 Demo"
+      }),
       "星海远征"
     );
     assert.equal(
@@ -230,10 +242,10 @@ describe("broad-media game-product candidate domain", () => {
     for (const item of fixture.unquoted_title_positive) {
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.title);
       assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.title);
-      assert.notEqual(mediaRules.extractExplicitUnquotedGameProjectName(item.title), null, item.title);
+      assert.notEqual(mediaRules.extractGameProductDomainProjectName(item), null, item.title);
     }
     for (const item of fixture.generic_game_product_no_name) {
-      assert.equal(mediaRules.extractExplicitUnquotedGameProjectName(item.title), null, item.title);
+      assert.equal(mediaRules.extractGameProductDomainProjectName(item), null, item.title);
     }
   });
 

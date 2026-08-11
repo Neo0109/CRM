@@ -10,7 +10,7 @@ import { isBilibiliSignal, normalizeDisplayText, normalizeText } from "./online_
 import { isLowInformationMediaTitle } from "./online_daily_v4_media_sources.mjs";
 import {
   classifyMediaDisposition,
-  extractExplicitUnquotedGameProjectName,
+  extractGameProductDomainProjectName,
   hasAlreadyReleasedMediaText,
   hasConcreteMediaProductMarker,
   hasGameProductDomainEvidence,
@@ -155,7 +155,7 @@ export function mediaSignalToLead(item, confidence = "strict", context = {}) {
   const diagnostics = context.diagnostics ?? {};
   const reportDate = context.reportDate ?? new Date().toISOString().slice(0, 10);
   const project = isGameProductCandidateDomainSource(item)
-    ? extractExplicitUnquotedGameProjectName(item.title) ?? extractMediaProjectName(item.title)
+    ? extractGameProductDomainProjectName(item) ?? extractMediaProjectName(item.title)
     : extractMediaProjectName(item.title);
   const score = mediaLeadScore(item);
   const confidencePenalty = confidence === "expanded" ? 6 : confidence === "rescue" ? 10 : 0;
