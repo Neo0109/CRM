@@ -164,13 +164,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Published the coherent code-bearing GREEN as `923033be97b893d8287ba08ba3058fb5d3603429` with tree `866cd9be97ff1aa9b26788eddec9ef325df395d5`, parented directly to accepted RED `9bd4335b6acb855372f6d4b9af918da28e9535f4`. Frozen compare remains based and merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 30 and behind 0, with 22 changed files and 22/22 exact-head remote blobs matching the verified snapshot.
 - All three exact code-head checks succeeded: Cloudflare Pages `93869126538`; pull-request Build `31518241269 / 93868622809`; push Build `31518237854 / 93868611398`.
 
+### Complete Quantity Grammar P1 RED
+
+- Independent final-head QA superseded status-only head `b89631b1db90efb517ebf60a112dfce510fbe318`; the short-document and known-company role closure remains green, but the umbrella quantity boundary still admitted compositional totals, magnitude, approximation, comparison, only, and range phrases across structured, quoted, and unquoted project paths.
+- The accepted repair replaces the fixed whole-prefix set and `{0,2}` prefix limit with one reusable count source: a repeatable sequence of curated quantity-operator tokens; an Arabic, Chinese including `几`, or indefinite `若干` numeric core; an optional `至/到` second core; optional pre-classifier approximation; a 款、个、部、项、批 classifier; and optional post-classifier range/approximation. Whole-name dynamic-program segmentation and category-prefix recognition must reuse that exact source.
+- The complete numeric matrix covers totals (`共计/总计/总共/合共/累计达/合计达`), magnitude (`多达/高达/达/成千上万`), approximation (`约有/大约有/约莫/将近/接近/差不多/近乎/大致/大概/好几`), comparison (`不足/不到/不满/不超过/不多于/少于/低于/小于/多于/高于/不低于/超出/不止`), only (`仅/仅有/只有/只`), and numeric ranges in Chinese and Arabic.
+- Vague quantities are a separate compositional generic boundary: `少量/大量/海量/一众/大批/一些/少数/多数` are quantifier tokens that remain insufficient when the rest of the name is only a game/product/project noun; they are not enumerated as complete leak phrases.
+- Forty-nine negative descriptors across all three name paths produce a 147-row provider/network-free end-to-end invariant requiring exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second pass. Eighteen three-path numeric-title controls retain exact extraction and tagged `Lead.project` for `纪元10：余烬`, `第七史诗`, `十字军之王`, `百分百鲜橙汁`, `好久不见`, and `两点之间`.
+- Accepted focused RED on the exact superseded implementation has 28 subtests: 25 prior and numeric-title controls pass, while 3 fail only in the machine contract, shared three-path generic descriptor matrix, and the new 147-row quantity-closure E2E invariant. Role closure, connectors, URL, dedupe, media, category, animation, audit, and Radar controls remain green.
+- Both existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
+
 ## Remaining
 
-- Release Captain independent acceptance and merge gate only. No implementation, workflow, provider, CRM/Supabase, deployment, or merge action remains authorized in this task.
+- Publish the tests-and-checkpoint-only complete quantity RED from exact superseded head `b89631b1db90efb517ebf60a112dfce510fbe318`; implement only the shared repeatable quantity source and vague-quantifier tokens; then run focused, impacted, Daily V4, full verification, JSON/syntax/diff, exact remote parity/checks, and Release Captain independent acceptance. Do not merge.
 
 ## Next Action
 
-Pin the final status-only head after this checkpoint update, wait its exact checks, then hand it to Release Captain for independent acceptance and root-owned merge if clean.
+Publish the accepted quantity RED with the 25/3 focused split, then implement the bounded shared grammar without touching the role closure or two P2 follow-ups.
 
 ## Git Status
 
@@ -207,3 +217,5 @@ Pin the final status-only head after this checkpoint update, wait its exact chec
 - Accepted short-document/company-terminal role RED: `9bd4335b6acb855372f6d4b9af918da28e9535f4` (tree `b9d212a9ee5879054c7e50e61652355a8612e61e`).
 - Fully verified short-document/company-terminal role GREEN: `923033be97b893d8287ba08ba3058fb5d3603429` (tree `866cd9be97ff1aa9b26788eddec9ef325df395d5`); all three exact checks succeeded.
 - Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `923033be97b893d8287ba08ba3058fb5d3603429`; no behavior, machine-rule, or test blob changes.
+- Superseded final status-only head: `b89631b1db90efb517ebf60a112dfce510fbe318` (tree `ffbc87c4a85c9e8725d6a811c2d005679b33fbc6`); exact checks passed before complete quantity-grammar QA.
+- Accepted complete quantity-grammar RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `b89631b1db90efb517ebf60a112dfce510fbe318`.

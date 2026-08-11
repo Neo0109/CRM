@@ -176,6 +176,38 @@ const genericCountProjectDescriptors = [
   "若干批"
 ];
 
+const genericQuantityOperatorTokens = [
+  "累计", "整整", "一共",
+  "总", "共", "合", "计", "多", "达", "高", "大", "约", "有", "莫", "将", "近", "接", "差",
+  "不", "超", "过", "足", "满", "低", "少", "小", "于", "仅", "逾", "好", "至", "最", "下",
+  "到", "上", "数", "第", "乎", "致", "概", "出", "止", "只"
+];
+const genericQuantityRangeConnectors = ["至", "到"];
+const genericVagueQuantityTokens = ["少量", "大量", "海量", "一众", "大批", "一些", "少数", "多数"];
+
+const quantityOperatorProjectDescriptors = [
+  // Totals.
+  "共计10款", "总计十款", "总共10款", "合共十款", "累计达10款", "合计达十款",
+  // Magnitude.
+  "多达10款", "高达十款", "达10款", "成千上万款",
+  // Approximation.
+  "约有10款", "大约有十款", "约莫10款", "将近十款", "接近10款", "差不多十款", "近乎10款",
+  "大致十款", "大概10款", "好几款",
+  // Comparison.
+  "不足10款", "不到十款", "不满10款", "不超过十款", "不多于10款", "少于十款", "低于10款",
+  "小于十款", "多于10款", "高于十款", "不低于10款", "超出十款", "不止10款",
+  // Only.
+  "仅10款", "仅有十款", "只有10款", "只10款",
+  // Ranges.
+  "十至二十款", "十到二十款", "10至20款", "10到20款"
+];
+
+const vagueQuantityProjectDescriptors = genericVagueQuantityTokens.map((token) => `${token}游戏`);
+
+const numericProjectNameControls = [
+  "纪元10：余烬", "第七史诗", "十字军之王", "百分百鲜橙汁", "好久不见", "两点之间"
+];
+
 const mediaSourceProjectDescriptors = [
   "央视新闻", "新华社", "游戏日报", "证券时报", "北京电视台", "中央广播", "中国通讯社",
   "游戏媒体", "中国新闻网", "产业资讯", "第一财经", "中国证券报", "南方周末", "经济观察报"
@@ -323,6 +355,8 @@ const genericProjectDescriptors = [
   "十款",
   "10款",
   ...genericCountProjectDescriptors,
+  ...quantityOperatorProjectDescriptors,
+  ...vagueQuantityProjectDescriptors,
   "证券时报",
   "网络游戏管理办法",
   "未成年人保护条例",
@@ -411,6 +445,28 @@ const roleClosurePositiveItems = roleClosurePositiveNames.flatMap((project, inde
       ...item,
       ...(mode === "structured"
         ? { title: `国产独立游戏公布试玩 Demo fixture-${index + 1}` }
+        : {}),
+      expectedProject: project
+    };
+  })
+);
+
+const quantityGrammarNegativeItems = [
+  ...quantityOperatorProjectDescriptors,
+  ...vagueQuantityProjectDescriptors
+].flatMap((descriptor, index) =>
+  ["structured", "quoted", "unquoted"].map((mode) =>
+    genericDescriptorItem(descriptor, mode, `quantity-closure-${index}`)
+  )
+);
+
+const quantityGrammarPositiveItems = numericProjectNameControls.flatMap((project, index) =>
+  ["structured", "quoted", "unquoted"].map((mode) => {
+    const item = genericDescriptorItem(project, mode, `quantity-positive-${index}`);
+    return {
+      ...item,
+      ...(mode === "structured"
+        ? { title: `国产独立游戏公布试玩 Demo numeric-control-${index + 1}` }
         : {}),
       expectedProject: project
     };
@@ -752,16 +808,18 @@ describe("broad-media game-product candidate domain", () => {
           "mobile game", "pc game", "console game"
         ],
         category_prefix_modifier_policy: "consume_region_promotion_genre_platform_and_generic_count_modifiers",
-        generic_count_policy: "repeatable_quantifier_prefix_plus_arabic_chinese_or_indefinite_numeral_with_pre_and_post_classifier_approximation_or_series",
-        generic_count_prefixes: [
-          "大约", "约", "近", "不下", "不少于", "至少", "至多", "最多", "超过", "超", "逾", "上", "数", "第", "共", "合计", "累计"
-        ],
+        generic_count_policy: "repeatable_quantity_operator_sequence_plus_numeric_or_range_core_with_classifier_and_approximation",
+        generic_quantity_operator_policy: "repeatable_curated_operator_token_sequence",
+        generic_quantity_operator_tokens: genericQuantityOperatorTokens,
         generic_count_numeral_cores: ["arabic", "chinese_including_几", "若干"],
+        generic_count_range_connectors: genericQuantityRangeConnectors,
         generic_count_pre_classifier_suffixes: ["余", "多", "来"],
         generic_count_post_classifier_suffixes: ["以上", "以下", "以内", "左右", "上下", "起", "余"],
-        generic_count_magnitude_quantifiers: ["成百上千"],
+        generic_count_magnitude_quantifiers: ["成百上千", "成千上万"],
         generic_count_classifiers: ["款", "个", "部", "项", "批"],
         generic_batch_quantifiers: ["一批", "一系列", "若干批"],
+        generic_vague_quantity_tokens: genericVagueQuantityTokens,
+        generic_vague_quantity_policy: "segment_quantifier_token_plus_game_product_or_project_noun",
         generic_descriptor_policy: "reject_when_entire_normalized_name_segments_into_generic_tokens",
         generic_token_categories: [
           "qualifier_quantifier",
@@ -1735,6 +1793,46 @@ describe("broad-media game-product candidate domain", () => {
     assert.deepEqual(
       await observeBroadMediaCandidatePaths(countGrammarQaBlockingRows),
       expectedZeroCandidatePaths(countGrammarQaBlockingRows)
+    );
+  });
+
+  it("closes repeatable quantity operators, ranges, and vague quantifiers across every candidate path", async () => {
+    assert.deepEqual(
+      await observeBroadMediaCandidatePaths(quantityGrammarNegativeItems),
+      expectedZeroCandidatePaths(quantityGrammarNegativeItems)
+    );
+  });
+
+  it("retains numeric project titles across every name path", async () => {
+    for (const item of quantityGrammarPositiveItems) {
+      assert.equal(
+        mediaRules.extractGameProductDomainProjectName(item),
+        item.expectedProject,
+        item.link
+      );
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.link);
+      assert.deepEqual(mediaRules.classifyMediaDisposition(item), {
+        kind: "lead_candidate",
+        reason: null
+      }, item.link);
+    }
+
+    let enrichmentCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      quantityGrammarPositiveItems,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += candidates.length;
+          return candidates;
+        }
+      })
+    );
+    assert.equal(leads.length, quantityGrammarPositiveItems.length);
+    assert.equal(enrichmentCalls, quantityGrammarPositiveItems.length);
+    assert.deepEqual(
+      leads.map((lead) => lead.project),
+      quantityGrammarPositiveItems.map((item) => item.expectedProject)
     );
   });
 
