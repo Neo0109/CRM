@@ -117,13 +117,22 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Exact shimmed `npm run verify:all` passes every declared task, including frontend/backend/functions typechecks, Daily V4 317/317, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, changed-module syntax checks, and the exact frozen-main whitespace check pass.
 - Machine rules and both active documents record the company/count, lexical-category, slot-framing, and quote/document-role contracts. The updated `daily-report.json` Git blob is `2a74175267baa3cc86c8852c5a6e1d1887efa872`, and the shadow integration behavior floor matches it.
 
+### Count And Entity-Role Grammar P1 RED
+
+- Independent exact-head QA superseded coherent GREEN `8d88feecc89436fe9c3263f63c0b4e8234fc345f` despite its three successful remote checks. Six provider-free reproductions all entered candidate conversion, enrichment, and the candidate audit with extracted projects `上百款`, `10余款`, `灵犀互娱`, `祖龙娱乐`, `央视新闻`, and `关于游戏产业发展的指导意见`.
+- The bounded role-grammar repair extends whole-name count recognition to magnitude and approximation shapes, known-company affiliation roles to entertainment/media/technology suffixes, media-source entities to known sources or conservative media-role suffixes, and document-policy entities to a bounded role suffix independent of body token enumeration.
+- Three-path structured/quoted/unquoted matrices cover every new count, organization-role, media-source, and document-role shape. End-to-end assertions require exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output for the six exact QA rows.
+- Distinctive-residue controls retain real names containing ordinary count/company/media/document fragments, including `余烬10`, `灵犀互娱：星火`, `新闻大亨`, and `规划师传奇`, in addition to the existing numeric and organization controls.
+- Accepted provider/network-free RED: the focused contract now has 20 subtests, with exactly 3 failing and 17 prior controls green. The failures isolate the stale machine contract, shared three-path project-role validation, and the exact six-row end-to-end invariant. All six exact rows reproduce 6/6 candidates, 6 enrichment entries, and 6 candidate-audit records on the superseded head.
+- Both existing nonblocking P2 follow-ups remain explicitly out of scope: secondary-link evidence union and category-token-in-project selection.
+
 ## Remaining
 
-- Publish this fully verified coherent GREEN from the accepted RED parent, pin its exact remote tree/checks, and hand it to Release Captain independent QA. Do not merge.
+- Publish the tests-and-checkpoint-only role-grammar RED, implement only the bounded role grammar, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA. Do not merge.
 
 ## Next Action
 
-Publish the verified snapshot through the GitHub Git Data API, confirm every remote branch blob matches it, then wait for exact-head checks and independent QA.
+Publish the accepted role-grammar RED from exact superseded head `8d88feecc89436fe9c3263f63c0b4e8234fc345f`, then implement count/entity roles without expanding either deferred P2.
 
 ## Git Status
 
@@ -148,4 +157,5 @@ Publish the verified snapshot through the GitHub Git Data API, confirm every rem
 - Coherent expanded P1 GREEN: `91b4eedf0cf33e5f74c446357f39832c4abc7a4a` (tree `d1d22e82e570fab869d630429fba8fdf7632e7e3`).
 - Superseded validation-only expanded P1 head: `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19` (tree `664351477eae85f48a5c7758d6711ba16a197c0a`).
 - Accepted organization/framing/boundary/quote-role P1 RED: `de403f730fdacf14439073a47d18468a091634ca` (tree `ece6b543b75a462c5bfb63c9846c0de1c2246035`).
-- Fully verified organization/framing/boundary/quote-role P1 GREEN: local disposable snapshot ready to publish from accepted RED `de403f730fdacf14439073a47d18468a091634ca`.
+- Superseded organization/framing/boundary/quote-role P1 GREEN: `8d88feecc89436fe9c3263f63c0b4e8234fc345f` (tree `b19533b8ffc11f39eefb1cdb08d424b3b6dc0db3`); exact checks passed before role-grammar QA.
+- Accepted count/entity-role P1 RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `8d88feecc89436fe9c3263f63c0b4e8234fc345f`.

@@ -106,13 +106,14 @@ const domesticCompanyNames = [
   "米哈游", "散爆", "库洛", "叠纸", "沐瞳", "灵犀", "祖龙", "完美世界", "中手游",
   "B站游戏", "哔哩哔哩游戏"
 ];
+const organizationRoleTokens = [
+  "旗下", "互娱", "娱乐", "互动", "数字", "文化", "信息", "软件", "传媒", "网络", "游戏", "科技"
+];
 const organizationOnlyProjectDescriptors = domesticCompanyNames.flatMap((name) => [
   name,
-  `${name}旗下`,
-  `${name}网络`,
-  `${name}游戏`,
-  `${name}科技`,
-  `${name}旗下游戏`
+  ...organizationRoleTokens.map((role) => `${name}${role}`),
+  `${name}旗下游戏`,
+  `${name}互娱科技`
 ]);
 const genericCountProjectDescriptors = [
   "一批",
@@ -131,7 +132,23 @@ const genericCountProjectDescriptors = [
   "共十项",
   "合计10款",
   "累计十款",
-  "数十款"
+  "数十款",
+  "上百款",
+  "上千款",
+  "10余款",
+  "十多款",
+  "百来款",
+  "近百款",
+  "约百款",
+  "逾百款",
+  "超百款",
+  "至少上百款",
+  "成百上千款"
+];
+
+const mediaSourceProjectDescriptors = [
+  "央视新闻", "新华社", "游戏日报", "证券时报", "北京电视台", "中央广播", "中国通讯社",
+  "游戏媒体", "中国新闻网", "产业资讯"
 ];
 
 const genericProjectDescriptors = [
@@ -231,6 +248,7 @@ const genericProjectDescriptors = [
   "未来集团",
   "山海工作室",
   "游戏日报",
+  ...mediaSourceProjectDescriptors,
   ...organizationOnlyProjectDescriptors,
   "两款",
   "三款",
@@ -249,6 +267,7 @@ const genericProjectDescriptors = [
   "网络游戏管理决定",
   "游戏产业发展规划",
   "网络游戏治理纲要",
+  "关于游戏产业发展的指导意见",
   "报道称",
   "消息称",
   "官方",
@@ -445,6 +464,18 @@ const exactQaBlockingRows = [
   broadQaItem("Project Echo NPC game announces Demo", "qa-exact-lexical-boundary")
 ];
 
+const roleGrammarQaBlockingRows = [
+  broadQaItem("国产手游 上百款 公布 Demo", "qa-role-count-hundreds"),
+  broadQaItem("国产手游 10余款 公布 Demo", "qa-role-count-ten-plus"),
+  broadQaItem("国产手游 灵犀互娱 公布 Demo", "qa-role-company-lingxi-entertainment"),
+  broadQaItem("国产手游 祖龙娱乐 公布 Demo", "qa-role-company-zulong-entertainment"),
+  broadQaItem("国产手游《央视新闻》报道 Demo", "qa-role-media-cctv-news"),
+  broadQaItem(
+    "国产手游《关于游戏产业发展的指导意见》公布 Demo",
+    "qa-role-document-guidance-opinion"
+  )
+];
+
 describe("broad-media game-product candidate domain", () => {
   it("publishes the exact V7.2.1 machine/default source contract", async () => {
     const rules = await loadDailyRules({ rootDir: new URL("../..", import.meta.url) });
@@ -496,10 +527,12 @@ describe("broad-media game-product candidate domain", () => {
           "mobile game", "pc game", "console game"
         ],
         category_prefix_modifier_policy: "consume_region_promotion_genre_platform_and_generic_count_modifiers",
-        generic_count_policy: "optional_prefix_plus_arabic_or_chinese_numeral_plus_classifier_or_batch_quantifier",
+        generic_count_policy: "prefix_or_magnitude_plus_numeral_optional_approximation_plus_classifier_or_batch_quantifier",
         generic_count_prefixes: [
-          "第", "约", "近", "超", "超过", "逾", "至少", "至多", "最多", "共", "合计", "累计", "数"
+          "第", "约", "近", "超", "超过", "逾", "至少", "至多", "最多", "共", "合计", "累计", "数", "上"
         ],
+        generic_count_suffixes: ["余", "多", "来"],
+        generic_count_magnitude_quantifiers: ["成百上千"],
         generic_count_classifiers: ["款", "个", "部", "项"],
         generic_batch_quantifiers: ["一批", "一系列", "若干批"],
         generic_descriptor_policy: "reject_when_entire_normalized_name_segments_into_generic_tokens",
@@ -516,8 +549,12 @@ describe("broad-media game-product candidate domain", () => {
         generic_project_qualifiers: ["原创", "自研", "知名", "头部"],
         domestic_company_vocabulary_source: "shared_runtime_helper",
         domestic_company_vocabulary: domesticCompanyNames,
-        organization_affiliation_tokens: ["旗下", "网络", "游戏", "科技"],
+        organization_affiliation_tokens: organizationRoleTokens,
         organization_only_policy: "reject_known_platform_publisher_or_organization_suffix_shape",
+        media_source_entity_policy: "reject_known_source_or_bounded_media_role_suffix",
+        media_source_role_suffixes: [
+          "新闻", "日报", "时报", "周报", "晚报", "电视台", "广播", "通讯社", "媒体", "新闻网", "资讯"
+        ],
         bilibili_alias_policy: "normalize_and_segment_as_insufficient_platform_terms",
         reporting_prefix_policy: "reject_prefix_at_separator_or_end",
         quoted_entity_policy: "structured_first_then_role_filtered_event_bound_project_quote",
@@ -525,6 +562,7 @@ describe("broad-media game-product candidate domain", () => {
           "办法", "条例", "规范", "白皮书", "报告", "备忘录", "协议", "通知", "指南", "政策", "规定",
           "细则", "标准", "方案", "公约", "声明", "通报", "意见", "倡议", "要点", "决定", "规划", "纲要"
         ],
+        document_role_policy: "reject_bounded_role_suffix_without_body_segmentation",
         unquoted_slot_framing_policy: "strip_name_introducers_and_event_connectors_within_category_event_slot",
         glued_category_first_policy: "strip_new_work_introducer_only_within_category_event_slot",
         event_connector_policy: "strip_bounded_chinese_english_temporal_announcement_tokens",
@@ -855,6 +893,26 @@ describe("broad-media game-product candidate domain", () => {
         ...genericDescriptorItem("第七史诗", "structured", "named-count-prefix-residue-cn"),
         title: "国产手游 第七史诗 公布 Demo",
         project_name: "第七史诗"
+      },
+      {
+        ...genericDescriptorItem("余烬10", "structured", "named-count-suffix-residue-cn"),
+        title: "国产手游 余烬10 公布 Demo",
+        project_name: "余烬10"
+      },
+      {
+        ...genericDescriptorItem("灵犀互娱：星火", "structured", "named-company-role-residue-cn"),
+        title: "国产手游 灵犀互娱：星火 公布 Demo",
+        project_name: "灵犀互娱：星火"
+      },
+      {
+        ...genericDescriptorItem("新闻大亨", "structured", "named-media-word-residue-cn"),
+        title: "国产手游 新闻大亨 公布 Demo",
+        project_name: "新闻大亨"
+      },
+      {
+        ...genericDescriptorItem("规划师传奇", "structured", "named-document-word-residue-cn"),
+        title: "国产手游 规划师传奇 公布 Demo",
+        project_name: "规划师传奇"
       }
     ];
     const namedLeads = await buildMediaLeadCandidates(namedItems, emptyIndex(), offlineContext({
@@ -1200,6 +1258,76 @@ describe("broad-media game-product candidate domain", () => {
       extractedProjects: exactQaBlockingRows.map(() => null),
       evidence: exactQaBlockingRows.map(() => false),
       dispositions: exactQaBlockingRows.map(() => ({
+        kind: "radar_only",
+        reason: "non_game_broad_media"
+      })),
+      leadProjects: [],
+      enrichmentCalls: 0,
+      auditCandidates: 0,
+      auditRecords: 0,
+      formalRecords: 0,
+      secondPassEligible: [],
+      secondPassCalls: 0
+    });
+  });
+
+  it("keeps count, company-role, media-source, and document-role QA rows out of every candidate path", async () => {
+    const extractedProjects = roleGrammarQaBlockingRows.map((item) =>
+      mediaRules.extractGameProductDomainProjectName(item)
+    );
+    const evidence = roleGrammarQaBlockingRows.map((item) =>
+      mediaRules.hasGameProductDomainEvidence(item)
+    );
+    const dispositions = roleGrammarQaBlockingRows.map((item) =>
+      mediaRules.classifyMediaDisposition(item)
+    );
+    let enrichmentCalls = 0;
+    let secondPassCalls = 0;
+    const leads = await buildMediaLeadCandidates(
+      roleGrammarQaBlockingRows,
+      emptyIndex(),
+      offlineContext({
+        enrichMediaLeadsWithSteamContextImpl: async (candidates) => {
+          enrichmentCalls += candidates.length;
+          return candidates;
+        }
+      })
+    );
+    const artifact = buildSourcingCandidateArtifact({
+      reportDate: "2026-08-11",
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      ruleVersion: RULE_VERSION,
+      mediaSignalsSeen: roleGrammarQaBlockingRows.length,
+      mediaCandidates: leads,
+      candidatePools: { push: [], watch: [], drop: [] },
+      publishedPools: { push: [], watch: [], drop: [] }
+    });
+    const secondPass = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [],
+      mediaCandidates: leads,
+      candidateStates: new Map(),
+      capturedAt: "2026-08-11T12:00:00+08:00",
+      fetchEvidence: async () => {
+        secondPassCalls += 1;
+        return {};
+      }
+    });
+
+    assert.deepEqual({
+      extractedProjects,
+      evidence,
+      dispositions,
+      leadProjects: leads.map((lead) => lead.project),
+      enrichmentCalls,
+      auditCandidates: artifact.scan_summary.media_candidates_seen,
+      auditRecords: artifact.scan_summary.records_total,
+      formalRecords: artifact.scan_summary.formal,
+      secondPassEligible: secondPass.eligible_order,
+      secondPassCalls
+    }, {
+      extractedProjects: roleGrammarQaBlockingRows.map(() => null),
+      evidence: roleGrammarQaBlockingRows.map(() => false),
+      dispositions: roleGrammarQaBlockingRows.map(() => ({
         kind: "radar_only",
         reason: "non_game_broad_media"
       })),
