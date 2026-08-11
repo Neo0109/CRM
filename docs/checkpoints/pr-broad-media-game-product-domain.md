@@ -42,14 +42,15 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Normalized link admission now parses URL hosts/path segments. Steam/SteamDB require `app/<positive numeric>`; TapTap requires numeric `app|game`; indienova accepts a concrete non-reserved `g|game|games` ID including percent-encoding; 3839/好游快爆 accepts only numeric `a`, `shouyou`, `game(s)`, `app(s)`, or `product(s)` routes.
 - Marked domain failure now precedes downstream topic taxonomy. Dedupe conservatively preserves `candidate_domain_gate=game_product` when either duplicate carries it, while two unmarked non-Bilibili items retain the previous primary-object behavior.
 - Post-repair focused contract passes 11/11, the impacted union passes 58/58, and `npm run test:daily-v4` passes 309/309. All tests remain provider/network-free.
+- Exact `npm run verify:all` passes every declared task after the repair, including frontend/backend/functions checks, Daily V4 309/309, historical liveness replay, daily contract validation, temporary frontend build, and frozen-base diff-check.
 
 ## Remaining
 
-- Run full repository verification, JSON/config validation, and exact diff checks; publish the final repair checkpoint on the same PR. Do not merge or deploy.
+- Publish the final validation checkpoint, verify exact remote blobs/tree and PR checks, and leave PR #116 ready for Release Captain acceptance. Do not merge or deploy.
 
 ## Next Action
 
-Publish the coherent P1 GREEN checkpoint, then run the full repository and exact remote-tree gates.
+Publish the final P1 validation checkpoint, then prove the exact remote tree/check status and hand back to Release Captain.
 
 ## Git Status
 
@@ -61,3 +62,4 @@ Publish the coherent P1 GREEN checkpoint, then run the full repository and exact
 - GREEN commit parent: `6e998999c0ea5679a12fe29e6bcfb27f5fa862bc`.
 - Published coherent GREEN before review: `4faf9101eec936822e9610ef8f856846bc5f1d10`.
 - Blocking P1 RED: `2e54d5d4884f9ebcb57f29e8303c871b67e983ec`.
+- Coherent P1 GREEN before full verification: `7e73727454a80f8c0bdba9fbdbdc80972446ef6f` (tree `f38345c24aaa42ac41744500d62c8389d4450514`).
