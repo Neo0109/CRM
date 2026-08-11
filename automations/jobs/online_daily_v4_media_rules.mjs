@@ -221,7 +221,8 @@ const DOMESTIC_GAME_COMPANY_NAME_KEYS = new Set(
   DOMESTIC_GAME_COMPANY_NAMES.map((name) => name.normalize("NFKC").toLowerCase())
 );
 const ORGANIZATION_AFFILIATION_TOKENS = Object.freeze([
-  "旗下", "互娱", "娱乐", "互动", "数字", "文化", "信息", "软件", "传媒", "网络", "游戏", "科技"
+  "旗下", "互娱", "娱乐", "互动", "数字", "文化", "信息", "软件", "传媒", "网络", "游戏", "科技",
+  "股份", "控股", "事业群", "事业部", "部门", "中心"
 ]);
 
 const KNOWN_ORGANIZATION_ONLY_KEYS = new Set([
@@ -232,16 +233,25 @@ const KNOWN_ORGANIZATION_ONLY_KEYS = new Set([
 
 const KNOWN_MEDIA_SOURCE_KEYS = new Set([
   "央视新闻", "新华社", "证券时报", "it之家", "澎湃新闻", "gamelook", "游戏葡萄", "游戏陀螺",
-  "游戏日报", "触乐"
+  "游戏日报", "触乐", "第一财经", "中国证券报", "南方周末", "经济观察报"
 ]);
 
 const MEDIA_SOURCE_ROLE_SUFFIXES = Object.freeze([
-  "新闻网", "电视台", "通讯社", "新闻", "日报", "时报", "周报", "晚报", "广播", "媒体", "资讯"
+  "新闻网", "电视台", "通讯社", "证券报", "观察报", "新闻", "日报", "时报", "周报", "晚报",
+  "广播", "媒体", "资讯", "财经", "周末"
+].sort((left, right) => right.length - left.length));
+
+const MEDIA_REPORT_ROLE_PREFIX_TOKENS = Object.freeze([
+  "中国", "全国", "北京", "上海", "南方", "财经", "经济", "证券", "科技", "游戏", "产业", "观察", "新闻"
 ].sort((left, right) => right.length - left.length));
 
 const DOCUMENT_ROLE_SUFFIXES = Object.freeze([
   "办法", "条例", "规范", "白皮书", "报告", "备忘录", "协议", "通知", "指南", "政策", "规定",
   "细则", "标准", "方案", "公约", "声明", "通报", "意见", "倡议", "要点", "决定", "规划", "纲要"
+].sort((left, right) => right.length - left.length));
+
+const DOCUMENT_ROLE_QUALIFIER_TOKENS = Object.freeze([
+  "保密", "补充", "框架", "联合", "整改", "用户"
 ].sort((left, right) => right.length - left.length));
 
 const ATTRIBUTION_ROLE_SUFFIXES = Object.freeze([
@@ -260,14 +270,15 @@ const GENERIC_GAME_PROJECT_TOKENS = Object.freeze([
   // Organizations, teams, and attribution labels.
   "公司", "企业", "行业", "品牌", "官方", "开发者", "开发", "研发", "制作", "发行",
   "团队", "工作室", "制作组", "厂商", "机构", "集团", "上市", "旗下", "网络", "科技",
-  "互娱", "娱乐", "互动", "数字", "文化", "信息", "软件", "传媒",
+  "互娱", "娱乐", "互动", "数字", "文化", "信息", "软件", "传媒", "股份", "控股",
+  "事业群", "事业部", "部门", "中心",
   ...DOMESTIC_GAME_COMPANY_NAMES,
   "雪佛兰", "哔哩哔哩", "bilibili", "b站", "游戏日报",
   // Game/product/project nouns.
   ...EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS,
   "新游", "游戏", "项目", "作品", "产品", "新作", "新品", "力作", "作",
   // Generic market and ecosystem roles.
-  "市场", "平台", "产业",
+  "市场", "平台", "产业", "生态", "赛道", "板块", "领域", "品类",
   // News, update, and message labels.
   "新闻", "消息", "资讯", "动态", "公告", "更新", "报道", "称", "通告", "说明",
   // Business, licensing, and publishing labels.
@@ -281,7 +292,8 @@ const GENERIC_GAME_PROJECT_TOKENS = Object.freeze([
   "project", "projects", "product", "products", "release", "releases",
   "news", "update", "updates", "message", "messages", "announcement", "announcements",
   "information", "info", "report", "reports",
-  "market", "platform", "industry", "business", "license", "licence", "licensing", "approval", "publish", "distribution",
+  "market", "platform", "industry", "ecosystem", "sector", "category", "field", "segment",
+  "business", "license", "licence", "licensing", "approval", "publish", "distribution",
   "partnership", "cooperation", "authorization", "authorisation", "launch", "operation", "operations",
   "marketing"
 ].sort((left, right) => right.length - left.length));
@@ -293,14 +305,16 @@ function normalizeProjectDescriptorKey(value) {
     .replace(/[\s\p{P}\p{S}]+/gu, "");
 }
 
-const GENERIC_COUNT_PREFIX_PATTERN_SOURCE = "(?:超过|至少|至多|最多|合计|累计|第|约|近|超|逾|共|数)?";
-const GENERIC_COUNT_MAGNITUDE_PREFIX_PATTERN_SOURCE = "(?:上)?";
-const GENERIC_NUMERAL_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿]+))";
-const GENERIC_COUNT_APPROXIMATION_SUFFIX_PATTERN_SOURCE = "(?:余|多|来)?";
+const GENERIC_COUNT_PREFIX_TOKEN_PATTERN_SOURCE = "(?:不少于|大约|超过|至少|至多|最多|合计|累计|不下|约|近|超|逾|上|数|第|共)";
+const GENERIC_COUNT_PREFIX_SEQUENCE_PATTERN_SOURCE = `(?:${GENERIC_COUNT_PREFIX_TOKEN_PATTERN_SOURCE}){0,2}`;
+const GENERIC_NUMERAL_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿几]+)|(?:若干))";
+const GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE = "(?:余|多|来)?";
+const GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE = "(?:款|个|部|项|批)";
+const GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE = "(?:以上|以下|以内|左右|上下|起|余)?";
 const GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE = "(?:成百上千)";
-const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = `(?:${GENERIC_COUNT_PREFIX_PATTERN_SOURCE}${GENERIC_COUNT_MAGNITUDE_PREFIX_PATTERN_SOURCE}${GENERIC_NUMERAL_PATTERN_SOURCE}${GENERIC_COUNT_APPROXIMATION_SUFFIX_PATTERN_SOURCE}|${GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE})(?:款|个|部|项)`;
+const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = `(?:${GENERIC_COUNT_PREFIX_SEQUENCE_PATTERN_SOURCE}${GENERIC_NUMERAL_PATTERN_SOURCE}${GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE}${GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE}|${GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE})`;
 const GENERIC_COUNT_AT_START_PATTERN = new RegExp(`^${GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE}`, "u");
-const GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE = "(?:一批|一系列|若干批)";
+const GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE = "(?:一批|一系列|若干批|成百上千款)";
 
 function isEntirelySegmentableProjectDescriptor(
   key,
@@ -366,7 +380,12 @@ export function isMediaSourceEntity(value) {
   const key = normalizeProjectDescriptorKey(value);
   if (key.length < 2 || key.length > 48) return false;
   if (KNOWN_MEDIA_SOURCE_KEYS.has(key)) return true;
-  return MEDIA_SOURCE_ROLE_SUFFIXES.some((suffix) => key.endsWith(suffix));
+  if (MEDIA_SOURCE_ROLE_SUFFIXES.some((suffix) => key.endsWith(suffix))) return true;
+  if (!key.endsWith("报")) return false;
+  return isEntirelySegmentableProjectDescriptor(
+    key.slice(0, -1),
+    MEDIA_REPORT_ROLE_PREFIX_TOKENS
+  );
 }
 
 function isNonProjectDocumentEntity(value) {
@@ -374,7 +393,11 @@ function isNonProjectDocumentEntity(value) {
   if (key.length < 2 || key.length > 64) return false;
   const suffix = DOCUMENT_ROLE_SUFFIXES.find((candidate) => key.endsWith(candidate));
   if (!suffix) return false;
-  return key === suffix || key.length >= 5;
+  if (key === suffix || key.length >= 5) return true;
+  return isEntirelySegmentableProjectDescriptor(
+    key.slice(0, -suffix.length),
+    DOCUMENT_ROLE_QUALIFIER_TOKENS
+  );
 }
 
 function isAttributionRoleEntity(value) {
@@ -508,7 +531,7 @@ function stripUnquotedProjectSlotFraming(value) {
     /^(?:新作(?:[\s:：—–|｜-]*|(?=[\p{L}\p{N}]))|(?:项目|作品|游戏)(?:[\s:：—–|｜-]+)|代号\s+)+/iu,
     ""
   ).trim();
-  const trailingConnector = /(?:[\s:：—–|｜-]*)(?:宣布将在|宣布将|今日将|即将于|计划于|计划在|拟于|将会|plans?\s+on\s+(?:launching|announcing|revealing)|is\s+expected\s+to(?:\s+(?:announce|reveal|launch))?|is\s+going\s+to(?:\s+(?:announce|reveal|launch))?|is\s+set\s+to|expected\s+to|plans?\s+to|正式|即将|预计|有望|日前|现已|将于|宣布|首度|今日|将|officially|will|shall|announce(?:s|d|ing)?|reveal(?:s|ed|ing)?|launch(?:es|ed|ing)?|now)(?:[\s:：—–|｜-]*)$/i;
+  const trailingConnector = /(?:[\s:：—–|｜-]*)(?:计划将在|宣布将在|宣布计划|宣布将|今日将|即将于|有望于|计划于|计划在|拟于|拟在|将会|plans?\s+on\s+(?:launching|announcing|revealing)|(?:is\s+)?scheduled\s+to\s+(?:launch|announce|reveal)|will\s+be\s+(?:launching|announcing|revealing)|is\s+expected\s+to(?:\s+(?:announce|reveal|launch))?|is\s+going\s+to(?:\s+(?:announce|reveal|launch))?|is\s+set\s+to|expected\s+to|plans?\s+to|正式|即将|预计|有望|日前|现已|将于|宣布|首度|今日|将|officially|will|shall|announce(?:s|d|ing)?|reveal(?:s|ed|ing)?|launch(?:es|ed|ing)?|now)(?:[\s:：—–|｜-]*)$/i;
   let previous;
   do {
     previous = text;

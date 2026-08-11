@@ -142,15 +142,21 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Connector fixtures expand slot-only framing with `计划将在/有望于/拟在/宣布计划`, `will be launching`, and `scheduled to launch` in both project/category orders. The exact positive material row remains one candidate/enrichment/audit record but must bind `Lead.project` from `星海远征 计划将在` to exactly `星海远征`.
 - Six exact negative material rows reproduce extracted projects `若干款`, `百款左右`, `保密协议`, `第一财经`, `莉莉丝科技股份`, and `生态`; all six pass evidence, become candidates, enter enrichment, and appear in the candidate audit on the superseded head. Their accepted expectation is exact broad-media Radar-only and zero candidate/enrichment/audit/second-pass/formal output.
 - Final provider/network-free umbrella RED has 24 focused subtests with exactly 7 failures and 17 prior controls green. Failures isolate machine contract, shared three-path roles, connector binding, quote/document role selection, full count early disposition, the six-row negative materiality invariant, and the one-row positive exact binding.
+- Published the tests-and-checkpoint-only RED as `4276874b1c962ff9414bbec3bd2e846987a05631` with tree `3964dc0887667b7bd5ac6a72c923daed1b9f7a80`, parented directly to exact superseded head `ec31f5a6493f7e9199a76137c0b75b027840d8e6`.
+- Implemented one shared closed count source for whole-name segmentation and category-prefix recognition: repeatable bounded prefixes, Arabic/Chinese/indefinite numeral cores, optional pre-classifier approximation, 款、个、部、项、批 classifiers, optional post-classifier range/approximation, and bounded magnitude/series forms. Every count fuzz row now fails at the broad-media domain gate with exact `radar_only/non_game_broad_media`, before legacy downstream taxonomy.
+- Extended role validation without whole-phrase enumeration: known-company suffix-only affiliation tokens now include 股份、控股、事业群、事业部、部门、中心; media-source recognition covers the four added known sources, bounded source suffixes, and only conservative bare-`报` shapes; short document roles use bounded qualifier-plus-suffix composition while retaining `逆光协议`; ecosystem role nouns are shared across all three name paths.
+- Slot-only connector framing now binds the new Chinese and English future-announcement forms in either category order. The material positive remains one candidate/enrichment/audit record and stores `Lead.project === "星海远征"`; the six material negatives produce zero candidate, enrichment, audit/formal record, or V7.3 second-pass output.
+- Fully verified provider/network-free GREEN: focused passes 24/24; impacted contracts pass 103/103; media/dedupe/audit regressions pass 58/58; and `npm run test:daily-v4` passes 322/322. Exact shimmed `npm run verify:all` exits successfully, including all typechecks, historical replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
+- Machine/fixture JSON parsing, changed-module syntax, exact frozen-main whitespace, and behavior-floor checks pass. Machine rules and both active documents record the closed grammar. The updated `daily-report.json` Git blob is `91187a14242a0d143393b3678903bc91782e2310`, and the shadow integration floor matches it.
 - Both existing P2 follow-ups remain out of scope: secondary-link evidence union and category-token-in-project selection.
 
 ## Remaining
 
-- Publish the tests-and-checkpoint-only closed-grammar RED, implement only the bounded count/entity/connector grammar, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA. Do not merge.
+- Publish the exact verified coherent GREEN from the accepted closed-grammar RED, wait its exact remote checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
 
 ## Next Action
 
-Publish the accepted closed-grammar RED from exact superseded head `ec31f5a6493f7e9199a76137c0b75b027840d8e6`, then implement the reusable grammar without expanding either deferred P2.
+Publish the verified disposable snapshot as one coherent GREEN child of `4276874b1c962ff9414bbec3bd2e846987a05631`, confirm the frozen-base compare and remote blob parity, then wait exact-head checks before independent QA.
 
 ## Git Status
 
@@ -181,4 +187,5 @@ Publish the accepted closed-grammar RED from exact superseded head `ec31f5a6493f
 - Accepted expanded role-grammar RED: `e88606403565818aeb0c971ca1ceb3e5148306d5` (tree `9fa2358ca26a802db6de8db2ecd8a3832e113328`).
 - Fully verified role-grammar GREEN: local disposable snapshot ready to publish from exact expanded RED `e88606403565818aeb0c971ca1ceb3e5148306d5`.
 - Superseded role-grammar GREEN: `ec31f5a6493f7e9199a76137c0b75b027840d8e6` (tree `b3c1515d139c262b91a54de7b6397e658ae5db20`); exact checks passed before closed-grammar QA.
-- Accepted closed count/entity-role RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `ec31f5a6493f7e9199a76137c0b75b027840d8e6`.
+- Accepted closed count/entity-role RED: `4276874b1c962ff9414bbec3bd2e846987a05631` (tree `3964dc0887667b7bd5ac6a72c923daed1b9f7a80`).
+- Fully verified closed-grammar GREEN: local disposable snapshot ready to publish from exact accepted RED `4276874b1c962ff9414bbec3bd2e846987a05631`.

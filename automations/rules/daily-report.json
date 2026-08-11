@@ -296,27 +296,44 @@
         "console game"
       ],
       "category_prefix_modifier_policy": "consume_region_promotion_genre_platform_and_generic_count_modifiers",
-      "generic_count_policy": "prefix_or_magnitude_plus_numeral_optional_approximation_plus_classifier_or_batch_quantifier",
+      "generic_count_policy": "repeatable_quantifier_prefix_plus_arabic_chinese_or_indefinite_numeral_with_pre_and_post_classifier_approximation_or_series",
       "generic_count_prefixes": [
-        "第",
+        "大约",
         "约",
         "近",
-        "超",
-        "超过",
-        "逾",
+        "不下",
+        "不少于",
         "至少",
         "至多",
         "最多",
+        "超过",
+        "超",
+        "逾",
+        "上",
+        "数",
+        "第",
         "共",
         "合计",
-        "累计",
-        "数",
-        "上"
+        "累计"
       ],
-      "generic_count_suffixes": [
+      "generic_count_numeral_cores": [
+        "arabic",
+        "chinese_including_几",
+        "若干"
+      ],
+      "generic_count_pre_classifier_suffixes": [
         "余",
         "多",
         "来"
+      ],
+      "generic_count_post_classifier_suffixes": [
+        "以上",
+        "以下",
+        "以内",
+        "左右",
+        "上下",
+        "起",
+        "余"
       ],
       "generic_count_magnitude_quantifiers": [
         "成百上千"
@@ -325,7 +342,8 @@
         "款",
         "个",
         "部",
-        "项"
+        "项",
+        "批"
       ],
       "generic_batch_quantifiers": [
         "一批",
@@ -386,7 +404,13 @@
         "传媒",
         "网络",
         "游戏",
-        "科技"
+        "科技",
+        "股份",
+        "控股",
+        "事业群",
+        "事业部",
+        "部门",
+        "中心"
       ],
       "organization_only_policy": "reject_known_platform_publisher_or_organization_suffix_shape",
       "media_source_entity_policy": "reject_known_source_or_bounded_media_role_suffix",
@@ -401,8 +425,13 @@
         "通讯社",
         "媒体",
         "新闻网",
-        "资讯"
+        "资讯",
+        "财经",
+        "证券报",
+        "周末",
+        "观察报"
       ],
+      "media_source_bare_report_policy": "reject_only_known_media_report_shape_not_arbitrary_name_suffix",
       "attribution_role_policy": "reject_bounded_source_or_attribution_phrase_suffix",
       "attribution_role_suffixes": [
         "消息",
@@ -418,9 +447,19 @@
         "市场",
         "平台",
         "产业",
+        "生态",
+        "赛道",
+        "板块",
+        "领域",
+        "品类",
         "market",
         "platform",
-        "industry"
+        "industry",
+        "ecosystem",
+        "sector",
+        "category",
+        "field",
+        "segment"
       ],
       "bilibili_alias_policy": "normalize_and_segment_as_insufficient_platform_terms",
       "reporting_prefix_policy": "reject_prefix_at_separator_or_end",
@@ -450,7 +489,15 @@
         "规划",
         "纲要"
       ],
-      "document_role_policy": "reject_bounded_role_suffix_without_body_segmentation",
+      "document_role_qualifiers": [
+        "保密",
+        "补充",
+        "框架",
+        "联合",
+        "整改",
+        "用户"
+      ],
+      "document_role_policy": "reject_role_suffix_with_bounded_length_or_generic_qualifier",
       "unquoted_slot_framing_policy": "strip_name_introducers_and_event_connectors_within_category_event_slot",
       "glued_category_first_policy": "strip_new_work_introducer_only_within_category_event_slot",
       "event_connector_policy": "strip_bounded_chinese_english_temporal_announcement_phrases",
