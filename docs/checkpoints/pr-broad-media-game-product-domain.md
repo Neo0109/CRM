@@ -189,15 +189,20 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - The repair contract replaces the separate whole-count and category-prefix regexes with one shared generic-descriptor dynamic program. Its numeral transition is enabled only inside generic segmentation and accepts Arabic, Chinese, `几`, or `若干`; quantity connectors, classifiers, magnitude, vague, rank/ordinal, and English roles are tokens. A longest-prefix `isGenericCategoryPrefix` split must reuse the same segmentation before an explicit category; bare `游戏` remains insufficient.
 - Distinctive residue remains authoritative. The existing numeric-name controls plus `十万个冷笑话`, `所有人的天空`, `十大掌门人`, `前十传奇`, and `众多回忆` must remain eligible across all three paths; seven new prefix/category controls require the shared segmentation without consuming the distinct structured project.
 - Accepted provider/network-free RED has 30 focused subtests: 26 prior and distinctive-residue controls pass, while exactly 4 fail in the machine contract, the 219-row shared quantity matrix, the 21-row material invariant, and behavioral category-prefix reuse. Role closure, connectors, URL integrity, dedupe, animation, candidate audit, Radar diversity, and Steam identity remain green.
+- Implemented the bounded GREEN with one shared dynamic program. The generic numeral transition consumes Arabic, Chinese, `几`, or `若干` only while generic segmentation is active; quantity operators, connectors, classifiers, approximation/range, magnitude/count idioms, vague quantifiers, rank/ordinal frames, and English equivalents are ordinary composable role tokens.
+- Chinese category recognition now tests longest prefix splits through that same dynamic program plus approved modifiers before accepting an explicit category. A quantity-signal state requires either a numeral transition or a substantive quantity token when the prefix is not already an approved modifier, preventing an operator fragment such as `高` from exposing `端游` inside `高端游戏`. Bare `游戏` remains outside the explicit vocabulary.
+- Provider/network-free GREEN is complete: focused 30/30, impacted contracts 109/109, media/dedupe/audit regressions 64/64, and Daily V4 328/328. The 219-row matrix and 21-row material invariant produce exact broad-media Radar-only dispositions and zero downstream paths; all 33 distinctive-name paths and 14 category-prefix controls pass.
+- Machine rules and both active documents describe the shared DP, dynamic numeral transition, quantity-role tokenization, and longest-prefix reuse without claiming a separate count regex. The updated `daily-report.json` Git blob is `032133358a01ce11a0cdd49160c4c8328c48e166`, and the shadow integration behavior floor matches it.
+- Exact shimmed `npm run verify:all` exits successfully, including frontend/backend/functions typechecks, Daily V4 328/328, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, all 17 changed-module syntax checks, exact behavior hash, and the frozen-main whitespace check also pass.
 - Both existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
 
 ## Remaining
 
-- Publish the coherent accepted shared-quantity RED from exact superseded head `222d8ac724fc60a506a74eb35c13c07b973a3d4b`, implement the shared dynamic segmentation, update machine rules and active docs to match the implementation, then rerun focused and full gates. Do not merge.
+- Publish one coherent GREEN child of accepted RED `0c76054e318eabb241fe3704c32d53de3e266167`, verify frozen-base compare and 22/22 remote blob parity, wait its exact checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
 
 ## Next Action
 
-Publish the exact tests-and-checkpoint-only RED, verify its parent/tree/parity, then implement one shared descriptor/category-prefix segmentation path before rerunning full validation.
+Publish and pin the exact verified shared-DP GREEN, then wait its exact remote checks before independent QA.
 
 ## Git Status
 
@@ -239,4 +244,5 @@ Publish the exact tests-and-checkpoint-only RED, verify its parent/tree/parity, 
 - Final accepted quantity/category-prefix RED: `12e4b39cce0b0c8641cecbc09d01c912b5451e40` (tree `0c062b2f64c03a96553fba757e9f03af1767fda9`).
 - Fully verified complete-quantity GREEN: `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd` (tree `5c40111de79bf88ddcbcd03214adfa3ce5e31744`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
 - Superseded final status-only head: `222d8ac724fc60a506a74eb35c13c07b973a3d4b` (tree `5d748c060336f99de6ea8f347c6c4459d51700f0`); exact checks passed before shared quantity-segmentation QA.
-- Accepted shared quantity-segmentation RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `222d8ac724fc60a506a74eb35c13c07b973a3d4b`.
+- Accepted shared quantity-segmentation RED: `0c76054e318eabb241fe3704c32d53de3e266167` (tree `06b12db1ba7aede3e6a36fee8133f7ac509ec4bc`), exact parent `222d8ac724fc60a506a74eb35c13c07b973a3d4b`; frozen compare and 22/22 parity passed.
+- Fully verified shared-DP GREEN: local disposable snapshot ready to publish from exact accepted RED `0c76054e318eabb241fe3704c32d53de3e266167`.

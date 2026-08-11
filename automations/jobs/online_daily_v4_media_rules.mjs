@@ -324,41 +324,69 @@ const GENERIC_QUANTITY_OPERATOR_TOKENS = Object.freeze([
   "不", "超", "过", "足", "满", "低", "少", "小", "于", "仅", "逾", "好", "至", "最", "下",
   "到", "上", "数", "第", "乎", "致", "概", "出", "止", "只"
 ].sort((left, right) => right.length - left.length));
-const GENERIC_QUANTITY_OPERATOR_PATTERN_SOURCE = `(?:${GENERIC_QUANTITY_OPERATOR_TOKENS.join("|")})`;
-const GENERIC_QUANTITY_OPERATOR_SEQUENCE_PATTERN_SOURCE = `(?:${GENERIC_QUANTITY_OPERATOR_PATTERN_SOURCE})*`;
-const GENERIC_NUMERAL_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿几]+)|(?:若干))";
-const GENERIC_COUNT_RANGE_PATTERN_SOURCE = `(?:(?:至|到)${GENERIC_NUMERAL_PATTERN_SOURCE})?`;
-const GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE = "(?:余|多|来)?";
-const GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE = "(?:款|个|部|项|批)";
-const GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE = "(?:以上|以下|以内|左右|上下|起|余)?";
-const GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE = "(?:成百上千|成千上万)";
-const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = `(?:${GENERIC_QUANTITY_OPERATOR_SEQUENCE_PATTERN_SOURCE}${GENERIC_NUMERAL_PATTERN_SOURCE}${GENERIC_COUNT_RANGE_PATTERN_SOURCE}${GENERIC_COUNT_PRE_CLASSIFIER_SUFFIX_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE}${GENERIC_COUNT_POST_CLASSIFIER_SUFFIX_PATTERN_SOURCE}|${GENERIC_COUNT_MAGNITUDE_QUANTIFIER_PATTERN_SOURCE}${GENERIC_COUNT_CLASSIFIER_PATTERN_SOURCE})`;
-const GENERIC_COUNT_AT_START_PATTERN = new RegExp(`^${GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE}`, "u");
-const GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE = "(?:一批|一系列|若干批|成百上千款|成千上万款)";
+const GENERIC_QUANTITY_ROLE_TOKENS = Object.freeze([
+  ...GENERIC_QUANTITY_OPERATOR_TOKENS,
+  // Count connectors, classifiers, range/approximation roles, and ranking frames.
+  "以上", "以下", "以内", "左右", "上下", "数以", "约摸", "差不离", "首批", "最后",
+  "起",
+  "前", "头", "余", "来", "且", "款", "个", "部", "项", "批", "位", "的", "佳", "系列",
+  // Magnitude and count idioms remain tokens rather than complete descriptor denylist entries.
+  "成百上千", "成千上万", "不计其数", "不胜枚举", "难以计数", "数不清", "屈指可数", "寥寥",
+  // Vague quantity roles can compose with existing game/product/project nouns.
+  "绝大多数", "大多数", "一小部分", "少部分", "一部分", "大批量",
+  "许多", "诸多", "众多", "不少", "各类", "各种", "各款", "各个", "部分", "成批", "批量",
+  "全部", "所有",
+  // English quantity/rank roles after NFKC, case, whitespace, and punctuation normalization.
+  "morethan", "fewerthan", "around", "dozensof", "hundredsof", "mobilegames", "top"
+].sort((left, right) => right.length - left.length));
+const GENERIC_NUMERAL_AT_START_PATTERN = /^(?:\d+|[零〇一二两三四五六七八九十百千万亿几]+|若干)/u;
+const GENERIC_GAME_PROJECT_SEGMENT_TOKENS = Object.freeze([
+  ...new Set([...GENERIC_GAME_PROJECT_TOKENS, ...GENERIC_QUANTITY_ROLE_TOKENS])
+].sort((left, right) => right.length - left.length));
+const GENERIC_CATEGORY_PREFIX_SEGMENT_TOKENS = Object.freeze([
+  ...new Set([...CATEGORY_PREFIX_MODIFIER_TOKENS, ...GENERIC_QUANTITY_ROLE_TOKENS])
+].sort((left, right) => right.length - left.length));
+const GENERIC_CATEGORY_PREFIX_QUANTITY_SIGNAL_TOKENS = new Set([
+  "成百上千", "成千上万", "不计其数", "不胜枚举", "难以计数", "数不清", "屈指可数", "寥寥",
+  "绝大多数", "大多数", "一小部分", "少部分", "一部分", "大批量",
+  "许多", "诸多", "众多", "不少", "各类", "各种", "各款", "各个", "部分", "成批", "批量",
+  "全部", "所有", "dozensof", "hundredsof"
+]);
+const REGION_CATEGORY_SEGMENT_TOKENS = Object.freeze([
+  ...new Set([...REGION_CATEGORY_PREFIX_TOKENS, ...GENERIC_QUANTITY_ROLE_TOKENS])
+].sort((left, right) => right.length - left.length));
 
 function isEntirelySegmentableProjectDescriptor(
   key,
   tokens,
-  { allowGenericCount = false, allowCalendarYear = false } = {}
+  {
+    allowGenericNumeral = false,
+    allowCalendarYear = false,
+    signalTokens = null,
+    requireSignal = false
+  } = {}
 ) {
   const reachable = new Uint8Array(key.length + 1);
   reachable[0] = 1;
   for (let index = 0; index < key.length; index += 1) {
-    if (!reachable[index]) continue;
-    if (allowGenericCount) {
-      const count = key.slice(index).match(GENERIC_COUNT_AT_START_PATTERN)?.[0];
-      if (count) reachable[index + count.length] = 1;
+    const state = reachable[index];
+    if (!state) continue;
+    if (allowGenericNumeral) {
+      const numeral = key.slice(index).match(GENERIC_NUMERAL_AT_START_PATTERN)?.[0];
+      if (numeral) reachable[index + numeral.length] |= state | 2;
     }
     if (allowCalendarYear) {
       const year = key.slice(index).match(/^(?:19|20)\d{2}/)?.[0];
-      if (year) reachable[index + year.length] = 1;
+      if (year) reachable[index + year.length] |= state;
     }
     for (const token of tokens) {
       if (!key.startsWith(token, index)) continue;
-      reachable[index + token.length] = 1;
+      reachable[index + token.length] |= state | (signalTokens?.has(token) ? 2 : 0);
     }
   }
-  return reachable[key.length] === 1;
+  return requireSignal
+    ? Boolean(reachable[key.length] & 2)
+    : Boolean(reachable[key.length]);
 }
 
 function isGenericGameProjectDescriptor(value) {
@@ -366,8 +394,8 @@ function isGenericGameProjectDescriptor(value) {
   if (!key) return true;
   return isEntirelySegmentableProjectDescriptor(
     key,
-    GENERIC_GAME_PROJECT_TOKENS,
-    { allowGenericCount: true }
+    GENERIC_GAME_PROJECT_SEGMENT_TOKENS,
+    { allowGenericNumeral: true }
   );
 }
 
@@ -376,8 +404,8 @@ function isOnlyRegionOrCategoryModifiers(value) {
   if (!key) return false;
   return isEntirelySegmentableProjectDescriptor(
     key,
-    REGION_CATEGORY_PREFIX_TOKENS,
-    { allowGenericCount: true }
+    REGION_CATEGORY_SEGMENT_TOKENS,
+    { allowGenericNumeral: true }
   );
 }
 
@@ -458,17 +486,6 @@ function escapeRegexToken(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-const CATEGORY_PREFIX_PATTERN_SOURCE = [
-  ...CATEGORY_PREFIX_MODIFIER_TOKENS.map(escapeRegexToken),
-  GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE,
-  GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE
-].join("|");
-const CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE = "[\\s·・:：—–|｜-]*";
-const CHINESE_GAME_CATEGORY_PATTERN_SOURCE = `(?:${EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS.map(escapeRegexToken).join("|")})`;
-const CHINESE_GAME_CATEGORY_AT_START_PATTERN = new RegExp(
-  `^(?:(?:${CATEGORY_PREFIX_PATTERN_SOURCE})${CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE})*${CHINESE_GAME_CATEGORY_PATTERN_SOURCE}`,
-  "i"
-);
 const ENGLISH_GAME_CATEGORY_AT_START_PATTERN = /^(?:mobile\s+game|pc\s+game|console\s+game)/i;
 
 function matchExplicitGameProductCategory(value) {
@@ -477,7 +494,7 @@ function matchExplicitGameProductCategory(value) {
     const currentCodePoint = String.fromCodePoint(text.codePointAt(index));
     if (isCategoryLexicalStart(text, index)) {
       const tail = text.slice(index);
-      const chinese = CHINESE_GAME_CATEGORY_AT_START_PATTERN.exec(tail)?.[0] ?? "";
+      const chinese = matchChineseGameCategoryAtStart(tail);
       if (chinese) return categoryMatch(chinese, index);
 
       const english = ENGLISH_GAME_CATEGORY_AT_START_PATTERN.exec(tail)?.[0] ?? "";
@@ -488,6 +505,40 @@ function matchExplicitGameProductCategory(value) {
     index += currentCodePoint.length;
   }
   return null;
+}
+
+function matchChineseGameCategoryAtStart(value) {
+  const text = String(value ?? "");
+  const lowerText = text.toLowerCase();
+  for (let categoryIndex = 0; categoryIndex < text.length;) {
+    const prefix = text.slice(0, categoryIndex);
+    if (!prefix || isGenericCategoryPrefix(prefix)) {
+      for (const category of EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS) {
+        if (!lowerText.startsWith(category, categoryIndex)) continue;
+        return text.slice(0, categoryIndex + category.length);
+      }
+    }
+    const currentCodePoint = String.fromCodePoint(text.codePointAt(categoryIndex));
+    categoryIndex += currentCodePoint.length;
+  }
+  return "";
+}
+
+function isGenericCategoryPrefix(value) {
+  const key = normalizeProjectDescriptorKey(value);
+  if (!key) return true;
+  if (isEntirelySegmentableProjectDescriptor(key, CATEGORY_PREFIX_MODIFIER_TOKENS)) {
+    return true;
+  }
+  return isEntirelySegmentableProjectDescriptor(
+    key,
+    GENERIC_CATEGORY_PREFIX_SEGMENT_TOKENS,
+    {
+      allowGenericNumeral: true,
+      signalTokens: GENERIC_CATEGORY_PREFIX_QUANTITY_SIGNAL_TOKENS,
+      requireSignal: true
+    }
+  );
 }
 
 function isCategoryLexicalStart(text, index) {
