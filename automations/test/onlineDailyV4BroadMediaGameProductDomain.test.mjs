@@ -473,6 +473,20 @@ const quantityGrammarPositiveItems = numericProjectNameControls.flatMap((project
   })
 );
 
+const quantityCategoryPrefixPositiveItems = [
+  ["共计10款", "星海远征"],
+  ["成千上万款", "雾港纪事"],
+  ["约有10款", "潮汐回声"],
+  ["不超过10款", "逆光旅人"],
+  ["仅有10款", "深空计划"],
+  ["10到20款", "月影档案"],
+  ["少量", "余烬之城"]
+].map(([prefix, project], index) => broadQaItem(
+  `${prefix}国产手游公布 Demo`,
+  `quantity-category-prefix-positive-${index + 1}`,
+  { project_name: project, expectedProject: project }
+));
+
 const modifierNoNameTitles = [
   "国产手游 一家开发团队最新更新 开启 Playtest",
   "国产端游 官方最新消息 公布 Demo",
@@ -1834,6 +1848,17 @@ describe("broad-media game-product candidate domain", () => {
       leads.map((lead) => lead.project),
       quantityGrammarPositiveItems.map((item) => item.expectedProject)
     );
+  });
+
+  it("reuses the quantity grammar as a category prefix without consuming a distinct project", () => {
+    for (const item of quantityCategoryPrefixPositiveItems) {
+      assert.equal(
+        mediaRules.extractGameProductDomainProjectName(item),
+        item.expectedProject,
+        item.link
+      );
+      assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.link);
+    }
   });
 
   it("keeps the expanded six-row role materiality fixture out of every candidate path", async () => {
