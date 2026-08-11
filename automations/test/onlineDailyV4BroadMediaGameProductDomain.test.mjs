@@ -108,6 +108,18 @@ describe("broad-media game-product candidate domain", () => {
     assert.equal(RULE_VERSION, "sourcing-rules-v7.2.1-media-product-domain");
     assert.equal(rules.rule_version, RULE_VERSION);
     assert.equal(rules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2_1.md");
+    assert.equal(
+      rules.broad_media_candidate_domain_gate.structured_identity_constraints.platform_ids,
+      "positive_numeric"
+    );
+    assert.deepEqual(
+      rules.broad_media_candidate_domain_gate.structured_identity_constraints.game_id_namespaces,
+      ["steam", "taptap", "indienova", "kuaibao", "3839"]
+    );
+    assert.deepEqual(
+      rules.broad_media_candidate_domain_gate.structured_identity_constraints.kuaibao_product_routes,
+      ["a", "shouyou", "game", "games", "app", "apps", "product", "products"]
+    );
     for (const name of broadSourceNames) {
       assert.equal(
         rules.media_sources.find((source) => source.name === name)?.candidate_domain_gate,
@@ -162,6 +174,15 @@ describe("broad-media game-product candidate domain", () => {
       enrichMediaLeadsWithSteamContextImpl: async (leads) => leads
     }));
     assert.equal(positiveLeads.length, positives.length);
+    assert.equal(
+      mediaRules.extractExplicitUnquotedGameProjectName("国产独立游戏 星海远征 公布试玩 Demo"),
+      "星海远征"
+    );
+    assert.equal(
+      positiveLeads.find((lead) => lead._mediaItem?.link === "https://example.test/unquoted-starsea-demo")?.project,
+      "星海远征",
+      "the same pure extractor must feed the stored Lead project for a tagged broad-media item"
+    );
 
     assert.equal(
       mediaRules.hasGameProductDomainEvidence({
@@ -209,6 +230,10 @@ describe("broad-media game-product candidate domain", () => {
     for (const item of fixture.unquoted_title_positive) {
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.title);
       assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.title);
+      assert.notEqual(mediaRules.extractExplicitUnquotedGameProjectName(item.title), null, item.title);
+    }
+    for (const item of fixture.generic_game_product_no_name) {
+      assert.equal(mediaRules.extractExplicitUnquotedGameProjectName(item.title), null, item.title);
     }
   });
 
@@ -285,6 +310,14 @@ describe("broad-media game-product candidate domain", () => {
       assert.deepEqual(leads, []);
       assert.equal(enrichmentCalls, 0);
     }
+
+    const plainPrimary = { ...unmarked, link: "https://example.test/plain-dedupe-control" };
+    const plainSecondary = { ...plainPrimary, source: "游戏葡萄" };
+    assert.strictEqual(
+      dedupeMediaSignals([plainPrimary, plainSecondary])[0],
+      plainPrimary,
+      "two unmarked non-Bilibili duplicates retain the legacy primary object byte-semantics"
+    );
   });
 
   it("keeps failed broad media in Radar but out of candidate, enrichment, audit, second pass, and formal Lead", async () => {

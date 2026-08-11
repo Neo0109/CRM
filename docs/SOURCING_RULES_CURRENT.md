@@ -230,9 +230,10 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 ## V7.2.1 Broad-Media Game-Product Domain
 
 - IT之家、证券时报、澎湃新闻 carry `candidate_domain_gate: "game_product"`; game-vertical sources are unchanged.
-- A marked broad-media item may enter candidate routing only with a normalized Steam/SteamDB/TapTap/indienova/好游快爆 identity or structured game ID, or with all three semantic elements: concrete project name, explicit game-product category, and a concrete Demo/试玩/实机/Playtest/测试/商店页/愿望单/版号/首曝/开发日志 event.
+- A marked broad-media item may enter candidate routing only with a normalized Steam/SteamDB identity, a numeric TapTap product path, a concrete non-reserved indienova product path, a canonical numeric 3839/好游快爆 product route, or a positive numeric/namespaced structured game ID; alternatively it needs all three semantic elements: concrete project name, explicit game-product category, and a concrete Demo/试玩/实机/Playtest/测试/商店页/愿望单/版号/首曝/开发日志 event. Missing/non-string/literal-null, generic, and event-only names are rejected; a conservative explicit unquoted category-name-event extractor feeds the stored tagged-media Lead project.
 - `B站`、`官方`、`授权`、`发行`、`合作`、`需求`、`上线` alone or combined never satisfy the domain gate.
 - Failure is `radar_only` with reason `non_game_broad_media`; the item stays available to Radar diversity but never enters strict, China-joint, expanded, rescue, enrichment, candidate audit, V7.3 second pass, or a formal Lead lane.
+- Marked-source domain failure runs before unresolved-store, film, animation, update, approval, and other downstream taxonomy, so every failure uses the exact broad-media reason. During dedupe, `candidate_domain_gate: "game_product"` has conservative precedence if either duplicate carries it; two unmarked signals retain legacy behavior.
 - Radar keeps its existing schema. The reason code is represented in classifier diagnostics and rendered as explicit non-game context in the Radar card text.
 - Strict, expanded, and rescue routing is disjoint, so one deduped media item is converted and enriched at most once.
 

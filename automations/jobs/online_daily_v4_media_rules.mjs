@@ -69,17 +69,16 @@ export function hasGameProductDomainEvidence(item) {
     ...(Array.isArray(evidence?.urls) ? evidence.urls : []),
     ...(Array.isArray(evidence?.website_urls) ? evidence.website_urls : [])
   ].join(" ");
-  const structuredIds = [
+  const numericPlatformIds = [
     item?.steam_app_id,
     item?.steamAppId,
-    item?.game_id,
-    item?.gameId,
     item?.taptap_app_id,
     item?.taptapAppId,
     evidence?.steam_app_id,
     ...(Array.isArray(evidence?.steam_app_ids) ? evidence.steam_app_ids : [])
   ];
-  if (structuredIds.some(isStructuredGameId)) return true;
+  if (numericPlatformIds.some(isPositiveNumericGameId)) return true;
+  if ([item?.game_id, item?.gameId].some(isRecognizedGenericGameId)) return true;
 
   const identityText = `${text} ${structuredUrls}`;
   if (hasNormalizedGameProductLink(identityText)) return true;
@@ -89,20 +88,70 @@ export function hasGameProductDomainEvidence(item) {
     && hasConcreteGameProductEvent(text);
 }
 
-function isStructuredGameId(value) {
-  if (typeof value !== "string" && typeof value !== "number") return false;
-  const text = String(value ?? "").trim();
-  if (/^(?:true|false|null|undefined|unknown)$/i.test(text)) return false;
-  return /^[1-9]\d*$/.test(text)
-    || /^[a-z0-9][a-z0-9:_-]{2,63}$/i.test(text);
+function isPositiveNumericGameId(value) {
+  if (typeof value === "number") return Number.isSafeInteger(value) && value > 0;
+  if (typeof value !== "string") return false;
+  return /^[1-9]\d*$/.test(value.trim());
+}
+
+function isRecognizedGenericGameId(value) {
+  if (isPositiveNumericGameId(value)) return true;
+  if (typeof value !== "string") return false;
+  return /^(?:steam|taptap|indienova|kuaibao|3839):[a-z0-9][a-z0-9._-]{0,127}$/i.test(value.trim());
 }
 
 function hasNormalizedGameProductLink(value) {
-  const text = String(value ?? "");
-  return /https?:\/\/(?:store\.steampowered\.com|steamdb\.info)\/app\/[1-9]\d*(?=[/?#\s]|$)/i.test(text)
-    || /https?:\/\/(?:www\.)?taptap\.(?:cn|com)\/(?:app|game)\/[a-z0-9_-]+(?=[/?#\s]|$)/i.test(text)
-    || /https?:\/\/(?:www\.)?indienova\.com\/(?:games?|game|g)\/[a-z0-9_-]+(?=[/?#\s]|$)/i.test(text)
-    || /https?:\/\/(?:[^/]+\.)?(?:3839\.com|haoyoukuaibao\.com)\/[a-z0-9/_-]+/i.test(text);
+  const urls = String(value ?? "").match(/https?:\/\/[^\s<>"'，。；]+/gi) ?? [];
+  return urls.some(isNormalizedGameProductUrl);
+}
+
+function isNormalizedGameProductUrl(rawValue) {
+  try {
+    const url = new URL(String(rawValue).replace(/[)\]}>、!?！？“”’]+$/g, ""));
+    const host = url.hostname.toLowerCase().replace(/^(?:www|m)\./, "");
+    const segments = url.pathname.split("/").filter(Boolean).map(decodeUrlPathSegment);
+    if (segments.includes(null)) return false;
+
+    if (["store.steampowered.com", "steamdb.info"].includes(host)) {
+      return segments[0]?.toLowerCase() === "app" && isPositiveNumericGameId(segments[1]);
+    }
+    if (["taptap.cn", "taptap.com"].includes(host)) {
+      return ["app", "game"].includes(segments[0]?.toLowerCase())
+        && isPositiveNumericGameId(segments[1]);
+    }
+    if (host === "indienova.com") {
+      return ["g", "game", "games"].includes(segments[0]?.toLowerCase())
+        && isConcreteIndienovaProductId(segments[1]);
+    }
+    if (["3839.com", "haoyoukuaibao.com"].includes(host)) {
+      return isCanonicalKuaibaoProductPath(segments);
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function decodeUrlPathSegment(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return null;
+  }
+}
+
+function isConcreteIndienovaProductId(value) {
+  const text = String(value ?? "").trim();
+  if (text.length < 2 || text.length > 128) return false;
+  if (/^(?:news|article|articles|group|groups|search|tag|tags|index|games?|apps?|products?)$/i.test(text)) return false;
+  return /^[\p{L}\p{N}][\p{L}\p{N} ._'’&-]+$/u.test(text) && /[\p{L}\p{N}]/u.test(text);
+}
+
+function isCanonicalKuaibaoProductPath(segments) {
+  if (segments.length !== 2) return false;
+  if (!/^(?:a|shouyou|games?|apps?|products?)$/i.test(String(segments[0] ?? ""))) return false;
+  const id = String(segments[1] ?? "").replace(/\.html?$/i, "");
+  return isPositiveNumericGameId(id);
 }
 
 function hasExtractableConcreteGameProject(item, text) {
@@ -111,17 +160,54 @@ function hasExtractableConcreteGameProject(item, text) {
     item?.projectName,
     item?.game_name,
     item?.gameName
-  ].map((value) => normalizeDisplayText(value)).find(isConcreteProjectName);
+  ].filter((value) => typeof value === "string")
+    .map((value) => normalizeDisplayText(value))
+    .find(isConcreteProjectName);
   if (structuredProject) return true;
 
-  return /(?:独立游戏|国产游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|手游|端游|单机游戏|mobile\s+game|pc\s+game|console\s+game)\s*[：:]?\s*《[^》]{2,48}》/i.test(text)
-    || /《[^》]{2,48}》[^。；.!?]{0,24}(?:独立游戏|国产游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|手游|端游|单机游戏|mobile\s+game|pc\s+game|console\s+game)/i.test(text);
+  const quotedProject = String(text ?? "").match(/《([^》]{2,48})》/)?.[1];
+  if (isConcreteProjectName(quotedProject)) return true;
+
+  return Boolean(extractExplicitUnquotedGameProjectName(item?.title));
 }
 
 function isConcreteProjectName(value) {
+  if (typeof value !== "string") return false;
   const text = normalizeDisplayText(value);
   if (text.length < 2 || text.length > 64) return false;
-  return !/^(?:游戏|项目|新作|新品|手游|端游|主机游戏|独立游戏|网络游戏|未命名|unknown|untitled)$/i.test(text);
+  if (/^(?:undefined|null|unknown|untitled|未命名)$/i.test(text)) return false;
+  const residue = text
+    .replace(/(?:国产|中国|国人)?(?:独立游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏)|国产游戏|手游|端游|游戏项目|游戏|项目|新作|新品/gi, " ")
+    .replace(/\b(?:demo|playtest)\b/gi, " ")
+    .replace(/公开|公布|开放|开启|获批|通过|过审|发布|推出|上线|试玩|实机|测试|商店页|愿望单|版号|首曝|开发日志/g, " ")
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+  return residue.length >= 2 && /\p{L}/u.test(residue);
+}
+
+export function extractExplicitUnquotedGameProjectName(value) {
+  const title = normalizeDisplayText(value);
+  if (!title || /[《》【】]/.test(title)) return null;
+  const categoryPattern = /(?:(?:国产|中国|国人)?(?:独立游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏)|国产游戏|手游|端游|mobile\s+game|pc\s+game|console\s+game)/i;
+  const category = categoryPattern.exec(title);
+  if (!category) return null;
+  const afterCategory = title.slice(category.index + category[0].length);
+  const event = /(?:公开|公布|开放|开启|获批|通过|过审|发布|推出)?\s*(?:\bdemo\b|试玩|实机|\bplaytest\b|测试|商店页|愿望单|版号|首曝|开发日志)/i.exec(afterCategory);
+  if (!event) return null;
+
+  const between = cleanUnquotedProjectCandidate(afterCategory.slice(0, event.index));
+  if (isConcreteProjectName(between)) return between;
+
+  const before = cleanUnquotedProjectCandidate(title.slice(0, category.index));
+  return isConcreteProjectName(before) ? before : null;
+}
+
+function cleanUnquotedProjectCandidate(value) {
+  const text = normalizeDisplayText(value)
+    .replace(/^[\s:：—–|｜-]+|[\s:：—–|｜-]+$/g, "")
+    .trim();
+  if (!/^[\p{L}\p{N}][\p{L}\p{N} ·・:：'’&._-]{1,47}$/u.test(text)) return "";
+  if (/^(?:消息称|报道称|官方|开发者|开发团队|制作组|团队)\b/i.test(text)) return "";
+  return text;
 }
 
 function hasExplicitGameProductCategory(value) {
@@ -162,6 +248,9 @@ function hasUnresolvedSteamStoreClaim(item) {
 
 export function classifyMediaDisposition(item) {
   const text = String(item?.title ?? "") + " " + String(item?.summary ?? "") + " " + String(item?.source ?? "");
+  if (isGameProductCandidateDomainSource(item) && !hasGameProductDomainEvidence(item)) {
+    return { kind: "radar_only", reason: "non_game_broad_media" };
+  }
   if (hasUnresolvedSteamStoreClaim(item)) {
     return { kind: "reject", reason: "steam_store_claim_without_normalized_evidence" };
   }
@@ -176,9 +265,6 @@ export function classifyMediaDisposition(item) {
   }
   if (/过审/.test(text) && !hasQualifiedGameApprovalSignal(text)) {
     return { kind: "radar_only", reason: "non_game_approval_context" };
-  }
-  if (isGameProductCandidateDomainSource(item) && !hasGameProductDomainEvidence(item)) {
-    return { kind: "radar_only", reason: "non_game_broad_media" };
   }
   if (isBannedMediaLeadText(text.toLowerCase())) {
     return { kind: "reject", reason: "non_actionable_or_banned" };

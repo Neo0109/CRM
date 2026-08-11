@@ -71,7 +71,9 @@ function mediaSignalDedupeKeys(item) {
 function mergeMediaSignalEvidence(primary, secondary) {
   const primaryIsBilibili = primary?.bilibili_evidence || /bilibili|b站/i.test(String(primary?.source ?? "") + " " + String(primary?.link ?? ""));
   const secondaryIsBilibili = secondary?.bilibili_evidence || /bilibili|b站/i.test(String(secondary?.source ?? "") + " " + String(secondary?.link ?? ""));
-  if (!primaryIsBilibili && !secondaryIsBilibili) return primary;
+  if (!primaryIsBilibili && !secondaryIsBilibili) {
+    return preserveGameProductCandidateDomainGate(primary, primary, secondary);
+  }
   const primaryEvidence = extractBilibiliEvidence(primary);
   const secondaryEvidence = extractBilibiliEvidence(secondary);
   const mergedEvidence = extractBilibiliEvidence({
@@ -84,7 +86,19 @@ function mergeMediaSignalEvidence(primary, secondary) {
       emails: [...(primaryEvidence.emails ?? []), ...(secondaryEvidence.emails ?? [])]
     }
   }, [secondary.link, ...(secondaryEvidence.urls ?? [])]);
-  return { ...primary, bilibili_evidence: mergedEvidence };
+  return preserveGameProductCandidateDomainGate(
+    { ...primary, bilibili_evidence: mergedEvidence },
+    primary,
+    secondary
+  );
+}
+
+function preserveGameProductCandidateDomainGate(merged, primary, secondary) {
+  const carriesGameProductGate = [primary, secondary].some((item) => (
+    String(item?.candidate_domain_gate ?? item?.candidateDomainGate ?? "").trim() === "game_product"
+  ));
+  if (!carriesGameProductGate || merged?.candidate_domain_gate === "game_product") return merged;
+  return { ...merged, candidate_domain_gate: "game_product" };
 }
 
 function bvidFromUrl(value) {

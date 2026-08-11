@@ -203,8 +203,49 @@
       "steamdb",
       "taptap",
       "indienova",
-      "haoyoukuaibao"
+      "haoyoukuaibao",
+      "3839"
     ],
+    "structured_identity_constraints": {
+      "platform_ids": "positive_numeric",
+      "generic_game_id": "positive_numeric_or_recognized_namespace",
+      "game_id_namespaces": [
+        "steam",
+        "taptap",
+        "indienova",
+        "kuaibao",
+        "3839"
+      ],
+      "taptap_product_id": "positive_numeric",
+      "indienova_reserved_routes_rejected": [
+        "news",
+        "article",
+        "articles",
+        "group",
+        "groups",
+        "search",
+        "tag",
+        "tags",
+        "index",
+        "game",
+        "games",
+        "app",
+        "apps",
+        "product",
+        "products"
+      ],
+      "kuaibao_product_routes": [
+        "a",
+        "shouyou",
+        "game",
+        "games",
+        "app",
+        "apps",
+        "product",
+        "products"
+      ],
+      "kuaibao_product_id": "positive_numeric"
+    },
     "semantic_evidence_required": [
       "concrete_project_name",
       "explicit_game_product_category",

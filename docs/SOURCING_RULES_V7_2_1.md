@@ -31,12 +31,13 @@ A marked broad-media item may enter candidate routing only through one of two ev
 At least one normalized game-product identity exists:
 
 - Steam or SteamDB app link;
-- TapTap game/app link;
-- indienova game link;
-- 好游快爆 game link;
-- structured Steam, TapTap, or game ID.
+- TapTap game/app link with a positive numeric product ID;
+- indienova `g`, `game`, or `games` product link with a concrete non-reserved product identifier, including percent-encoded names;
+- 3839/好游快爆 canonical numeric product paths: `a`, `shouyou`, `game(s)`, `app(s)`, or `product(s)`;
+- a positive numeric structured Steam/TapTap ID;
+- a positive numeric generic game ID, or a non-empty ID namespaced by `steam:`, `taptap:`, `indienova:`, `kuaibao:`, or `3839:`.
 
-A bare platform word is not a normalized identity.
+A bare platform word, arbitrary company/news identifier, TapTap nonnumeric path, indienova reserved route such as `/games/news`, 3839/好游快爆 `/news/` route, or arbitrary domain path is not a normalized identity.
 
 ### B. Concrete semantic product evidence
 
@@ -45,6 +46,8 @@ All three elements are required in the same item:
 1. an extractable concrete project name;
 2. an explicit game-product category such as independent game, domestic game, online game, mobile game, PC game, or console game;
 3. a concrete product event: Demo, 试玩, 实机, Playtest, 测试, 商店页, 愿望单, 版号, 首曝, or 开发日志.
+
+Structured project fields ignore missing and non-string values and reject literal missing markers, generic category nouns, and event-only phrases. Quoted names remain supported. A conservative unquoted-title extractor also supports an explicit category-name-event form such as `国产独立游戏 星海远征 公布试玩 Demo`, plus the corresponding project-before-category form; the extracted name is reused as the tagged media Lead project.
 
 `B站`, `官方`, `授权`, `发行`, `合作`, `需求`, and `上线` are insufficient evidence, alone or in combination.
 
@@ -70,6 +73,8 @@ The item remains eligible for Radar diversity selection. It must not:
 
 Radar schemas remain unchanged. The reason code is a classifier/routing diagnostic; the Radar card renders it as explicit non-game background in its summary, relevance, and suggested action instead of adding a new artifact field.
 
+For marked sources, this failed domain decision runs before unresolved-store, film, animation, released-content, approval, and other legacy topic taxonomy. Every failed marked item therefore receives the single exact `non_game_broad_media` reason. A marked item that passes the domain gate remains subject to the unchanged downstream taxonomy.
+
 ## Routing And Dedupe Boundary
 
 The gate runs before `mediaSignalToLead` and before enrichment. Candidate lane assignment is disjoint and ordered:
@@ -79,6 +84,8 @@ The gate runs before `mediaSignalToLead` and before enrichment. Candidate lane a
 3. rescue when not already strict or expanded.
 
 One deduped media item is converted and enriched at most once even if its text satisfies more than one lane predicate.
+
+Gate provenance uses conservative precedence during dedupe: if either duplicate carries `candidate_domain_gate: "game_product"`, the merged signal carries it regardless of input order. Two unmarked signals retain the previous merge behavior.
 
 ## Formal Admission Is Unchanged
 
@@ -94,6 +101,9 @@ Fixed offline tests must prove:
 - generic financial/company reporting containing ambiguous business terms remains Radar-only;
 - concrete broad-media 版号, Demo, Playtest, 实机, and 商店页 examples remain candidate-eligible, including a domestic game without a Steam AppID;
 - normalized Steam and other supported structured identities remain eligible;
+- missing/generic/event-only names, arbitrary structured IDs, and non-product platform routes remain in Radar only;
+- explicit unquoted project names are extracted into the stored Lead project;
+- marked failures use one reason before downstream topic taxonomy, and dedupe preserves the marker in both input orders;
 - a failed broad item creates no candidate, enrichment call, candidate-audit record, second-pass selection, or formal Lead;
 - strict/expanded/rescue processing is disjoint;
 - non-game animation filtering, Steam evidence integrity, candidate audit, and Radar diversity regressions remain green;

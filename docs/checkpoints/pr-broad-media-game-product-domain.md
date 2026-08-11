@@ -38,14 +38,18 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Exact-head QA at `a7fe1e3eedb9489d0a34a5a99cdf908ad44c1157` found four bounded admission defects: missing project fields normalized to the literal `undefined`; arbitrary structured IDs and broad 3839/好游快爆 paths counted as identity; marked-source failures could receive legacy downstream reasons instead of the exact broad-media reason; and non-Bilibili dedupe could discard the marker based on input order.
 - Added adversarial fixtures for the three exact unnamed generic headlines, malformed Steam/TapTap/game IDs, `/news/` and arbitrary 快爆 routes, valid normalized platform identities, two explicit unquoted-title forms, marked film/animation/update/approval/unresolved-store failures, and both marked/unmarked dedupe orders.
 - Accepted provider-free RED: the focused contract now has 11 subtests, with 7 failing on the old head and 4 legacy controls green. Failures independently prove helper false positives, missing unquoted extraction, non-uniform reason precedence, order-dependent marker loss, and one leaked end-to-end candidate/enrichment path.
+- Implemented the bounded GREEN: project fields ignore non-string/missing values and reject literal/generic/event-only names; a pure explicit unquoted-title extractor feeds both the domain decision and tagged Lead project; platform IDs and generic game IDs use narrow numeric/namespaced validation.
+- Normalized link admission now parses URL hosts/path segments. Steam/SteamDB require `app/<positive numeric>`; TapTap requires numeric `app|game`; indienova accepts a concrete non-reserved `g|game|games` ID including percent-encoding; 3839/好游快爆 accepts only numeric `a`, `shouyou`, `game(s)`, `app(s)`, or `product(s)` routes.
+- Marked domain failure now precedes downstream topic taxonomy. Dedupe conservatively preserves `candidate_domain_gate=game_product` when either duplicate carries it, while two unmarked non-Bilibili items retain the previous primary-object behavior.
+- Post-repair focused contract passes 11/11, the impacted union passes 58/58, and `npm run test:daily-v4` passes 309/309. All tests remain provider/network-free.
 
 ## Remaining
 
-- Implement the bounded P1 repair, then repeat focused/full verification on the same PR; do not merge or deploy.
+- Run full repository verification, JSON/config validation, and exact diff checks; publish the final repair checkpoint on the same PR. Do not merge or deploy.
 
 ## Next Action
 
-Publish the accepted P1 RED checkpoint, then implement the smallest GREEN that closes only those admission and dedupe paths.
+Publish the coherent P1 GREEN checkpoint, then run the full repository and exact remote-tree gates.
 
 ## Git Status
 
@@ -56,3 +60,4 @@ Publish the accepted P1 RED checkpoint, then implement the smallest GREEN that c
 - RED commit parent: `1034028cf6a481337794039e4752ddf01d0eb382`.
 - GREEN commit parent: `6e998999c0ea5679a12fe29e6bcfb27f5fa862bc`.
 - Published coherent GREEN before review: `4faf9101eec936822e9610ef8f856846bc5f1d10`.
+- Blocking P1 RED: `2e54d5d4884f9ebcb57f29e8303c871b67e983ec`.
