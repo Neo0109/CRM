@@ -74,14 +74,22 @@ Repair the final-head adversarial-QA full-diagnostics binding defect on the exis
   - stored and replayed decision views carry the full transaction diagnostics, while replay derives its copy from the shared pure recomputation, so contract-validation bypass no longer hides a resealed forgery.
 - Second-repair focused GREEN command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
 - Second-repair focused GREEN result: 87 tests passed, 0 failed. Historical v1 coverage and provider transport semantics remain unchanged; no network/provider/workflow/CRM/Supabase action was made.
+- Published the checkpointed second-repair GREEN at `e642e9a55e0064f8300861d8dbab98f742139d2c` (tree `db306e605c4113e170c143ad32b2f867436afafc`).
+- Final gates on that exact code/tree:
+  - focused V7.3 suites: 87 passed, 0 failed;
+  - `npm run test:daily-v4`: 298 passed, 0 failed;
+  - `npm run verify:all`: exit 0, including frontend/backend/Functions typechecks, automation tests, production build, Daily contract, and `git diff --check`;
+  - replay corpus JSON Schema compiles under Ajv 2020 with formats enabled;
+  - `git diff --check`: clean; changed-file inventory remains the same 10 approved Wave 1 files only.
+- Final validation introduced no scope pressure and performed no provider, workflow, CRM, Supabase, production-data, merge, or deploy action.
 
 ## Remaining
 
-- Publish the checkpointed second-repair GREEN, then rerun Daily V4, `verify:all`, Ajv, and diff/scope checks on the exact branch snapshot.
+- Publish this final validation checkpoint, update PR #115 evidence, verify the exact remote head/tree and checks, then stop without merge.
 
 ## Next Action
 
-Publish the checkpointed second-repair GREEN to the existing branch, then run every required final gate without merging.
+Publish the final validation checkpoint, update and verify PR #115, and stop without merge.
 
 ## Git Status
 
@@ -89,6 +97,7 @@ Publish the checkpointed second-repair GREEN to the existing branch, then run ev
 - Remote PR: ready PR #115, open and unmerged.
 - Branch: `codex/v73-evidence-actionability`.
 - Remote branch head before this second repair: `2869ab2e6c8656f48f04d3bb2db5e830dd97d86d` (tree `a72fd09d0453c5be1ae394507dc0e799357a1b6e`).
+- Remote branch checkpointed second-repair GREEN head: `e642e9a55e0064f8300861d8dbab98f742139d2c` (tree `db306e605c4113e170c143ad32b2f867436afafc`).
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 
