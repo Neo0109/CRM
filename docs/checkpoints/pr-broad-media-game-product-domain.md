@@ -107,16 +107,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Required negative matrices retain exact `radar_only/non_game_broad_media` and zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output. Positive controls retain exact `Lead.project` for both name/category orders, glued approved category-first forms, distinctive organization residue, and existing URL/dedupe behavior.
 - Accepted provider-free umbrella RED: the focused contract now has 19 subtests, with 6 expected failures and 13 existing controls green. The failures independently isolate shared generic/count validation, prefixed-count category fallback, Chinese/English connector and glued-slot binding, five lexical-boundary leaks, quote-role/document selection, and the combined six-row end-to-end invariant.
 - All six exact QA rows reproduce on the superseded head: extracted and stored projects are exactly `原创`, `莉莉丝旗下`, `游戏日报`, `预计`, `关于促进网络游戏高质量发展的若干意见`, and `Project Echo N`; all six become candidates, all six enter enrichment, and all six appear in the candidate audit. The accepted RED expects zero for every one of those paths.
+- Published the tests-and-checkpoint-only RED as `de403f730fdacf14439073a47d18468a091634ca` with tree `ece6b543b75a462c5bfb63c9846c0de1c2246035`, parented directly to exact superseded head `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19`. All 22 branch blobs match the disposable snapshot.
 - Existing nonblocking follow-ups remain out of scope: secondary-link evidence union in non-Bilibili dedupe and category-token-in-project selection for names such as `手游模拟器` or `PC Game Tycoon`.
+- Implemented the bounded GREEN with one shared domestic-game-company vocabulary used by both project-name validation and the existing media-entity company signal; organization-only and affiliation-only names now fail without tightening unmarked game-vertical admission.
+- The whole-name generic segmentation now supports prefix-aware Arabic/Chinese counts and batch quantifiers, while retaining distinctive residue such as `纪元10：余烬`, `第七史诗`, `腾讯极光计划`, and `莉莉丝深空计划`.
+- Explicit category recognition now uses a shared lexical-start scanner: longest-first approved Chinese categories cannot start inside `云端游戏/终端游戏/高端游戏`, and English categories cannot start inside `NPC game/automobile game`. The same scanner and bounded Chinese/English event framing feed unquoted project extraction, including glued category-first `新作星海远征` without globally trimming real names.
+- Quote extraction now rejects source, organization, and expanded document-policy roles before event-distance selection. Structured, quoted, and unquoted paths share the same concrete-project predicate and bind the same extracted project into the tagged Lead.
+- The six exact QA reproductions now return exact `radar_only/non_game_broad_media` and create zero candidate, enrichment, candidate-audit/formal record, or V7.3 second-pass output. Focused provider/network-free GREEN passes 19/19; impacted contracts pass 98/98; media/dedupe/audit regressions pass 53/53; and `npm run test:daily-v4` passes 317/317.
+- Exact shimmed `npm run verify:all` passes every declared task, including frontend/backend/functions typechecks, Daily V4 317/317, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, changed-module syntax checks, and the exact frozen-main whitespace check pass.
+- Machine rules and both active documents record the company/count, lexical-category, slot-framing, and quote/document-role contracts. The updated `daily-report.json` Git blob is `2a74175267baa3cc86c8852c5a6e1d1887efa872`, and the shadow integration behavior floor matches it.
 
 ## Remaining
 
-- Publish the accepted provider-free RED from parent `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19`.
-- Implement only the bounded P1 repair, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA.
+- Publish this fully verified coherent GREEN from the accepted RED parent, pin its exact remote tree/checks, and hand it to Release Captain independent QA. Do not merge.
 
 ## Next Action
 
-Publish the accepted tests-and-checkpoint-only RED, then implement the bounded repair without expanding either deferred P2.
+Publish the verified snapshot through the GitHub Git Data API, confirm every remote branch blob matches it, then wait for exact-head checks and independent QA.
 
 ## Git Status
 
@@ -140,3 +147,5 @@ Publish the accepted tests-and-checkpoint-only RED, then implement the bounded r
 - Final expanded P1 RED: `b14c81889b198bb08b62c08c0d28fbf87b76a823` (tree `7add39f903d23bd44d526998c807e50211d2edd3`).
 - Coherent expanded P1 GREEN: `91b4eedf0cf33e5f74c446357f39832c4abc7a4a` (tree `d1d22e82e570fab869d630429fba8fdf7632e7e3`).
 - Superseded validation-only expanded P1 head: `1d8ee9a3bb923a26e1eb4b655f93516ef3c0ce19` (tree `664351477eae85f48a5c7758d6711ba16a197c0a`).
+- Accepted organization/framing/boundary/quote-role P1 RED: `de403f730fdacf14439073a47d18468a091634ca` (tree `ece6b543b75a462c5bfb63c9846c0de1c2246035`).
+- Fully verified organization/framing/boundary/quote-role P1 GREEN: local disposable snapshot ready to publish from accepted RED `de403f730fdacf14439073a47d18468a091634ca`.

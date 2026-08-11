@@ -188,6 +188,24 @@ const EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS = Object.freeze([
   "掌机游戏", "arpg游戏", "pc游戏", "vr游戏", "手游", "端游"
 ].sort((left, right) => right.length - left.length));
 
+export const DOMESTIC_GAME_COMPANY_NAMES = Object.freeze([
+  "网易", "腾讯", "字节", "字节跳动", "朝夕光年", "巨人", "西山居", "莉莉丝", "心动", "鹰角",
+  "米哈游", "散爆", "库洛", "叠纸", "沐瞳", "灵犀", "祖龙", "完美世界", "中手游",
+  "B站游戏", "哔哩哔哩游戏"
+]);
+
+const DOMESTIC_GAME_COMPANY_PATTERN = new RegExp(
+  DOMESTIC_GAME_COMPANY_NAMES
+    .map(escapeRegexToken)
+    .sort((left, right) => right.length - left.length)
+    .join("|"),
+  "i"
+);
+
+export function hasDomesticGameCompanySignal(value) {
+  return DOMESTIC_GAME_COMPANY_PATTERN.test(String(value ?? ""));
+}
+
 const CATEGORY_PREFIX_MODIFIER_TOKENS = Object.freeze([
   "模拟经营", "二次元", "国产", "中国", "国人", "国内", "海外", "进口", "全球", "亚洲", "本土",
   "首款", "热门", "精品", "重磅", "年度", "多款", "移动", "武侠", "卡牌", "策略", "肉鸽", "pc"
@@ -199,15 +217,23 @@ const REGION_CATEGORY_PREFIX_TOKENS = Object.freeze([
   "新游", "游戏", "独立", "网络", "电子", "手机", "主机", "电脑", "单机"
 ].sort((left, right) => right.length - left.length));
 
+const DOMESTIC_GAME_COMPANY_NAME_KEYS = new Set(
+  DOMESTIC_GAME_COMPANY_NAMES.map((name) => name.normalize("NFKC").toLowerCase())
+);
+const ORGANIZATION_AFFILIATION_TOKENS = Object.freeze(["旗下", "网络", "游戏", "科技"]);
+
 const KNOWN_ORGANIZATION_ONLY_KEYS = new Set([
+  ...DOMESTIC_GAME_COMPANY_NAME_KEYS,
   "腾讯", "网易", "米哈游", "字节跳动", "雪佛兰", "哔哩哔哩", "bilibili", "b站",
-  "证券时报", "it之家", "澎湃新闻", "gamelook", "游戏葡萄", "游戏陀螺", "触乐"
+  "证券时报", "it之家", "澎湃新闻", "gamelook", "游戏葡萄", "游戏陀螺", "游戏日报", "触乐"
 ]);
 
 const GENERIC_DOCUMENT_ENTITY_TOKENS = Object.freeze([
   ...EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS,
-  "未成年人", "网络游戏", "中国", "游戏", "产业", "行业", "市场", "管理", "保护", "测试",
-  "合作", "发展", "年度", "工作", "实施", "暂行", "试行", "办法", "条例", "规范", "白皮书",
+  "未成年人", "网络游戏", "高质量", "关于", "促进", "若干", "中国", "游戏", "产业", "行业",
+  "市场", "管理", "保护", "治理", "测试", "合作", "发展", "年度", "工作", "实施", "暂行",
+  "试行", "自律", "的", "办法", "条例", "规范", "白皮书", "意见", "倡议", "要点", "决定",
+  "规划", "纲要",
   "报告", "备忘录", "协议", "通知", "指南", "政策", "规定", "细则", "标准", "方案", "公约",
   "声明", "通报"
 ].sort((left, right) => right.length - left.length));
@@ -215,15 +241,17 @@ const GENERIC_DOCUMENT_ENTITY_TOKENS = Object.freeze([
 const GENERIC_GAME_PROJECT_TOKENS = Object.freeze([
   // Qualifiers and quantifiers.
   "最新", "全新", "某款", "某个", "多款", "一款", "多个", "一个", "多项", "一项",
-  "数款", "若干", "这款", "一家", "旗下", "一部", "多部", "首款", "热门", "精品",
-  "重磅", "年度", "神秘", "未命名", "尚未命名", "代号", "备受期待", "某", "本", "该", "新",
+  "数款", "若干", "一批", "一系列", "若干批", "这款", "一家", "旗下", "一部", "多部", "首款",
+  "热门", "精品", "重磅", "年度", "神秘", "未命名", "尚未命名", "代号", "备受期待",
+  "原创", "自研", "知名", "头部", "某", "本", "该", "新",
   // Region, genre, and platform modifiers.
   "模拟经营", "二次元", "国产", "中国", "国人", "国内", "海外", "进口", "全球", "亚洲", "本土",
   "移动", "武侠", "卡牌", "策略", "肉鸽", "pc",
   // Organizations, teams, and attribution labels.
   "公司", "企业", "行业", "品牌", "官方", "开发者", "开发", "研发", "制作", "发行",
-  "团队", "工作室", "制作组", "厂商", "机构", "集团", "上市",
-  "腾讯", "网易", "米哈游", "字节跳动", "雪佛兰", "哔哩哔哩", "bilibili", "b站",
+  "团队", "工作室", "制作组", "厂商", "机构", "集团", "上市", "旗下", "网络", "科技",
+  ...DOMESTIC_GAME_COMPANY_NAMES,
+  "雪佛兰", "哔哩哔哩", "bilibili", "b站", "游戏日报",
   // Game/product/project nouns.
   ...EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS,
   "新游", "游戏", "项目", "作品", "产品", "新作", "新品", "力作", "作",
@@ -252,6 +280,12 @@ function normalizeProjectDescriptorKey(value) {
     .replace(/[\s\p{P}\p{S}]+/gu, "");
 }
 
+const GENERIC_COUNT_PREFIX_PATTERN_SOURCE = "(?:超过|至少|至多|最多|合计|累计|第|约|近|超|逾|共|数)?";
+const GENERIC_NUMERAL_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿]+))";
+const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = `${GENERIC_COUNT_PREFIX_PATTERN_SOURCE}${GENERIC_NUMERAL_PATTERN_SOURCE}(?:款|个|部|项)`;
+const GENERIC_COUNT_AT_START_PATTERN = new RegExp(`^${GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE}`, "u");
+const GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE = "(?:一批|一系列|若干批)";
+
 function isEntirelySegmentableProjectDescriptor(
   key,
   tokens,
@@ -262,7 +296,7 @@ function isEntirelySegmentableProjectDescriptor(
   for (let index = 0; index < key.length; index += 1) {
     if (!reachable[index]) continue;
     if (allowGenericCount) {
-      const count = key.slice(index).match(/^(?:(?:\d+)|(?:[零〇一二两三四五六七八九十百千万亿]+))(?:款|个|部|项)/u)?.[0];
+      const count = key.slice(index).match(GENERIC_COUNT_AT_START_PATTERN)?.[0];
       if (count) reachable[index + count.length] = 1;
     }
     if (allowCalendarYear) {
@@ -301,12 +335,20 @@ function isOrganizationOnlyProjectDescriptor(value) {
   const key = normalizeProjectDescriptorKey(value);
   if (!key) return false;
   if (KNOWN_ORGANIZATION_ONLY_KEYS.has(key)) return true;
+  for (const companyKey of DOMESTIC_GAME_COMPANY_NAME_KEYS) {
+    if (!key.startsWith(companyKey)) continue;
+    const affiliation = key.slice(companyKey.length);
+    if (affiliation && isEntirelySegmentableProjectDescriptor(
+      affiliation,
+      ORGANIZATION_AFFILIATION_TOKENS
+    )) return true;
+  }
   return /^(?=.{2,48}$)[\p{L}\p{N}]+(?:公司|集团|工作室|团队|企业|厂商|制作组)$/u.test(key);
 }
 
 function isNonProjectDocumentEntity(value) {
   const key = normalizeProjectDescriptorKey(value);
-  if (!/(?:办法|条例|规范|白皮书|报告|备忘录|协议|通知|指南|政策|规定|细则|标准|方案|公约|声明|通报)$/.test(key)) {
+  if (!/(?:办法|条例|规范|白皮书|报告|备忘录|协议|通知|指南|政策|规定|细则|标准|方案|公约|声明|通报|意见|倡议|要点|决定|规划|纲要)$/.test(key)) {
     return false;
   }
   return isEntirelySegmentableProjectDescriptor(
@@ -343,20 +385,51 @@ function escapeRegexToken(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-const GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE = "(?:(?:\\d+)|(?:[零〇一二两三四五六七八九十百千万亿]+))(?:款|个|部|项)";
 const CATEGORY_PREFIX_PATTERN_SOURCE = [
   ...CATEGORY_PREFIX_MODIFIER_TOKENS.map(escapeRegexToken),
-  GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE
+  GENERIC_COUNT_WITH_CLASSIFIER_PATTERN_SOURCE,
+  GENERIC_BATCH_QUANTIFIER_PATTERN_SOURCE
 ].join("|");
 const CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE = "[\\s·・:：—–|｜-]*";
 const CHINESE_GAME_CATEGORY_PATTERN_SOURCE = `(?:${EXPLICIT_CHINESE_GAME_CATEGORY_TOKENS.map(escapeRegexToken).join("|")})`;
-const GAME_PRODUCT_CATEGORY_PATTERN = new RegExp(
-  `(?:(?:(?:${CATEGORY_PREFIX_PATTERN_SOURCE})${CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE})*${CHINESE_GAME_CATEGORY_PATTERN_SOURCE}|mobile\\s+game|pc\\s+game|console\\s+game)`,
+const CHINESE_GAME_CATEGORY_AT_START_PATTERN = new RegExp(
+  `^(?:(?:${CATEGORY_PREFIX_PATTERN_SOURCE})${CATEGORY_PREFIX_SEPARATOR_PATTERN_SOURCE})*${CHINESE_GAME_CATEGORY_PATTERN_SOURCE}`,
   "i"
 );
+const ENGLISH_GAME_CATEGORY_AT_START_PATTERN = /^(?:mobile\s+game|pc\s+game|console\s+game)/i;
 
 function matchExplicitGameProductCategory(value) {
-  return GAME_PRODUCT_CATEGORY_PATTERN.exec(String(value ?? ""));
+  const text = String(value ?? "");
+  for (let index = 0; index < text.length;) {
+    const currentCodePoint = String.fromCodePoint(text.codePointAt(index));
+    if (isCategoryLexicalStart(text, index)) {
+      const tail = text.slice(index);
+      const chinese = CHINESE_GAME_CATEGORY_AT_START_PATTERN.exec(tail)?.[0] ?? "";
+      if (chinese) return categoryMatch(chinese, index);
+
+      const english = ENGLISH_GAME_CATEGORY_AT_START_PATTERN.exec(tail)?.[0] ?? "";
+      if (english && isCategoryLexicalEnd(text, index + english.length)) {
+        return categoryMatch(english, index);
+      }
+    }
+    index += currentCodePoint.length;
+  }
+  return null;
+}
+
+function isCategoryLexicalStart(text, index) {
+  if (index === 0) return true;
+  const previousCodePoint = [...text.slice(0, index)].at(-1) ?? "";
+  return /[\s\p{P}\p{S}]/u.test(previousCodePoint);
+}
+
+function isCategoryLexicalEnd(text, index) {
+  const nextCodePoint = [...text.slice(index)].at(0) ?? "";
+  return !nextCodePoint || !/[\p{L}\p{N}_]/u.test(nextCodePoint);
+}
+
+function categoryMatch(text, index) {
+  return { 0: text, index };
 }
 
 function extractQuotedGameProjectName(item) {
@@ -406,10 +479,10 @@ function stripUnquotedProjectSlotFraming(value) {
   if (!text) return "";
 
   text = text.replace(
-    /^(?:(?:新作|项目|作品|游戏)(?:[\s:：—–|｜-]+)|代号\s+)+/i,
+    /^(?:新作(?:[\s:：—–|｜-]*|(?=[\p{L}\p{N}]))|(?:项目|作品|游戏)(?:[\s:：—–|｜-]+)|代号\s+)+/iu,
     ""
   ).trim();
-  const trailingConnector = /(?:[\s:：—–|｜-]*)(?:正式|即将|今日|日前|现已|将于|宣布|首度|officially|announces?|announced|reveals?|revealed|launches?|launched|now)(?:[\s:：—–|｜-]*)$/i;
+  const trailingConnector = /(?:[\s:：—–|｜-]*)(?:宣布将|今日将|计划于|将会|is\s+set\s+to|expected\s+to|plans?\s+to|正式|即将|预计|有望|日前|现已|将于|宣布|首度|今日|将|officially|will|shall|announce(?:s|d)?|reveal(?:s|ed)?|launch(?:es|ed)?|now)(?:[\s:：—–|｜-]*)$/i;
   let previous;
   do {
     previous = text;
