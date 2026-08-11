@@ -161,14 +161,16 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Implemented the bounded GREEN with two shared predicates. The document-role predicate keeps the existing conservative long-name boundary and segments the entire short body against the curated qualifier vocabulary before rejecting a role suffix. The known-company predicate keeps its existing complete affiliation segmentation and adds an explicit terminal-role check only after a known company prefix, allowing arbitrary middle sub-brands without turning the suffix rule into a global project-name filter.
 - Local provider/network-free validation is green: focused 26/26, impacted 105/105, media/dedupe/audit 60/60, and Daily V4 324/324. Machine JSON and active docs record the same bounded grammar; the updated machine-rule Git blob is `e14c5a5c9855111aa71a51272d5178e7c2a510cb`, and the shadow integration floor matches it.
 - Exact shimmed `npm run verify:all` exits successfully after the documented GREEN, including frontend/backend/functions typechecks, Daily V4 324/324, historical liveness replay, Daily contract validation, temporary frontend build, and frozen-base diff-check. Machine/fixture JSON parsing, all 17 changed-module syntax checks, and the exact frozen-main whitespace check also pass.
+- Published the coherent code-bearing GREEN as `923033be97b893d8287ba08ba3058fb5d3603429` with tree `866cd9be97ff1aa9b26788eddec9ef325df395d5`, parented directly to accepted RED `9bd4335b6acb855372f6d4b9af918da28e9535f4`. Frozen compare remains based and merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 30 and behind 0, with 22 changed files and 22/22 exact-head remote blobs matching the verified snapshot.
+- All three exact code-head checks succeeded: Cloudflare Pages `93869126538`; pull-request Build `31518241269 / 93868622809`; push Build `31518237854 / 93868611398`.
 
 ## Remaining
 
-- Publish one coherent GREEN child of `9bd4335b6acb855372f6d4b9af918da28e9535f4`, verify frozen-base compare and 22/22 remote blob parity, wait exact remote checks, and hand the pinned head to Release Captain independent acceptance. Do not merge.
+- Release Captain independent acceptance and merge gate only. No implementation, workflow, provider, CRM/Supabase, deployment, or merge action remains authorized in this task.
 
 ## Next Action
 
-Publish the exact verified coherent GREEN from the accepted RED, pin its head/tree/compare/blob parity, then wait exact checks before independent QA.
+Pin the final status-only head after this checkpoint update, wait its exact checks, then hand it to Release Captain for independent acceptance and root-owned merge if clean.
 
 ## Git Status
 
@@ -203,4 +205,5 @@ Publish the exact verified coherent GREEN from the accepted RED, pin its head/tr
 - Fully verified closed-grammar GREEN: local disposable snapshot ready to publish from exact accepted RED `4276874b1c962ff9414bbec3bd2e846987a05631`.
 - Superseded fully verified closed-grammar GREEN: `ea60852f4b1b5f513d1895e6b62c38130c7b9ad6` (tree `1322bae9cc09435afed19a875a3ccefa6a1759da`); exact checks passed before short-document/company-terminal role QA.
 - Accepted short-document/company-terminal role RED: `9bd4335b6acb855372f6d4b9af918da28e9535f4` (tree `b9d212a9ee5879054c7e50e61652355a8612e61e`).
-- Fully verified short-document/company-terminal role GREEN: local disposable snapshot ready to publish from exact accepted RED `9bd4335b6acb855372f6d4b9af918da28e9535f4`.
+- Fully verified short-document/company-terminal role GREEN: `923033be97b893d8287ba08ba3058fb5d3603429` (tree `866cd9be97ff1aa9b26788eddec9ef325df395d5`); all three exact checks succeeded.
+- Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `923033be97b893d8287ba08ba3058fb5d3603429`; no behavior, machine-rule, or test blob changes.
