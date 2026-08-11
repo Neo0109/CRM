@@ -181,13 +181,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Published the coherent quantity GREEN as `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd` with tree `5c40111de79bf88ddcbcd03214adfa3ce5e31744`, parented directly to final accepted RED `12e4b39cce0b0c8641cecbc09d01c912b5451e40`. Frozen compare remains based and merge-based at `102dc567b73f9c871a0412ec42015b3eccb8b107`, ahead 34 and behind 0, with 22 changed files and 22/22 exact-head remote blobs matching the verified snapshot.
 - All three exact code-head checks succeeded: Cloudflare Pages `93874469894`; pull-request Build `31519967654 / 93874313479`; push Build `31519963108 / 93874297510`.
 
+### Shared Quantity Segmentation P1 RED
+
+- Independent final-head QA superseded status-only head `222d8ac724fc60a506a74eb35c13c07b973a3d4b` despite its three successful checks. The repeatable count regex is not closed under suffix/range composition, idiomatic magnitude, vague quantity, or rank/ordinal language: 69 of 73 audited descriptors leak across all three structured, quoted, and unquoted name paths, for 207 violating paths.
+- The accepted matrix is exact and family-bounded: 11 suffix/range descriptors, 18 count idioms, 25 vague quantifiers, and 19 rank/ordinal or English equivalents. All 73 descriptors are generated through the same three name paths for 219 rows, each requiring a null extractor, false domain evidence, and exact `radar_only/non_game_broad_media`.
+- A separate 21-row material fixture is exactly seven representative descriptors (`十数款`, `十余至二十款`, `数以百计的游戏`, `许多游戏`, `前十款`, `十大游戏`, and `Top10游戏`) across the same three paths. On the superseded implementation it creates 11 candidates, 11 enrichment entries, and 5 candidate-audit records; the accepted expectation is zero candidate, enrichment, audit/formal record, or V7.3 second pass, with provider and network sentinels untouched.
+- The repair contract replaces the separate whole-count and category-prefix regexes with one shared generic-descriptor dynamic program. Its numeral transition is enabled only inside generic segmentation and accepts Arabic, Chinese, `几`, or `若干`; quantity connectors, classifiers, magnitude, vague, rank/ordinal, and English roles are tokens. A longest-prefix `isGenericCategoryPrefix` split must reuse the same segmentation before an explicit category; bare `游戏` remains insufficient.
+- Distinctive residue remains authoritative. The existing numeric-name controls plus `十万个冷笑话`, `所有人的天空`, `十大掌门人`, `前十传奇`, and `众多回忆` must remain eligible across all three paths; seven new prefix/category controls require the shared segmentation without consuming the distinct structured project.
+- Accepted provider/network-free RED has 30 focused subtests: 26 prior and distinctive-residue controls pass, while exactly 4 fail in the machine contract, the 219-row shared quantity matrix, the 21-row material invariant, and behavioral category-prefix reuse. Role closure, connectors, URL integrity, dedupe, animation, candidate audit, Radar diversity, and Steam identity remain green.
+- Both existing P2 follow-ups remain out of scope: non-Bilibili secondary-link evidence union and category-token-in-project selection.
+
 ## Remaining
 
-- Release Captain independent acceptance and the root-owned merge gate only. The non-Bilibili secondary-link evidence-union and category-token-in-project selection P2 follow-ups remain separate and are not merge blockers for this bounded wave. Do not merge from this task.
+- Publish the coherent accepted shared-quantity RED from exact superseded head `222d8ac724fc60a506a74eb35c13c07b973a3d4b`, implement the shared dynamic segmentation, update machine rules and active docs to match the implementation, then rerun focused and full gates. Do not merge.
 
 ## Next Action
 
-Publish this status-only checkpoint from exact verified code head `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd`, pin the resulting head/tree and its exact checks, then hand the PR to Release Captain for independent acceptance and root-owned merge.
+Publish the exact tests-and-checkpoint-only RED, verify its parent/tree/parity, then implement one shared descriptor/category-prefix segmentation path before rerunning full validation.
 
 ## Git Status
 
@@ -228,4 +238,5 @@ Publish this status-only checkpoint from exact verified code head `f8596cd0e1f27
 - Initial complete quantity-grammar RED: `49b8bbd53c9465eb39f4199bf75004d54ad41d22` (tree `70d3dda2e3de9c72553b99743a3fda5f5f6386e1`).
 - Final accepted quantity/category-prefix RED: `12e4b39cce0b0c8641cecbc09d01c912b5451e40` (tree `0c062b2f64c03a96553fba757e9f03af1767fda9`).
 - Fully verified complete-quantity GREEN: `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd` (tree `5c40111de79bf88ddcbcd03214adfa3ce5e31744`); frozen compare and 22/22 parity passed, and all three exact checks succeeded.
-- Final status-only checkpoint: local docs-only snapshot ready to publish from exact verified code head `f8596cd0e1f276f38d841a8e578e1f1c9b8191cd`; no behavior, machine-rule, fixture, or test blob changes.
+- Superseded final status-only head: `222d8ac724fc60a506a74eb35c13c07b973a3d4b` (tree `5d748c060336f99de6ea8f347c6c4459d51700f0`); exact checks passed before shared quantity-segmentation QA.
+- Accepted shared quantity-segmentation RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `222d8ac724fc60a506a74eb35c13c07b973a3d4b`.

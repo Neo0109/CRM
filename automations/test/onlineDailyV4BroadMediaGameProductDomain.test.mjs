@@ -204,8 +204,37 @@ const quantityOperatorProjectDescriptors = [
 
 const vagueQuantityProjectDescriptors = genericVagueQuantityTokens.map((token) => `${token}游戏`);
 
+const completeQuantityGrammarDescriptorGroups = {
+  count_suffix_and_ranges: [
+    "十数款", "百数款", "约摸十款", "差不离十款", "十余至二十款", "十多至二十款", "十来至二十款",
+    "十余到二十款", "十余款至二十款", "10款到20款", "不低于十且不高于二十款"
+  ],
+  count_idioms: [
+    "数以十计的游戏", "数以百计的游戏", "数以千计的游戏", "数以万计的游戏", "成百上千的游戏",
+    "成千上万的游戏", "不计其数的游戏", "不胜枚举的游戏", "难以计数的游戏", "数不清的游戏",
+    "屈指可数的游戏", "寥寥几款", "寥寥数款", "仅寥寥数款", "两位数游戏", "个位数游戏",
+    "大几百款", "小几十款"
+  ],
+  vague_quantifiers: [
+    "许多游戏", "诸多游戏", "众多游戏", "不少游戏", "各类游戏", "各种游戏", "各款游戏",
+    "各个游戏", "一部分游戏", "部分游戏", "绝大多数游戏", "大多数游戏", "少部分游戏",
+    "一小部分游戏", "成批游戏", "大批量游戏", "批量游戏", "全部游戏", "所有游戏",
+    "各类新游", "许多新作", "众多新作", "不少项目", "各种项目", "各类项目"
+  ],
+  rank_and_ordinal: [
+    "前十款", "前几款", "头十款", "最后十款", "首批十款", "前两款游戏", "十大游戏",
+    "十佳游戏", "10大游戏", "年度十大游戏", "三大游戏", "Top10游戏", "TOP 10 games",
+    "top 10 mobile games", "more than 10 games", "fewer than 10 games", "around 10 games",
+    "dozens of games", "hundreds of games"
+  ]
+};
+const completeQuantityGrammarDescriptors = Object.values(
+  completeQuantityGrammarDescriptorGroups
+).flat();
+
 const numericProjectNameControls = [
-  "纪元10：余烬", "第七史诗", "十字军之王", "百分百鲜橙汁", "好久不见", "两点之间"
+  "纪元10：余烬", "第七史诗", "十字军之王", "百分百鲜橙汁", "好久不见", "两点之间",
+  "十万个冷笑话", "所有人的天空", "十大掌门人", "前十传奇", "众多回忆"
 ];
 
 const mediaSourceProjectDescriptors = [
@@ -451,13 +480,21 @@ const roleClosurePositiveItems = roleClosurePositiveNames.flatMap((project, inde
   })
 );
 
-const quantityGrammarNegativeItems = [
-  ...quantityOperatorProjectDescriptors,
-  ...vagueQuantityProjectDescriptors
-].flatMap((descriptor, index) =>
+const quantityGrammarNegativeItems = completeQuantityGrammarDescriptors.flatMap((descriptor, index) =>
   ["structured", "quoted", "unquoted"].map((mode) =>
     genericDescriptorItem(descriptor, mode, `quantity-closure-${index}`)
   )
+);
+
+const quantityMaterialDescriptors = [
+  "十数款", "十余至二十款", "数以百计的游戏", "许多游戏", "前十款", "十大游戏", "Top10游戏"
+];
+const quantityMaterialItems = quantityMaterialDescriptors.flatMap((descriptor, descriptorIndex) =>
+  ["structured", "quoted", "unquoted"].map((mode) => ({
+    ...genericDescriptorItem(descriptor, mode, `material-quantity-${descriptorIndex}`),
+    summary: "综合媒体离线对抗样本",
+    link: `https://example.test/e2e-${descriptorIndex}-${mode}`
+  }))
 );
 
 const quantityGrammarPositiveItems = numericProjectNameControls.flatMap((project, index) =>
@@ -480,7 +517,14 @@ const quantityCategoryPrefixPositiveItems = [
   ["不超过10款", "逆光旅人"],
   ["仅有10款", "深空计划"],
   ["10到20款", "月影档案"],
-  ["少量", "余烬之城"]
+  ["少量", "余烬之城"],
+  ["十数款", "远海纪事"],
+  ["十余至二十款", "松烟录"],
+  ["数以百计的", "天穹回响"],
+  ["成千上万的", "潮生物语"],
+  ["许多", "长夜行"],
+  ["前十款", "山河旅人"],
+  ["十大", "群星档案"]
 ].map(([prefix, project], index) => broadQaItem(
   `${prefix}国产手游公布 Demo`,
   `quantity-category-prefix-positive-${index + 1}`,
@@ -822,7 +866,13 @@ describe("broad-media game-product candidate domain", () => {
           "mobile game", "pc game", "console game"
         ],
         category_prefix_modifier_policy: "consume_region_promotion_genre_platform_and_generic_count_modifiers",
-        generic_count_policy: "repeatable_quantity_operator_sequence_plus_numeric_or_range_core_with_classifier_and_approximation",
+        generic_count_policy: "shared_generic_descriptor_dp_with_dynamic_numeral_transition",
+        generic_numeral_transition_policy:
+          "allow_arabic_chinese_几_or_若干_only_inside_generic_segmentation",
+        generic_quantity_role_policy:
+          "tokenize_connectors_classifiers_magnitude_vague_rank_and_english_quantity_roles",
+        generic_category_prefix_quantity_policy:
+          "longest_prefix_split_reuses_shared_generic_descriptor_dp",
         generic_quantity_operator_policy: "repeatable_curated_operator_token_sequence",
         generic_quantity_operator_tokens: genericQuantityOperatorTokens,
         generic_count_numeral_cores: ["arabic", "chinese_including_几", "若干"],
@@ -1812,12 +1862,34 @@ describe("broad-media game-product candidate domain", () => {
 
   it("closes repeatable quantity operators, ranges, and vague quantifiers across every candidate path", async () => {
     assert.deepEqual(
+      Object.fromEntries(
+        Object.entries(completeQuantityGrammarDescriptorGroups)
+          .map(([family, descriptors]) => [family, descriptors.length])
+      ),
+      {
+        count_suffix_and_ranges: 11,
+        count_idioms: 18,
+        vague_quantifiers: 25,
+        rank_and_ordinal: 19
+      }
+    );
+    assert.equal(completeQuantityGrammarDescriptors.length, 73);
+    assert.equal(quantityGrammarNegativeItems.length, 219);
+    assert.deepEqual(
       await observeBroadMediaCandidatePaths(quantityGrammarNegativeItems),
       expectedZeroCandidatePaths(quantityGrammarNegativeItems)
     );
   });
 
-  it("retains numeric project titles across every name path", async () => {
+  it("keeps the 21-row quantity materiality fixture out of every candidate path", async () => {
+    assert.equal(quantityMaterialItems.length, 21);
+    assert.deepEqual(
+      await observeBroadMediaCandidatePaths(quantityMaterialItems),
+      expectedZeroCandidatePaths(quantityMaterialItems)
+    );
+  });
+
+  it("retains distinctive quantity-token project titles across every name path", async () => {
     for (const item of quantityGrammarPositiveItems) {
       assert.equal(
         mediaRules.extractGameProductDomainProjectName(item),
