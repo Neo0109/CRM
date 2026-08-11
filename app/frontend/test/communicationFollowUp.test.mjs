@@ -84,6 +84,33 @@ describe("communication follow-up queue", () => {
       due: "missing"
     }, now).map((item) => item.id), ["empty"]);
   });
+
+  it("excludes missing next actions from future reminders", () => {
+    const missingAction = lead({
+      id: "future-missing-action",
+      due_date: "2026-08-20",
+      next_action: "  "
+    });
+    const validFuture = lead({
+      id: "future-with-action",
+      due_date: "2026-08-20",
+      next_action: "发送商务方案"
+    });
+
+    assert.equal(communicationStatusForLead(missingAction, now), "missing");
+    assert.deepEqual(filterCommunicationLeads([missingAction], {
+      query: "",
+      owner: "all",
+      pool: "all",
+      due: "missing"
+    }, now).map((item) => item.id), ["future-missing-action"]);
+    assert.deepEqual(filterCommunicationLeads([missingAction, validFuture], {
+      query: "",
+      owner: "all",
+      pool: "all",
+      due: "future"
+    }, now).map((item) => item.id), ["future-with-action"]);
+  });
 });
 
 describe("interaction form contract", () => {

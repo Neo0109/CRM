@@ -222,7 +222,7 @@ function matchesDueFilter(lead: Lead, filter: CommunicationDueFilter, today: str
   if (filter === "overdue") return Boolean(lead.due_date && lead.due_date < today);
   if (filter === "today") return lead.due_date === today;
   if (filter === "next-7-days") return Boolean(lead.due_date && lead.due_date > today && lead.due_date <= horizon);
-  return Boolean(lead.due_date && lead.due_date > horizon);
+  return Boolean(cleanText(lead.next_action) && lead.due_date && lead.due_date > horizon);
 }
 
 function searchableLeadText(lead: Lead) {
