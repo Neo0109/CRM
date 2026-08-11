@@ -56,6 +56,14 @@ describe("Replay Corpus Contract v1/v2 schemas", () => {
       branch.if?.properties?.collector_contract_version?.const === 2
     ));
     assert.ok(collectorV2);
+    assert.ok(corpusSchema.$defs.runSecondPass.properties.bounded_signals);
+    assert.ok(
+      collectorV2.then.properties.second_pass.required?.includes("bounded_signals")
+    );
+    assert.equal(
+      collectorV2.then.properties.second_pass.properties.selector_version.const,
+      "actionability-v2"
+    );
     assert.deepEqual(corpusSchema.properties.capture_status.enum, [
       "complete",
       "incomplete",
@@ -268,6 +276,61 @@ describe("Replay corpus validator", () => {
       validateReplayCorpus(mismatchedSummary),
       "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
       "/summary/second_pass_outcome_counts/evidence_found"
+    );
+  });
+
+  it("cross-binds collector v2 actionability and the frozen bounded signal projection", () => {
+    const missingGlobalSignals = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      delete value.second_pass.bounded_signals;
+    });
+    expectInvalid(
+      validateReplayCorpus(missingGlobalSignals),
+      "SCHEMA_REQUIRED",
+      "/second_pass/bounded_signals"
+    );
+
+    const legacySelector = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.second_pass.selector_version = "targeted-v1";
+    });
+    expectInvalid(
+      validateReplayCorpus(legacySelector),
+      "SCHEMA_CONST",
+      "/second_pass/selector_version"
+    );
+
+    const missingCandidateCount = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      delete value.candidates[0].ranking_inputs.actionable_gate_count;
+    });
+    expectInvalid(
+      validateReplayCorpus(missingCandidateCount),
+      "SCHEMA_REQUIRED",
+      "/candidates/0/ranking_inputs/actionable_gate_count"
+    );
+
+    const countMismatch = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.second_pass.transactions[0].evidence_diagnostics.actionable_gate_count = 0;
+    });
+    expectInvalid(
+      validateReplayCorpus(countMismatch),
+      "SECOND_PASS_ACTIONABILITY_MISMATCH",
+      "/second_pass/transactions/0/evidence_diagnostics/actionable_gate_count"
+    );
+
+    const signalMismatch = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      value.second_pass.transactions[0].bounded_signals = [{
+        source_id: "tampered",
+        title: "different bounded projection"
+      }];
+    });
+    expectInvalid(
+      validateReplayCorpus(signalMismatch),
+      "SECOND_PASS_BOUNDED_SIGNALS_MISMATCH",
+      "/second_pass/transactions/0/bounded_signals"
     );
   });
 
@@ -1113,6 +1176,10 @@ function transactionFixture() {
 function upgradeCorpusToV2(value) {
   value.collector_contract_version = 2;
   value.second_pass.selector_version = "actionability-v2";
+  value.second_pass.bounded_signals = structuredClone(
+    value.second_pass.transactions[0].bounded_signals
+  );
+  value.candidates[0].ranking_inputs.actionable_gate_count = 1;
   value.second_pass.transactions[0].evidence_diagnostics = {
     project_matching_signal_count: 1,
     eligible_source_role_signal_count: 1,

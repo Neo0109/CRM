@@ -112,6 +112,44 @@ describe("C5-B V7.3 shadow collector", () => {
     );
   });
 
+  it("freezes one capped privacy-safe bounded signal projection for analyzer, provider, and replay", async () => {
+    requireCollector("collectV73ShadowCore");
+    const evidence = nearMissEvidence(24);
+    const mediaSignals = Array.from({ length: 26 }, (_, index) => ({
+      title: `${evidence.project} independent hands-on review ${index}`,
+      source: `Fixture media ${index}`,
+      source_role: "media",
+      link: `https://media-${index}.example/reviews/v73-bounded-signal`
+    }));
+    const providerRequests = [];
+    const core = await collector.collectV73ShadowCore({
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9024" }),
+      steamCandidates: [steamCandidate(evidence)],
+      mediaCandidates: [],
+      mediaSignals,
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async (request) => {
+        providerRequests.push(structuredClone(request));
+        return { quality_proofs: [] };
+      }
+    });
+
+    assert.equal(providerRequests.length, 1);
+    assert.equal(core.second_pass.bounded_signals.length, 24);
+    assert.deepEqual(providerRequests[0].mediaSignals, core.second_pass.bounded_signals);
+    assert.deepEqual(
+      core.second_pass.transactions[0].bounded_signals,
+      core.second_pass.bounded_signals
+    );
+    assert.deepEqual(validateReplayPrivacy(core.second_pass.bounded_signals), {
+      valid: true,
+      errors: []
+    });
+  });
+
   it("projects private candidate audit state out of the persisted pending core", async () => {
     requireCollector("runC5BShadowCollectorSafely");
     const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-private-state-"));

@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Implement privacy-safe V7.3 evidence diagnostics, actionability-first second-pass selection, and a backward-compatible replay collector v2 on remote `main@1a660c049503058a5746a58e2ceed4ef27f351b9`, then open one ready PR to `main`.
+Repair the independent-QA binding defects and strict source-role review finding on the existing Wave 1 branch/PR while preserving the privacy-safe collector v2 envelope, historical v1 replay, and frozen provider contract.
 
 ## Completed
 
@@ -35,21 +35,31 @@ Implement privacy-safe V7.3 evidence diagnostics, actionability-first second-pas
   - `npm run verify:all`: exit 0, including frontend/backend/Functions tests, automation tests, typechecks, production build, Daily contract, and `git diff --check`.
 - Final remote compare from the frozen base is 9 allowed files, +881/-44, with no workflow, V7.2 admission, provider-contract, CRM, Supabase, or generated-data file.
 - Reconfirmed remote `main@1a660c049503058a5746a58e2ceed4ef27f351b9`, branch head `058fa58d2825351a0c3897b899b74b3047b8f98a`, and open PR count 0 before final checkpoint publication.
+- Opened ready PR #115 and stopped without merge; pre-repair head was `c6f5c9f2c001ce45ed7a119b8e3e73aa48821570` (tree `d58bf8e19267fb4bf3beb1b92f8998fdff750b2c`).
+- Independent QA found a P1 binding defect: offline replay trusted stored `ranking_inputs.actionable_gate_count`, the stored decision view omitted that count, and collector v2 did not persist one globally frozen bounded signal projection for independent recomputation.
+- Codex review thread `discussion_r3758019597` found a second P1: non-Bilibili `official`, `developer`, `keyword`, and `unclassified` signals were accepted as independent quality proof even though only `media` and `trusted_creator` are authorized.
+- Added repair RED contracts for:
+  - one capped global `second_pass.bounded_signals` projection shared by analyzer, provider request, each transaction, and replay;
+  - mandatory v2 `actionability-v2`, eligible-candidate actionability counts, selected transaction/count cross-binding, and canonical global/transaction signal equality;
+  - independent offline recomputation from frozen first-pass input, requested actions, and global bounded signals, with count/order tamper mutations required to raise `REPLAY_MISMATCH`;
+  - rejection of `official`, `developer`, `keyword`, and `unclassified` independent-quality signals across all signal origins.
+- Repair RED command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
+- Repair RED result: 85 tests, 79 passed, 6 expected failures. Failures are confined to the missing global bounded-signal field/schema, v2 validator binding, independent replay recomputation, and strict non-media source-role rejection.
 
 ## Remaining
 
-- Publish this final checkpoint through the GitHub API and open one ready PR to `main`.
+- Publish this RED checkpoint on the same branch, implement the minimal GREEN, run focused/full gates, update PR #115, and resolve the review thread only after the fix is pushed.
 
 ## Next Action
 
-Publish the final checkpoint and stop at one ready PR without merge or deploy.
+Publish the repair RED checkpoint and tests through the GitHub API, then implement the bounded GREEN.
 
 ## Git Status
 
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
-- Remote open PRs: `0`.
+- Remote PR: ready PR #115, open and unmerged.
 - Branch: `codex/v73-evidence-actionability`.
-- Remote branch corrected implementation head before final checkpoint: `058fa58d2825351a0c3897b899b74b3047b8f98a`.
+- Remote branch pre-repair head: `c6f5c9f2c001ce45ed7a119b8e3e73aa48821570`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 

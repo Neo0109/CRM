@@ -345,6 +345,21 @@ describe("C5-C no-network offline replay", () => {
     assert.deepEqual(replayed.second_pass.qualified_ids, ["steam:100"]);
   });
 
+  it("independently recomputes v2 actionability and rejects stored count or order tampering", () => {
+    const baseline = replayFixture({ actionabilityV2: true });
+    assert.equal(replayOfflineCorpus(baseline).status, "match");
+
+    const countTamper = mutateBoundReplayCorpus(baseline, (corpus) => {
+      corpus.candidates[1].ranking_inputs.actionable_gate_count = 1;
+    });
+    expectReplayError(() => replayOfflineCorpus(countTamper), "REPLAY_MISMATCH");
+
+    const orderTamper = mutateBoundReplayCorpus(baseline, (corpus) => {
+      corpus.second_pass.eligible_ids.reverse();
+    });
+    expectReplayError(() => replayOfflineCorpus(orderTamper), "REPLAY_MISMATCH");
+  });
+
   it("replays media-first publication with production pool keys and Han loose-key dedupe", () => {
     const corpus = decisionCorpus();
     corpus.candidates = [
@@ -399,6 +414,7 @@ function replayFixture({
   runAttempt = 1,
   healthy = true,
   withCandidate = false,
+  actionabilityV2 = false,
   storedDecisionMismatch = false,
   receiptReportDate = reportDate,
   receiptRunId = String(workflowRunId),
@@ -545,6 +561,7 @@ function replayFixture({
       reason_codes: []
     }
   };
+  if (actionabilityV2) configureActionabilityV2Corpus(corpus);
   corpus.artifact_bindings.replay_corpus.record_count = corpus.candidates.length;
   if (storedDecisionMismatch) {
     corpus.candidates[0].first_pass.indie_prelaunch.output.qualified = false;
@@ -571,6 +588,134 @@ function replayFixture({
     artifactMetadata,
     expectedBehaviorContractSha256: behaviorHash
   };
+}
+
+function configureActionabilityV2Corpus(corpus) {
+  const providerBackedInput = qualifiedIndieInput();
+  providerBackedInput.project = "Provider-backed candidate";
+  providerBackedInput.steam_app_id = "200";
+  providerBackedInput.dedupe_key = "steam:200";
+  providerBackedInput.official_gameplay_evidence = [];
+
+  const qualityOnlyInput = qualifiedIndieInput();
+  qualityOnlyInput.project = "Quality-only candidate";
+  qualityOnlyInput.steam_app_id = "100";
+  qualityOnlyInput.dedupe_key = "steam:100";
+  qualityOnlyInput.quality_proofs = qualityOnlyInput.quality_proofs.slice(0, 1);
+
+  const providerBacked = actionabilityCandidate({
+    candidateId: "steam:200",
+    input: providerBackedInput,
+    discoveryScore: 1,
+    actionableGateCount: 1,
+    sourceIndex: 0
+  });
+  const qualityOnly = actionabilityCandidate({
+    candidateId: "steam:100",
+    input: qualityOnlyInput,
+    discoveryScore: 100,
+    actionableGateCount: 0,
+    sourceIndex: 1
+  });
+  corpus.collector_contract_version = 2;
+  corpus.evidence_catalog = [evidenceFixture()];
+  corpus.candidates = [providerBacked, qualityOnly];
+  corpus.second_pass = {
+    selector_version: "actionability-v2",
+    max_candidates: 1,
+    eligible_ids: [providerBacked.candidate_id, qualityOnly.candidate_id],
+    selected_ids: [providerBacked.candidate_id],
+    omitted_ids: [qualityOnly.candidate_id],
+    attempted_ids: [],
+    failed_ids: [],
+    qualified_ids: [],
+    bounded_signals: [],
+    transactions: []
+  };
+  corpus.discovery_summary.decision_universe_count = 2;
+  corpus.discovery_summary.sources = [{
+    source_id: "steam",
+    raw_count: 2,
+    retained_count: 2,
+    failure_count: 0
+  }];
+  corpus.budgets.limits.second_pass_max_candidates = 1;
+  corpus.integrity.ordered_candidate_count = 2;
+  corpus.integrity.ordered_evidence_count = 1;
+
+  const replayed = buildReplayedDecisionView(corpus);
+  const replayedById = new Map(
+    replayed.candidates.map((candidate) => [candidate.candidate_id, candidate])
+  );
+  for (const candidate of corpus.candidates) {
+    const replayedCandidate = replayedById.get(candidate.candidate_id);
+    candidate.first_pass.indie_prelaunch.output = replayedCandidate.first_pass.indie_prelaunch.output;
+    candidate.first_pass.china_joint.output = replayedCandidate.first_pass.china_joint.output;
+    candidate.first_pass.regular_selection = replayedCandidate.first_pass.regular_selection;
+    candidate.second_pass = replayedCandidate.second_pass;
+    candidate.publication = {
+      ...replayedCandidate.publication,
+      shadow_lead_payload_sha256: null
+    };
+  }
+  corpus.second_pass = {
+    ...replayed.second_pass,
+    bounded_signals: [],
+    transactions: []
+  };
+  corpus.summary = replayed.summary;
+}
+
+function actionabilityCandidate({
+  candidateId,
+  input,
+  discoveryScore,
+  actionableGateCount,
+  sourceIndex
+}) {
+  const candidate = candidateFixture();
+  const indieOutput = evaluateV73IndiePrelaunchAdmission(input);
+  const chinaInput = {};
+  candidate.candidate_id = candidateId;
+  candidate.project = input.project;
+  candidate.steam_app_id = input.steam_app_id;
+  candidate.dedupe_key = input.dedupe_key;
+  candidate.origin_signal_ids = [`signal:${candidateId}`];
+  candidate.normalized_candidate = {
+    project: input.project,
+    steam_app_id: input.steam_app_id,
+    dedupe_key: input.dedupe_key,
+    source_type: "steam"
+  };
+  candidate.discovery_score = discoveryScore;
+  candidate.ranking_inputs = {
+    action_count: indieOutput.next_evidence_actions.length,
+    actionable_gate_count: actionableGateCount,
+    discovery_score: discoveryScore,
+    dedupe_key: input.dedupe_key,
+    source_type: "steam",
+    publication_order: { source_priority: 1, source_index: sourceIndex }
+  };
+  candidate.first_pass.indie_prelaunch.input = structuredClone(input);
+  candidate.first_pass.indie_prelaunch.output = indieOutput;
+  candidate.first_pass.china_joint.input = chinaInput;
+  candidate.first_pass.china_joint.output = evaluateChinaJointAdmission(chinaInput);
+  candidate.publication.shadow_lead_payload_sha256 = null;
+  return candidate;
+}
+
+function mutateBoundReplayCorpus(fixture, mutator) {
+  const value = structuredClone(fixture);
+  const corpus = JSON.parse(value.corpusBytes);
+  mutator(corpus);
+  sealCorpus(corpus);
+  value.corpusBytes = `${canonicalJson(corpus)}\n`;
+  value.artifactMetadata.replay_corpus = {
+    ...value.artifactMetadata.replay_corpus,
+    git_blob_sha: gitBlobSha(value.corpusBytes),
+    payload_sha256: corpus.integrity.payload_sha256
+  };
+  return value;
 }
 
 function candidateFixture() {

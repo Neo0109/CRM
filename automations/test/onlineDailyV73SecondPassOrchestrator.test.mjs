@@ -286,6 +286,21 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       analyze(withOneExistingProof, qualityActions, [matchingRejectedRole]).outcome,
       "source_role_rejected"
     );
+    for (const sourceRole of ["official", "developer", "keyword", "unclassified"]) {
+      const rejectedNonBilibili = analyze(withOneExistingProof, qualityActions, [{
+        ...matchingQuality,
+        source_role: sourceRole,
+        url: `https://${sourceRole}.example/reviews/rejected-independent-role`
+      }]);
+      assert.equal(
+        rejectedNonBilibili.outcome,
+        "source_role_rejected",
+        `${sourceRole} must not occupy an independent-quality slot`
+      );
+      assert.equal(rejectedNonBilibili.eligible_source_role_signal_count, 0);
+      assert.equal(rejectedNonBilibili.accepted_proof_count, 0);
+      assert.equal(rejectedNonBilibili.actionable_gate_count, 0);
+    }
     assert.equal(
       analyze(withOneExistingProof, qualityActions, [matchingNoKeyword]).outcome,
       "quality_keyword_missing"
