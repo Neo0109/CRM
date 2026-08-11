@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import fs from "node:fs/promises";
 import path from "node:path";
 import {
   encodeInteractionCursor,
@@ -10,6 +10,8 @@ import {
 export type BackendInteractionRepositoryInput = {
   dataPath: string;
 };
+
+const appendQueues = new Map<string, Promise<void>>();
 
 export function createBackendInteractionRepository(input: BackendInteractionRepositoryInput) {
   return {
@@ -31,22 +33,35 @@ export function createBackendInteractionRepository(input: BackendInteractionRepo
     },
 
     async append(interaction: InteractionEvent) {
-      const interactions = await readInteractions(input.dataPath);
-      const existing = interactions.find((event) =>
-        event.request_id === interaction.request_id || event.id === interaction.id
-      );
-      if (existing) return { interaction: existing, created: false };
+      return serializeAppend(input.dataPath, async () => {
+        const interactions = await readInteractions(input.dataPath);
+        const existing = interactions.find((event) =>
+          event.request_id === interaction.request_id || event.id === interaction.id
+        );
+        if (existing) return { interaction: existing, created: false };
 
-      interactions.push(interaction);
-      await writeInteractions(input.dataPath, interactions);
-      return { interaction, created: true };
+        interactions.push(interaction);
+        await writeInteractions(input.dataPath, interactions);
+        return { interaction, created: true };
+      });
     }
   };
 }
 
+function serializeAppend<T>(dataPath: string, operation: () => Promise<T>): Promise<T> {
+  const previous = appendQueues.get(dataPath) ?? Promise.resolve();
+  const result = previous.then(operation, operation);
+  const tail = result.then(() => undefined, () => undefined);
+  appendQueues.set(dataPath, tail);
+
+  return result.finally(() => {
+    if (appendQueues.get(dataPath) === tail) appendQueues.delete(dataPath);
+  });
+}
+
 async function readInteractions(dataPath: string): Promise<InteractionEvent[]> {
   try {
-    const value = JSON.parse(await readFile(dataPath, "utf8")) as unknown;
+    const value = JSON.parse(await fs.readFile(dataPath, "utf8")) as unknown;
     if (!Array.isArray(value)) throw new Error("Invalid interaction repository");
     return value.filter(isInteractionEvent);
   } catch (error) {
@@ -59,8 +74,8 @@ async function readInteractions(dataPath: string): Promise<InteractionEvent[]> {
 }
 
 async function writeInteractions(dataPath: string, interactions: InteractionEvent[]) {
-  await mkdir(path.dirname(dataPath), { recursive: true });
-  await writeFile(dataPath, `${JSON.stringify(interactions, null, 2)}\n`, "utf8");
+  await fs.mkdir(path.dirname(dataPath), { recursive: true });
+  await fs.writeFile(dataPath, `${JSON.stringify(interactions, null, 2)}\n`, "utf8");
 }
 
 function compareInteractions(a: InteractionEvent, b: InteractionEvent) {
