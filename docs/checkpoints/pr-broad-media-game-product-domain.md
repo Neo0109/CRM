@@ -50,15 +50,16 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Added a structured `project_name: "雾港纪事"` end-to-end fixture and invalid `steam:abc`, `taptap:company-news`, `kuaibao:news`, and `3839:report` identities.
 - Accepted focused RED: 12 subtests produced 3 failures and 9 legacy greens, proving the absent shared extractor export, false namespace admission, and resulting broad-negative disposition leak.
 - Final bounded GREEN exports one pure `extractGameProductDomainProjectName(item)` and reuses it in both the gate and tagged Lead conversion, ordered as validated structured name, quoted name, then explicit unquoted name. Identity-only admission falls back to legacy title extraction.
-- Steam/TapTap/快爆/3839 namespaced IDs now require positive numeric suffixes; indienova reuses the concrete non-reserved slug validator. Focused passes 12/12, impacted union 59/59, and Daily V4 passes 310/310.
+- Steam/TapTap/快爆/3839 namespaced IDs now require positive numeric suffixes; indienova reuses the concrete non-reserved slug validator, including an explicit `indienova:news` negative. Focused passes 12/12, impacted union 59/59, and Daily V4 passes 310/310.
+- The repeated exact `npm run verify:all` after the final binding repair passes all declared tasks with Daily V4 310/310.
 
 ## Remaining
 
-- Publish the final binding GREEN, repeat full repository/config/diff verification, then verify exact remote blobs/tree and PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
+- Publish the final validated binding checkpoint, then verify exact remote blobs/tree and PR checks. Leave PR #116 ready for Release Captain acceptance; do not merge or deploy.
 
 ## Next Action
 
-Publish the final binding GREEN checkpoint, then repeat full verification and exact remote-tree acceptance.
+Publish the final validated binding checkpoint, then complete exact remote-tree/check acceptance.
 
 ## Git Status
 
