@@ -134,13 +134,23 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Fully verified provider/network-free GREEN: focused passes 21/21; impacted contracts pass 100/100; media/dedupe/audit regressions pass 55/55; and `npm run test:daily-v4` passes 319/319. Exact shimmed `npm run verify:all` passes every declared task, including all typechecks, Daily V4 319/319, historical replay, Daily contract validation, temporary frontend build, and frozen-base diff-check.
 - Machine/fixture JSON parsing, changed-module syntax, exact frozen-main whitespace, and behavior-floor checks pass. Machine rules and both active documents record the same role grammar. The updated `daily-report.json` Git blob is `525ba36be2febd46915b140dbe9ae3cb56e83181`, and the shadow integration floor matches it.
 
+### Closed Count And Extended Entity-Role Grammar P1 RED
+
+- Independent exact-head QA superseded coherent GREEN `ec31f5a6493f7e9199a76137c0b75b027840d8e6` despite its three successful remote checks. The remaining count family was not closed under composition: `若干款`, `几十款`, `十几款`, `10款以上`, `百款左右`, `大约十款`, and `不下10款` all exposed a project and passed domain evidence; downstream legacy rejection on five rows did not satisfy the required early `radar_only/non_game_broad_media` contract.
+- Expanded three-path count RED specifies a reusable full-phrase grammar: repeatable bounded quantifier prefixes; Arabic, Chinese including `几`, or indefinite `若干` numeral cores; optional pre-classifier approximation; 款、个、部、项、批 classifiers; optional post-classifier approximation/range; and bounded series/magnitude forms. Category-prefix recognition must reuse the same count source.
+- The same accepted RED adds short document-role qualifier compositions (`保密/补充/框架协议`, `联合声明`, `整改通知`, `用户公约`) while retaining `逆光协议`; additional media roles (`第一财经`, `中国证券报`, `南方周末`, `经济观察报`); known-company suffix-only roles including 股份、控股、事业群、事业部、部门、中心; and generic ecosystem roles in Chinese and English.
+- Connector fixtures expand slot-only framing with `计划将在/有望于/拟在/宣布计划`, `will be launching`, and `scheduled to launch` in both project/category orders. The exact positive material row remains one candidate/enrichment/audit record but must bind `Lead.project` from `星海远征 计划将在` to exactly `星海远征`.
+- Six exact negative material rows reproduce extracted projects `若干款`, `百款左右`, `保密协议`, `第一财经`, `莉莉丝科技股份`, and `生态`; all six pass evidence, become candidates, enter enrichment, and appear in the candidate audit on the superseded head. Their accepted expectation is exact broad-media Radar-only and zero candidate/enrichment/audit/second-pass/formal output.
+- Final provider/network-free umbrella RED has 24 focused subtests with exactly 7 failures and 17 prior controls green. Failures isolate machine contract, shared three-path roles, connector binding, quote/document role selection, full count early disposition, the six-row negative materiality invariant, and the one-row positive exact binding.
+- Both existing P2 follow-ups remain out of scope: secondary-link evidence union and category-token-in-project selection.
+
 ## Remaining
 
-- Publish this fully verified coherent role-grammar GREEN from exact expanded RED, confirm every remote branch blob and exact-head check, and hand it to Release Captain independent QA. Do not merge.
+- Publish the tests-and-checkpoint-only closed-grammar RED, implement only the bounded count/entity/connector grammar, rerun focused/impacted/Daily V4/full verification, and publish coherent GREEN for independent QA. Do not merge.
 
 ## Next Action
 
-Publish the verified snapshot through the GitHub Git Data API from expanded RED `e88606403565818aeb0c971ca1ceb3e5148306d5`, confirm remote readback, then wait for exact-head checks and independent QA.
+Publish the accepted closed-grammar RED from exact superseded head `ec31f5a6493f7e9199a76137c0b75b027840d8e6`, then implement the reusable grammar without expanding either deferred P2.
 
 ## Git Status
 
@@ -170,3 +180,5 @@ Publish the verified snapshot through the GitHub Git Data API from expanded RED 
 - Expanded connector/attribution/quote-order RED: local tests-and-checkpoint snapshot ready to publish from first role RED `cbc846d4d11bc4b36528b76cbb576c5c2f137ab5`.
 - Accepted expanded role-grammar RED: `e88606403565818aeb0c971ca1ceb3e5148306d5` (tree `9fa2358ca26a802db6de8db2ecd8a3832e113328`).
 - Fully verified role-grammar GREEN: local disposable snapshot ready to publish from exact expanded RED `e88606403565818aeb0c971ca1ceb3e5148306d5`.
+- Superseded role-grammar GREEN: `ec31f5a6493f7e9199a76137c0b75b027840d8e6` (tree `b3c1515d139c262b91a54de7b6397e658ae5db20`); exact checks passed before closed-grammar QA.
+- Accepted closed count/entity-role RED: local tests-and-checkpoint snapshot ready to publish from exact superseded head `ec31f5a6493f7e9199a76137c0b75b027840d8e6`.
