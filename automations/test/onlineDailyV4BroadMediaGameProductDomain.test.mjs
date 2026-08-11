@@ -4,6 +4,7 @@ import { after, describe, it } from "node:test";
 
 import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
 import {
+  dedupeMediaSignals,
   selectDiverseMediaSignals,
   sourceTaggedItem
 } from "../jobs/online_daily_v4_dedupe.mjs";
@@ -13,7 +14,10 @@ import {
   isExpandedDomesticProductSignal,
   isProductSourcingSignal
 } from "../jobs/online_daily_v4_media_entities.mjs";
-import { buildMediaLeadCandidates } from "../jobs/online_daily_v4_media_leads.mjs";
+import {
+  buildMediaLeadCandidates,
+  partitionMediaLeadSourceItems
+} from "../jobs/online_daily_v4_media_leads.mjs";
 import * as mediaRules from "../jobs/online_daily_v4_media_rules.mjs";
 import { mediaSignalToRadarItem } from "../jobs/online_daily_v4_reports.mjs";
 import {
@@ -137,12 +141,17 @@ describe("broad-media game-product candidate domain", () => {
     }
   });
 
-  it("admits only structured identity or concrete project + category + product event on broad media", () => {
+  it("admits only structured identity or concrete project + category + product event on broad media", async () => {
     const positives = [...fixture.broad_media_positive, fixture.structured_identity_positive];
     for (const item of positives) {
       assert.equal(mediaRules.hasGameProductDomainEvidence(item), true, item.title);
       assert.equal(mediaRules.classifyMediaDisposition(item).kind, "lead_candidate", item.title);
+      assert.equal(isExpandedDomesticProductSignal(item), true, item.title);
     }
+    const positiveLeads = await buildMediaLeadCandidates(positives, emptyIndex(), offlineContext({
+      enrichMediaLeadsWithSteamContextImpl: async (leads) => leads
+    }));
+    assert.equal(positiveLeads.length, positives.length);
 
     assert.equal(
       mediaRules.hasGameProductDomainEvidence({
@@ -225,6 +234,28 @@ describe("broad-media game-product candidate domain", () => {
     assert.equal(enrichmentInputCount, 1);
     assert.equal(leads.length, 1);
     assert.equal(context.diagnostics.media_expanded_product_candidates, 0);
+  });
+
+  it("partitions strict, expanded, and rescue items into disjoint bounded lanes", () => {
+    const expandedAndRescue = Array.from({ length: 49 }, (_, index) => ({
+      ...fixture.broad_media_positive[1],
+      title: `国产独立游戏《雾港纪事${index + 1}》公开 Demo`,
+      link: `https://example.test/fog-harbor-demo-${index + 1}`
+    }));
+    const deduped = dedupeMediaSignals([
+      fixture.overlap_positive,
+      fixture.overlap_positive,
+      ...expandedAndRescue
+    ]);
+    const lanes = partitionMediaLeadSourceItems(deduped);
+    const allLaneItems = [...lanes.strict, ...lanes.expanded, ...lanes.rescue];
+
+    assert.equal(deduped.length, 50);
+    assert.equal(lanes.strict.length, 1);
+    assert.equal(lanes.expanded.length, 48);
+    assert.equal(lanes.rescue.length, 1);
+    assert.equal(new Set(allLaneItems).size, allLaneItems.length);
+    assert.equal(allLaneItems.length, deduped.length);
   });
 
   it("regresses animation filtering and normalized Steam identity", () => {

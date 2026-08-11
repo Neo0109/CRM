@@ -24,24 +24,22 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
     if (disposition === "reject") diagnostics.media_rejected = (diagnostics.media_rejected ?? 0) + 1;
   }
 
-  const strictSourceItems = dedupedItems.filter((item) => isProductSourcingSignal(item) || isChinaJointMediaSourcingSignal(item));
+  const {
+    strict: strictSourceItems,
+    expanded: expandedSourceItems,
+    rescue: rescueSourceItems
+  } = partitionMediaLeadSourceItems(dedupedItems);
   const strictLeadCandidates = strictSourceItems
     .map((item) => mediaSignalToLead(item, "strict", context))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
   const strictLeads = filterNewMediaCandidates(strictLeadCandidates, existingIndex, diagnostics, { beforeSteamEnrichment: true });
 
-  const expandedSourceItems = dedupedItems
-    .filter((item) => !isProductSourcingSignal(item) && isExpandedDomesticProductSignal(item))
-    .slice(0, 48);
   diagnostics.media_expanded_product_candidates = (diagnostics.media_expanded_product_candidates ?? 0) + expandedSourceItems.length;
   const expandedLeadCandidates = expandedSourceItems
     .map((item) => mediaSignalToLead(item, "expanded", context))
     .sort((a, b) => (b.media_score ?? 0) - (a.media_score ?? 0));
   const expandedLeads = filterNewMediaCandidates(expandedLeadCandidates, existingIndex, diagnostics, { beforeSteamEnrichment: true });
 
-  const rescueSourceItems = dedupedItems
-    .filter((item) => !strictSourceItems.includes(item) && !expandedSourceItems.includes(item) && isDomesticMediaRescueSignal(item))
-    .slice(0, 64);
   diagnostics.media_rescue_product_candidates = (diagnostics.media_rescue_product_candidates ?? 0) + rescueSourceItems.length;
   const rescueLeadCandidates = rescueSourceItems
     .map((item) => mediaSignalToLead(item, "rescue", context))
@@ -51,7 +49,11 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
   const sourceCandidateItems = new Set([...strictSourceItems, ...expandedSourceItems, ...rescueSourceItems]);
   diagnostics.media_non_product_filtered = (diagnostics.media_non_product_filtered ?? 0) + dedupedItems.length - sourceCandidateItems.size;
 
-  const verifiedCandidates = await enrichMediaLeadsWithSteamContext([...strictLeads, ...expandedLeads, ...rescueLeads], context);
+  const preEnrichmentCandidates = [...strictLeads, ...expandedLeads, ...rescueLeads];
+  const enrichMediaLeads = context.enrichMediaLeadsWithSteamContextImpl ?? enrichMediaLeadsWithSteamContext;
+  const verifiedCandidates = preEnrichmentCandidates.length
+    ? await enrichMediaLeads(preEnrichmentCandidates, context)
+    : [];
   const verifiedLeads = [];
   for (const candidate of verifiedCandidates) {
     const integrity = enforceLeadSteamEvidence(candidate, diagnostics);
@@ -81,6 +83,24 @@ export async function buildMediaLeadCandidates(items, existingIndex, context = {
   const selected = [...verifiedLeads];
   recordMediaLeadCandidates(diagnostics, selected);
   return selected;
+}
+
+export function partitionMediaLeadSourceItems(items) {
+  const lanes = { strict: [], expanded: [], rescue: [] };
+  for (const item of items) {
+    if (isProductSourcingSignal(item) || isChinaJointMediaSourcingSignal(item)) {
+      lanes.strict.push(item);
+      continue;
+    }
+    if (lanes.expanded.length < 48 && isExpandedDomesticProductSignal(item)) {
+      lanes.expanded.push(item);
+      continue;
+    }
+    if (lanes.rescue.length < 64 && isDomesticMediaRescueSignal(item)) {
+      lanes.rescue.push(item);
+    }
+  }
+  return lanes;
 }
 
 function filterNewMediaCandidates(leads, existingIndex, diagnostics, options) {

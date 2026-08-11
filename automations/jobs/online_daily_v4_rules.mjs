@@ -71,11 +71,11 @@ const DEFAULT_MEDIA_SOURCES = [
   { name: "GamesBeat", url: "https://venturebeat.com/category/games/feed/", type: "feed", quality: 9, focus: ["business", "technology"], active: false, disabled_reason: "legacy feed returns persistent 403/429 in cloud runs" },
   { name: "Siliconera", url: "https://www.siliconera.com/feed/", type: "feed", quality: 8, focus: ["product", "asia"] },
   { name: "触乐", url: "https://www.chuapp.com/?feed=rss2", type: "feed", quality: 11, focus: ["china", "culture"] },
-  { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed", quality: 7, focus: ["china", "technology"] },
+  { name: "IT之家", url: "https://www.ithome.com/rss/", type: "feed", quality: 7, focus: ["china", "technology"], candidate_domain_gate: "game_product" },
   { name: "3DM", url: "https://www.3dmgame.com/news/", type: "page", quality: 6, focus: ["china", "product"] },
   { name: "游民星空", url: "https://www.gamersky.com/news/", type: "page", quality: 6, focus: ["china", "product"] },
-  { name: "证券时报", url: "https://www.stcn.com/", type: "page", quality: 10, focus: ["china", "capital", "legal"] },
-  { name: "澎湃新闻", url: "https://m.thepaper.cn/", type: "page", quality: 9, focus: ["china", "legal", "society"], active: false, disabled_reason: "persistent 403 from GitHub Actions egress" }
+  { name: "证券时报", url: "https://www.stcn.com/", type: "page", quality: 10, focus: ["china", "capital", "legal"], candidate_domain_gate: "game_product" },
+  { name: "澎湃新闻", url: "https://m.thepaper.cn/", type: "page", quality: 9, focus: ["china", "legal", "society"], candidate_domain_gate: "game_product", active: false, disabled_reason: "persistent 403 from GitHub Actions egress" }
 ];
 
 const DEFAULT_QUALITY_GATES = {
@@ -196,6 +196,8 @@ function normalizeMediaSource(source) {
   if (source.active === false) normalized.active = false;
   const disabledReason = source.disabledReason ?? source.disabled_reason;
   if (disabledReason) normalized.disabledReason = String(disabledReason);
+  const candidateDomainGate = source.candidate_domain_gate ?? source.candidateDomainGate;
+  if (candidateDomainGate) normalized.candidate_domain_gate = String(candidateDomainGate);
   if (!normalized.url && type === "bilibili_video_search" && query) {
     normalized.url = bilibiliSearchApi(query);
   }

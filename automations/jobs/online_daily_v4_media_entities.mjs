@@ -12,7 +12,9 @@ import {
   classifyMediaDisposition,
   hasAlreadyReleasedMediaText,
   hasConcreteMediaProductMarker,
+  hasGameProductDomainEvidence,
   isBannedMediaLeadText,
+  isGameProductCandidateDomainSource,
   isNonLeadMediaTopicText,
   isOfficialOrDeveloperBilibiliSignal,
   isSteamStoreOperationsTopic,
@@ -86,6 +88,7 @@ export function isProductSourcingSignal(item) {
 
 export function isChinaJointMediaSourcingSignal(item) {
   const disposition = classifyMediaDisposition(item);
+  if (isGameProductCandidateDomainSource(item) && disposition.kind !== "lead_candidate") return false;
   if (["steam_store_claim_without_normalized_evidence", "cross_media_or_film", "non_game_animation_series", "non_game_approval_context"].includes(disposition.reason)) {
     return false;
   }
@@ -111,6 +114,7 @@ export function isExpandedDomesticProductSignal(item) {
   if (isBannedMediaLeadText(text)) return false;
   if (isNonLeadMediaTopicText(text)) return false;
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
+  if (isGameProductCandidateDomainSource(item) && hasGameProductDomainEvidence(item)) return true;
 
   const quoted = /《[^》]{2,48}》/.test(item.title);
   const concreteMarker = hasConcreteMediaProductMarker(item);

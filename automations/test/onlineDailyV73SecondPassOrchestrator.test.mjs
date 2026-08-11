@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { after, describe, it } from "node:test";
 
 import { createEvidenceSnapshot } from "../jobs/online_daily_v4_candidate_state.mjs";
+import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
 import {
   V73_OBTAINABLE_EVIDENCE_RULE_VERSION,
   evaluateV73IndiePrelaunchAdmission
@@ -740,7 +741,7 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     });
 
     assert.deepEqual(candidate, before, "the production candidate must remain byte-identical");
-    assert.equal(core.active_production_rule_version, "sourcing-rules-v7.2-china-joint");
+    assert.equal(core.active_production_rule_version, RULE_VERSION);
     assert.equal(core.shadow_rule_version, V73_OBTAINABLE_EVIDENCE_RULE_VERSION);
     assert.deepEqual(core.second_pass.selected_ids, [before._indieAdmissionEvidence.dedupe_key]);
     assert.equal(core.shadow_candidate_artifact.scan_summary.formal, 1);

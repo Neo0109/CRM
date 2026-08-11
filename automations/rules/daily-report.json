@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v7.2-china-joint",
-  "updated_at": "2026-07-16",
+  "rule_version": "sourcing-rules-v7.2.1-media-product-domain",
+  "updated_at": "2026-08-11",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
-  "canonical_rules_doc": "docs/SOURCING_RULES_V7_2.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V7_2_1.md",
   "compatible_generators": [
     "automations/jobs/online_daily_v4.mjs"
   ],
@@ -186,12 +186,52 @@
     { "name": "GamesBeat", "url": "https://venturebeat.com/category/games/feed/", "type": "feed", "quality": 9, "focus": ["business", "technology"], "active": false, "disabled_reason": "legacy feed returns persistent 403/429 in cloud runs" },
     { "name": "Siliconera", "url": "https://www.siliconera.com/feed/", "type": "feed", "quality": 8, "focus": ["product", "asia"] },
     { "name": "触乐", "url": "https://www.chuapp.com/?feed=rss2", "type": "feed", "quality": 11, "focus": ["china", "culture"] },
-    { "name": "IT之家", "url": "https://www.ithome.com/rss/", "type": "feed", "quality": 7, "focus": ["china", "technology"] },
+    { "name": "IT之家", "url": "https://www.ithome.com/rss/", "type": "feed", "quality": 7, "focus": ["china", "technology"], "candidate_domain_gate": "game_product" },
     { "name": "3DM", "url": "https://www.3dmgame.com/news/", "type": "page", "quality": 6, "focus": ["china", "product"] },
     { "name": "游民星空", "url": "https://www.gamersky.com/news/", "type": "page", "quality": 6, "focus": ["china", "product"] },
-    { "name": "证券时报", "url": "https://www.stcn.com/", "type": "page", "quality": 10, "focus": ["china", "capital", "legal"] },
-    { "name": "澎湃新闻", "url": "https://m.thepaper.cn/", "type": "page", "quality": 9, "focus": ["china", "legal", "society"], "active": false, "disabled_reason": "persistent 403 from GitHub Actions egress" }
+    { "name": "证券时报", "url": "https://www.stcn.com/", "type": "page", "quality": 10, "focus": ["china", "capital", "legal"], "candidate_domain_gate": "game_product" },
+    { "name": "澎湃新闻", "url": "https://m.thepaper.cn/", "type": "page", "quality": 9, "focus": ["china", "legal", "society"], "candidate_domain_gate": "game_product", "active": false, "disabled_reason": "persistent 403 from GitHub Actions egress" }
   ],
+  "broad_media_candidate_domain_gate": {
+    "source_marker": {
+      "candidate_domain_gate": "game_product"
+    },
+    "failure_disposition": "radar_only",
+    "failure_reason": "non_game_broad_media",
+    "structured_identity_sources": [
+      "steam",
+      "steamdb",
+      "taptap",
+      "indienova",
+      "haoyoukuaibao"
+    ],
+    "semantic_evidence_required": [
+      "concrete_project_name",
+      "explicit_game_product_category",
+      "concrete_product_event"
+    ],
+    "concrete_product_events": [
+      "Demo",
+      "试玩",
+      "实机",
+      "Playtest",
+      "测试",
+      "商店页",
+      "愿望单",
+      "版号",
+      "首曝",
+      "开发日志"
+    ],
+    "insufficient_terms": [
+      "B站",
+      "官方",
+      "授权",
+      "发行",
+      "合作",
+      "需求",
+      "上线"
+    ]
+  },
   "media_quality_gates": {
     "max_bilibili_lead_age_days": 120,
     "media_low_score_threshold": 12,
@@ -224,7 +264,8 @@
     "steam_evidence_integrity_required": true,
     "demo_fullgame_resolution_required": true,
     "media_disposition_required": true,
-    "non_game_animation_radar_only_required": true
+    "non_game_animation_radar_only_required": true,
+    "broad_media_game_product_domain_required": true
   },
   "automation_guardrails": [
     "Fail fast when this rule file is missing or incompatible.",

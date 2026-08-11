@@ -13,6 +13,7 @@ import {
 import {
   fetchV73TargetedEvidence
 } from "../jobs/online_daily_v7_3_second_pass_orchestrator.mjs";
+import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
 
 const collectorUrl = new URL(
   "../jobs/online_daily_v7_3_shadow_collector.mjs",
@@ -343,7 +344,7 @@ describe("C5-B V7.3 shadow collector", () => {
     });
 
     assert.equal(digest(steamCandidates), productionBefore, "production candidates must not mutate");
-    assert.equal(core.active_production_rule_version, "sourcing-rules-v7.2-china-joint");
+    assert.equal(core.active_production_rule_version, RULE_VERSION);
     assert.equal(core.shadow_rule_version, "sourcing-rules-v7.3-obtainable-evidence");
     assert.equal(core.candidates.length, 14, "the decision universe must be lossless");
     assert.equal(core.second_pass.eligible_ids.length, 14);

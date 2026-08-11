@@ -324,7 +324,8 @@ function ensureMinimumSteamGenreSignals(signals, context) {
 export function mediaSignalToRadarItem(item, index, context) {
   const title = normalizeDisplayText(item.title);
   const id = `media_${index}_${normalizeText(title).replace(/[^a-z0-9]+/g, "_").slice(0, 36)}`;
-  if (classifyMediaDisposition(item).reason === "non_game_animation_series") {
+  const disposition = classifyMediaDisposition(item);
+  if (disposition.reason === "non_game_animation_series") {
     const cleaned = normalizeDisplayText([item.summary, item.title].filter(Boolean).join(" "));
     return radarItem(
       context,
@@ -337,6 +338,21 @@ export function mediaSignalToRadarItem(item, index, context) {
       item.link,
       "非游戏动画/IP观察只用于关注内容热度和IP节点，不进入游戏Lead。",
       "观察播出节奏、角色/IP热度与B站讨论；只有后续出现独立游戏商店页等可验证游戏证据时再评估。"
+    );
+  }
+  if (disposition.reason === "non_game_broad_media") {
+    const cleaned = normalizeDisplayText([item.summary, item.title].filter(Boolean).join(" "));
+    return radarItem(
+      context,
+      id,
+      categoryForMediaSignal(item),
+      title,
+      `广域媒体非游戏信号：${cleaned.slice(0, 90)}。保留在 Radar，不作为游戏产品候选。`,
+      item.score >= 25 ? "高" : "中",
+      item.source,
+      item.link,
+      "该信号可用于行业与公司背景判断，但没有独立游戏身份，或缺少具体项目名、游戏品类和产品事件的完整组合。",
+      "继续作为 Radar 背景观察；只有后续出现规范游戏链接/ID，或具体游戏项目加明确产品事件时再进入候选与富化。"
     );
   }
 

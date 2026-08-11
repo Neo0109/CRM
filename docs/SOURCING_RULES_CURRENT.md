@@ -1,13 +1,13 @@
 # Current Daily Report Rules
 
-Date: 2026-07-16
+Date: 2026-08-11
 
-The current daily report rule version is `sourcing-rules-v7.2-china-joint`.
+The current daily report rule version is `sourcing-rules-v7.2.1-media-product-domain`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V7_2.md
+docs/SOURCING_RULES_V7_2_1.md
 ```
 
 Machine-readable automation rule source:
@@ -24,7 +24,7 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V7.2 keeps broad discovery active and evaluates `indie_prelaunch` and `china_joint` in parallel. Every deduped project that completely passes either lane enters `push_pool` with `priority=null`; neither lane has a quota and the combined formal pool has no total cap. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V7.2.1 keeps broad discovery active and evaluates `indie_prelaunch` and `china_joint` in parallel. Before candidate conversion, IT之家、证券时报、澎湃新闻 apply the `game_product` candidate-domain gate defined in the canonical document; failed broad-media items remain Radar-only. Every deduped project that completely passes either unchanged V7.2 lane enters `push_pool` with `priority=null`; neither lane has a quota and the combined formal pool has no total cap. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 The standalone `steam-schinese-reviews-v1` audit source is not imported by the active Daily runner or either Daily workflow. V7.1 consumes its validated artifact and activates EA/high-traction and China-heat publication only through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
 
@@ -218,14 +218,23 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 
 ## V7.2 2A/3A China Joint Admission
 
-- The active canonical contract is `docs/SOURCING_RULES_V7_2.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
+- The unchanged lane baseline is `docs/SOURCING_RULES_V7_2.md`; the active composite contract is `docs/SOURCING_RULES_V7_2_1.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
 - `indie_prelaunch` keeps its eleven V7.0 gates. `china_joint` adds four independent gates: identity/dedupe, one locked data path, a current China business opportunity, and confirmed absence of mature China-partner occupancy.
 - The three data paths are exactly: Steam recommendations `>=5000`; recommendations `>=1500` with `Very Positive` or `Overwhelmingly Positive`; or a verified major-title team record plus a current official product event.
 - Current China opportunity means verified publishing, license/版号, localization, marketing, mobile, or joint-operation need. No current China need and known mature China-partner occupancy are hard exclusions from `china_joint`; unknown evidence cannot pass.
 - Both lanes use the same dedupe/publication boundary. An already-qualified indie project keeps `indie_prelaunch`; otherwise a complete joint pass publishes as `china_joint`.
 - Every complete pass is formal. Ranking affects reading order only; neither lane nor their combined formal output has a quota, minimum, maximum, backfill, or cutoff.
 - Fixed acceptance requires the same-day 5-indie + 4-joint fixture to publish all 9 formal Leads, while no-demand and occupied-partner fixtures publish none.
-- The active provenance version is `sourcing-rules-v7.2-china-joint` for every regular formal Lead and candidate-audit record.
+- The active provenance version is `sourcing-rules-v7.2.1-media-product-domain` for every new regular formal Lead and candidate-audit record.
+
+## V7.2.1 Broad-Media Game-Product Domain
+
+- IT之家、证券时报、澎湃新闻 carry `candidate_domain_gate: "game_product"`; game-vertical sources are unchanged.
+- A marked broad-media item may enter candidate routing only with a normalized Steam/SteamDB/TapTap/indienova/好游快爆 identity or structured game ID, or with all three semantic elements: concrete project name, explicit game-product category, and a concrete Demo/试玩/实机/Playtest/测试/商店页/愿望单/版号/首曝/开发日志 event.
+- `B站`、`官方`、`授权`、`发行`、`合作`、`需求`、`上线` alone or combined never satisfy the domain gate.
+- Failure is `radar_only` with reason `non_game_broad_media`; the item stays available to Radar diversity but never enters strict, China-joint, expanded, rescue, enrichment, candidate audit, V7.3 second pass, or a formal Lead lane.
+- Radar keeps its existing schema. The reason code is represented in classifier diagnostics and rendered as explicit non-game context in the Radar card text.
+- Strict, expanded, and rescue routing is disjoint, so one deduped media item is converted and enriched at most once.
 
 ## PR 5 Steam Simplified-Chinese Review Audit Source
 

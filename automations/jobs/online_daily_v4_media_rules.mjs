@@ -34,24 +34,82 @@ function hasStandaloneAnimationSeriesMarker(item) {
   return /动画|动漫|国漫|番剧|漫画|剧集|第\s*(?:[一二三四五六七八九十百]+|\d+)\s*季|开播|播出|粤语版|配音|声优/i.test(text);
 }
 
-function hasIndependentGameProductEvidence(item) {
+export function isGameProductCandidateDomainSource(item) {
+  return String(item?.candidate_domain_gate ?? item?.candidateDomainGate ?? "").trim() === "game_product";
+}
+
+export function hasGameProductDomainEvidence(item) {
   const text = semanticMediaContentText(item);
   const evidence = item?.bilibili_evidence ?? {};
   const structuredUrls = [
+    item?.link,
     ...(Array.isArray(item?.links) ? item.links : []),
+    evidence?.source_url,
+    ...(Array.isArray(evidence?.source_urls) ? evidence.source_urls : []),
     ...(Array.isArray(evidence?.urls) ? evidence.urls : []),
     ...(Array.isArray(evidence?.website_urls) ? evidence.website_urls : [])
   ].join(" ");
-  const hasStructuredSteamId = Boolean(
-    item?.steam_app_id
-    || evidence?.steam_app_id
-    || (Array.isArray(evidence?.steam_app_ids) && evidence.steam_app_ids.length)
-  );
+  const structuredIds = [
+    item?.steam_app_id,
+    item?.steamAppId,
+    item?.game_id,
+    item?.gameId,
+    item?.taptap_app_id,
+    item?.taptapAppId,
+    evidence?.steam_app_id,
+    ...(Array.isArray(evidence?.steam_app_ids) ? evidence.steam_app_ids : [])
+  ];
+  if (structuredIds.some(isStructuredGameId)) return true;
 
-  if (hasStructuredSteamId) return true;
-  if (/store\.steampowered\.com\/app\/\d+|steamdb\.info\/app\/\d+|\bapp\s*id\s*[:：#]?\s*\d+|taptap|indienova|好游快爆/i.test(`${text} ${structuredUrls}`)) return true;
-  if (/独立游戏|手游|端游|主机游戏|网络游戏/i.test(text)) return true;
-  return /游戏/i.test(text) && /\bdemo\b|试玩|实机|测试|商店页|愿望单|版号|\bplaytest\b/i.test(text);
+  const identityText = `${text} ${structuredUrls}`;
+  if (hasNormalizedGameProductLink(identityText)) return true;
+
+  return hasExtractableConcreteGameProject(item, text)
+    && hasExplicitGameProductCategory(text)
+    && hasConcreteGameProductEvent(text);
+}
+
+function isStructuredGameId(value) {
+  if (typeof value !== "string" && typeof value !== "number") return false;
+  const text = String(value ?? "").trim();
+  if (/^(?:true|false|null|undefined|unknown)$/i.test(text)) return false;
+  return /^[1-9]\d*$/.test(text)
+    || /^[a-z0-9][a-z0-9:_-]{2,63}$/i.test(text);
+}
+
+function hasNormalizedGameProductLink(value) {
+  const text = String(value ?? "");
+  return /https?:\/\/(?:store\.steampowered\.com|steamdb\.info)\/app\/[1-9]\d*(?=[/?#\s]|$)/i.test(text)
+    || /https?:\/\/(?:www\.)?taptap\.(?:cn|com)\/(?:app|game)\/[a-z0-9_-]+(?=[/?#\s]|$)/i.test(text)
+    || /https?:\/\/(?:www\.)?indienova\.com\/(?:games?|game|g)\/[a-z0-9_-]+(?=[/?#\s]|$)/i.test(text)
+    || /https?:\/\/(?:[^/]+\.)?(?:3839\.com|haoyoukuaibao\.com)\/[a-z0-9/_-]+/i.test(text);
+}
+
+function hasExtractableConcreteGameProject(item, text) {
+  const structuredProject = [
+    item?.project_name,
+    item?.projectName,
+    item?.game_name,
+    item?.gameName
+  ].map((value) => normalizeDisplayText(value)).find(isConcreteProjectName);
+  if (structuredProject) return true;
+
+  return /(?:独立游戏|国产游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|手游|端游|单机游戏|mobile\s+game|pc\s+game|console\s+game)\s*[：:]?\s*《[^》]{2,48}》/i.test(text)
+    || /《[^》]{2,48}》[^。；.!?]{0,24}(?:独立游戏|国产游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|手游|端游|单机游戏|mobile\s+game|pc\s+game|console\s+game)/i.test(text);
+}
+
+function isConcreteProjectName(value) {
+  const text = normalizeDisplayText(value);
+  if (text.length < 2 || text.length > 64) return false;
+  return !/^(?:游戏|项目|新作|新品|手游|端游|主机游戏|独立游戏|网络游戏|未命名|unknown|untitled)$/i.test(text);
+}
+
+function hasExplicitGameProductCategory(value) {
+  return /独立游戏|国产游戏|网络游戏|电子游戏|手机游戏|主机游戏|电脑游戏|单机游戏|手游|端游|mobile\s+game|pc\s+game|console\s+game/i.test(String(value ?? ""));
+}
+
+function hasConcreteGameProductEvent(value) {
+  return /\bdemo\b|试玩|实机|\bplaytest\b|测试|商店页|愿望单|版号|首曝|开发日志/i.test(String(value ?? ""));
 }
 
 function hasUnresolvedSteamStoreClaim(item) {
@@ -90,7 +148,7 @@ export function classifyMediaDisposition(item) {
   if (/电影|影片|剧本|编剧|演员|导演|制片人|选角|影视改编|影视化|动画改编|真人改编|adaptation|screenplay|film\b|movie\b/i.test(text)) {
     return { kind: "radar_only", reason: "cross_media_or_film" };
   }
-  if (hasStandaloneAnimationSeriesMarker(item) && !hasIndependentGameProductEvidence(item)) {
+  if (hasStandaloneAnimationSeriesMarker(item) && !hasGameProductDomainEvidence(item)) {
     return { kind: "radar_only", reason: "non_game_animation_series" };
   }
   if (/版本更新|大版本|赛季|联动|周年|资料片|\bdlc\b|补丁|更新公告|促销|折扣|史低|攻略|评测|测评|教程|指南|walkthrough|review\b|sale\b|discount/i.test(text)) {
@@ -98,6 +156,9 @@ export function classifyMediaDisposition(item) {
   }
   if (/过审/.test(text) && !hasQualifiedGameApprovalSignal(text)) {
     return { kind: "radar_only", reason: "non_game_approval_context" };
+  }
+  if (isGameProductCandidateDomainSource(item) && !hasGameProductDomainEvidence(item)) {
+    return { kind: "radar_only", reason: "non_game_broad_media" };
   }
   if (isBannedMediaLeadText(text.toLowerCase())) {
     return { kind: "reject", reason: "non_actionable_or_banned" };

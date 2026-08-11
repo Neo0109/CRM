@@ -23,17 +23,20 @@ Deliver one bounded sourcing-precision PR that keeps broad non-game media Radar-
 - Frozen the approved evidence rule: broad media may enter candidate routing only with structured game identity, or a concrete project name plus explicit game-product category plus a concrete product event.
 - Added the RED fixture/test contract covering the exact Chevrolet false positive, generic company/financial news, five concrete broad-media game-event positives, structured identity, game-vertical and animation controls, Radar retention, candidate/audit/formal/second-pass exclusion, and strict/expanded duplicate processing.
 - Captured the expected RED result with no network/provider access: `node --test automations/test/onlineDailyV4BroadMediaGameProductDomain.test.mjs` failed 6/6 bounded subtests on the old version, missing gate helpers, missing Radar-only routing, missing enrichment seam, and duplicate lane processing.
+- Implemented exported broad-media domain helpers, source-marker propagation, pre-enrichment fail-closed routing, a no-candidate enrichment short circuit, and disjoint strict/expanded/rescue lane partitioning.
+- Bumped the active runtime/machine/Heartbeat/current-doc contract to `sourcing-rules-v7.2.1-media-product-domain`; added canonical `docs/SOURCING_RULES_V7_2_1.md`; left the formal V7.2 admission gates unchanged.
+- Resolved one focused compatibility ripple: unmarked global game media retains the pre-existing China-joint discovery behavior, while every marked broad-media non-lead disposition remains unable to bypass the domain gate.
+- GREEN evidence is offline and provider-free: the focused contract passes 7/7 and `npm run test:daily-v4` passes 305/305.
+- Historical replay/window fixtures and the V7.2 baseline document retain their producing version; Heartbeat keeps the old version allowlisted for historical compatibility while recognizing V7.2.1.
 
 ## Remaining
 
-- Implement the game-product domain gate and disjoint strict/expanded/rescue routing.
-- Update current rule/version, heartbeat, canonical/current docs, and legitimate current-version tests while preserving historical fixture compatibility.
 - Run focused tests, Daily V4, full repository verification, schema validation where relevant, and diff checks.
 - Push one ready PR; do not merge or deploy.
 
 ## Next Action
 
-Implement the smallest production path that turns the bounded RED suite GREEN without changing the formal V7.2 admission gates.
+Publish the coherent GREEN checkpoint, then run full repository verification, schema/config validation, and whitespace/diff checks from the disposable snapshot.
 
 ## Git Status
 
@@ -42,3 +45,4 @@ Implement the smallest production path that turns the bounded RED suite GREEN wi
 - Local CRM worktree: read-only and untouched.
 - Disposable snapshot: non-git temporary directory.
 - RED commit parent: `1034028cf6a481337794039e4752ddf01d0eb382`.
+- GREEN commit parent: `6e998999c0ea5679a12fe29e6bcfb27f5fa862bc`.

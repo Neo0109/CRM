@@ -236,7 +236,10 @@ export function sourceTaggedItem(item, source) {
     ...item,
     source: source.name,
     source_focus: source.focus ?? [],
-    source_quality: source.quality ?? 0
+    source_quality: source.quality ?? 0,
+    ...(source.candidate_domain_gate
+      ? { candidate_domain_gate: source.candidate_domain_gate }
+      : {})
   };
 }
 
