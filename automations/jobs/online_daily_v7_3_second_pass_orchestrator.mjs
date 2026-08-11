@@ -20,6 +20,11 @@ const SUPPORTED_PUBLIC_ACTIONS = new Set([
   "fetch_non_steam_business_entry",
   "research_china_bilibili_value"
 ]);
+const PROVIDER_LOOKUP_ACTIONS = new Set([
+  "fetch_official_playable_or_gameplay",
+  "fetch_non_steam_business_entry",
+  "research_china_bilibili_value"
+]);
 
 export const V73_SECOND_PASS_SELECTOR_VERSION = "actionability-v2";
 export const V73_EVIDENCE_DIAGNOSTIC_OUTCOMES = Object.freeze([
@@ -159,8 +164,12 @@ export function analyzeV73EvidenceAvailability({
   candidate = {},
   evidence = {},
   actions = [],
-  mediaSignals = []
+  mediaSignals = [],
+  evaluate = evaluateV73IndiePrelaunchAdmission
 } = {}) {
+  if (typeof evaluate !== "function") {
+    throw new TypeError("V7.3 evidence availability evaluator must be a function.");
+  }
   const requested = new Set(
     (Array.isArray(actions) ? actions : [])
       .map((item) => item?.action)
@@ -202,15 +211,30 @@ export function analyzeV73EvidenceAvailability({
     else outcome = "evidence_found";
   }
 
-  const currentGate = evaluateV73IndiePrelaunchAdmission(evidence)
+  const currentGate = evaluate(evidence)
     .gate_results
     .find((gate) => gate.id === "independent_quality_proof");
   const projectedGate = qualityRequested && acceptedProofs.length > 0
-    ? evaluateV73IndiePrelaunchAdmission({
+    ? evaluate({
         ...cloneValue(evidence),
         quality_proofs: cloneValue(mergedProofs)
       }).gate_results.find((gate) => gate.id === "independent_quality_proof")
     : currentGate;
+  const actionableGateIds = new Set(
+    project
+      ? (Array.isArray(actions) ? actions : [])
+          .filter((item) => PROVIDER_LOOKUP_ACTIONS.has(item?.action))
+          .map((item) => String(item?.gate_id ?? item?.action ?? "").trim())
+          .filter(Boolean)
+      : []
+  );
+  if (
+    qualityRequested
+    && currentGate?.status !== "pass"
+    && projectedGate?.status === "pass"
+  ) {
+    actionableGateIds.add("independent_quality_proof");
+  }
 
   return {
     project_matching_signal_count: matchingSignals.length,
@@ -218,11 +242,7 @@ export function analyzeV73EvidenceAvailability({
     quality_keyword_signal_count: qualitySignals.length,
     independent_source_count: independentSourceCount,
     accepted_proof_count: acceptedProofs.length,
-    actionable_gate_count: Number(
-      qualityRequested
-      && currentGate?.status !== "pass"
-      && projectedGate?.status === "pass"
-    ),
+    actionable_gate_count: actionableGateIds.size,
     outcome
   };
 }
@@ -342,7 +362,8 @@ function candidateForSecondPass({ candidate, index, sourceType, evaluate, mediaS
       candidate,
       evidence: firstPass.evidence,
       actions,
-      mediaSignals
+      mediaSignals,
+      evaluate
     }),
     score: Number(candidate?.score ?? candidate?.media_score ?? 0)
   };

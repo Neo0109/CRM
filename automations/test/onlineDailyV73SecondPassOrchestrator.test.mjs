@@ -193,6 +193,59 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
     );
   });
 
+  it("prioritizes unique provider-backed requested gates even when quality evidence is unavailable locally", async () => {
+    const qualityOnlyEvidence = nearMissEvidence(21);
+    const officialLookupEvidence = nearMissEvidence(22, {
+      official_demo_evidence: [],
+      official_gameplay_evidence: [],
+      quality_proofs: [firstQualityProof, secondQualityProof]
+    });
+    let evaluatorCalls = 0;
+    const evaluate = (input) => {
+      evaluatorCalls += 1;
+      return evaluateV73IndiePrelaunchAdmission(input);
+    };
+    const outcome = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [
+        steamCandidate(qualityOnlyEvidence, { score: 100 }),
+        steamCandidate(officialLookupEvidence, { score: 1 })
+      ],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      maxCandidates: 1,
+      mediaSignals: [],
+      evaluate,
+      fetchEvidence: async () => ({ official_demo_evidence: [] })
+    });
+
+    assert.deepEqual(
+      outcome.results.map((item) => item.dedupe_key),
+      [officialLookupEvidence.dedupe_key]
+    );
+    assert.equal(outcome.results[0].evidence_diagnostics.actionable_gate_count, 1);
+    assert.equal(outcome.results[0].evidence_diagnostics.outcome, "not_requested");
+    assert.ok(evaluatorCalls > 2, "the injected evaluator must also drive actionability analysis");
+    const duplicateGateDiagnostics = analyzeV73EvidenceAvailability({
+      candidate: officialLookupEvidence,
+      evidence: officialLookupEvidence,
+      actions: [
+        {
+          gate_id: "official_playable_or_gameplay",
+          action: "fetch_official_playable_or_gameplay"
+        },
+        {
+          gate_id: "official_playable_or_gameplay",
+          action: "fetch_official_playable_or_gameplay"
+        }
+      ],
+      mediaSignals: [],
+      evaluate
+    });
+    assert.equal(duplicateGateDiagnostics.actionable_gate_count, 1);
+    assert.equal(duplicateGateDiagnostics.outcome, "not_requested");
+  });
+
   it("classifies approved evidence availability outcomes without provider or network access", () => {
     const withOneExistingProof = nearMissEvidence(17);
     const withNoExistingProof = nearMissEvidence(18, { quality_proofs: [] });
@@ -249,6 +302,27 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       analyze(withOneExistingProof, qualityActions, [matchingQuality]).outcome,
       "evidence_found"
     );
+    let injectedEvaluatorCalls = 0;
+    const qualityForcedPassEvaluator = (input) => {
+      injectedEvaluatorCalls += 1;
+      const admission = evaluateV73IndiePrelaunchAdmission(input);
+      return {
+        ...admission,
+        gate_results: admission.gate_results.map((gate) => (
+          gate.id === "independent_quality_proof"
+            ? { ...gate, status: "pass" }
+            : gate
+        ))
+      };
+    };
+    assert.equal(analyzeV73EvidenceAvailability({
+      candidate: withOneExistingProof,
+      evidence: withOneExistingProof,
+      actions: qualityActions,
+      mediaSignals: [matchingQuality],
+      evaluate: qualityForcedPassEvaluator
+    }).actionable_gate_count, 0);
+    assert.ok(injectedEvaluatorCalls >= 1);
   });
 
   it("compares the current sixty eligible candidates deterministically without network access", () => {
@@ -285,10 +359,11 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       Number.isInteger(item.evidence_diagnostics.actionable_gate_count)
       && typeof item.evidence_diagnostics.outcome === "string"
     )));
-    assert.ok(
-      rankItems.every((item) => item.evidence_diagnostics.actionable_gate_count === 0),
-      "the natural corpus bounded evidence currently makes none of the sixty eligible records actionable"
-    );
+    assert.deepEqual({
+      zero: rankItems.filter((item) => item.evidence_diagnostics.actionable_gate_count === 0).length,
+      one: rankItems.filter((item) => item.evidence_diagnostics.actionable_gate_count === 1).length,
+      two: rankItems.filter((item) => item.evidence_diagnostics.actionable_gate_count === 2).length
+    }, { zero: 20, one: 37, two: 3 });
     const legacy = [...rankItems].sort((left, right) => (
       left.actions.length - right.actions.length
       || right.score - left.score
@@ -303,13 +378,26 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       corpus.second_pass.eligible_ids
     );
     assert.deepEqual(
-      actionability.map((item) => item.dedupe_key),
-      legacy.map((item) => item.dedupe_key),
-      "all-zero actionability must preserve the exact natural-run ordering"
+      actionability.map((item) => item.evidence_diagnostics.actionable_gate_count),
+      [...actionability]
+        .map((item) => item.evidence_diagnostics.actionable_gate_count)
+        .toSorted((left, right) => right - left),
+      "provider-backed gates must define the primary priority tier"
     );
+    for (const actionableGateCount of [0, 1, 2]) {
+      assert.deepEqual(
+        actionability
+          .filter((item) => item.evidence_diagnostics.actionable_gate_count === actionableGateCount)
+          .map((item) => item.dedupe_key),
+        legacy
+          .filter((item) => item.evidence_diagnostics.actionable_gate_count === actionableGateCount)
+          .map((item) => item.dedupe_key),
+        `legacy order must remain exact inside actionability tier ${actionableGateCount}`
+      );
+    }
 
     const promoted = structuredClone(rankItems);
-    promoted.at(-1).evidence_diagnostics.actionable_gate_count = 1;
+    promoted.at(-1).evidence_diagnostics.actionable_gate_count = 3;
     assert.equal(
       promoted.sort(compareV73SecondPassPriority)[0].dedupe_key,
       rankItems.at(-1).dedupe_key,

@@ -24,9 +24,12 @@ Implement privacy-safe V7.3 evidence diagnostics, actionability-first second-pas
   - `actionability-v2` ranking before the exact frozen legacy tie keys;
   - collector contract v2 transactions and summary outcome histogram while retaining historical v1 validation;
   - offline replay support for the v2 ranking input and outcome summary.
-- Evidence-derived 60-candidate comparison re-evaluates every stored first-pass input with the real V7.3 evaluator and the natural transaction's bounded signals. Repeated results are identical, all 60 currently have `actionable_gate_count=0`, and their exact legacy order is preserved.
+- Root review identified a P1 gap in the first GREEN: actionability counted only the locally satisfiable quality gate even though the unchanged provider contract also performs official lookup for three requested gate actions.
+- Added a focused P1 RED proving a lower-score official-lookup candidate must outrank a quality-only candidate with no local quality signal. The RED selected the legacy high-score candidate and failed as expected.
+- Corrected actionability to count unique provider-backed requested gate IDs for `fetch_official_playable_or_gameplay`, `fetch_non_steam_business_entry`, and `research_china_bilibili_value`, plus the locally satisfiable quality gate. The same injected evaluator now drives both candidate admission and availability analysis; quality-absent diagnostics remain `not_requested`.
+- Evidence-derived 60-candidate comparison re-evaluates every stored first-pass input with the real V7.3 evaluator and the natural transaction's bounded signals. Repeated results are identical; the corrected actual histogram is 20 candidates at actionability 0, 37 at 1, and 3 at 2. Provider-backed tiers sort first while exact legacy order remains unchanged within each tier.
 - GREEN command: `node --test automations/test/onlineDailyV73SecondPassOrchestrator.test.mjs automations/test/onlineDailyV73ShadowCollector.test.mjs automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
-- GREEN result: 81 tests passed, 0 failed. No live fetch, provider, workflow, CRM, or Supabase call was made.
+- Post-review GREEN result: 82 tests passed, 0 failed. No live fetch, provider, workflow, CRM, or Supabase call was made.
 
 ## Remaining
 
@@ -42,7 +45,7 @@ Run the required full validation gates, publish the exact tested snapshot, and s
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote open PRs: `0`.
 - Planned branch: `codex/v73-evidence-actionability`.
-- Remote branch corrected RED head: `d7d924da1bdd68673a9089cf1abfe6d81e0fd860`.
+- Remote branch pre-review GREEN head: `bc06c7f7f7cfe083921168f17388760d818749da`.
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 
