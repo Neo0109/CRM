@@ -2,7 +2,7 @@
 
 ## Current Goal
 
-Repair the independent-QA binding defects and strict source-role review finding on the existing Wave 1 branch/PR while preserving the privacy-safe collector v2 envelope, historical v1 replay, and frozen provider contract.
+Repair the final-head adversarial-QA full-diagnostics binding defect on the existing Wave 1 branch/PR while preserving the privacy-safe collector v2 envelope, historical v1 replay, and frozen provider contract.
 
 ## Completed
 
@@ -60,21 +60,27 @@ Repair the independent-QA binding defects and strict source-role review finding 
   - `npm run verify:all`: exit 0, including automation tests, typechecks, production build, Daily contract, and `git diff --check`;
   - the replay corpus JSON Schema compiles under Ajv 2020 with formats enabled.
 - No scope pressure appeared: no V7.2 admission, provider-contract, workflow, CRM/Supabase, generated production data, or media-rule Wave 2 file was touched.
+- Final-head adversarial QA found a remaining P1: collector-v2 validation bound only `actionable_gate_count`, so a retained corpus could forge the other five evidence counts and `outcome`, update the outcome histogram, reseal integrity/artifact hashes, and still pass both validation and the current replay decision views.
+- Added a second-repair RED that exactly reproduces the QA mutation (`17/11/9/8/7`, `outcome=evidence_found`, updated histogram, resealed corpus) and requires `SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH` plus a recomputed summary mismatch.
+- Added a validation-bypass RED requiring stored and replayed decision views to diverge when the same full diagnostics mutation is applied, proving replay must independently carry and compare the complete transaction diagnostics.
+- Second-repair RED command: `node --test automations/test/onlineDailyV73ReplayCorpusContract.test.mjs automations/test/onlineDailyV73OfflineReplay.test.mjs`.
+- Second-repair RED result: 49 tests, 47 passed, 2 expected failures. The failures are exactly the missing `SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH` contract binding and the still-equal stored/replayed views after the full diagnostics forgery; the upgraded honest v2 fixture remains valid.
+- Second-repair frozen starting point: PR #115 head `2869ab2e6c8656f48f04d3bb2db5e830dd97d86d`, tree `a72fd09d0453c5be1ae394507dc0e799357a1b6e`; remote `main` remains `1a660c049503058a5746a58e2ceed4ef27f351b9`.
 
 ## Remaining
 
-- Publish this final validated snapshot to the same branch, update PR #115, verify remote checks, and resolve the review thread only after the fix is pushed.
+- Publish the coherent second-repair RED, implement independent full-diagnostics recomputation/binding, then rerun focused, Daily V4, `verify:all`, and Ajv gates on the exact same branch.
 
 ## Next Action
 
-Publish the final checkpoint, update and verify PR #115, resolve the fixed review thread, and stop without merge.
+Run the second-repair RED, checkpoint its expected failures on the existing branch, then implement the minimal pure recomputation binding.
 
 ## Git Status
 
 - Remote truth: `Neo0109/CRM main@1a660c049503058a5746a58e2ceed4ef27f351b9`.
 - Remote PR: ready PR #115, open and unmerged.
 - Branch: `codex/v73-evidence-actionability`.
-- Remote branch checkpointed GREEN head before final validation: `31aeb0dc3d7a7d95e0323064cd8ff53c3c1f2707`.
+- Remote branch head before this second repair: `2869ab2e6c8656f48f04d3bb2db5e830dd97d86d` (tree `a72fd09d0453c5be1ae394507dc0e799357a1b6e`).
 - Local CRM checkout: read-only and intentionally ignored.
 - Working implementation area: disposable non-git snapshot only.
 

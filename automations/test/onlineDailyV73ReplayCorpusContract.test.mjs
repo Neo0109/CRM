@@ -269,13 +269,41 @@ describe("Replay corpus validator", () => {
 
     const mismatchedSummary = mutateCorpus((value) => {
       upgradeCorpusToV2(value);
-      value.summary.second_pass_outcome_counts.evidence_found = 0;
-      value.summary.second_pass_outcome_counts.no_project_match = 1;
+      value.summary.second_pass_outcome_counts.not_requested = 0;
+      value.summary.second_pass_outcome_counts.evidence_found = 1;
     });
     expectInvalid(
       validateReplayCorpus(mismatchedSummary),
       "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
-      "/summary/second_pass_outcome_counts/evidence_found"
+      "/summary/second_pass_outcome_counts/not_requested"
+    );
+  });
+
+  it("recomputes and binds every collector v2 evidence diagnostic before summary counts", () => {
+    const forgedDiagnostics = mutateCorpus((value) => {
+      upgradeCorpusToV2(value);
+      Object.assign(value.second_pass.transactions[0].evidence_diagnostics, {
+        project_matching_signal_count: 17,
+        eligible_source_role_signal_count: 11,
+        quality_keyword_signal_count: 9,
+        independent_source_count: 8,
+        accepted_proof_count: 7,
+        outcome: "evidence_found"
+      });
+      value.summary.second_pass_outcome_counts.not_requested = 0;
+      value.summary.second_pass_outcome_counts.evidence_found = 1;
+    });
+
+    const result = validateReplayCorpus(forgedDiagnostics);
+    expectInvalid(
+      result,
+      "SECOND_PASS_EVIDENCE_DIAGNOSTICS_MISMATCH",
+      "/second_pass/transactions/0/evidence_diagnostics"
+    );
+    expectInvalid(
+      result,
+      "SECOND_PASS_OUTCOME_COUNT_MISMATCH",
+      "/summary/second_pass_outcome_counts/not_requested"
     );
   });
 
@@ -1053,7 +1081,34 @@ function candidateFixture() {
     first_pass: {
       evaluator_dependency_sha256: EVALUATOR_SHA,
       indie_prelaunch: {
-        input: { release_state: "prelaunch", quality_proof_count: 2 },
+        input: {
+          project: "Game One",
+          steam_app_id: "100",
+          dedupe_key: "steam:100",
+          region: "domestic",
+          release_state: "prelaunch",
+          release_window: "over_60",
+          early_access_state: "no",
+          publisher_occupancy: "clear",
+          narrative_state: "no",
+          india_team_state: "no",
+          official_demo_evidence: [],
+          official_gameplay_evidence: [],
+          quality_proofs: [
+            {
+              source_id: "media-one",
+              value: "review one",
+              url: "https://one.example/review"
+            },
+            {
+              source_id: "media-two",
+              value: "review two",
+              url: "https://two.example/review"
+            }
+          ],
+          business_entrypoints: [{ type: "website", url: "https://game.example/contact" }],
+          china_bilibili_value: "Systemic gameplay supports creator challenges."
+        },
         output: { qualified: true, disposition: "formal" },
         gate_results: [
           {
@@ -1181,21 +1236,21 @@ function upgradeCorpusToV2(value) {
   );
   value.candidates[0].ranking_inputs.actionable_gate_count = 1;
   value.second_pass.transactions[0].evidence_diagnostics = {
-    project_matching_signal_count: 1,
-    eligible_source_role_signal_count: 1,
-    quality_keyword_signal_count: 1,
+    project_matching_signal_count: 0,
+    eligible_source_role_signal_count: 0,
+    quality_keyword_signal_count: 0,
     independent_source_count: 2,
-    accepted_proof_count: 1,
+    accepted_proof_count: 0,
     actionable_gate_count: 1,
-    outcome: "evidence_found"
+    outcome: "not_requested"
   };
   value.summary.second_pass_outcome_counts = {
-    evidence_found: 1,
+    evidence_found: 0,
     no_project_match: 0,
     source_role_rejected: 0,
     quality_keyword_missing: 0,
     insufficient_independent_sources: 0,
-    not_requested: 0
+    not_requested: 1
   };
 }
 

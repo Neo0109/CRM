@@ -360,6 +360,31 @@ describe("C5-C no-network offline replay", () => {
     expectReplayError(() => replayOfflineCorpus(orderTamper), "REPLAY_MISMATCH");
   });
 
+  it("binds the full recomputed v2 evidence diagnostics when contract validation is bypassed", () => {
+    const corpus = fullDiagnosticsV2DecisionCorpus();
+    assert.equal(
+      sha256Canonical(buildStoredDecisionView(corpus)),
+      sha256Canonical(buildReplayedDecisionView(corpus))
+    );
+
+    Object.assign(corpus.second_pass.transactions[0].evidence_diagnostics, {
+      project_matching_signal_count: 17,
+      eligible_source_role_signal_count: 11,
+      quality_keyword_signal_count: 9,
+      independent_source_count: 8,
+      accepted_proof_count: 7,
+      outcome: "evidence_found"
+    });
+    corpus.summary.second_pass_outcome_counts.not_requested = 0;
+    corpus.summary.second_pass_outcome_counts.evidence_found = 1;
+
+    assert.notEqual(
+      sha256Canonical(buildStoredDecisionView(corpus)),
+      sha256Canonical(buildReplayedDecisionView(corpus)),
+      "replay must independently bind all six counts and the approved outcome"
+    );
+  });
+
   it("replays media-first publication with production pool keys and Han loose-key dedupe", () => {
     const corpus = decisionCorpus();
     corpus.candidates = [
@@ -923,6 +948,42 @@ function secondPassDecisionCorpus() {
       changed_gate: "official_playable_or_gameplay",
       evaluator_dependency_sha256: SHA_B
     }]
+  };
+  return corpus;
+}
+
+function fullDiagnosticsV2DecisionCorpus() {
+  const corpus = secondPassDecisionCorpus();
+  const transaction = corpus.second_pass.transactions[0];
+  corpus.collector_contract_version = 2;
+  corpus.second_pass.selector_version = "actionability-v2";
+  corpus.second_pass.bounded_signals = [];
+  corpus.candidates[0].ranking_inputs.actionable_gate_count = 1;
+  transaction.evidence_diagnostics = {
+    project_matching_signal_count: 0,
+    eligible_source_role_signal_count: 0,
+    quality_keyword_signal_count: 0,
+    independent_source_count: 2,
+    accepted_proof_count: 0,
+    actionable_gate_count: 1,
+    outcome: "not_requested"
+  };
+
+  const replayed = buildReplayedDecisionView(corpus);
+  applyReplayedState(corpus, replayed);
+  corpus.second_pass = {
+    ...corpus.second_pass,
+    bounded_signals: [],
+    transactions: [transaction]
+  };
+  corpus.candidates[0].ranking_inputs.actionable_gate_count = 1;
+  corpus.summary.second_pass_outcome_counts = {
+    evidence_found: 0,
+    no_project_match: 0,
+    source_role_rejected: 0,
+    quality_keyword_missing: 0,
+    insufficient_independent_sources: 0,
+    not_requested: 1
   };
   return corpus;
 }
