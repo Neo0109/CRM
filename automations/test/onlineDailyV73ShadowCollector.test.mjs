@@ -383,6 +383,73 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal("production_candidate_artifact" in core, false);
   });
 
+  it("binds mixed unsupported actions to one excluded candidate flag and a valid corpus", async () => {
+    requireCollector("collectV73ShadowCore");
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-mixed-eligibility-"));
+    const evidence = nearMissEvidence(71, {
+      release_window: "unknown",
+      official_demo_evidence: [],
+      official_gameplay_evidence: []
+    });
+    const candidate = steamCandidate(evidence);
+    const providerCalls = [];
+    const options = {
+      rootDir,
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9017" }),
+      steamCandidates: [candidate],
+      mediaCandidates: [],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async (request) => {
+        providerCalls.push(structuredClone(request));
+        return {};
+      }
+    };
+
+    const core = await collector.collectV73ShadowCore(options);
+    assert.deepEqual(core.second_pass.eligible_ids, []);
+    assert.deepEqual(core.second_pass.selected_ids, []);
+    assert.deepEqual(core.second_pass.transactions, []);
+    assert.equal(core.candidates[0].second_pass.eligible, false);
+    assert.equal(
+      core.candidates[0].second_pass.rejection_reason,
+      "unsupported_or_unobtainable_gap"
+    );
+    assert.equal(core.candidates[0].second_pass.selected, false);
+    assert.equal(core.candidates[0].second_pass.attempted, false);
+    assert.equal(providerCalls.length, 0);
+
+    const capture = await collector.runC5BShadowCollectorSafely(options);
+    assert.equal(capture.status, "pending", capture.reason);
+    assert.equal(providerCalls.length, 0);
+    await writeFinalizerArtifacts(rootDir);
+    const receiptPath = path.join(
+      rootDir,
+      "data/automation_runs",
+      `${reportDate}-afternoon.json`
+    );
+    await writeReceipt(receiptPath, healthyReceipt({
+      run_id: "9017",
+      run_attempt: 1
+    }));
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath
+    });
+    assert.equal(finalized.status, "complete", finalized.reason);
+    const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
+    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
+    assert.equal(corpus.candidates[0].second_pass.eligible, false);
+    assert.deepEqual(corpus.second_pass.eligible_ids, []);
+  });
+
   it("preserves the media role from the real fixture provider and binds both final proofs", async () => {
     requireCollector("collectV73ShadowCore");
     const evidence = nearMissEvidence(20, {

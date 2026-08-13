@@ -27,6 +27,7 @@ import {
   V73_EVIDENCE_DIAGNOSTIC_OUTCOMES,
   V73_SECOND_PASS_SELECTOR_VERSION,
   fetchV73TargetedEvidence,
+  isV73SecondPassProviderEligible,
   runV73TargetedCandidateSecondPasses
 } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 import { buildSourcingCandidateArtifact } from "./online_daily_v7_3_shadow_candidate_audit.mjs";
@@ -642,7 +643,9 @@ function buildDecisionUniverse({
       audit,
       shadowPools
     });
-    const eligible = secondPassEligible(firstAdmission.lane_results?.indie_prelaunch);
+    const eligible = isV73SecondPassProviderEligible(
+      firstAdmission.lane_results?.indie_prelaunch
+    );
     const selected = Boolean(result);
     const state = entry.state;
     candidates.push({
@@ -1249,15 +1252,6 @@ function sourceRoleForSignal(item, url) {
   if (kind === "media") return "media";
   if (kind === "official" || kind === "developer" || kind === "publisher" || kind === "keyword") return kind;
   return "unclassified";
-}
-
-function secondPassEligible(admission) {
-  const actions = admission?.next_evidence_actions ?? [];
-  return admission?.qualified !== true
-    && admission?.disposition !== "excluded"
-    && actions.length >= 1
-    && actions.length <= 3
-    && actions.every((item) => SUPPORTED_ACTION_FIELDS.has(item?.action));
 }
 
 function secondPassRejection(admission) {

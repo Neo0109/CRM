@@ -28,6 +28,8 @@ const compareV73SecondPassPriority =
 const analyzeV73EvidenceAvailability =
   orchestratorModule.analyzeV73EvidenceAvailability
   ?? missingEvidenceAvailabilityAnalyzer;
+const isV73SecondPassProviderEligible =
+  orchestratorModule.isV73SecondPassProviderEligible;
 const collectorUrl = new URL(
   "../jobs/online_daily_v7_3_shadow_collector.mjs",
   import.meta.url
@@ -141,6 +143,51 @@ describe("V7.3 targeted second-pass Daily orchestration", () => {
       forward.results.some((item) => item.dedupe_key === wideGapEvidence.dedupe_key),
       false
     );
+  });
+
+  it("excludes a mixed unsupported-action near-miss through one provider eligibility contract", async () => {
+    const evidence = nearMissEvidence(70, {
+      release_window: "unknown",
+      official_demo_evidence: [],
+      official_gameplay_evidence: []
+    });
+    const candidate = steamCandidate(evidence);
+    const admission = evaluateV73IndiePrelaunchAdmission(evidence);
+    const providerCalls = [];
+
+    assert.deepEqual(
+      admission.next_evidence_actions.map((item) => item.action),
+      [
+        "verify_prelaunch_window",
+        "fetch_official_playable_or_gameplay",
+        "fetch_independent_quality_evidence"
+      ],
+      "the fixture must retain the exact mixed action shape from the natural failure"
+    );
+    assert.equal(
+      typeof isV73SecondPassProviderEligible,
+      "function",
+      "the selector must export one pure eligibility predicate for collector and replay reuse"
+    );
+    assert.equal(isV73SecondPassProviderEligible(admission), false);
+
+    const outcome = await runV73TargetedCandidateSecondPasses({
+      steamCandidates: [candidate],
+      mediaCandidates: [],
+      candidateStates: new Map(),
+      capturedAt,
+      fetchEvidence: async (request) => {
+        providerCalls.push(structuredClone(request));
+        return {};
+      }
+    });
+
+    assert.deepEqual(outcome.eligible_order, []);
+    assert.deepEqual(outcome.results, []);
+    assert.equal(outcome.metrics.eligible_count, 0);
+    assert.equal(outcome.metrics.selected_count, 0);
+    assert.equal(outcome.metrics.attempted_count, 0);
+    assert.equal(providerCalls.length, 0);
   });
 
   it("prioritizes locally actionable gate changes and preserves the frozen order when none are actionable", async () => {

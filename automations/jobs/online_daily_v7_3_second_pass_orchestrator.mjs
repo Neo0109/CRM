@@ -36,6 +36,17 @@ export const V73_EVIDENCE_DIAGNOSTIC_OUTCOMES = Object.freeze([
   "not_requested"
 ]);
 
+export function isV73SecondPassProviderEligible(admission = {}) {
+  const actions = Array.isArray(admission?.next_evidence_actions)
+    ? admission.next_evidence_actions
+    : [];
+  return admission?.qualified !== true
+    && admission?.disposition !== "excluded"
+    && actions.length >= 1
+    && actions.length <= MAX_ACTIONS_PER_CANDIDATE
+    && actions.every((item) => SUPPORTED_PUBLIC_ACTIONS.has(item?.action));
+}
+
 export async function runV73TargetedCandidateSecondPasses({
   steamCandidates = [],
   mediaCandidates = [],
@@ -365,15 +376,7 @@ function candidateForSecondPass({ candidate, index, sourceType, evaluate, mediaS
   const actions = Array.isArray(firstPass?.next_evidence_actions)
     ? firstPass.next_evidence_actions.map(cloneValue)
     : [];
-  if (
-    firstPass?.qualified === true
-    || firstPass?.disposition === "excluded"
-    || actions.length < 1
-    || actions.length > MAX_ACTIONS_PER_CANDIDATE
-    || actions.some((item) => !SUPPORTED_PUBLIC_ACTIONS.has(item?.action))
-  ) {
-    return null;
-  }
+  if (!isV73SecondPassProviderEligible(firstPass)) return null;
   const dedupeKey = String(firstPass?.evidence?.dedupe_key ?? "").trim();
   if (!dedupeKey) return null;
   return {

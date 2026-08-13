@@ -385,6 +385,26 @@ describe("C5-C no-network offline replay", () => {
     );
   });
 
+  it("replays a mixed unsupported-action candidate as provider-ineligible", () => {
+    const corpus = mixedUnsupportedActionDecisionCorpus();
+    const replayed = buildReplayedDecisionView(corpus);
+
+    assert.deepEqual(replayed.candidates[0].second_pass, {
+      eligible: false,
+      rejection_reason: "unsupported_or_unobtainable_gap",
+      selected: false,
+      attempted: false,
+      transaction_id: null
+    });
+    assert.deepEqual(replayed.second_pass.eligible_ids, []);
+    assert.deepEqual(replayed.second_pass.selected_ids, []);
+    assert.equal(
+      sha256Canonical(buildStoredDecisionView(corpus)),
+      sha256Canonical(replayed),
+      "stored collector flags and independently replayed flags must share provider eligibility"
+    );
+  });
+
   it("replays media-first publication with production pool keys and Han loose-key dedupe", () => {
     const corpus = decisionCorpus();
     corpus.candidates = [
@@ -984,6 +1004,71 @@ function fullDiagnosticsV2DecisionCorpus() {
     quality_keyword_missing: 0,
     insufficient_independent_sources: 0,
     not_requested: 1
+  };
+  return corpus;
+}
+
+function mixedUnsupportedActionDecisionCorpus() {
+  const corpus = decisionCorpus();
+  const candidate = corpus.candidates[0];
+  const input = qualifiedIndieInput();
+  input.release_window = "unknown";
+  input.official_demo_evidence = [];
+  input.official_gameplay_evidence = [];
+  input.quality_proofs = input.quality_proofs.slice(0, 1);
+  const admission = evaluateV73IndiePrelaunchAdmission(input);
+  assert.deepEqual(
+    admission.next_evidence_actions.map((item) => item.action),
+    [
+      "verify_prelaunch_window",
+      "fetch_official_playable_or_gameplay",
+      "fetch_independent_quality_evidence"
+    ]
+  );
+
+  corpus.collector_contract_version = 2;
+  corpus.second_pass.selector_version = "actionability-v2";
+  corpus.second_pass.bounded_signals = [];
+  candidate.first_pass.indie_prelaunch.input = structuredClone(input);
+  candidate.first_pass.indie_prelaunch.output = admission;
+  candidate.ranking_inputs.action_count = admission.next_evidence_actions.length;
+  candidate.ranking_inputs.actionable_gate_count = 0;
+
+  const nonEligibilityProjection = buildReplayedDecisionView(corpus);
+  applyReplayedState(corpus, nonEligibilityProjection);
+  candidate.second_pass = {
+    eligible: false,
+    rejection_reason: "unsupported_or_unobtainable_gap",
+    selected: false,
+    attempted: false,
+    transaction_id: null
+  };
+  corpus.second_pass = {
+    ...nonEligibilityProjection.second_pass,
+    eligible_ids: [],
+    selected_ids: [],
+    omitted_ids: [],
+    attempted_ids: [],
+    failed_ids: [],
+    qualified_ids: [],
+    bounded_signals: [],
+    transactions: []
+  };
+  corpus.summary = {
+    ...nonEligibilityProjection.summary,
+    second_pass_eligible_count: 0,
+    second_pass_selected_count: 0,
+    second_pass_attempted_count: 0,
+    second_pass_failed_count: 0,
+    second_pass_qualified_count: 0,
+    second_pass_outcome_counts: {
+      evidence_found: 0,
+      no_project_match: 0,
+      source_role_rejected: 0,
+      quality_keyword_missing: 0,
+      insufficient_independent_sources: 0,
+      not_requested: 0
+    }
   };
   return corpus;
 }

@@ -8,7 +8,10 @@ import {
   validateReplayPrivacy
 } from "./online_daily_v7_3_replay_corpus_contract.mjs";
 import { evaluateV73IndiePrelaunchAdmission } from "./online_daily_v7_3_obtainable_evidence.mjs";
-import { recomputeV73EvidenceDiagnostics } from "./online_daily_v7_3_second_pass_orchestrator.mjs";
+import {
+  isV73SecondPassProviderEligible,
+  recomputeV73EvidenceDiagnostics
+} from "./online_daily_v7_3_second_pass_orchestrator.mjs";
 import { evaluateChinaJointAdmission } from "./online_daily_v7_2_china_joint_admission.mjs";
 import { selectRegularAdmission } from "./online_daily_v7_2_regular_admission.mjs";
 import { normalizeDisplayText, normalizeText } from "./online_daily_v4_dedupe.mjs";
@@ -203,7 +206,9 @@ export function buildReplayedDecisionView(corpus = {}) {
       : null;
     const indie = recomputedEvidence?.admission
       ?? evaluateV73IndiePrelaunchAdmission(indieInput);
-    const eligible = secondPassEligible(indie);
+    const eligible = collectorV2
+      ? isV73SecondPassProviderEligible(indie)
+      : legacyV1SecondPassEligible(indie);
     const evidenceDiagnostics = collectorV2 && eligible
       ? recomputedEvidence.evidence_diagnostics
       : null;
@@ -796,7 +801,7 @@ function normalizedSecondPassOutcomeCounts(value) {
   ]));
 }
 
-function secondPassEligible(admission = {}) {
+function legacyV1SecondPassEligible(admission = {}) {
   const actions = admission.next_evidence_actions ?? [];
   return admission.qualified !== true
     && admission.disposition !== "excluded"
