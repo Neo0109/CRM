@@ -15,6 +15,7 @@ import {
 } from "../jobs/online_daily_v4_candidate_state.mjs";
 import { scheduleSteamCandidateEnrichment } from "../jobs/online_daily_v4_enrichment_scheduler.mjs";
 import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
+import { RULE_VERSION } from "../jobs/online_daily_v4_rules.mjs";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const validatorPath = fileURLToPath(new URL("../../scripts/validate-daily-contract.mjs", import.meta.url));
@@ -359,7 +360,7 @@ function admissionAudit(evidence) {
   const artifact = buildSourcingCandidateArtifact({
     reportDate: replayDate,
     capturedAt: replayDate + "T12:00:00+08:00",
-    ruleVersion: "sourcing-rules-v7.2-china-joint",
+    ruleVersion: RULE_VERSION,
     rawSteamCandidates: [{
       appId: evidence.appId,
       title: evidence.title,

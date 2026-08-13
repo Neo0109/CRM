@@ -24,23 +24,60 @@ function sourcePriority(item) {
 }
 
 export function dedupeMediaSignals(items) {
-  const keyToIndex = new Map();
-  const out = [];
   const ranked = [...items].sort((a, b) => mediaSignalDedupeRank(b) - mediaSignalDedupeRank(a));
-  for (const item of ranked) {
-    const keys = mediaSignalDedupeKeys(item);
-    const existingIndex = keys.map((key) => keyToIndex.get(key)).find((index) => index !== undefined);
-    if (existingIndex !== undefined) {
-      out[existingIndex] = mergeMediaSignalEvidence(out[existingIndex], item);
-      for (const key of keys) keyToIndex.set(key, existingIndex);
-      continue;
-    }
+  const parents = ranked.map((_, index) => index);
+  const keyOwner = new Map();
+  const activeIndexes = [];
+
+  for (let index = 0; index < ranked.length; index += 1) {
+    const keys = mediaSignalDedupeKeys(ranked[index]);
     if (!keys.length) continue;
-    const index = out.length;
-    out.push(item);
-    for (const key of keys) keyToIndex.set(key, index);
+    activeIndexes.push(index);
+    for (const key of keys) {
+      const owner = keyOwner.get(key);
+      if (owner === undefined) keyOwner.set(key, index);
+      else unionMediaSignalComponents(parents, index, owner);
+    }
   }
-  return out;
+
+  const components = new Map();
+  for (const index of activeIndexes) {
+    const root = findMediaSignalComponent(parents, index);
+    const members = components.get(root) ?? [];
+    members.push(index);
+    components.set(root, members);
+  }
+
+  return [...components.values()]
+    .sort((left, right) => left[0] - right[0])
+    .map((members) => {
+      let merged = ranked[members[0]];
+      for (const index of members.slice(1)) {
+        merged = mergeMediaSignalEvidence(merged, ranked[index]);
+      }
+      return merged;
+    });
+}
+
+function findMediaSignalComponent(parents, index) {
+  let root = index;
+  while (parents[root] !== root) root = parents[root];
+  let cursor = index;
+  while (parents[cursor] !== cursor) {
+    const next = parents[cursor];
+    parents[cursor] = root;
+    cursor = next;
+  }
+  return root;
+}
+
+function unionMediaSignalComponents(parents, left, right) {
+  const leftRoot = findMediaSignalComponent(parents, left);
+  const rightRoot = findMediaSignalComponent(parents, right);
+  if (leftRoot === rightRoot) return;
+  const first = Math.min(leftRoot, rightRoot);
+  const second = Math.max(leftRoot, rightRoot);
+  parents[second] = first;
 }
 
 function mediaSignalDedupeRank(item) {
@@ -71,7 +108,9 @@ function mediaSignalDedupeKeys(item) {
 function mergeMediaSignalEvidence(primary, secondary) {
   const primaryIsBilibili = primary?.bilibili_evidence || /bilibili|b站/i.test(String(primary?.source ?? "") + " " + String(primary?.link ?? ""));
   const secondaryIsBilibili = secondary?.bilibili_evidence || /bilibili|b站/i.test(String(secondary?.source ?? "") + " " + String(secondary?.link ?? ""));
-  if (!primaryIsBilibili && !secondaryIsBilibili) return primary;
+  if (!primaryIsBilibili && !secondaryIsBilibili) {
+    return preserveGameProductCandidateDomainGate(primary, primary, secondary);
+  }
   const primaryEvidence = extractBilibiliEvidence(primary);
   const secondaryEvidence = extractBilibiliEvidence(secondary);
   const mergedEvidence = extractBilibiliEvidence({
@@ -84,7 +123,19 @@ function mergeMediaSignalEvidence(primary, secondary) {
       emails: [...(primaryEvidence.emails ?? []), ...(secondaryEvidence.emails ?? [])]
     }
   }, [secondary.link, ...(secondaryEvidence.urls ?? [])]);
-  return { ...primary, bilibili_evidence: mergedEvidence };
+  return preserveGameProductCandidateDomainGate(
+    { ...primary, bilibili_evidence: mergedEvidence },
+    primary,
+    secondary
+  );
+}
+
+function preserveGameProductCandidateDomainGate(merged, primary, secondary) {
+  const carriesGameProductGate = [primary, secondary].some((item) => (
+    String(item?.candidate_domain_gate ?? item?.candidateDomainGate ?? "").trim() === "game_product"
+  ));
+  if (!carriesGameProductGate || merged?.candidate_domain_gate === "game_product") return merged;
+  return { ...merged, candidate_domain_gate: "game_product" };
 }
 
 function bvidFromUrl(value) {
@@ -236,7 +287,10 @@ export function sourceTaggedItem(item, source) {
     ...item,
     source: source.name,
     source_focus: source.focus ?? [],
-    source_quality: source.quality ?? 0
+    source_quality: source.quality ?? 0,
+    ...(source.candidate_domain_gate
+      ? { candidate_domain_gate: source.candidate_domain_gate }
+      : {})
   };
 }
 

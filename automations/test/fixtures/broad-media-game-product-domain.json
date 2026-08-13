@@ -1,0 +1,487 @@
+{
+  "exact_false_positive": {
+    "title": "多位经销商人士证实：雪佛兰已暂停在华新车销售",
+    "summary": "雪佛兰官方渠道调整中国区业务，涉及经销授权、发行合作需求与直营网点上线，B站同步报道。",
+    "source": "IT之家",
+    "link": "https://www.ithome.com/0/987/877.htm",
+    "source_quality": 7,
+    "source_focus": [
+      "china",
+      "technology"
+    ],
+    "candidate_domain_gate": "game_product",
+    "score": 48
+  },
+  "generic_non_game": [
+    {
+      "title": "某上市公司财报披露与B站达成官方授权发行合作，项目即将上线",
+      "summary": "公司当前需要中国区合作伙伴推进品牌业务，不涉及任何具体游戏产品。",
+      "source": "证券时报",
+      "link": "https://example.test/securities-company-news",
+      "source_quality": 10,
+      "source_focus": [
+        "china",
+        "capital",
+        "legal"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 42
+    },
+    {
+      "title": "汽车品牌宣布官方授权、发行与B站合作需求，服务本月上线",
+      "summary": "中国区合作属于品牌传播和经销业务，没有具体游戏项目。",
+      "source": "澎湃新闻",
+      "link": "https://example.test/vehicle-brand-partnership",
+      "source_quality": 9,
+      "source_focus": [
+        "china",
+        "legal",
+        "society"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 40
+    }
+  ],
+  "generic_game_product_no_name": [
+    {
+      "title": "国产独立游戏 公布试玩 Demo",
+      "summary": "行业栏目汇总近期产品事件，没有给出任何具体项目名称。",
+      "source": "IT之家",
+      "link": "https://example.test/generic-indie-demo",
+      "source_quality": 7,
+      "source_focus": [
+        "china",
+        "technology"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 54
+    },
+    {
+      "title": "国产游戏项目获批版号",
+      "summary": "审批动态未披露具体产品名称。",
+      "source": "证券时报",
+      "link": "https://example.test/generic-game-licence",
+      "source_quality": 10,
+      "source_focus": [
+        "china",
+        "capital",
+        "legal"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 53
+    },
+    {
+      "title": "手游开放商店页愿望单",
+      "summary": "报道只包含通用产品事件词，没有可提取的具体手游名。",
+      "source": "澎湃新闻",
+      "link": "https://example.test/generic-mobile-store-page",
+      "source_quality": 9,
+      "source_focus": [
+        "china",
+        "legal",
+        "society"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 52
+    }
+  ],
+  "malformed_identity": [
+    {
+      "title": "公司新闻使用非数字 Steam 标识",
+      "summary": "这是一条企业动态，不是具体游戏产品。",
+      "source": "证券时报",
+      "link": "https://example.test/company-steam-id",
+      "steam_app_id": "abc",
+      "candidate_domain_gate": "game_product",
+      "score": 45
+    },
+    {
+      "title": "公司新闻使用非数字 TapTap 标识",
+      "summary": "这是一条企业动态，不是具体游戏产品。",
+      "source": "澎湃新闻",
+      "link": "https://example.test/company-taptap-id",
+      "taptap_app_id": "company-news",
+      "candidate_domain_gate": "game_product",
+      "score": 44
+    },
+    {
+      "title": "财务报告写入通用业务标识",
+      "summary": "这是一条财务动态，不是具体游戏产品。",
+      "source": "证券时报",
+      "link": "https://example.test/finance-generic-id",
+      "game_id": "finance_report",
+      "candidate_domain_gate": "game_product",
+      "score": 43
+    },
+    {
+      "title": "3839 公司资讯页面更新",
+      "summary": "新闻路径不是游戏产品身份。",
+      "source": "IT之家",
+      "link": "https://www.3839.com/news/123456.html",
+      "candidate_domain_gate": "game_product",
+      "score": 42
+    },
+    {
+      "title": "好游快爆企业新闻页面更新",
+      "summary": "新闻路径不是游戏产品身份。",
+      "source": "IT之家",
+      "link": "https://www.haoyoukuaibao.com/news/987654.html",
+      "candidate_domain_gate": "game_product",
+      "score": 41
+    },
+    {
+      "title": "好游快爆任意公司路径更新",
+      "summary": "任意路径即使带数字也不是游戏产品身份。",
+      "source": "IT之家",
+      "link": "https://www.haoyoukuaibao.com/company/246810",
+      "candidate_domain_gate": "game_product",
+      "score": 40
+    },
+    {
+      "title": "TapTap 公司新闻伪产品路径",
+      "summary": "非数字路径不是 TapTap 产品身份。",
+      "source": "IT之家",
+      "link": "https://www.taptap.cn/app/company-news",
+      "candidate_domain_gate": "game_product",
+      "score": 39
+    },
+    {
+      "title": "indienova 通用新闻伪产品路径",
+      "summary": "保留路由名称不是具体项目身份。",
+      "source": "IT之家",
+      "link": "https://www.indienova.com/games/news",
+      "candidate_domain_gate": "game_product",
+      "score": 38
+    },
+    {
+      "title": "伪造 Steam 命名空间标识",
+      "summary": "公司新闻不能靠任意 namespace 文本成为游戏身份。",
+      "source": "证券时报",
+      "link": "https://example.test/fake-steam-namespace",
+      "game_id": "steam:abc",
+      "candidate_domain_gate": "game_product",
+      "score": 37
+    },
+    {
+      "title": "伪造 TapTap 命名空间标识",
+      "summary": "公司新闻不能靠任意 namespace 文本成为游戏身份。",
+      "source": "证券时报",
+      "link": "https://example.test/fake-taptap-namespace",
+      "game_id": "taptap:company-news",
+      "candidate_domain_gate": "game_product",
+      "score": 36
+    },
+    {
+      "title": "伪造好游快爆命名空间标识",
+      "summary": "公司新闻不能靠任意 namespace 文本成为游戏身份。",
+      "source": "IT之家",
+      "link": "https://example.test/fake-kuaibao-namespace",
+      "game_id": "kuaibao:news",
+      "candidate_domain_gate": "game_product",
+      "score": 35
+    },
+    {
+      "title": "伪造 3839 命名空间标识",
+      "summary": "公司新闻不能靠任意 namespace 文本成为游戏身份。",
+      "source": "IT之家",
+      "link": "https://example.test/fake-3839-namespace",
+      "game_id": "3839:report",
+      "candidate_domain_gate": "game_product",
+      "score": 34
+    },
+    {
+      "title": "伪造 indienova 保留命名空间标识",
+      "summary": "保留路由名不是具体项目 slug。",
+      "source": "IT之家",
+      "link": "https://example.test/fake-indienova-namespace",
+      "game_id": "indienova:news",
+      "candidate_domain_gate": "game_product",
+      "score": 33
+    }
+  ],
+  "marked_domain_reason_precedence": [
+    {
+      "title": "汽车品牌电影项目公布导演与演员阵容",
+      "summary": "这是影视合作新闻，不是游戏产品。",
+      "source": "IT之家",
+      "link": "https://example.test/marked-film-news",
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "某国漫第三季宣布开播",
+      "summary": "动画剧集公布配音阵容。",
+      "source": "澎湃新闻",
+      "link": "https://example.test/marked-animation-news",
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "汽车服务版本更新公告",
+      "summary": "企业公布服务补丁与版本更新。",
+      "source": "IT之家",
+      "link": "https://example.test/marked-update-news",
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "汽车零部件项目完成过审",
+      "summary": "行业审批动态不涉及网络游戏版号。",
+      "source": "证券时报",
+      "link": "https://example.test/marked-approval-news",
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "公司宣布 Steam 商店页即将上线",
+      "summary": "没有规范 Steam AppID 或产品链接的企业新闻。",
+      "source": "证券时报",
+      "link": "https://example.test/marked-unresolved-store-claim",
+      "candidate_domain_gate": "game_product"
+    }
+  ],
+  "structured_project_name_positive": {
+    "title": "国产独立游戏公布试玩 Demo",
+    "summary": "开发团队发布可试玩版本。",
+    "project_name": "雾港纪事",
+    "source": "IT之家",
+    "link": "https://example.test/structured-project-name-demo",
+    "source_quality": 7,
+    "source_focus": ["china", "technology"],
+    "candidate_domain_gate": "game_product",
+    "score": 62
+  },
+  "unquoted_title_positive": [
+    {
+      "title": "国产独立游戏 雾港纪事 公开 Demo",
+      "summary": "开发团队发布可试玩版本。",
+      "source": "IT之家",
+      "link": "https://example.test/unquoted-fog-harbor-demo",
+      "source_quality": 7,
+      "source_focus": ["china", "technology"],
+      "candidate_domain_gate": "game_product",
+      "score": 61
+    },
+    {
+      "title": "雾港纪事 国产独立游戏公开 Playtest",
+      "summary": "开发团队开放新一轮测试。",
+      "source": "证券时报",
+      "link": "https://example.test/project-before-category-playtest",
+      "source_quality": 10,
+      "source_focus": ["china", "capital", "legal"],
+      "candidate_domain_gate": "game_product",
+      "score": 60
+    },
+    {
+      "title": "国产独立游戏 星海远征 公布试玩 Demo",
+      "summary": "开发团队发布可试玩版本。",
+      "source": "IT之家",
+      "link": "https://example.test/unquoted-starsea-demo",
+      "source_quality": 7,
+      "source_focus": ["china", "technology"],
+      "candidate_domain_gate": "game_product",
+      "score": 59
+    }
+  ],
+  "normalized_identity_positive": [
+    {
+      "title": "《蒸汽身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/steam-identity",
+      "links": ["https://store.steampowered.com/app/123456/"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《SteamDB身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/steamdb-identity",
+      "links": ["https://steamdb.info/app/234567/"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《TapTap身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/taptap-identity",
+      "links": ["https://www.taptap.cn/app/345678"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《indienova身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/indienova-identity",
+      "links": ["https://indienova.com/game/fog-harbor"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《indienova编码身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/indienova-encoded-identity",
+      "links": ["https://indienova.com/g/Lost%20Dream%20Chronicle"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《好游快爆身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/kuaibao-identity",
+      "links": ["https://www.haoyoukuaibao.com/game/456789.html"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《3839身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/3839-identity",
+      "links": ["https://www.3839.com/a/123456.htm"],
+      "candidate_domain_gate": "game_product"
+    },
+    {
+      "title": "《好游快爆手游身份样例》项目页更新",
+      "summary": "开发团队更新产品页。",
+      "source": "IT之家",
+      "link": "https://example.test/kuaibao-shouyou-identity",
+      "links": ["https://www.haoyoukuaibao.com/shouyou/234567.html"],
+      "candidate_domain_gate": "game_product"
+    }
+  ],
+  "broad_media_positive": [
+    {
+      "title": "国产网络游戏《山海工坊》获批版号",
+      "summary": "国家新闻出版署公布国产网络游戏审批信息，开发团队确认项目仍在开发。",
+      "source": "证券时报",
+      "link": "https://example.test/shanhai-licence",
+      "source_quality": 10,
+      "source_focus": [
+        "china",
+        "capital",
+        "legal"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 62
+    },
+    {
+      "title": "国产独立游戏《雾港纪事》公开 Demo",
+      "summary": "独立游戏开发团队发布可试玩 Demo 与后续测试计划。",
+      "source": "IT之家",
+      "link": "https://example.test/fog-harbor-demo",
+      "source_quality": 7,
+      "source_focus": [
+        "china",
+        "technology"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 60
+    },
+    {
+      "title": "国产手游《云海札记》开启 Playtest 测试",
+      "summary": "具体手游项目面向玩家开放 Playtest，团队同步收集试玩反馈。",
+      "source": "澎湃新闻",
+      "link": "https://example.test/cloud-notes-playtest",
+      "source_quality": 9,
+      "source_focus": [
+        "china",
+        "legal",
+        "society"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 59
+    },
+    {
+      "title": "主机游戏《逆光协议》首次公开实机",
+      "summary": "开发团队展示主机游戏核心战斗与关卡实机画面。",
+      "source": "IT之家",
+      "link": "https://example.test/backlight-gameplay",
+      "source_quality": 7,
+      "source_focus": [
+        "china",
+        "technology"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 58
+    },
+    {
+      "title": "国产独立游戏《木星杂货铺》开放商店页与愿望单",
+      "summary": "国内团队的具体独立游戏项目已公开商店页，尚无 Steam AppID。",
+      "source": "证券时报",
+      "link": "https://example.test/jupiter-shop-store-page",
+      "source_quality": 10,
+      "source_focus": [
+        "china",
+        "capital",
+        "legal"
+      ],
+      "candidate_domain_gate": "game_product",
+      "score": 57
+    }
+  ],
+  "structured_identity_positive": {
+    "title": "《纸月协议》项目页面公开",
+    "summary": "开发团队公布项目详情。",
+    "source": "IT之家",
+    "link": "https://www.ithome.com/0/999/001.htm",
+    "links": [
+      "https://www.taptap.cn/app/123456"
+    ],
+    "source_quality": 7,
+    "source_focus": [
+      "china",
+      "technology"
+    ],
+    "candidate_domain_gate": "game_product",
+    "score": 55
+  },
+  "overlap_positive": {
+    "title": "中国独立游戏《折光计划》Demo 开放试玩",
+    "summary": "开发团队当前寻找中国发行合作伙伴，并公布独立游戏 Demo 测试。",
+    "source": "IT之家",
+    "link": "https://example.test/refraction-demo",
+    "source_quality": 7,
+    "source_focus": [
+      "china",
+      "technology"
+    ],
+    "candidate_domain_gate": "game_product",
+    "score": 72
+  },
+  "game_vertical_control": {
+    "title": "国产独立游戏《潮汐信标》公开 Demo",
+    "summary": "开发团队公布试玩和开发日志。",
+    "source": "GameLook",
+    "link": "https://example.test/tidal-beacon",
+    "source_quality": 16,
+    "source_focus": [
+      "china",
+      "business",
+      "domestic_sourcing"
+    ],
+    "score": 70
+  },
+  "game_vertical_animation_control": {
+    "title": "《像素番剧工坊》国漫风独立游戏官方 PV",
+    "summary": "开发团队公布新作 PV，展示动画风格角色与玩法概念。",
+    "source": "GameLook",
+    "link": "https://example.test/pixel-animation-workshop",
+    "source_quality": 16,
+    "source_focus": [
+      "china",
+      "business",
+      "domestic_sourcing"
+    ],
+    "score": 69
+  },
+  "animation_control": {
+    "title": "《灵笼》第三季宣布开播",
+    "summary": "B站国漫动画公布新一季播出安排与配音阵容。",
+    "source": "B站视频-国产二游新作",
+    "link": "https://www.bilibili.com/video/BVANIMATIONCONTROL/",
+    "source_quality": 12,
+    "source_focus": [
+      "china",
+      "bilibili",
+      "creator",
+      "domestic_sourcing"
+    ],
+    "score": 50
+  }
+}

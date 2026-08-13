@@ -23,7 +23,7 @@ const validRuleHeader = {
 
 describe("online daily v4 rule config", () => {
   it("exposes the locked V7.2 regular-lane rule version", () => {
-    assert.equal(RULE_VERSION, "sourcing-rules-v7.2-china-joint");
+    assert.equal(RULE_VERSION, "sourcing-rules-v7.2.1-media-product-domain");
   });
 
   it("loads the current daily rules into machine-readable runtime config", async () => {

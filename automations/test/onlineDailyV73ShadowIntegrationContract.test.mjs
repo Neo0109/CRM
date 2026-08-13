@@ -28,11 +28,11 @@ const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml
 
 const ORIGINAL_BLOBS = {
   generator: "5864b38f5d88969d85ccb47492b56ee564798cb6",
-  activeRulesModule: "0d76e678a322dca98d709677a739de7d38a62135",
-  activeRule: "04a63e7d8e644835948ef348ed7e01bb1ac84624",
+  activeRulesModule: "c89beb38b47a8f23524574c46fe19cc5ef3a3771",
+  activeRule: "a761c3c682d6f1dced76ee232f746bac99f2a765",
   activeDecision: "b326be1cb67b36985616ec54a489d30ec958a8c3",
   activeCandidateAudit: "f6e4403f937eaec60e935c01ea37bd8eeacd40d2",
-  activeReports: "2d78c1d1605fd5ad6a89e68a85e5c2b20fa3d7e1",
+  activeReports: "adaa0492f0097bdc0a3f84bf2330163e20226dc4",
   dailyValidator: "e05e38be25c22ebcd24e9acebfa9012d79e491a3",
   syncWorkflow: "72282bc6964e1b0744624b1903d2c5f4d26d416e",
   watchdogWorkflow: "3a01348ed0b8fc45798e59ceb60dff3a03f94be4"
@@ -47,7 +47,7 @@ describe("C5-B shadow-only production integration", () => {
     assert.equal(gitBlobSha(activeReports), ORIGINAL_BLOBS.activeReports);
     assert.equal(gitBlobSha(dailyValidator), ORIGINAL_BLOBS.dailyValidator);
     assert.match(activeRulesModule, /REGULAR_SOURCING_RULE_VERSION/);
-    assert.equal(activeRule.rule_version, "sourcing-rules-v7.2-china-joint");
+    assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.1-media-product-domain");
   });
 
   it("adds only one non-throwing hook after all four production writes", () => {

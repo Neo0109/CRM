@@ -10,9 +10,13 @@ import { isBilibiliSignal, normalizeDisplayText, normalizeText } from "./online_
 import { isLowInformationMediaTitle } from "./online_daily_v4_media_sources.mjs";
 import {
   classifyMediaDisposition,
+  extractGameProductDomainProjectName,
   hasAlreadyReleasedMediaText,
   hasConcreteMediaProductMarker,
+  hasDomesticGameCompanySignal,
+  hasGameProductDomainEvidence,
   isBannedMediaLeadText,
+  isGameProductCandidateDomainSource,
   isNonLeadMediaTopicText,
   isOfficialOrDeveloperBilibiliSignal,
   isSteamStoreOperationsTopic,
@@ -75,7 +79,7 @@ export function isProductSourcingSignal(item) {
     && !isGenericMediaProjectName(evidenceProject)
     && !isUnusableMediaProjectName(evidenceProject);
   const hasProductName = hasQuotedName || hasStructuredSteamProject || hasBilibiliProjectShape;
-  const domesticCompanySignal = /网易|腾讯|字节|朝夕光年|巨人|西山居|莉莉丝|心动|鹰角|米哈游|散爆|库洛|叠纸|沐瞳|灵犀|祖龙|完美世界|中手游|B站游戏|哔哩哔哩游戏/i.test(text);
+  const domesticCompanySignal = hasDomesticGameCompanySignal(text);
   const domesticTextSignal = /国产|国人|华人|中国团队|国内团队|国内开发|版号|过审|获批|独立游戏|开发日志|taptap|好游快爆|indienova|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
   const domesticSourceSignal = focus.has("domestic_sourcing") && /版号|过审|获批|首曝|国产|国内|中国|中式|国风|武侠|修仙|山海|二次元|小游戏|手游/.test(text);
   const hasDomesticLeadContext = isBilibili || domesticTextSignal || domesticCompanySignal || domesticSourceSignal;
@@ -86,6 +90,7 @@ export function isProductSourcingSignal(item) {
 
 export function isChinaJointMediaSourcingSignal(item) {
   const disposition = classifyMediaDisposition(item);
+  if (isGameProductCandidateDomainSource(item) && disposition.kind !== "lead_candidate") return false;
   if (["steam_store_claim_without_normalized_evidence", "cross_media_or_film", "non_game_animation_series", "non_game_approval_context"].includes(disposition.reason)) {
     return false;
   }
@@ -111,6 +116,7 @@ export function isExpandedDomesticProductSignal(item) {
   if (isBannedMediaLeadText(text)) return false;
   if (isNonLeadMediaTopicText(text)) return false;
   if (/视觉小说|galgame|恋爱模拟|纯剧情|互动小说/i.test(text)) return false;
+  if (isGameProductCandidateDomainSource(item) && hasGameProductDomainEvidence(item)) return true;
 
   const quoted = /《[^》]{2,48}》/.test(item.title);
   const concreteMarker = hasConcreteMediaProductMarker(item);
@@ -149,7 +155,9 @@ export function isDomesticMediaRescueSignal(item) {
 export function mediaSignalToLead(item, confidence = "strict", context = {}) {
   const diagnostics = context.diagnostics ?? {};
   const reportDate = context.reportDate ?? new Date().toISOString().slice(0, 10);
-  const project = extractMediaProjectName(item.title);
+  const project = isGameProductCandidateDomainSource(item)
+    ? extractGameProductDomainProjectName(item) ?? extractMediaProjectName(item.title)
+    : extractMediaProjectName(item.title);
   const score = mediaLeadScore(item);
   const confidencePenalty = confidence === "expanded" ? 6 : confidence === "rescue" ? 10 : 0;
   const isBilibili = isBilibiliSignal(item);
