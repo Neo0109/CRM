@@ -50,20 +50,26 @@ A single provider-selector boundary reduces the blast radius of action-policy ch
 - Completed read-only diagnosis from remote logs and committed artifacts.
 - Reproduced the same first-pass decision deterministically from both natural dates.
 - Created branch `codex/v73-second-pass-eligibility-binding` from the exact post-PR #116 `main` SHA.
+- Published the RED commit `4f89c750db390bf387f09fd2e9d6c6fd27b45478`: 59 focused tests produced exactly three expected failures covering the missing shared predicate export, the incorrect collector candidate flag, and the incorrect offline-replay eligibility recomputation.
+- Exported the pure `isV73SecondPassProviderEligible(admission)` predicate from the provider selector and reused it for selector filtering, collector candidate flags/rejections, and collector-v2 offline replay eligibility/rejections.
+- Preserved the historical collector-v1 nine-action eligibility rule in a clearly named legacy predicate; the public provider contract remains limited to the existing four actions.
+- Added mixed-shape coverage for `verify_prelaunch_window` plus two supported public actions, proving exclusion from `eligible_order`, candidate `eligible=false`, exact `unsupported_or_unobtainable_gap` rejection, zero provider calls, valid corpus finalization, and stored/recomputed replay parity.
+- Local validation in the disposable snapshot is green: focused files 59/59, focused core 90/90, all V7.3 tests 120/120, Daily V4 335/335, JSON schema parsing, syntax checks, and full `npm run verify:all` (with a no-index `git diff --check` adapter because the authorized snapshot intentionally has no `.git` directory).
+- Scope audit shows exactly seven repository changes: three V7.3 implementation files, three V7.3 test files, and this checkpoint. No workflow, provider-contract, CRM, UI, schema, synchronization, report-data, or production-data file changed.
 
 ## Remaining
 
-- Commit RED mixed-action coverage.
-- Implement the shared predicate and reach GREEN.
-- Run focused V7.3, Daily V4, and `verify:all` gates.
-- Publish a ready PR for independent Release Captain acceptance; do not merge in this phase.
+- Publish the GREEN commit and a ready PR.
+- Wait for remote checks and independent Release Captain acceptance; do not merge in this phase.
 
 ## Next Action
 
-Add the failing mixed-action fixtures without changing production code.
+Publish the bounded GREEN commit, open the ready PR, and hand it to the root Release Captain for independent acceptance.
 
 ## Git Status
 
 - Branch: `codex/v73-second-pass-eligibility-binding`.
 - Base: `6ed0d13eb904152459389fefdf2194f4df1678ea`.
+- RED head: `4f89c750db390bf387f09fd2e9d6c6fd27b45478`.
+- Expected changed files: seven (three implementation, three tests, one checkpoint).
 - Working medium: disposable non-git snapshot; all repository writes use the GitHub API.
