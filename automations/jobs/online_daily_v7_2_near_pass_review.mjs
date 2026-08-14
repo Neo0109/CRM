@@ -21,6 +21,16 @@ const GAP_RANK = Object.freeze({
   traction_or_proven_team_event: 2
 });
 
+const INDIE_REVIEW_SOFT_GATES = new Set([
+  "independent_quality_proof",
+  "overseas_china_demand"
+]);
+
+const PLAYABLE_OR_GATE_IDS = new Set([
+  "official_demo_or_playtest",
+  "official_gameplay"
+]);
+
 export function evaluateSteamNearPassReview(candidate = {}) {
   return evaluateNearPassReview({
     indieAdmission: evaluateSteamIndiePrelaunchAdmission(candidate),
@@ -115,17 +125,25 @@ function evaluateIndieReviewEligibility(admission, context) {
   if (evidence.publisher_occupancy !== "clear") rejectionReasons.push("publisher_china_capacity_clear");
   if (evidence.narrative_state !== "no") rejectionReasons.push("non_narrative_product");
   if (evidence.india_team_state !== "no") rejectionReasons.push("non_india_team");
-  if (!hasEvidence(evidence.official_demo_evidence) && !hasEvidence(evidence.official_gameplay_evidence)) {
+  const hasPlayableEvidence = hasEvidence(evidence.official_demo_evidence)
+    || hasEvidence(evidence.official_gameplay_evidence);
+  if (!hasPlayableEvidence) {
     rejectionReasons.push("official_demo_or_playtest_or_gameplay");
   }
   if (!hasNonSteamBusinessEntry(evidence.business_entrypoints)) rejectionReasons.push("non_steam_business_entry");
   if (!nonemptyText(evidence.china_bilibili_value)) rejectionReasons.push("concrete_china_bilibili_value");
 
   const region = normalizedRegion(evidence.region ?? context.sourceRegion);
-  const softGaps = [];
-  if (!hasEvidence(evidence.quality_proofs)) softGaps.push("independent_quality_proof");
-  if (region === "overseas" && !nonemptyText(evidence.china_demand)) softGaps.push("overseas_china_demand");
-  if (softGaps.length !== 1) rejectionReasons.push("soft_gap_count");
+  const failedGates = uniqueStrings(Array.isArray(admission?.failed_gates) ? admission.failed_gates : []);
+  const reviewFailedGates = failedGates.filter((gateId) => !(
+    hasPlayableEvidence && PLAYABLE_OR_GATE_IDS.has(gateId)
+  ));
+  const softGaps = reviewFailedGates.filter((gateId) => INDIE_REVIEW_SOFT_GATES.has(gateId));
+  if (reviewFailedGates.length !== 1 || softGaps.length !== 1) rejectionReasons.push("soft_gap_count");
+  if (region === "unknown") rejectionReasons.push("region_unknown");
+  if (softGaps[0] === "overseas_china_demand" && region !== "overseas") {
+    rejectionReasons.push("overseas_gap_requires_overseas_region");
+  }
 
   return reviewResult({
     eligible: rejectionReasons.length === 0 && admission?.qualified !== true,

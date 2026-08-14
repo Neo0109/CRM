@@ -69,15 +69,22 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 - Reconfirmed before publication: remote `main` remains the frozen base and the open PR queue remains empty; the user worktree retains its pre-existing three entries and was never modified.
 - Published the 22-file implementation as head `023de4f5161d2e914cea3248aac2dcfe52d1d5d0` (tree `8b51515841df655e9c6dde6533e09445e8389c65`) and verified every remote blob against the frozen snapshot.
 - Opened Ready PR #119: `https://github.com/Neo0109/CRM/pull/119`. Agent-side implementation and verification are complete; independent code review, remote checks, and the merge decision remain with the root Release Captain.
+- PR #119's first final head `6672e741d206557dd74764c5d5257d38499a1674` passed all three remote checks, but automated review thread `discussion_r3783116622` found a valid P1: `region=unknown` could hide the formal `overseas_china_demand` failure and mispublish a two-gap candidate as quality-only.
+- Added two isolated RED controls: unknown region with quality plus China-demand missing, and unknown region with quality present plus China-demand missing. The focused suite reported 8 pass / 2 expected failures, proving both stale behaviors before the repair.
+- GREEN binds indie review eligibility to the formal admission's `failed_gates`, removes at most the missing Demo/Gameplay member when the other playable form is present, requires exactly one allowed remaining soft gate, requires confirmed overseas region for the demand gap, and rejects `region=unknown`.
+- The repaired focused suite passed 10/10; broader sourcing regression passed 80/80; full V7.3/corpus/replay regression passed 126/126.
+- Post-review full gates passed: `npm run test:daily-v4` 347/347 across 44 suites and `npm run verify:all` all 16 tasks.
+- Final repair syntax and whitespace checks passed. Relative to the current PR head, the bounded repair changes only the pure evaluator, its focused test, and this checkpoint; all other 19 implementation files remain byte-identical.
 
 ## Remaining
 
-- Wait for PR #119 remote checks and root Release Captain independent QA.
+- Publish the three-file bounded P1 repair to PR #119, wait for remote checks, and resolve the valid review thread only after the remote fix is confirmed.
+- Root Release Captain independent QA and merge decision.
 - Root owns the merge gate; this implementation task must stop unmerged.
 
 ## Next Action
 
-Root Release Captain independently reviews PR #119 and decides whether to merge after all remote checks are green.
+Publish the bounded P1 repair to PR #119 and wait for the final-head remote checks.
 
 ## Git Status
 
@@ -88,6 +95,7 @@ Root Release Captain independently reviews PR #119 and decides whether to merge 
 - Focused-GREEN implementation head: `378cc1a4051a62cb7bb42b19fac24595445457ea` (tree `a9dafc402c37be7f822b5cf8ff13f0e32524979d`).
 - Final implementation head: `023de4f5161d2e914cea3248aac2dcfe52d1d5d0` (tree `8b51515841df655e9c6dde6533e09445e8389c65`).
 - Ready PR: #119 (`https://github.com/Neo0109/CRM/pull/119`), open and unmerged at handoff.
+- Current PR head before the P1 repair: `6672e741d206557dd74764c5d5257d38499a1674` (tree `c42cc63828016d4606d221f323d0a7f257a3cc44`).
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.

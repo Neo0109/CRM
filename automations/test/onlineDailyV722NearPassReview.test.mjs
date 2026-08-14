@@ -131,6 +131,30 @@ describe("V7.2.2 bounded near-pass review publication", () => {
     assert.equal(nearPass.evaluateSteamNearPassReview(gameplayOnly).eligible, true);
   });
 
+  it("rejects unknown-region candidates with both quality and China-demand gates missing", () => {
+    const result = nearPass.evaluateSteamNearPassReview(indieCandidate({
+      appId: "8800007",
+      region: "未知",
+      qualityProofs: [],
+      chinaDemandEvidence: null
+    }));
+
+    assert.equal(result.eligible, false);
+    assert.ok(result.rejection_reasons.includes("region_unknown"));
+  });
+
+  it("rejects unknown-region candidates rather than treating China demand as an overseas-only near-pass gap", () => {
+    const result = nearPass.evaluateSteamNearPassReview(indieCandidate({
+      appId: "8800008",
+      region: "未知",
+      qualityProofs: qualityProof("8800008"),
+      chinaDemandEvidence: null
+    }));
+
+    assert.equal(result.eligible, false);
+    assert.ok(result.rejection_reasons.includes("region_unknown"));
+  });
+
   it("rejects every locked indie hard-gate failure", () => {
     const failures = [
       ["steam_identity", { appId: null }],
@@ -296,7 +320,7 @@ function indieCandidate(overrides = {}) {
       project: overrides.title ?? `Indie ${appId}`,
       steam_app_id: appId,
       dedupe_key: dedupeKey,
-      region: region === "海外" ? "overseas" : "domestic",
+      region: region === "海外" ? "overseas" : region === "中国" ? "domestic" : "unknown",
       release_state: "prelaunch",
       release_window: releaseWindow,
       early_access_state: overrides.earlyAccess ? "yes" : "no",
