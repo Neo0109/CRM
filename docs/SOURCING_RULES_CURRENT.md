@@ -1,13 +1,13 @@
 # Current Daily Report Rules
 
-Date: 2026-08-11
+Date: 2026-08-14
 
-The current daily report rule version is `sourcing-rules-v7.2.1-media-product-domain`.
+The current daily report rule version is `sourcing-rules-v7.2.2-near-pass-review`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V7_2_1.md
+docs/SOURCING_RULES_V7_2_2.md
 ```
 
 Machine-readable automation rule source:
@@ -24,7 +24,7 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V7.2.1 keeps broad discovery active and evaluates `indie_prelaunch` and `china_joint` in parallel. Before candidate conversion, IT之家、证券时报、澎湃新闻 apply the `game_product` candidate-domain gate defined in the canonical document; failed broad-media items remain Radar-only. Every deduped project that completely passes either unchanged V7.2 lane enters `push_pool` with `priority=null`; neither lane has a quota and the combined formal pool has no total cap. Missing or contradictory evidence cannot be offset by score and remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, qualified/push mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V7.2.2 retains the V7.2.1 broad-discovery and `game_product` candidate-domain contract while evaluating `indie_prelaunch` and `china_joint` in parallel. Failed broad-media items remain Radar-only. Every deduped project that completely passes either unchanged V7.2 lane enters `push_pool` first with `priority=null`; neither lane has a quota and the combined strict-formal pool has no total cap. Only after strict-formal dedupe may at most three candidates satisfying the frozen one-gap review contract be appended; all other missing or contradictory evidence remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, publication parity mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 The broad-media gate uses strict numeric/namespaced product identities or one shared concrete-project extractor plus an explicit category and product event. Across structured, quoted, and unquoted paths, the extractor rejects fully generic region/promotion/genre/platform/count phrases, market/platform/industry/ecosystem roles, Bilibili aliases, shared domestic-company/affiliation roles, media/source/attribution entities, and bounded document roles while retaining distinctive residue. Quantity recognition is part of the same whole-name dynamic program: numeral transitions are enabled only during generic segmentation for Arabic, Chinese/`若干`, and bounded English quantity words, while role tokens compose operators, extended classifiers, approximation/range connectors, magnitude idioms, share/rank roles, vague quantities, and common English frames. Category recognition performs a longest-prefix split and reuses that same segmentation plus approved modifiers before an explicit category; it does not maintain a second count regex. Thus `十余种游戏`, `若干名开发者`, `前十名游戏`, `一半游戏`, `很多游戏`, `over 10 games`, `several dozen games`, and `top ten games` are generic only when the whole normalized name is covered, while `半条命`, `十强争霸`, `种地勇者`, `Overland`, `UnderMine`, and `A Dozen Dreams` retain distinctive residue. Organization roles include company suffixes through 股份、控股、事业群、事业部、部门、中心 and, only after a known company prefix, a bounded terminal-role check that closes arbitrary middle sub-brands ending in 业务部、实验室、研究院、工作室群、项目组, or related explicit organization shapes; distinctive products such as `腾讯极光计划` and `网易射雕` remain valid. Media roles include known sources and conservative source suffix shapes. Short documents use whole-body generic-qualifier segmentation plus a role suffix, rejecting composable forms from `投资协议` through `反馈意见` while retaining distinctive names such as `逆光协议` and `灵魂协议`. Category matching uses a lexical-start scanner plus the shared longest-first vocabulary, preventing embedded `PC game/mobile game/端游` substring matches while keeping bare `游戏` insufficient. Category-event slot framing supports bounded Chinese/English temporal/announcement phrases and glued category-first `新作` without globally trimming real names. Quote selection uses the first role-valid project with a later event, so nearer media or policy quotes cannot override it. Prose URL punctuation is removed before strict route validation. Dedupe operates on transitive shared-key components and conservatively preserves the gate marker if any component member carries it, ensuring failed broad items never reach candidate conversion or enrichment.
 
@@ -46,9 +46,9 @@ Every important output should answer:
 
 ## Inbox Rule
 
-Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that completely passes either V7.2 lane enters the formal `push_pool` and `未处理` inbox with `priority=null`.
+Automatic daily reports are discovery plus deterministic admission, not final human prioritization. Every project that completely passes either V7.2 lane enters the formal `push_pool` and `未处理` inbox with `priority=null`, without a formal limit. After all strict formal dedupe, V7.2.2 may append at most three explicitly warned near-pass review Leads for first-round playtest/screening; this review tier does not change any formal gate.
 
-The scan preserves all candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`. Failed or unknown candidates stay only there; the candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
+The scan preserves all candidate evidence and decisions in `data/sourcing_candidates/YYYY-MM-DD.json`. Candidates outside strict formal and the bounded review contract stay only there; the candidate audit is not a Lead payload and is never read by the automatic CRM sync path. The automation must not place new leads into `观察池`, `待评测`, `跟进中`, or `推进池`.
 
 The default operating flow is efficiency-first: first test or inspect the game, then decide. If the game does not pass playtest/content judgment, move it to `淘汰池` immediately. Do not require the BD owner to补官网、邮箱、联系人或长资料 before the product itself has passed the first test.
 
@@ -220,14 +220,14 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 
 ## V7.2 2A/3A China Joint Admission
 
-- The unchanged lane baseline is `docs/SOURCING_RULES_V7_2.md`; the active composite contract is `docs/SOURCING_RULES_V7_2_1.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
+- The unchanged lane baseline is `docs/SOURCING_RULES_V7_2.md`; the active composite contract is `docs/SOURCING_RULES_V7_2_2.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
 - `indie_prelaunch` keeps its eleven V7.0 gates. `china_joint` adds four independent gates: identity/dedupe, one locked data path, a current China business opportunity, and confirmed absence of mature China-partner occupancy.
 - The three data paths are exactly: Steam recommendations `>=5000`; recommendations `>=1500` with `Very Positive` or `Overwhelmingly Positive`; or a verified major-title team record plus a current official product event.
 - Current China opportunity means verified publishing, license/版号, localization, marketing, mobile, or joint-operation need. No current China need and known mature China-partner occupancy are hard exclusions from `china_joint`; unknown evidence cannot pass.
 - Both lanes use the same dedupe/publication boundary. An already-qualified indie project keeps `indie_prelaunch`; otherwise a complete joint pass publishes as `china_joint`.
 - Every complete pass is formal. Ranking affects reading order only; neither lane nor their combined formal output has a quota, minimum, maximum, backfill, or cutoff.
 - Fixed acceptance requires the same-day 5-indie + 4-joint fixture to publish all 9 formal Leads, while no-demand and occupied-partner fixtures publish none.
-- The active provenance version is `sourcing-rules-v7.2.1-media-product-domain` for every new regular formal Lead and candidate-audit record.
+- The active provenance version is `sourcing-rules-v7.2.2-near-pass-review` for every new regular formal/review Lead and candidate-audit record.
 
 ## V7.2.1 Broad-Media Game-Product Domain
 
@@ -238,6 +238,14 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 - Marked-source domain failure runs before unresolved-store, film, animation, update, approval, and other downstream taxonomy, so every failure uses the exact broad-media reason. During dedupe, `candidate_domain_gate: "game_product"` has conservative precedence if either duplicate carries it; two unmarked signals retain legacy behavior.
 - Radar keeps its existing schema. The reason code is represented in classifier diagnostics and rendered as explicit non-game context in the Radar card text.
 - Strict, expanded, and rescue routing is disjoint, so one deduped media item is converted and enriched at most once.
+
+## V7.2.2 Bounded Near-Pass Review
+
+- Strict V7.0/V7.2 admission remains unchanged: every strict formal Lead is deduped and published first, without a quota or total limit.
+- After formal dedupe, the decision layer may append at most three review Leads. Indie review requires a stable Steam identity, every locked hard requirement, Demo/Playtest or official gameplay, and exactly one soft gap: independent quality proof, or overseas China-demand proof for an overseas project. China-joint review requires every locked review hard requirement and may miss only traction/proven-team-event evidence.
+- Review ordering is gap quality, overseas demand, then traction; within that order it is domestic first, current official event first, discovery score descending, and dedupe key ascending.
+- Review Leads stay in `未处理`, stage `new`, priority `null`, and retain the selected lane. Their exact `rule_fit`, `risks`, and `verdict` state that they are for first-round playtest/screening and are not formal business progression.
+- The Lead/API/UI/sync payload is unchanged. Only the candidate audit records `publication_tier`, `strict_formal_count`, and `near_pass_review_count`; both total-push parity equations are blocking.
 
 ## PR 5 Steam Simplified-Chinese Review Audit Source
 

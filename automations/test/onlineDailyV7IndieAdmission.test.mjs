@@ -116,7 +116,7 @@ describe("V7.0 indie_prelaunch admission", () => {
     }
   });
 
-  it("keeps failed projects only in candidate audit and records qualified/push parity", () => {
+  it("keeps hard failures in audit while recording strict/review publication parity", () => {
     const qualifiedEvidence = {
       ...fixture.qualified_base,
       project: "Formal Fixture",
@@ -142,25 +142,31 @@ describe("V7.0 indie_prelaunch admission", () => {
     const artifact = buildSourcingCandidateArtifact({
       reportDate,
       capturedAt,
-      ruleVersion: INDIE_PRELAUNCH_RULE_VERSION,
+      ruleVersion: REGULAR_SOURCING_RULE_VERSION,
       rawSteamCandidates: enriched,
       enrichedSteamCandidates: enriched,
       candidatePools: pools,
       publishedPools: pools
     });
 
-    assert.equal(pools.push.length, 1);
+    assert.equal(pools.push.length, 2);
     assert.deepEqual(pools.watch, []);
     assert.deepEqual(pools.drop, []);
-    assert.equal(artifact.scan_summary.new_qualified_count, 1);
-    assert.equal(artifact.scan_summary.push_pool_count, 1);
+    assert.equal(artifact.scan_summary.new_qualified_count, 2);
+    assert.equal(artifact.scan_summary.push_pool_count, 2);
+    assert.equal(artifact.scan_summary.strict_formal_count, 1);
+    assert.equal(artifact.scan_summary.near_pass_review_count, 1);
     assert.equal(artifact.scan_summary.new_qualified_count, artifact.scan_summary.push_pool_count);
-    assert.equal(artifact.scan_summary.formal, 1);
-    assert.equal(artifact.scan_summary.candidate, 1);
+    assert.equal(artifact.scan_summary.formal, 2);
+    assert.equal(artifact.scan_summary.candidate, 0);
     assert.equal(artifact.scan_summary.excluded, 1);
     assert.equal(artifact.candidates.find((item) => item.steam_app_id === "9300001").decision, "formal");
+    assert.equal(artifact.candidates.find((item) => item.steam_app_id === "9300001").publication_tier, "strict_formal");
+    assert.equal(artifact.candidates.find((item) => item.steam_app_id === "9300002").decision, "formal");
+    assert.equal(artifact.candidates.find((item) => item.steam_app_id === "9300002").publication_tier, "near_pass_review");
     assert.ok(artifact.candidates.find((item) => item.steam_app_id === "9300002").missing_evidence.includes("independent_quality_proof"));
-    assert.ok(artifact.candidates.find((item) => item.steam_app_id === "9300003").exclusion_reasons.some((reason) => /released|已发售/i.test(reason)));
+    assert.equal(artifact.candidates.find((item) => item.steam_app_id === "9300003").decision, "excluded");
+    assert.equal(artifact.candidates.find((item) => item.steam_app_id === "9300003").publication_tier, null);
   });
 });
 

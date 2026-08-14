@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "rule_version": "sourcing-rules-v7.2.1-media-product-domain",
-  "updated_at": "2026-08-11",
+  "rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+  "updated_at": "2026-08-14",
   "active_rules_doc": "docs/SOURCING_RULES_CURRENT.md",
-  "canonical_rules_doc": "docs/SOURCING_RULES_V7_2_1.md",
+  "canonical_rules_doc": "docs/SOURCING_RULES_V7_2_2.md",
   "compatible_generators": [
     "automations/jobs/online_daily_v4.mjs"
   ],
@@ -12,7 +12,7 @@
     "job_to_be_done": "Decide whether a game project deserves BD attention and what to do next."
   },
   "report_contract": {
-    "daily_report": "Scan indie_prelaunch and china_joint in parallel, publish every deduped project that passes one complete V7.2 lane to push_pool with priority=null, apply no lane quota or total formal limit, and keep every failed or unknown candidate only in the sourcing-candidate audit.",
+    "daily_report": "Scan indie_prelaunch and china_joint in parallel, publish every deduped project that passes one complete strict V7.2 lane first with priority=null and no formal limit, then append at most three deduped V7.2.2 near-pass review Leads; keep all other failed or unknown candidates only in the sourcing-candidate audit.",
     "steam_trends": "Output Steam market-board intelligence, not sourcing-rule notes. It must cover category risers, Steam/Next Fest or demo windows, publisher/developer slate signals, public data quality, and concrete BD implications.",
     "industry_radar": "Use real external media, company, legal, platform, or community signals. 行业新闻 is macro only; concrete games, recommendations, fun products, IP/company/legal gossip, and former 发行八卦 items belong in 今日亮点. Never use internal CRM notes as industry news."
   },
@@ -86,6 +86,66 @@
     "drop_pool_enabled": false,
     "invariant": "new_qualified_count === push_pool_count"
   },
+  "near_pass_review": {
+    "active": true,
+    "publication_order": "after_all_strict_formal",
+    "maximum": 3,
+    "automatic_priority": null,
+    "indie_prelaunch": {
+      "hard_requirements": [
+        "numeric_steam_app_id_and_stable_dedupe",
+        "nonduplicate_after_strict_formal",
+        "prelaunch_over_60_or_tba",
+        "non_early_access",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest_or_gameplay",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exactly_one_allowed_gap": [
+        "independent_quality_proof",
+        "overseas_china_demand"
+      ],
+      "overseas_china_demand_gap_scope": "overseas_only"
+    },
+    "china_joint": {
+      "hard_requirements": [
+        "numeric_steam_app_id_and_stable_dedupe",
+        "nonduplicate_after_strict_formal",
+        "current_china_opportunity",
+        "mature_china_partner_clear",
+        "current_official_product_event",
+        "official_demo_or_playtest_or_gameplay",
+        "non_steam_business_entry"
+      ],
+      "exactly_one_allowed_gap": [
+        "traction_or_proven_team_event"
+      ]
+    },
+    "sort": [
+      "gap_independent_quality_proof",
+      "gap_overseas_china_demand",
+      "gap_traction_or_proven_team_event",
+      "domestic_first",
+      "current_official_event_first",
+      "discovery_score_desc",
+      "dedupe_key_asc"
+    ],
+    "warning_copy": {
+      "rule_fit": "Near-pass 人工复核：唯一缺失 gate=<gate_id>（<中文门槛>）；其余硬性条件已通过。",
+      "risks": "Near-pass 唯一缺口：<gate_id>（<中文门槛>）；需在首轮试玩/筛选中核验。",
+      "verdict": "仅供首轮试玩/筛选，不代表正式商务推进，试玩不成立直接淘汰。"
+    },
+    "audit": {
+      "publication_tier": ["strict_formal", "near_pass_review", null],
+      "invariants": [
+        "new_qualified_count === push_pool_count",
+        "strict_formal_count + near_pass_review_count === push_pool_count"
+      ]
+    }
+  },
   "required_decision_fields": [
     "product",
     "strengths",
@@ -105,7 +165,8 @@
     "Released or Early Access products remain ineligible for indie_prelaunch but may qualify for china_joint when every joint-publishing gate passes.",
     "Narrative-first and India-led exclusions remain specific to indie_prelaunch and cannot be used to bypass or replace china_joint commercial gates.",
     "Indie projects with mature publisher or China-capability occupancy remain excluded; china_joint specifically requires that no mature China partner already occupies the opportunity.",
-    "Neither lane has a formal quota, minimum, maximum, backfill, or ranking cutoff."
+    "Neither lane has a formal quota, minimum, maximum, backfill, or ranking cutoff.",
+    "V7.2.2 near-pass review never changes a strict gate: every strict formal Lead is deduped and published first without limit, then at most three explicitly warned review Leads may be appended."
   ],
   "source_strategy": [
     "Expand domestic discovery through Chinese game/business media, domestic indie/developer communities, Bilibili video/search API signals, indienova, TapTap-style developer signals, and official studio posts.",
@@ -115,7 +176,7 @@
     "Standalone animation, anime, comic, series, season, broadcast, dubbing, or voice-cast signals must remain radar_only unless independent game-product evidence exists. A sourcing-source label, quoted title, PV/trailer, new-work, launch, reservation, or official-source status alone is not game evidence.",
     "A valid first-pass lead does not require a Steam AppID. Bilibili videos, media articles, official sites, TapTap, indienova, or developer posts can be the first verification link.",
     "Steam remains useful, but domestic developer Demo/test signals should outrank generic overseas upcoming lists.",
-    "Daily sourcing coverage must not depend on Steam alone. Retain scan and conversion diagnostics while publishing only projects that pass one complete V7.2 lane.",
+    "Daily sourcing coverage must not depend on Steam alone. Retain scan and conversion diagnostics; publish all complete V7.2 strict passes first, then only candidates that satisfy the frozen V7.2.2 one-gap review contract.",
     "Expanded domestic media/Bilibili candidates remain in the sourcing-candidate audit until identity and every other mandatory gate are complete.",
     "If Steam search or AppDetails is unavailable, the report must transparently continue with domestic media/Bilibili market signals and any independently qualified projects rather than manufacture a token queue.",
     "Bilibili expansion must filter stale videos, generic recommendation collections, mature blockbuster chatter, rant/review filler, and other non-actionable content.",
@@ -132,7 +193,7 @@
     "Bilibili/media leads must dedupe against existing CRM projects, Steam AppIDs, source URLs, and normalized lead keys before creating a new candidate.",
     "Bilibili video leads must be time-sensitive. Old videos should not create new review leads unless they contain a current playable/update/business window.",
     "Media lead fields must stay decision-grade: priority_reason explains priority only, rule_fit explains why it fits or fails, gameplay is tag-like, progress is a short status, and next_action/notes are empty unless there is important extra evidence.",
-    "V7.2 must not restore quantity backfill, P3-to-P2 promotion, lane quotas, or a total formal limit; every and only fully qualified project is published.",
+    "V7.2.2 must not restore quantity backfill, P3-to-P2 promotion, lane quotas, or a total formal limit; every fully qualified project is published first, and the separate review tier is capped at three.",
     "Full Bilibili video details must be converted into one structured BilibiliEvidence object before summary truncation or display-field formatting.",
     "When Bilibili evidence contains a Steam Store, Steam Community app, or SteamDB app URL, the final lead must carry the resolved full-game AppID plus Store and SteamDB links; otherwise block Lead sync and record steam_evidence_lost.",
     "Steam demo AppIDs must resolve through fullgame.appid before release-window classification; a demo release date must never be treated as the full game's release date.",

@@ -59,6 +59,7 @@ export const C5B_BEHAVIOR_DEPENDENCY_PATHS = Object.freeze([
   "automations/jobs/online_daily_v4_source_utils.mjs",
   "automations/jobs/online_daily_v4_steam_source.mjs",
   "automations/jobs/online_daily_v7_2_china_joint_admission.mjs",
+  "automations/jobs/online_daily_v7_2_near_pass_review.mjs",
   "automations/jobs/online_daily_v7_2_regular_admission.mjs",
   "automations/jobs/online_daily_v7_indie_admission.mjs",
   "automations/jobs/online_daily_v7_3_obtainable_evidence.mjs",

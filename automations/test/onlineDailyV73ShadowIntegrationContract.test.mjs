@@ -29,17 +29,17 @@ const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml
 const ORIGINAL_BLOBS = {
   generator: "5864b38f5d88969d85ccb47492b56ee564798cb6",
   activeRulesModule: "c89beb38b47a8f23524574c46fe19cc5ef3a3771",
-  activeRule: "a761c3c682d6f1dced76ee232f746bac99f2a765",
-  activeDecision: "b326be1cb67b36985616ec54a489d30ec958a8c3",
-  activeCandidateAudit: "f6e4403f937eaec60e935c01ea37bd8eeacd40d2",
-  activeReports: "adaa0492f0097bdc0a3f84bf2330163e20226dc4",
-  dailyValidator: "e05e38be25c22ebcd24e9acebfa9012d79e491a3",
+  activeRule: "f111f5edc9e73c256a8f929182005d0de99cbc96",
+  activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
+  activeCandidateAudit: "c2bf0aef0f146660129ababe09ca3eed450ad24e",
+  activeReports: "c8fb49b9e6ad1c1c9bc7d4169247cda25e867920",
+  dailyValidator: "09bcf75ba6a4dc5bedd99bc6cb0a7b1b9986eed0",
   syncWorkflow: "72282bc6964e1b0744624b1903d2c5f4d26d416e",
   watchdogWorkflow: "3a01348ed0b8fc45798e59ceb60dff3a03f94be4"
 };
 
 describe("C5-B shadow-only production integration", () => {
-  it("keeps every exact denylist and production V7.2 authority blob unchanged", () => {
+  it("freezes every exact denylist and approved production V7.2.2 authority blob", () => {
     assert.equal(gitBlobSha(activeRulesModule), ORIGINAL_BLOBS.activeRulesModule);
     assert.equal(gitBlobSha(activeRuleText), ORIGINAL_BLOBS.activeRule);
     assert.equal(gitBlobSha(activeDecision), ORIGINAL_BLOBS.activeDecision);
@@ -47,7 +47,7 @@ describe("C5-B shadow-only production integration", () => {
     assert.equal(gitBlobSha(activeReports), ORIGINAL_BLOBS.activeReports);
     assert.equal(gitBlobSha(dailyValidator), ORIGINAL_BLOBS.dailyValidator);
     assert.match(activeRulesModule, /REGULAR_SOURCING_RULE_VERSION/);
-    assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.1-media-product-domain");
+    assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.2-near-pass-review");
   });
 
   it("adds only one non-throwing hook after all four production writes", () => {
@@ -260,7 +260,7 @@ describe("C5-B shadow-only production integration", () => {
       approvedAdditions.filter((relativePath) => !manifest.has(relativePath)),
       []
     );
-    assert.equal(manifest.size, 38);
+    assert.equal(manifest.size, 39);
     assert.ok(manifest.has("automations/jobs/online_daily_v7_3_offline_replay.mjs"));
     assert.ok(manifest.has("automations/jobs/online_daily_v7_3_replay_window.mjs"));
 

@@ -2,7 +2,7 @@ import { normalizeDisplayText, normalizeText, normalizeUrl } from "./online_dail
 import { hasMatureChinaPartner } from "./online_daily_v4_source_utils.mjs";
 import { candidateDedupeKey } from "./online_daily_v7_indie_admission.mjs";
 
-export const CHINA_JOINT_RULE_VERSION = "sourcing-rules-v7.2.1-media-product-domain";
+export const CHINA_JOINT_RULE_VERSION = "sourcing-rules-v7.2.2-near-pass-review";
 
 export const CHINA_JOINT_GATE_IDS = [
   "identity_and_dedupe",

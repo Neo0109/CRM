@@ -6,6 +6,7 @@ const V7_RULE_VERSIONS = new Set([
   "sourcing-rules-v7.0-quality-gated-indie",
   "sourcing-rules-v7.2-china-joint",
   "sourcing-rules-v7.2.1-media-product-domain",
+  "sourcing-rules-v7.2.2-near-pass-review",
 ]);
 
 export default {
