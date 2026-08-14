@@ -75,16 +75,18 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 - The repaired focused suite passed 10/10; broader sourcing regression passed 80/80; full V7.3/corpus/replay regression passed 126/126.
 - Post-review full gates passed: `npm run test:daily-v4` 347/347 across 44 suites and `npm run verify:all` all 16 tasks.
 - Final repair syntax and whitespace checks passed. Relative to the current PR head, the bounded repair changes only the pure evaluator, its focused test, and this checkpoint; all other 19 implementation files remain byte-identical.
+- Published the bounded P1 repair as head `50941450e339b8518c03d6743afc691dce2973a5` (tree `50736a275edf8ec70629adb5bbcaf432446c1258`) and verified all three remote blobs against the GREEN snapshot.
+- The repaired head passed 3/3 remote checks: Build push run `31794746567`, Build pull-request run `31794751615`, and Cloudflare Pages. Replied to and resolved review thread `PRRT_kwDOSiiYJ86ZPzwJ` only after those checks were GREEN.
 
 ## Remaining
 
-- Publish the three-file bounded P1 repair to PR #119, wait for remote checks, and resolve the valid review thread only after the remote fix is confirmed.
-- Root Release Captain independent QA and merge decision.
+- Root Release Captain independent QA and merge decision only.
+- This implementation task must stop with PR #119 open and unmerged.
 - Root owns the merge gate; this implementation task must stop unmerged.
 
 ## Next Action
 
-Publish the bounded P1 repair to PR #119 and wait for the final-head remote checks.
+Root Release Captain independently reviews PR #119 and decides whether to merge.
 
 ## Git Status
 
@@ -96,6 +98,7 @@ Publish the bounded P1 repair to PR #119 and wait for the final-head remote chec
 - Final implementation head: `023de4f5161d2e914cea3248aac2dcfe52d1d5d0` (tree `8b51515841df655e9c6dde6533e09445e8389c65`).
 - Ready PR: #119 (`https://github.com/Neo0109/CRM/pull/119`), open and unmerged at handoff.
 - Current PR head before the P1 repair: `6672e741d206557dd74764c5d5257d38499a1674` (tree `c42cc63828016d4606d221f323d0a7f257a3cc44`).
+- Repaired implementation head: `50941450e339b8518c03d6743afc691dce2973a5` (tree `50736a275edf8ec70629adb5bbcaf432446c1258`).
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.
