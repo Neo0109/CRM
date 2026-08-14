@@ -491,9 +491,10 @@ describe("C5-B V7.3 shadow collector", () => {
       "the collector must persist the same media admission selected for the provider"
     );
     assert.deepEqual(
-      candidate.first_pass.indie_prelaunch.output.next_evidence_actions,
+      providerCalls[0].actions,
       [{ gate_id: "independent_quality_proof", action: "fetch_independent_quality_evidence" }]
     );
+    assert.equal(candidate.ranking_inputs.action_count, 1);
     assert.equal(candidate.second_pass.eligible, true);
     assert.equal(candidate.second_pass.rejection_reason, null);
     assert.equal(candidate.second_pass.selected, true);

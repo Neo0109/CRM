@@ -235,6 +235,7 @@ export async function collectV73ShadowCore({
     shadowCandidateArtifact,
     secondPassResults: secondPassOutcome.results,
     selectionDiagnostics: secondPassOutcome.selection_diagnostics,
+    canonicalSources: secondPassOutcome.canonical_sources,
     providerRecords,
     mediaSignals: mediaSignalsSafe,
     evaluatorDependencySha256
@@ -587,6 +588,7 @@ function buildDecisionUniverse({
   shadowCandidateArtifact,
   secondPassResults,
   selectionDiagnostics,
+  canonicalSources,
   providerRecords,
   mediaSignals,
   evaluatorDependencySha256
@@ -598,6 +600,9 @@ function buildDecisionUniverse({
   const selectionDiagnosticByKey = new Map(
     (selectionDiagnostics ?? []).map((item) => [item.dedupe_key, item])
   );
+  const canonicalSourceByKey = new Map(
+    (canonicalSources ?? []).map((item) => [item.dedupe_key, item.source_type])
+  );
   const auditByKey = new Map(
     shadowCandidateArtifact.candidates.map((item) => [item.dedupe_key, item])
   );
@@ -608,8 +613,9 @@ function buildDecisionUniverse({
 
   for (const entry of [...entries.values()].sort((left, right) => left.dedupeKey.localeCompare(right.dedupeKey))) {
     const candidateId = entry.dedupeKey;
-    const firstAdmission = admissionForEntry(entry, "before");
-    const finalAdmission = admissionForEntry(entry, "after");
+    const canonicalSourceType = canonicalSourceByKey.get(entry.dedupeKey);
+    const firstAdmission = admissionForEntry(entry, "before", canonicalSourceType);
+    const finalAdmission = admissionForEntry(entry, "after", canonicalSourceType);
     const evidence = candidateEvidence({
       candidateId,
       entry,
@@ -752,16 +758,18 @@ function addUniverseEntries(entries, sourceType, before, after, candidateStates)
   });
 }
 
-function admissionForEntry(entry, phase) {
+function admissionForEntry(entry, phase, sourceType) {
   const values = phase === "before" ? entry.beforeByType : entry.afterByType;
-  const admissions = [];
-  if (values.steam) admissions.push(evaluateSteamV73RegularAdmission(values.steam));
-  if (values.media) admissions.push(evaluateMediaV73RegularAdmission(values.media));
-  return admissions.sort((left, right) => (
-    Number(right.qualified) - Number(left.qualified)
-    || dispositionRank(right.disposition) - dispositionRank(left.disposition)
-    || String(left.sourcing_lane).localeCompare(String(right.sourcing_lane))
-  ))[0];
+  if (sourceType !== "steam" && sourceType !== "media") {
+    throw new Error("C5-B candidate is missing its canonical source admission binding");
+  }
+  if (sourceType === "steam" && values.steam) {
+    return evaluateSteamV73RegularAdmission(values.steam);
+  }
+  if (sourceType === "media" && values.media) {
+    return evaluateMediaV73RegularAdmission(values.media);
+  }
+  throw new Error(`C5-B canonical ${sourceType} admission is missing from ${phase}`);
 }
 
 function candidateEvidence({
@@ -1413,10 +1421,6 @@ function cloneValue(value) {
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function dispositionRank(value) {
-  return value === "formal" ? 3 : value === "candidate" ? 2 : 1;
 }
 
 function boundedText(value, max) {
