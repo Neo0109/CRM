@@ -49,20 +49,23 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 - Confirmed the negative live shape: `steam:4868360` is narrative-heavy and lacks both official playable/gameplay evidence, so it must remain outside review.
 - Resolved the copy/schema boundary with the root Release Captain: CRM/Daily Lead payload, API, UI, and their schemas remain frozen; only the sourcing-candidate audit artifact/schema gains nullable `publication_tier` and the two tier counts.
 - Froze the exact warning literals and Chinese gate labels for RED assertions.
+- Added the bounded V7.2.2 RED suite with eight behavioral groups covering the pure evaluator contract, exact rule version/copy, `steam:3473430`, `steam:4868360`, indie and china-joint hard/soft gates, formal-first ordering, review cap/dedupe, payload privacy, and audit/schema parity.
+- Captured deterministic RED evidence: `node --test automations/test/onlineDailyV722NearPassReview.test.mjs` reported 0 pass / 8 fail because V7.2.2 does not yet exist, review candidates are not appended, and tier metrics/schema fields are absent.
 
 ## Remaining
 
-- Add RED fixtures, implement the smallest formal-first near-pass review slice, update rule/docs, and run the full verification contract.
+- Implement the smallest formal-first near-pass review slice, update rule/docs, and run the full verification contract.
 - Publish one Ready PR and stop for root independent QA.
 
 ## Next Action
 
-Publish this diagnosis checkpoint, then add the bounded RED suite without changing production behavior.
+Publish the RED checkpoint, then implement the pure near-pass evaluator and formal-first append path.
 
 ## Git Status
 
 - Branch head before checkpoint: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Initial checkpoint head: `50c49470779f4c1d5e85ca7449eab0a4221cee4b`.
+- Diagnosis checkpoint head: `f092c7aaf327a80be4dacfd5c78a9bb4ec212007`.
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.
