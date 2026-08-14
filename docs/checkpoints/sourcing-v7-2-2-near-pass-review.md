@@ -43,20 +43,26 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 
 - Reconfirmed exact remote main/tree, empty PR queue, successful latest main Build, and healthy production API.
 - Created the bounded branch from the frozen base.
+- Created a fresh disposable non-git snapshot from checkpoint head `50c49470779f4c1d5e85ca7449eab0a4221cee4b`; the user worktree remains untouched.
+- Traced the bounded implementation seam: keep the existing strict formal conversion/dedupe/interleave path unchanged, add one pure near-pass evaluator over the existing indie and china-joint evidence, then append a separately deduped/sorted/capped review tier.
+- Confirmed the positive live shape: media admission for `steam:3473430` is domestic, prelaunch, non-EA, clear, non-narrative, non-India, has Demo, non-Steam contact, and concrete Bilibili value, with only independent quality absent.
+- Confirmed the negative live shape: `steam:4868360` is narrative-heavy and lacks both official playable/gameplay evidence, so it must remain outside review.
+- Resolved the copy/schema boundary with the root Release Captain: CRM/Daily Lead payload, API, UI, and their schemas remain frozen; only the sourcing-candidate audit artifact/schema gains nullable `publication_tier` and the two tier counts.
+- Froze the exact warning literals and Chinese gate labels for RED assertions.
 
 ## Remaining
 
-- Create a disposable snapshot from the frozen remote base and trace the current strict admission, pool publication, candidate audit, rule, and metrics bindings.
 - Add RED fixtures, implement the smallest formal-first near-pass review slice, update rule/docs, and run the full verification contract.
 - Publish one Ready PR and stop for root independent QA.
 
 ## Next Action
 
-Publish this checkpoint as the first branch commit, then create the disposable snapshot and begin read-only code tracing before RED.
+Publish this diagnosis checkpoint, then add the bounded RED suite without changing production behavior.
 
 ## Git Status
 
 - Branch head before checkpoint: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
+- Initial checkpoint head: `50c49470779f4c1d5e85ca7449eab0a4221cee4b`.
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.
