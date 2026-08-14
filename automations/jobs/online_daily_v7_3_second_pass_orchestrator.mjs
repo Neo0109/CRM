@@ -73,22 +73,15 @@ export async function runV73TargetedCandidateSecondPasses({
   const states = new Map(
     [...candidateStates.entries()].map(([key, state]) => [key, cloneValue(state)])
   );
-  const eligible = uniqueEligibleCandidates([
-    ...steam.map((candidate, index) => candidateForSecondPass({
-      candidate,
-      index,
-      sourceType: "steam",
-      evaluate,
-      mediaSignals
-    })),
-    ...media.map((candidate, index) => candidateForSecondPass({
-      candidate,
-      index,
-      sourceType: "media",
-      evaluate,
-      mediaSignals
-    }))
-  ].filter(Boolean));
+  const canonical = selectV73CanonicalSecondPassCandidates({
+    steamCandidates: steam,
+    mediaCandidates: media,
+    mediaSignals,
+    evaluate
+  });
+  const eligible = canonical
+    .filter((item) => item.provider_eligible)
+    .sort(compareV73SecondPassPriority);
   const selected = eligible.slice(0, boundedCandidateLimit(maxCandidates));
   const metrics = {
     eligible_count: eligible.length,
@@ -161,6 +154,9 @@ export async function runV73TargetedCandidateSecondPasses({
     media_candidates: media,
     candidate_states: states,
     selector_version: V73_SECOND_PASS_SELECTOR_VERSION,
+    canonical_sources: canonical
+      .map((item) => ({ dedupe_key: item.dedupe_key, source_type: item.source_type }))
+      .sort((left, right) => left.dedupe_key.localeCompare(right.dedupe_key)),
     eligible_order: eligible.map((item) => item.dedupe_key),
     selection_diagnostics: eligible.map((item) => ({
       dedupe_key: item.dedupe_key,
@@ -376,9 +372,9 @@ function candidateForSecondPass({ candidate, index, sourceType, evaluate, mediaS
   const actions = Array.isArray(firstPass?.next_evidence_actions)
     ? firstPass.next_evidence_actions.map(cloneValue)
     : [];
-  if (!isV73SecondPassProviderEligible(firstPass)) return null;
   const dedupeKey = String(firstPass?.evidence?.dedupe_key ?? "").trim();
   if (!dedupeKey) return null;
+  const providerEligible = isV73SecondPassProviderEligible(firstPass);
   return {
     candidate,
     index,
@@ -387,25 +383,50 @@ function candidateForSecondPass({ candidate, index, sourceType, evaluate, mediaS
     evidence: firstPass.evidence,
     first_pass: firstPass,
     actions,
-    evidence_diagnostics: analyzeV73EvidenceAvailability({
-      candidate,
-      evidence: firstPass.evidence,
-      actions,
-      mediaSignals,
-      evaluate
-    }),
+    provider_eligible: providerEligible,
+    evidence_diagnostics: providerEligible
+      ? analyzeV73EvidenceAvailability({
+          candidate,
+          evidence: firstPass.evidence,
+          actions,
+          mediaSignals,
+          evaluate
+        })
+      : null,
     score: Number(candidate?.score ?? candidate?.media_score ?? 0)
   };
 }
 
-function uniqueEligibleCandidates(items) {
-  const ranked = [...items].sort(compareV73SecondPassPriority);
-  const seen = new Set();
-  return ranked.filter((item) => {
-    if (seen.has(item.dedupe_key)) return false;
-    seen.add(item.dedupe_key);
-    return true;
-  });
+export function selectV73CanonicalSecondPassCandidates({
+  steamCandidates = [],
+  mediaCandidates = [],
+  mediaSignals = [],
+  evaluate = evaluateV73IndiePrelaunchAdmission
+} = {}) {
+  const candidates = [
+    ...(Array.isArray(steamCandidates) ? steamCandidates : []).map((candidate, index) => (
+      candidateForSecondPass({ candidate, index, sourceType: "steam", evaluate, mediaSignals })
+    )),
+    ...(Array.isArray(mediaCandidates) ? mediaCandidates : []).map((candidate, index) => (
+      candidateForSecondPass({ candidate, index, sourceType: "media", evaluate, mediaSignals })
+    ))
+  ].filter(Boolean);
+  const winners = new Map();
+  for (const candidate of candidates) {
+    const existing = winners.get(candidate.dedupe_key);
+    if (!existing || compareV73CanonicalSecondPassCandidate(candidate, existing) < 0) {
+      winners.set(candidate.dedupe_key, candidate);
+    }
+  }
+  return [...winners.values()];
+}
+
+export function compareV73CanonicalSecondPassCandidate(left = {}, right = {}) {
+  return (
+    Number(right?.first_pass?.qualified === true) - Number(left?.first_pass?.qualified === true)
+    || Number(right?.provider_eligible === true) - Number(left?.provider_eligible === true)
+    || compareV73SecondPassPriority(left, right)
+  );
 }
 
 export function compareV73SecondPassPriority(left = {}, right = {}) {
