@@ -47,20 +47,25 @@ Use TDD RED to encode the live multi-source fixture and prove selector/collector
 - The live-shape fixture is GREEN: provider source is media, the stored project is `爱与机器人维修技术`, candidate eligibility is true with no rejection, receipt finalization is complete, the corpus validates, and stored/recomputed replay hashes match.
 - Local validation is green: focused V7.3/corpus files 91/91, all V7.3 tests 121/121, Daily V4 336/336, syntax checks, replay-schema JSON parsing, and full `npm run verify:all` exit 0. The full verification used an external no-index adapter only for its final `git diff --check`, because the authorized snapshot intentionally has no `.git` directory.
 - Scope audit shows exactly four repository changes: two V7.3 implementation files, one V7.3 test file, and this checkpoint. Workflow, provider, rule, CRM, schema, synchronization, and generated-data trees are unchanged.
+- Published the GREEN implementation commit `8286107383c34b0615ace8f47fac6757c93e8c50` with tree `6b2ed36d8beee24d7a0555902b8b4043281169b8` and opened Ready PR #118.
+- PR #118 is based on the frozen `main` SHA, remains mergeable and clean, and has 3/3 successful remote checks: both `frontend` checks and Cloudflare Pages.
+- Root Release Captain independently reviewed the exact GREEN implementation head, bounded diff, canonical-binding behavior, and verification evidence and reported QA GREEN. This is a pre-merge code acceptance boundary only; it does not authorize or prove merge, deployment, provider activity, production writes, or natural-run Activation acceptance.
 
 ## Remaining
 
-- Publish the GREEN commit and one Ready PR.
-- Wait for remote checks and root Release Captain independent QA; do not merge.
+- Root Release Captain merge gate for PR #118. This implementation task must not merge.
 
 ## Next Action
 
-Publish the bounded GREEN commit and Ready PR, then stop for root independent QA.
+Root Release Captain performs the final remote merge-gate recheck and decides whether to merge PR #118. Post-merge deployment and natural-run Activation acceptance remain separate release stages.
 
 ## Git Status
 
 - Branch: `codex/v73-multisource-canonical-admission`.
 - Base: `cb4c5298e3ea916fdaa5546a3c70212534a10ca4`.
 - RED head: `95acb4aa3394fc7a5912b90e902a9a8995314634`.
-- Expected PR scope: four files (two implementation, one test, one checkpoint).
+- GREEN implementation head: `8286107383c34b0615ace8f47fac6757c93e8c50`.
+- GREEN implementation tree: `6b2ed36d8beee24d7a0555902b8b4043281169b8`.
+- Ready PR: #118, 3/3 remote checks successful, root independent code QA GREEN, not merged.
+- PR scope before this status-only update: four files (two implementation, one test, one checkpoint); this update changes only the checkpoint.
 - Working medium: disposable non-git snapshot; all repository mutations use the GitHub API.
