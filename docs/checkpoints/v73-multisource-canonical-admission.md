@@ -49,15 +49,21 @@ Use TDD RED to encode the live multi-source fixture and prove selector/collector
 - Scope audit shows exactly four repository changes: two V7.3 implementation files, one V7.3 test file, and this checkpoint. Workflow, provider, rule, CRM, schema, synchronization, and generated-data trees are unchanged.
 - Published the GREEN implementation commit `8286107383c34b0615ace8f47fac6757c93e8c50` with tree `6b2ed36d8beee24d7a0555902b8b4043281169b8` and opened Ready PR #118.
 - PR #118 is based on the frozen `main` SHA, remains mergeable and clean, and has 3/3 successful remote checks: both `frontend` checks and Cloudflare Pages.
-- Root Release Captain independently reviewed the exact GREEN implementation head, bounded diff, canonical-binding behavior, and verification evidence and reported QA GREEN. This is a pre-merge code acceptance boundary only; it does not authorize or prove merge, deployment, provider activity, production writes, or natural-run Activation acceptance.
+- Root Release Captain independently reviewed the initial GREEN implementation head and its bounded canonical binding. A subsequent valid P1 blocking thread (`PRRT_kwDOSiiYJ86ZO-R5`) identified that canonical comparison still ranked a provider-eligible near-miss ahead of an already-qualified same-dedupe source, so the merge gate was reopened before merge.
+- Added a second TDD fixture with a qualified Steam admission and provider-eligible media near-miss sharing `steam:3473430`. RED commit `e893fcf69eb48b2f08e54a6c21375780792745fd` (tree `adbaeb5a124f846f33b1ecd02b070858419c3df7`) ran the collector file 28/29 with exactly one expected failure: the key incorrectly remained in `eligible_ids`.
+- Changed only `compareV73CanonicalSecondPassCandidate` so canonical priority is now qualified admission first, provider eligibility second, and the pre-existing actionability/action-count/score/dedupe/source priority third.
+- The new fixture is GREEN: `eligible_ids`, `selected_ids`, and transactions exclude the already-qualified key; provider calls remain zero; the collector persists the qualified input with `already_qualified`; formal shadow publication remains true; finalization completes; and core/corpus stored-recomputed V2 replay hashes match.
+- Post-review validation is green: focused V7.3/corpus 92/92, all V7.3 122/122, Daily V4 337/337, syntax and scope checks, and `npm run verify:all` exit 0.
+- Published the review-fix GREEN commit `7171ebf90f0e1beb0d342b3bec1a9aa296718e5c` with tree `3e6ebfd616b73499384a6bf2ef725f0ebf109510`; its two `frontend` checks and Cloudflare Pages check are all successful (3/3).
+- Replied to the blocking review with the fix and verification evidence, then resolved the thread after the fix and remote checks were GREEN. This remains a pre-merge code acceptance boundary only; it does not authorize or prove merge, deployment, provider activity, production writes, or natural-run Activation acceptance.
 
 ## Remaining
 
-- Root Release Captain merge gate for PR #118. This implementation task must not merge.
+- Root Release Captain revalidates the post-review PR head and owns the merge gate for PR #118. This implementation task must not merge.
 
 ## Next Action
 
-Root Release Captain performs the final remote merge-gate recheck and decides whether to merge PR #118. Post-merge deployment and natural-run Activation acceptance remain separate release stages.
+Publish this checkpoint status update, wait for its remote checks, and stop for the root Release Captain's final merge-gate recheck. Post-merge deployment and natural-run Activation acceptance remain separate release stages.
 
 ## Git Status
 
@@ -66,6 +72,10 @@ Root Release Captain performs the final remote merge-gate recheck and decides wh
 - RED head: `95acb4aa3394fc7a5912b90e902a9a8995314634`.
 - GREEN implementation head: `8286107383c34b0615ace8f47fac6757c93e8c50`.
 - GREEN implementation tree: `6b2ed36d8beee24d7a0555902b8b4043281169b8`.
-- Ready PR: #118, 3/3 remote checks successful, root independent code QA GREEN, not merged.
+- Review RED head: `e893fcf69eb48b2f08e54a6c21375780792745fd`.
+- Review RED tree: `adbaeb5a124f846f33b1ecd02b070858419c3df7`.
+- Review-fix GREEN head: `7171ebf90f0e1beb0d342b3bec1a9aa296718e5c`.
+- Review-fix GREEN tree: `3e6ebfd616b73499384a6bf2ef725f0ebf109510`.
+- Ready PR: #118, post-review GREEN head has 3/3 successful remote checks, blocking thread resolved, not merged.
 - PR scope before this status-only update: four files (two implementation, one test, one checkpoint); this update changes only the checkpoint.
 - Working medium: disposable non-git snapshot; all repository mutations use the GitHub API.
