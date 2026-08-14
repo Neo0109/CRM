@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 
 import { buildSourcingCandidateArtifact } from "../jobs/online_daily_v4_candidate_audit.mjs";
 import { buildPools } from "../jobs/online_daily_v4_decision.mjs";
+import { buildDailyReport } from "../jobs/online_daily_v4_reports.mjs";
 import { REGULAR_SOURCING_RULE_VERSION } from "../jobs/online_daily_v7_2_regular_admission.mjs";
 
 const nearPassModuleUrl = new URL("../jobs/online_daily_v7_2_near_pass_review.mjs", import.meta.url);
@@ -213,6 +214,19 @@ describe("V7.2.2 bounded near-pass review publication", () => {
     assert.equal(artifact.candidates.find((item) => item.steam_app_id === "8830002").publication_tier, "near_pass_review");
     assert.equal(artifact.candidates.find((item) => item.steam_app_id === "8830003").publication_tier, null);
 
+    const report = buildDailyReport({
+      pools,
+      rawCount: enriched.length,
+      enrichedCount: enriched.length,
+      mediaLeadCount: 0,
+      reportDate,
+      diagnostics: { bilibili_probe: {}, bilibili_official_source_hits: 0 }
+    });
+    assert.match(report.summary, /严格正式共 1 条/);
+    assert.match(report.summary, /near-pass 人工复核 1 条/);
+    assert.equal("strict_formal_count" in report, false);
+    assert.equal("near_pass_review_count" in report, false);
+
     const schema = JSON.parse(readFileSync(new URL("../../schemas/sourcing_candidates.schema.json", import.meta.url), "utf8"));
     assert.ok(schema.$defs.scanSummary.properties.strict_formal_count);
     assert.ok(schema.$defs.scanSummary.properties.near_pass_review_count);
@@ -304,6 +318,8 @@ function jointCandidate(overrides = {}) {
       steam_app_id: appId,
       dedupe_key: dedupeKey,
       region: region === "海外" ? "overseas" : "domestic",
+      release_state: "released",
+      release_window: "too_soon",
       official_demo_evidence: demo,
       official_gameplay_evidence: gameplay,
       quality_proofs: [],

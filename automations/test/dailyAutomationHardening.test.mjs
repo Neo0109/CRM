@@ -33,7 +33,7 @@ describe("daily automation hardening contract", () => {
   it("keeps machine-readable sourcing rules aligned with both V7.2 regular lanes", () => {
     const rules = JSON.parse(readRepoFile("automations/rules/daily-report.json"));
 
-    assert.equal(rules.rule_version, "sourcing-rules-v7.2.1-media-product-domain");
+    assert.equal(rules.rule_version, "sourcing-rules-v7.2.2-near-pass-review");
     assert.equal("quality_quarantine" in rules, false);
     assert.deepEqual(rules.indie_prelaunch_admission, {
       active: true,

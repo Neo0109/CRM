@@ -14,6 +14,7 @@ import {
 } from "./online_daily_v7_2_regular_admission.mjs";
 
 const DECISION_RANK = { excluded: 1, candidate: 2, formal: 3 };
+const PUBLICATION_TIER_RANK = { null: 0, near_pass_review: 1, strict_formal: 2 };
 
 export function buildSourcingCandidateArtifact({
   reportDate,
@@ -61,12 +62,7 @@ export function buildSourcingCandidateArtifact({
   const internalCandidates = [...records.values()].sort((left, right) => left.dedupe_key.localeCompare(right.dedupe_key));
   const candidates = internalCandidates.map(stripAuditPrivate);
   const decisionCount = (decision) => candidates.filter((candidate) => candidate.decision === decision).length;
-  const v7Summary = isV7AdmissionRule(ruleVersion)
-    ? {
-        new_qualified_count: internalCandidates.filter((candidate) => candidate._admissionQualified).length,
-        push_pool_count: publishedPools?.push?.length ?? 0
-      }
-    : {};
+  const v7Summary = buildV7PublicationSummary({ ruleVersion, internalCandidates, publishedPools });
 
   return {
     schema_version: statefulArtifact ? CANDIDATE_ARTIFACT_SCHEMA_VERSION : 1,
@@ -126,6 +122,7 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision, 
   return {
     _admissionQualified: admission?.qualified === true,
     decision,
+    publication_tier: publicationTier({ ruleVersion, poolDecision, admission }),
     source_type: "steam",
     project: String(candidate.title ?? "").trim(),
     steam_app_id: stringOrNull(candidate.appId),
@@ -187,6 +184,7 @@ function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
   return {
     _admissionQualified: admission?.qualified === true,
     decision,
+    publication_tier: publicationTier({ ruleVersion, poolDecision, admission }),
     source_type: "media",
     project: String(lead?.project ?? "").trim(),
     steam_app_id: stringOrNull(lead?.steam_app_id),
@@ -256,6 +254,7 @@ function addOrMergeRecord(records, incoming) {
     ...current,
     _admissionQualified: current._admissionQualified || incoming._admissionQualified,
     decision: incomingDecisionWins ? incoming.decision : current.decision,
+    publication_tier: preferPublicationTier(current.publication_tier, incoming.publication_tier),
     source_type: current.source_type === incoming.source_type ? current.source_type : "multi_source",
     project: current.source_type === "steam" ? current.project : incoming.project || current.project,
     steam_app_id: current.steam_app_id ?? incoming.steam_app_id,
@@ -268,6 +267,53 @@ function addOrMergeRecord(records, incoming) {
     ea_state: preferKnownState(current.ea_state, incoming.ea_state),
     visual_state: preferVisualState(current.visual_state, incoming.visual_state)
   });
+}
+
+function buildV7PublicationSummary({ ruleVersion, internalCandidates, publishedPools }) {
+  if (!isV7AdmissionRule(ruleVersion)) return {};
+  const pushPoolCount = publishedPools?.push?.length ?? 0;
+  if (ruleVersion !== REGULAR_SOURCING_RULE_VERSION) {
+    return {
+      new_qualified_count: internalCandidates.filter((candidate) => candidate._admissionQualified).length,
+      push_pool_count: pushPoolCount
+    };
+  }
+
+  const strictFormalCount = integerCountOrFallback(
+    publishedPools?.strict_formal_count,
+    internalCandidates.filter((candidate) => candidate.publication_tier === "strict_formal").length
+  );
+  const nearPassReviewCount = integerCountOrFallback(
+    publishedPools?.near_pass_review_count,
+    internalCandidates.filter((candidate) => candidate.publication_tier === "near_pass_review").length
+  );
+  const newQualifiedCount = integerCountOrFallback(publishedPools?.new_qualified_count, pushPoolCount);
+  if (strictFormalCount + nearPassReviewCount !== pushPoolCount) {
+    throw new Error("SOURCING_PUBLICATION_TIER_PARITY_MISMATCH");
+  }
+  if (newQualifiedCount !== pushPoolCount) {
+    throw new Error("SOURCING_NEW_QUALIFIED_PARITY_MISMATCH");
+  }
+  return {
+    new_qualified_count: newQualifiedCount,
+    push_pool_count: pushPoolCount,
+    strict_formal_count: strictFormalCount,
+    near_pass_review_count: nearPassReviewCount
+  };
+}
+
+function publicationTier({ ruleVersion, poolDecision, admission }) {
+  if (poolDecision?.decision !== "formal" || !isV7AdmissionRule(ruleVersion)) return null;
+  if (admission?.qualified === true) return "strict_formal";
+  return ruleVersion === REGULAR_SOURCING_RULE_VERSION ? "near_pass_review" : null;
+}
+
+function preferPublicationTier(left, right) {
+  return PUBLICATION_TIER_RANK[String(right)] > PUBLICATION_TIER_RANK[String(left)] ? right : left;
+}
+
+function integerCountOrFallback(value, fallback) {
+  return Number.isInteger(value) && value >= 0 ? value : fallback;
 }
 
 function uniqueByDedupeKey(items, keyForItem) {

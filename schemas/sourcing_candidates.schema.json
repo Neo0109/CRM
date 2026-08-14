@@ -45,6 +45,8 @@
         "excluded": { "type": "integer", "minimum": 0 },
         "new_qualified_count": { "type": "integer", "minimum": 0 },
         "push_pool_count": { "type": "integer", "minimum": 0 },
+        "strict_formal_count": { "type": "integer", "minimum": 0 },
+        "near_pass_review_count": { "type": "integer", "minimum": 0 },
         "steam_candidates_scheduled": { "type": "integer", "minimum": 0 },
         "steam_candidates_reused": { "type": "integer", "minimum": 0 },
         "steam_candidates_fresh_success": { "type": "integer", "minimum": 0 },
@@ -77,6 +79,10 @@
       ],
       "properties": {
         "decision": { "type": "string", "enum": ["formal", "candidate", "excluded"] },
+        "publication_tier": {
+          "type": ["string", "null"],
+          "enum": ["strict_formal", "near_pass_review", null]
+        },
         "source_type": { "type": "string", "enum": ["steam", "media", "multi_source"] },
         "project": { "type": "string", "minLength": 1 },
         "steam_app_id": { "type": ["string", "null"] },

@@ -8,6 +8,13 @@ import {
   evaluateSteamRegularAdmission,
   REGULAR_SOURCING_RULE_VERSION
 } from "./online_daily_v7_2_regular_admission.mjs";
+import {
+  compareNearPassReviews,
+  evaluateMediaNearPassReview,
+  evaluateSteamNearPassReview,
+  nearPassReviewCopy,
+  NEAR_PASS_REVIEW_LIMIT
+} from "./online_daily_v7_2_near_pass_review.mjs";
 
 export function scoreCandidate(input) {
   let score = 0;
@@ -40,21 +47,28 @@ export function buildPools(candidates, mediaLeads = [], options = {}) {
   const context = {
     reportDate: options.reportDate ?? new Date().toISOString().slice(0, 10)
   };
-  const steamLeads = candidates
-    .map((candidate) => toLead(candidate, context))
-    .filter((lead) => lead._regularAdmission.qualified);
-  const qualifiedMediaLeads = mediaLeads
-    .map((lead) => toQualifiedMediaLead(lead))
-    .filter((lead) => lead._regularAdmission.qualified);
+  const allSteamLeads = candidates.map((candidate) => toLead(candidate, context));
+  const allMediaLeads = mediaLeads.map((lead) => toQualifiedMediaLead(lead));
+  const steamLeads = allSteamLeads.filter((lead) => lead._regularAdmission.qualified);
+  const qualifiedMediaLeads = allMediaLeads.filter((lead) => lead._regularAdmission.qualified);
   const used = new Set();
   const mediaPush = selectUniqueLeads(qualifiedMediaLeads, used);
   const steamPush = selectUniqueLeads(steamLeads, used);
-  const push = interleaveLeads(mediaPush, steamPush).map(stripPrivate);
+  const strictFormalPush = interleaveLeads(mediaPush, steamPush);
+  const nearPassPush = [...allMediaLeads, ...allSteamLeads]
+    .filter((lead) => !lead._regularAdmission.qualified && lead._nearPassReview.eligible)
+    .sort((left, right) => compareNearPassReviews(left._nearPassReview, right._nearPassReview));
+  const selectedNearPass = selectUniqueLeads(nearPassPush, used)
+    .slice(0, NEAR_PASS_REVIEW_LIMIT)
+    .map(toNearPassReviewLead);
+  const push = [...strictFormalPush, ...selectedNearPass].map(stripPrivate);
   return {
     push,
     watch: [],
     drop: [],
-    new_qualified_count: push.length
+    new_qualified_count: push.length,
+    strict_formal_count: strictFormalPush.length,
+    near_pass_review_count: selectedNearPass.length
   };
 }
 
@@ -93,10 +107,12 @@ function looseChineseProjectKey(value) {
 
 function toLead(candidate, context) {
   const admission = evaluateSteamRegularAdmission(candidate);
+  const nearPassReview = evaluateSteamNearPassReview(candidate);
   const genre = candidate.genres.join(" / ") || null;
   return {
     _class: admission.qualified ? "push" : "candidate",
     _regularAdmission: admission,
+    _nearPassReview: nearPassReview,
     id: `lead_steam_${candidate.appId}_${context.reportDate}`,
     project: candidate.title,
     steam_app_id: candidate.appId,
@@ -149,10 +165,12 @@ function toLead(candidate, context) {
 
 function toQualifiedMediaLead(lead) {
   const admission = evaluateMediaRegularAdmission(lead);
+  const nearPassReview = evaluateMediaNearPassReview(lead);
   return {
     ...lead,
     _class: admission.qualified ? "push" : "candidate",
     _regularAdmission: admission,
+    _nearPassReview: nearPassReview,
     bucket: "未处理",
     stage: "new",
     priority: null,
@@ -169,6 +187,18 @@ function toQualifiedMediaLead(lead) {
     verdict: admission.qualified ? admissionVerdict(admission.sourcing_lane) : "",
     next_action: null,
     notes: null
+  };
+}
+
+function toNearPassReviewLead(lead) {
+  const copy = nearPassReviewCopy(lead._nearPassReview.gap_id);
+  return {
+    ...lead,
+    _class: "push",
+    sourcing_lane: lead._nearPassReview.sourcing_lane,
+    rule_fit: copy.rule_fit,
+    risks: copy.risks,
+    verdict: copy.verdict
   };
 }
 

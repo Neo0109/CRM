@@ -51,21 +51,31 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 - Froze the exact warning literals and Chinese gate labels for RED assertions.
 - Added the bounded V7.2.2 RED suite with eight behavioral groups covering the pure evaluator contract, exact rule version/copy, `steam:3473430`, `steam:4868360`, indie and china-joint hard/soft gates, formal-first ordering, review cap/dedupe, payload privacy, and audit/schema parity.
 - Captured deterministic RED evidence: `node --test automations/test/onlineDailyV722NearPassReview.test.mjs` reported 0 pass / 8 fail because V7.2.2 does not yet exist, review candidates are not appended, and tier metrics/schema fields are absent.
+- Implemented one pure near-pass evaluator shared by Steam and media source shapes, including stable Steam identity, exact hard gates, one allowed soft gap, deterministic review ordering, and frozen warning copy.
+- Kept the strict formal conversion/dedupe/interleave path first and unlimited; the decision layer now appends only a separately deduped, sorted, capped review tier and returns explicit strict/review counts.
+- Added candidate-audit `publication_tier`, tier counts, and blocking sum/parity checks without adding any field to a Lead payload; extended only the sourcing-candidate schema.
+- Captured core GREEN evidence: the new focused suite passed 8/8, including both exact live AppID shapes and all locked hard-gate variants.
+- Synchronized `sourcing-rules-v7.2.2-near-pass-review` across runtime, machine rules, heartbeat compatibility, current/canonical documentation, and fixed provenance assertions while preserving the V7.2.1 broad-media rules.
+- Updated Daily/Radar/Steam-Trends prose to distinguish unlimited strict formal publication from the capped, explicitly warned review queue; the report object gains no schema field.
+- Added the pure evaluator to the existing V7.3 behavior-dependency manifest so behavior hashing remains closed after the authorized production import; no V7.3 selector, provider, replay, or schema contract changed.
+- Broader focused sourcing regression passed 85/85 after updating only the two intentionally superseded expectations (current canonical provenance and one quality-gap publication tier).
+- Full V7.3/corpus/replay focused regression passed 134/134.
 
 ## Remaining
 
-- Implement the smallest formal-first near-pass review slice, update rule/docs, and run the full verification contract.
+- Run `npm run test:daily-v4`, `npm run verify:all`, and final syntax/schema/diff/workflow/scope audits.
 - Publish one Ready PR and stop for root independent QA.
 
 ## Next Action
 
-Publish the RED checkpoint, then implement the pure near-pass evaluator and formal-first append path.
+Publish the focused-GREEN implementation checkpoint, then run the two full repository gates.
 
 ## Git Status
 
 - Branch head before checkpoint: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Initial checkpoint head: `50c49470779f4c1d5e85ca7449eab0a4221cee4b`.
 - Diagnosis checkpoint head: `f092c7aaf327a80be4dacfd5c78a9bb4ec212007`.
+- RED contract head: `7bbef0cab18ccea1df32effdb5065afef6ecab46` (tree `aa057fa6a09524d69704fb469aa0e2d6dec51696`).
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.

@@ -11,15 +11,18 @@ import {
 
 export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCount, reportDate, diagnostics }) {
   const probe = diagnostics.bilibili_probe ?? {};
-  const indieCount = pools.push.filter((lead) => lead.sourcing_lane === "indie_prelaunch").length;
-  const chinaJointCount = pools.push.filter((lead) => lead.sourcing_lane === "china_joint").length;
+  const strictFormalCount = pools.strict_formal_count ?? pools.push.length;
+  const nearPassReviewCount = pools.near_pass_review_count ?? 0;
+  const strictFormalLeads = pools.push.slice(0, strictFormalCount);
+  const indieCount = strictFormalLeads.filter((lead) => lead.sourcing_lane === "indie_prelaunch").length;
+  const chinaJointCount = strictFormalLeads.filter((lead) => lead.sourcing_lane === "china_joint").length;
   return {
     report_date: reportDate,
-    summary: `Sourcing V7.2 严格准入：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从媒体/B站提取产品线索 ${mediaLeadCount} 条；B站探头候选 ${probe.raw_candidates ?? 0} 条、最终 ${probe.final_candidates ?? 0} 条、官方源命中 ${diagnostics.bilibili_official_source_hits} 条；完整通过 indie_prelaunch ${indieCount} 条、china_joint ${chinaJointCount} 条，合计进入 push_pool ${pools.push.length} 条，其余只保留在候选审计。`,
+    summary: `Sourcing V7.2.2：扫描 Steam 候选 ${rawCount} 条、富化 ${enrichedCount} 条，另从媒体/B站提取产品线索 ${mediaLeadCount} 条；B站探头候选 ${probe.raw_candidates ?? 0} 条、最终 ${probe.final_candidates ?? 0} 条、官方源命中 ${diagnostics.bilibili_official_source_hits} 条；严格准入 indie_prelaunch ${indieCount} 条、china_joint ${chinaJointCount} 条，严格正式共 ${strictFormalCount} 条；正式去重后追加 near-pass 人工复核 ${nearPassReviewCount} 条，push_pool 共 ${pools.push.length} 条，其余只保留在候选审计。`,
     insights: [
-      "V7.2面向B站商务负责人并行执行 indie_prelaunch 与 china_joint；只有完整通过其中一条不可绕过准入链的项目才发布为正式Lead。",
+      "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
       "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
-      "国内媒体和B站捕捉到的具体产品继续参与扫描与证据校验；缺少任一强制证据时只进入候选审计。",
+      "国内媒体和B站捕捉到的具体产品继续参与扫描与证据校验；只有满足冻结的一软缺口 review 合同才可进入 capped review，其余证据缺口只进入候选审计。",
       "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
       "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
       "Demo/试玩只能证明 indie_prelaunch 可测试，不能覆盖该通道的合作窗口；china_joint 另行执行数据门、中国需求和伙伴占位门。",
@@ -28,7 +31,7 @@ export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCoun
       "indie_prelaunch 海外项目仍需明确中国需求；china_joint 则必须满足锁定数据路径，并确认当前中国合作需求。",
       "已发售或EA项目不能进入 indie_prelaunch；只有数据门、中国需求和成熟中国伙伴占位门全部通过时才可进入 china_joint。",
       "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
-      "自动日报只把完整合格项目写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
+      "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
       "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
     ],
     push_pool: pools.push,
@@ -53,12 +56,12 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
     "bilibili_bd_lens",
     "B站趋势",
     `今日Steam候选中值得人工复核的方向：${genres.slice(0, 4).join("、") || "待观察"}`,
-    `样本高频不等于推荐。扫描候选只有完整通过V7.2任一业务通道准入门才发布为正式Lead。`,
+    `样本高频不等于推荐。完整通过V7.2任一业务通道才是严格正式Lead；V7.2.2 near-pass 仅是最多3条的人工试玩/筛选队列。`,
     "中",
     "CRM Online Scan",
     "https://store.steampowered.com/search/?filter=popularcomingsoon",
     "这是给BD选品的背景信号，不是新闻，也不直接进入推进池。",
-    `本卡片只提供行业方向观察；未完整通过准入门的项目只保留在候选审计。`
+    `本卡片只提供行业方向观察；未完整通过准入门且不满足冻结 near-pass 合同的项目只保留在候选审计。`
   );
   return {
     report_date: reportDate,
@@ -101,7 +104,7 @@ export function buildSteamTrendReport({ candidates, pools, reportDate, capturedA
   }, context);
   return {
     report_date: reportDate,
-    summary: `Steam大盘V7.2严格准入：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；只有完整通过任一业务通道准入门的项目进入正式Lead池。`,
+    summary: `Steam大盘V7.2.2：扫描 ${candidates.length} 个候选，输出 ${marketInsights.length} 条大盘观察和 ${genreSignals.length} 个品类信号。今日重点看 ${focusGenres.join("、") || "Demo/新品窗口"}；完整通过任一业务通道才是严格正式Lead，另可在正式去重后追加最多3条 near-pass 人工复核。`,
     market_insights: marketInsights,
     genre_signals: genreSignals,
     items: [...steamItems, ...mediaFallbackItems, ...diagnosticFallbackItems].slice(0, 12),
@@ -228,7 +231,7 @@ function buildSteamDiagnosticTrendItems({ existingCount, marketInsights, genreSi
     },
     {
       title: "BD 可执行样本优先",
-      signal: "日报正式Lead只来自完整通过V7.2任一业务通道准入门的项目；其余扫描结果保留在候选审计，日报、Radar与Steam Trends继续生成。",
+      signal: "日报严格正式Lead只来自完整通过V7.2任一业务通道准入门的项目；V7.2.2 另允许正式去重后最多3条 near-pass 人工复核，其余扫描结果保留在候选审计。",
       source: "CRM automation diagnostics",
       links: ["https://github.com/Neo0109/CRM/actions"],
       bilibili_fit: "不要让诊断卡片进入 CRM lead；它只解释自动化状态，帮助决定是否补跑或扩源。",
