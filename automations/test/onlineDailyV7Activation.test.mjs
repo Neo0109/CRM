@@ -24,14 +24,14 @@ describe("online Daily V7.2 activation", () => {
   it("uses one executable V7.2 rule across runtime, both lanes, machine rules, docs, and generator", () => {
     const machineRules = JSON.parse(readFileSync(new URL("../rules/daily-report.json", import.meta.url), "utf8"));
     const currentRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_CURRENT.md", import.meta.url), "utf8");
-    const canonicalRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_V7_2_1.md", import.meta.url), "utf8");
+    const canonicalRulesDoc = readFileSync(new URL("../../docs/SOURCING_RULES_V7_2_2.md", import.meta.url), "utf8");
     const laneBaselineDoc = readFileSync(new URL("../../docs/SOURCING_RULES_V7_2.md", import.meta.url), "utf8");
     const generator = readFileSync(new URL("../jobs/online_daily_v4.mjs", import.meta.url), "utf8");
 
     assert.equal(RULE_VERSION, REGULAR_SOURCING_RULE_VERSION);
     assert.notEqual(RULE_VERSION, INDIE_PRELAUNCH_RULE_VERSION);
     assert.equal(machineRules.rule_version, REGULAR_SOURCING_RULE_VERSION);
-    assert.equal(machineRules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2_1.md");
+    assert.equal(machineRules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2_2.md");
     assert.deepEqual(machineRules.indie_prelaunch_admission, {
       active: true,
       sourcing_lane: "indie_prelaunch",
@@ -55,9 +55,10 @@ describe("online Daily V7.2 activation", () => {
     assert.equal(machineRules.china_joint_admission.data_paths[1].minimum_recommendations, 1500);
     assert.deepEqual(machineRules.china_joint_admission.data_paths[1].accepted_ratings, ["very_positive", "overwhelmingly_positive"]);
     assert.equal("quality_quarantine" in machineRules, false);
-    assert.match(currentRulesDoc, /sourcing-rules-v7\.2\.1-media-product-domain/);
-    assert.match(currentRulesDoc, /SOURCING_RULES_V7_2_1\.md/);
-    assert.match(canonicalRulesDoc, /non_game_broad_media/);
+    assert.match(currentRulesDoc, /sourcing-rules-v7\.2\.2-near-pass-review/);
+    assert.match(currentRulesDoc, /SOURCING_RULES_V7_2_2\.md/);
+    assert.match(canonicalRulesDoc, /SOURCING_RULES_V7_2_1\.md/);
+    assert.match(canonicalRulesDoc, /near_pass_review/);
     assert.match(laneBaselineDoc, /new_qualified_count === push_pool_count/);
     assert.match(laneBaselineDoc, /five qualified `indie_prelaunch` projects and four qualified `china_joint` projects/i);
     assert.match(generator, /const sourcingRuleVersion = RULE_VERSION/);
@@ -212,7 +213,9 @@ describe("online Daily V7.2 activation", () => {
         candidate: 0,
         excluded: 0,
         new_qualified_count: 0,
-        push_pool_count: 0
+        push_pool_count: 0,
+        strict_formal_count: 0,
+        near_pass_review_count: 0
       },
       candidates: []
     };

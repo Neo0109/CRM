@@ -60,15 +60,21 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 - Added the pure evaluator to the existing V7.3 behavior-dependency manifest so behavior hashing remains closed after the authorized production import; no V7.3 selector, provider, replay, or schema contract changed.
 - Broader focused sourcing regression passed 85/85 after updating only the two intentionally superseded expectations (current canonical provenance and one quality-gap publication tier).
 - Full V7.3/corpus/replay focused regression passed 134/134.
+- Bound audit provenance to the exact published pool order: the pool index now carries both `publication_tier` and the selected `sourcing_lane`, preventing a same-dedupe alternate source from recomputing a different audit winner.
+- Extended the Daily contract validator to block missing/invalid tier counts, count-to-record mismatch, tier/push sum mismatch, published records without a tier, and unpublished records with a non-null tier.
+- `npm run test:daily-v4` passed 345/345 after installing disposable-snapshot dependencies; no package lock or repository dependency file changed.
+- `npm run verify:all` passed all 16 tasks. Because this authorized working snapshot intentionally has no `.git`, the last task used a temporary wrapper that runs the equivalent `/usr/bin/git diff --no-index --check` across every changed file; the first unwrapped run had already passed the preceding 15 tasks and failed only with git exit 129 at the absent-repository boundary.
+- Final post-validator repeat passed `npm run test:daily-v4` 345/345 and all 16 `npm run verify:all` tasks.
+- Final syntax/JSON/whitespace checks passed for every changed executable/rule/schema file; `.github`, `app`, and `functions` are byte-identical to the frozen base, and the 22-file scope contains no workflow, provider-call, CRM/Supabase write, product, or UI change.
+- Reconfirmed before publication: remote `main` remains the frozen base and the open PR queue remains empty; the user worktree retains its pre-existing three entries and was never modified.
 
 ## Remaining
 
-- Run `npm run test:daily-v4`, `npm run verify:all`, and final syntax/schema/diff/workflow/scope audits.
-- Publish one Ready PR and stop for root independent QA.
+- Publish the final branch, create one Ready PR, wait for remote checks, and stop unmerged for root Release Captain QA.
 
 ## Next Action
 
-Publish the focused-GREEN implementation checkpoint, then run the two full repository gates.
+Publish the final branch head and create the Ready PR.
 
 ## Git Status
 
@@ -76,6 +82,7 @@ Publish the focused-GREEN implementation checkpoint, then run the two full repos
 - Initial checkpoint head: `50c49470779f4c1d5e85ca7449eab0a4221cee4b`.
 - Diagnosis checkpoint head: `f092c7aaf327a80be4dacfd5c78a9bb4ec212007`.
 - RED contract head: `7bbef0cab18ccea1df32effdb5065afef6ecab46` (tree `aa057fa6a09524d69704fb469aa0e2d6dec51696`).
+- Focused-GREEN implementation head: `378cc1a4051a62cb7bb42b19fac24595445457ea` (tree `a9dafc402c37be7f822b5cf8ff13f0e32524979d`).
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.

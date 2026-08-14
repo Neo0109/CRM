@@ -197,6 +197,8 @@ function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
   if (artifact.sourcing_rule_version === RULE_VERSION) {
     const newQualifiedCount = artifact.scan_summary?.new_qualified_count;
     const recordedPushPoolCount = artifact.scan_summary?.push_pool_count;
+    const strictFormalCount = artifact.scan_summary?.strict_formal_count;
+    const nearPassReviewCount = artifact.scan_summary?.near_pass_review_count;
     const reportPushPoolCount = poolLeads(report, "push_pool").length;
     if (!Number.isInteger(newQualifiedCount)) {
       errors.push("V7 sourcing candidate scan_summary.new_qualified_count must be an integer");
@@ -204,11 +206,36 @@ function validateSourcingCandidateIntegrity(artifact, report, date, errors) {
     if (!Number.isInteger(recordedPushPoolCount)) {
       errors.push("V7 sourcing candidate scan_summary.push_pool_count must be an integer");
     }
+    if (!Number.isInteger(strictFormalCount)) {
+      errors.push("V7.2.2 sourcing candidate scan_summary.strict_formal_count must be an integer");
+    }
+    if (!Number.isInteger(nearPassReviewCount)) {
+      errors.push("V7.2.2 sourcing candidate scan_summary.near_pass_review_count must be an integer");
+    }
     if (newQualifiedCount !== recordedPushPoolCount) {
       errors.push(`V7 admission parity mismatch: new_qualified_count=${newQualifiedCount}, push_pool_count=${recordedPushPoolCount}`);
     }
     if (recordedPushPoolCount !== reportPushPoolCount) {
       errors.push(`V7 report parity mismatch: scan_summary.push_pool_count=${recordedPushPoolCount}, report push_pool=${reportPushPoolCount}`);
+    }
+    if (strictFormalCount + nearPassReviewCount !== recordedPushPoolCount) {
+      errors.push(`V7.2.2 publication-tier parity mismatch: strict_formal_count=${strictFormalCount}, near_pass_review_count=${nearPassReviewCount}, push_pool_count=${recordedPushPoolCount}`);
+    }
+    const actualStrictFormalCount = candidates.filter((candidate) => candidate?.publication_tier === "strict_formal").length;
+    const actualNearPassReviewCount = candidates.filter((candidate) => candidate?.publication_tier === "near_pass_review").length;
+    if (strictFormalCount !== actualStrictFormalCount) {
+      errors.push(`V7.2.2 strict_formal_count expected ${actualStrictFormalCount}, received ${strictFormalCount}`);
+    }
+    if (nearPassReviewCount !== actualNearPassReviewCount) {
+      errors.push(`V7.2.2 near_pass_review_count expected ${actualNearPassReviewCount}, received ${nearPassReviewCount}`);
+    }
+    for (const candidate of candidates) {
+      if (candidate?.decision === "formal" && !["strict_formal", "near_pass_review"].includes(candidate?.publication_tier)) {
+        errors.push(`${candidate?.dedupe_key ?? "sourcing candidate"}: published V7.2.2 candidate requires publication_tier`);
+      }
+      if (candidate?.decision !== "formal" && candidate?.publication_tier !== null) {
+        errors.push(`${candidate?.dedupe_key ?? "sourcing candidate"}: unpublished V7.2.2 candidate publication_tier must be null`);
+      }
     }
     if (poolLeads(report, "watch_pool").length || poolLeads(report, "drop_pool").length) {
       errors.push("V7 Daily report must keep watch_pool and drop_pool empty");

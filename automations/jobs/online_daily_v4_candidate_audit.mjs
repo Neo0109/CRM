@@ -127,7 +127,7 @@ function buildSteamAuditRecord({ key, raw, enriched, ruleVersion, poolDecision, 
     project: String(candidate.title ?? "").trim(),
     steam_app_id: stringOrNull(candidate.appId),
     dedupe_key: key,
-    sourcing_lane: isV7 ? admission.sourcing_lane : candidate.sourcing_lane ?? null,
+    sourcing_lane: isV7 ? poolDecision?.sourcingLane ?? admission.sourcing_lane : candidate.sourcing_lane ?? null,
     sourcing_rule_version: ruleVersion,
     matched_rules: uniqueStrings(matchedRules),
     missing_evidence: uniqueStrings(missingEvidence),
@@ -189,7 +189,7 @@ function buildMediaAuditRecord({ key, lead, ruleVersion, poolDecision }) {
     project: String(lead?.project ?? "").trim(),
     steam_app_id: stringOrNull(lead?.steam_app_id),
     dedupe_key: key,
-    sourcing_lane: isV7 ? admission.sourcing_lane : lead?.sourcing_lane ?? null,
+    sourcing_lane: isV7 ? poolDecision?.sourcingLane ?? admission.sourcing_lane : lead?.sourcing_lane ?? null,
     sourcing_rule_version: ruleVersion,
     matched_rules: uniqueStrings([
       "media_discovery",
@@ -226,15 +226,26 @@ function buildPoolIndex(candidatePools, publishedPools) {
       });
     }
   }
+  const hasTierCounts = Number.isInteger(publishedPools?.strict_formal_count)
+    && Number.isInteger(publishedPools?.near_pass_review_count);
   for (const pool of ["push", "watch", "drop"]) {
-    for (const lead of publishedPools?.[pool] ?? []) {
+    for (const [leadIndex, lead] of (publishedPools?.[pool] ?? []).entries()) {
       const key = leadDedupeKey(lead);
       if (!key) continue;
       const previous = index.get(key);
+      const publicationTier = pool === "push" && hasTierCounts
+        ? leadIndex < publishedPools.strict_formal_count
+          ? "strict_formal"
+          : leadIndex < publishedPools.strict_formal_count + publishedPools.near_pass_review_count
+            ? "near_pass_review"
+            : null
+        : null;
       index.set(key, {
         decision: pool === "drop" ? "excluded" : "formal",
         matchedRule: previous?.matchedRule ?? `published_${pool}`,
-        reason: exclusionReasonFromLead(lead) ?? previous?.reason ?? null
+        reason: exclusionReasonFromLead(lead) ?? previous?.reason ?? null,
+        publicationTier,
+        sourcingLane: lead?.sourcing_lane ?? null
       });
     }
   }
@@ -304,6 +315,9 @@ function buildV7PublicationSummary({ ruleVersion, internalCandidates, publishedP
 
 function publicationTier({ ruleVersion, poolDecision, admission }) {
   if (poolDecision?.decision !== "formal" || !isV7AdmissionRule(ruleVersion)) return null;
+  if (["strict_formal", "near_pass_review"].includes(poolDecision?.publicationTier)) {
+    return poolDecision.publicationTier;
+  }
   if (admission?.qualified === true) return "strict_formal";
   return ruleVersion === REGULAR_SOURCING_RULE_VERSION ? "near_pass_review" : null;
 }

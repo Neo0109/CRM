@@ -54,6 +54,13 @@ describe("V7.2.2 bounded near-pass review publication", () => {
       score: 92
     });
     const result = nearPass.evaluateSteamNearPassReview(candidate);
+    const mediaResult = nearPass.evaluateMediaNearPassReview({
+      project: candidate.title,
+      steam_app_id: candidate.appId,
+      region: candidate.region,
+      media_score: 93,
+      _indieAdmissionEvidence: candidate._indieAdmissionEvidence
+    });
     const pools = buildPools([candidate], [], { reportDate });
 
     assert.deepEqual(pick(result, ["eligible", "gap_id", "sourcing_lane", "dedupe_key"]), {
@@ -61,6 +68,13 @@ describe("V7.2.2 bounded near-pass review publication", () => {
       gap_id: "independent_quality_proof",
       sourcing_lane: "indie_prelaunch",
       dedupe_key: "steam:3473430"
+    });
+    assert.deepEqual(pick(mediaResult, ["eligible", "gap_id", "sourcing_lane", "dedupe_key", "source_type"]), {
+      eligible: true,
+      gap_id: "independent_quality_proof",
+      sourcing_lane: "indie_prelaunch",
+      dedupe_key: "steam:3473430",
+      source_type: "media"
     });
     assert.equal(pools.strict_formal_count, 0);
     assert.equal(pools.near_pass_review_count, 1);
@@ -106,11 +120,15 @@ describe("V7.2.2 bounded near-pass review publication", () => {
       chinaDemandEvidence: null
     });
     const noGaps = indieCandidate({ appId: "8800004", qualityProofs: qualityProof("8800004") });
+    const demoOnly = indieCandidate({ appId: "8800005", qualityProofs: [], officialGameplayEvidence: [] });
+    const gameplayOnly = indieCandidate({ appId: "8800006", qualityProofs: [], officialDemoEvidence: [] });
 
     assert.equal(nearPass.evaluateSteamNearPassReview(qualityGap).gap_id, "independent_quality_proof");
     assert.equal(nearPass.evaluateSteamNearPassReview(demandGap).gap_id, "overseas_china_demand");
     assert.equal(nearPass.evaluateSteamNearPassReview(twoGaps).eligible, false);
     assert.equal(nearPass.evaluateSteamNearPassReview(noGaps).eligible, false);
+    assert.equal(nearPass.evaluateSteamNearPassReview(demoOnly).eligible, true);
+    assert.equal(nearPass.evaluateSteamNearPassReview(gameplayOnly).eligible, true);
   });
 
   it("rejects every locked indie hard-gate failure", () => {
@@ -169,7 +187,7 @@ describe("V7.2.2 bounded near-pass review publication", () => {
       indieCandidate({ appId: "8820105", title: "Demand Overseas", region: "海外", qualityProofs: qualityProof("8820105"), chinaDemandEvidence: null, score: 999 }),
       jointCandidate({ appId: "8820106", title: "Traction Domestic", region: "中国", score: 999 }),
       indieCandidate({ appId: "8820103", title: "Quality Overseas", region: "海外", qualityProofs: [], score: 900 }),
-      indieCandidate({ appId: "8820102", title: "Quality Domestic Lower", region: "中国", qualityProofs: [], score: 10 }),
+      indieCandidate({ appId: "8820102", title: "Quality Domestic No Event", region: "中国", qualityProofs: [], score: 1000, source: "Steam discovery fixture" }),
       indieCandidate({ appId: "8820101", title: "Quality Domestic Higher", region: "中国", qualityProofs: [], score: 20 }),
       indieCandidate({ appId: "8820101", title: "Duplicate Lower", region: "中国", qualityProofs: [], score: -100 })
     ];
@@ -202,6 +220,7 @@ describe("V7.2.2 bounded near-pass review publication", () => {
     });
 
     assert.equal(pools.push.some((lead) => "publication_tier" in lead), false);
+    assert.ok(pools.push.every((lead) => Object.keys(lead).every((key) => !key.startsWith("_"))));
     assert.equal(artifact.scan_summary.strict_formal_count, 1);
     assert.equal(artifact.scan_summary.near_pass_review_count, 1);
     assert.equal(artifact.scan_summary.new_qualified_count, 2);
@@ -212,7 +231,17 @@ describe("V7.2.2 bounded near-pass review publication", () => {
     );
     assert.equal(artifact.candidates.find((item) => item.steam_app_id === "8830001").publication_tier, "strict_formal");
     assert.equal(artifact.candidates.find((item) => item.steam_app_id === "8830002").publication_tier, "near_pass_review");
+    assert.equal(artifact.candidates.find((item) => item.steam_app_id === "8830002").sourcing_lane, "indie_prelaunch");
     assert.equal(artifact.candidates.find((item) => item.steam_app_id === "8830003").publication_tier, null);
+    assert.throws(() => buildSourcingCandidateArtifact({
+      reportDate,
+      capturedAt: `${reportDate}T08:00:00+08:00`,
+      ruleVersion: REGULAR_SOURCING_RULE_VERSION,
+      rawSteamCandidates: enriched,
+      enrichedSteamCandidates: enriched,
+      candidatePools: pools,
+      publishedPools: { ...pools, near_pass_review_count: 0 }
+    }), /SOURCING_PUBLICATION_TIER_PARITY_MISMATCH/);
 
     const report = buildDailyReport({
       pools,
@@ -253,6 +282,7 @@ function indieCandidate(overrides = {}) {
     appId,
     title: overrides.title ?? `Indie ${appId}`,
     region,
+    source: overrides.source ?? "Steam current product event fixture",
     score: overrides.score ?? 0,
     earlyAccess: overrides.earlyAccess ?? false,
     publisherOccupied: overrides.publisherOccupied ?? false,
@@ -345,7 +375,7 @@ function steamCandidateBase(overrides) {
   return {
     appId: overrides.appId,
     title: overrides.title,
-    source: "Steam current product event fixture",
+    source: overrides.source ?? "Steam current product event fixture",
     score: overrides.score ?? 0,
     genres: overrides.genres ?? ["Strategy", "Simulation"],
     categories: overrides.categories ?? ["Single-player"],

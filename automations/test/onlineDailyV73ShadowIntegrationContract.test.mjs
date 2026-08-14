@@ -29,11 +29,11 @@ const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml
 const ORIGINAL_BLOBS = {
   generator: "5864b38f5d88969d85ccb47492b56ee564798cb6",
   activeRulesModule: "c89beb38b47a8f23524574c46fe19cc5ef3a3771",
-  activeRule: "b2649a0e266288c09028b222036f40e95110bdde",
+  activeRule: "f111f5edc9e73c256a8f929182005d0de99cbc96",
   activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
-  activeCandidateAudit: "1c176d121ac35a28c6d1fd989290806995fac173",
+  activeCandidateAudit: "c2bf0aef0f146660129ababe09ca3eed450ad24e",
   activeReports: "c8fb49b9e6ad1c1c9bc7d4169247cda25e867920",
-  dailyValidator: "e05e38be25c22ebcd24e9acebfa9012d79e491a3",
+  dailyValidator: "09bcf75ba6a4dc5bedd99bc6cb0a7b1b9986eed0",
   syncWorkflow: "72282bc6964e1b0744624b1903d2c5f4d26d416e",
   watchdogWorkflow: "3a01348ed0b8fc45798e59ceb60dff3a03f94be4"
 };
