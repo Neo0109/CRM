@@ -423,7 +423,8 @@ export function selectV73CanonicalSecondPassCandidates({
 
 export function compareV73CanonicalSecondPassCandidate(left = {}, right = {}) {
   return (
-    Number(right?.provider_eligible === true) - Number(left?.provider_eligible === true)
+    Number(right?.first_pass?.qualified === true) - Number(left?.first_pass?.qualified === true)
+    || Number(right?.provider_eligible === true) - Number(left?.provider_eligible === true)
     || compareV73SecondPassPriority(left, right)
   );
 }

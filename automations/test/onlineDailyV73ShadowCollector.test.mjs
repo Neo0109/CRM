@@ -570,7 +570,7 @@ describe("C5-B V7.3 shadow collector", () => {
       fixture.qualifiedEvidence.project,
       "the collector must persist the qualified canonical admission"
     );
-    assert.equal(candidate.first_pass.indie_prelaunch.qualified, true);
+    assert.equal(candidate.first_pass.indie_prelaunch.output.qualified, true);
     assert.equal(candidate.second_pass.eligible, false);
     assert.equal(candidate.second_pass.rejection_reason, "already_qualified");
     assert.equal(candidate.second_pass.selected, false);
@@ -604,7 +604,7 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.equal(finalized.status, "complete", finalized.reason);
     const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
     assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
-    assert.equal(corpus.candidates[0].first_pass.indie_prelaunch.qualified, true);
+    assert.equal(corpus.candidates[0].first_pass.indie_prelaunch.output.qualified, true);
     assert.equal(corpus.candidates[0].second_pass.rejection_reason, "already_qualified");
     assert.deepEqual(corpus.second_pass.eligible_ids, []);
     assert.equal(
