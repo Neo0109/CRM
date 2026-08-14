@@ -7,9 +7,14 @@ import path from "node:path";
 import { after, describe, it } from "node:test";
 
 import {
+  sha256Canonical,
   validateReplayCorpus,
   validateReplayPrivacy
 } from "../jobs/online_daily_v7_3_replay_corpus_contract.mjs";
+import {
+  buildReplayedDecisionView,
+  buildStoredDecisionView
+} from "../jobs/online_daily_v7_3_offline_replay.mjs";
 import {
   fetchV73TargetedEvidence
 } from "../jobs/online_daily_v7_3_second_pass_orchestrator.mjs";
@@ -448,6 +453,81 @@ describe("C5-B V7.3 shadow collector", () => {
     assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
     assert.equal(corpus.candidates[0].second_pass.eligible, false);
     assert.deepEqual(corpus.second_pass.eligible_ids, []);
+  });
+
+  it("binds the steam:3473430 multi-source winner across selector, collector, and v2 replay", async () => {
+    requireCollector("collectV73ShadowCore");
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-multisource-winner-"));
+    const fixture = liveMultiSourceWinnerFixture();
+    const providerCalls = [];
+    const options = {
+      rootDir,
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9018" }),
+      steamCandidates: [fixture.steamCandidate],
+      mediaCandidates: [fixture.mediaCandidate],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async (request) => {
+        providerCalls.push(structuredClone(request));
+        return { quality_proofs: [] };
+      }
+    };
+
+    const core = await collector.collectV73ShadowCore(options);
+    assert.deepEqual(core.second_pass.eligible_ids, [fixture.dedupeKey]);
+    assert.deepEqual(core.second_pass.selected_ids, [fixture.dedupeKey]);
+    assert.equal(providerCalls.length, 1);
+    assert.equal(providerCalls[0].source_type, "media");
+    const candidate = core.candidates.find((item) => item.dedupe_key === fixture.dedupeKey);
+    assert.equal(candidate.source_type, "multi_source");
+    assert.equal(
+      candidate.first_pass.indie_prelaunch.input.project,
+      fixture.mediaEvidence.project,
+      "the collector must persist the same media admission selected for the provider"
+    );
+    assert.deepEqual(
+      candidate.first_pass.indie_prelaunch.output.next_evidence_actions,
+      [{ gate_id: "independent_quality_proof", action: "fetch_independent_quality_evidence" }]
+    );
+    assert.equal(candidate.second_pass.eligible, true);
+    assert.equal(candidate.second_pass.rejection_reason, null);
+    assert.equal(candidate.second_pass.selected, true);
+    assert.equal(
+      sha256Canonical(buildStoredDecisionView(core)),
+      sha256Canonical(buildReplayedDecisionView(core)),
+      "collector-v2 replay must recompute the canonical media admission"
+    );
+
+    const capture = await collector.runC5BShadowCollectorSafely(options);
+    assert.equal(capture.status, "pending", capture.reason);
+    await writeFinalizerArtifacts(rootDir);
+    const receiptPath = path.join(
+      rootDir,
+      "data/automation_runs",
+      `${reportDate}-afternoon.json`
+    );
+    await writeReceipt(receiptPath, healthyReceipt({
+      run_id: "9018",
+      run_attempt: 1
+    }));
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath
+    });
+    assert.equal(finalized.status, "complete", finalized.reason);
+    const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
+    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
+    assert.equal(
+      sha256Canonical(buildStoredDecisionView(corpus)),
+      sha256Canonical(buildReplayedDecisionView(corpus))
+    );
   });
 
   it("preserves the media role from the real fixture provider and binds both final proofs", async () => {
@@ -935,6 +1015,65 @@ function steamCandidate(evidence, overrides = {}) {
     score: 80,
     _indieAdmissionEvidence: structuredClone(evidence),
     ...overrides
+  };
+}
+
+function liveMultiSourceWinnerFixture() {
+  const steamAppId = "3473430";
+  const dedupeKey = `steam:${steamAppId}`;
+  const steamEvidence = nearMissEvidence(72, {
+    project: "_All Our Broken Parts",
+    steam_app_id: steamAppId,
+    dedupe_key: dedupeKey,
+    release_window: "tba",
+    official_demo_evidence: [],
+    official_gameplay_evidence: [],
+    quality_proofs: [],
+    business_entrypoints: [],
+    china_bilibili_value: null
+  });
+  const mediaEvidence = nearMissEvidence(73, {
+    project: "爱与机器人维修技术",
+    steam_app_id: steamAppId,
+    dedupe_key: dedupeKey,
+    region: "domestic",
+    release_window: "tba",
+    official_demo_evidence: [{
+      type: "steam_demo",
+      url: `https://store.steampowered.com/app/${steamAppId}/`
+    }],
+    official_gameplay_evidence: [],
+    quality_proofs: [],
+    business_entrypoints: [{
+      type: "Email",
+      value: "public-business@multisource-fixture.example",
+      official_public_business_entry: true
+    }],
+    china_bilibili_value: "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。"
+  });
+  return {
+    dedupeKey,
+    mediaEvidence,
+    steamCandidate: steamCandidate(steamEvidence, {
+      title: steamEvidence.project,
+      hasDemoSignal: false,
+      score: 80
+    }),
+    mediaCandidate: {
+      project: mediaEvidence.project,
+      steam_app_id: steamAppId,
+      source: "Official media multi-source fixture",
+      links: ["https://media.example/games/all-our-broken-parts"],
+      contact_methods: structuredClone(mediaEvidence.business_entrypoints),
+      media_score: 196,
+      _officialSourceMatched: true,
+      _mediaItem: {
+        title: `${mediaEvidence.project} Demo 试玩`,
+        summary: "Official product event resolved to the same Steam app.",
+        link: "https://media.example/games/all-our-broken-parts"
+      },
+      _indieAdmissionEvidence: structuredClone(mediaEvidence)
+    }
   };
 }
 

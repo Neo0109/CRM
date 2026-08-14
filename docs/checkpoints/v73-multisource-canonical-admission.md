@@ -38,17 +38,20 @@ Use TDD RED to encode the live multi-source fixture and prove selector/collector
 - Reconfirmed the exact remote base, empty PR queue, recent completed Actions, and healthy production API.
 - Created `codex/v73-multisource-canonical-admission` from the frozen base.
 - Created a disposable non-git snapshot; the user's CRM worktree remains read-only.
+- Traced the mismatch to two competing canonicalization policies: the selector filters and ranks source-lane admissions before dedupe, while the collector independently sorts merged regular admissions and retains the first Steam entry on an exact tie.
+- Reproduced the live `steam:3473430` shape offline: the Steam lane has four supported gaps and is provider-ineligible, while the same-dedupe media lane has only `independent_quality_proof` missing and is eligible. The selector calls the injected fake provider with `source_type=media`, but the collector persists `_All Our Broken Parts` from Steam instead of `爱与机器人维修技术` from media.
+- Added the RED integration fixture across selector order, collector candidate state, receipt finalization, and collector-v2 stored/recomputed replay. The four focused V7.3/corpus files run 90/91 with exactly the expected canonical-winner assertion failing; all pre-existing tests remain green.
 
 ## Remaining
 
-- Trace the live source/admission binding and publish a RED commit.
+- Publish the RED commit.
 - Implement the minimal shared canonical winner and reach GREEN.
 - Run all required local and remote checks.
 - Publish one Ready PR for root Release Captain independent QA; do not merge.
 
 ## Next Action
 
-Add the failing `steam:3473430` mixed-source fixture without changing production code.
+Publish the isolated failing fixture, then make selector and collector consume one pure canonical source/admission winner.
 
 ## Git Status
 
