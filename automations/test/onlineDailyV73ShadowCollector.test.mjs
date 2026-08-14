@@ -531,6 +531,88 @@ describe("C5-B V7.3 shadow collector", () => {
     );
   });
 
+  it("keeps a qualified same-dedupe admission ahead of a provider-eligible near-miss", async () => {
+    requireCollector("collectV73ShadowCore");
+    requireCollector("runC5BShadowCollectorSafely");
+    requireCollector("finalizeC5BReplayCorpusSafely");
+    const rootDir = await mkdtemp(path.join(tmpdir(), "c5b-shadow-qualified-canonical-"));
+    const fixture = qualifiedVsNearMissCanonicalFixture();
+    const providerCalls = [];
+    const options = {
+      rootDir,
+      reportDate,
+      capturedAt,
+      runContext: automaticRun({ workflow_run_id: "9019" }),
+      steamCandidates: [fixture.qualifiedSteamCandidate],
+      mediaCandidates: [fixture.nearMissMediaCandidate],
+      mediaSignals: [],
+      candidateStates: new Map(),
+      behaviorManifest,
+      provider: async (request) => {
+        providerCalls.push(structuredClone(request));
+        return { quality_proofs: [secondQualityProof] };
+      }
+    };
+
+    const core = await collector.collectV73ShadowCore(options);
+    assert.deepEqual(
+      core.second_pass.eligible_ids,
+      [],
+      "an already-qualified canonical admission must not consume second-pass budget"
+    );
+    assert.deepEqual(core.second_pass.selected_ids, []);
+    assert.deepEqual(core.second_pass.transactions, []);
+    assert.equal(providerCalls.length, 0);
+    const candidate = core.candidates.find((item) => item.dedupe_key === fixture.dedupeKey);
+    assert.equal(candidate.source_type, "multi_source");
+    assert.equal(
+      candidate.first_pass.indie_prelaunch.input.project,
+      fixture.qualifiedEvidence.project,
+      "the collector must persist the qualified canonical admission"
+    );
+    assert.equal(candidate.first_pass.indie_prelaunch.qualified, true);
+    assert.equal(candidate.second_pass.eligible, false);
+    assert.equal(candidate.second_pass.rejection_reason, "already_qualified");
+    assert.equal(candidate.second_pass.selected, false);
+    assert.equal(candidate.second_pass.attempted, false);
+    assert.equal(candidate.publication.shadow_push_pool, true);
+    assert.equal(
+      sha256Canonical(buildStoredDecisionView(core)),
+      sha256Canonical(buildReplayedDecisionView(core)),
+      "collector-v2 replay must recompute the qualified canonical admission"
+    );
+
+    const capture = await collector.runC5BShadowCollectorSafely(options);
+    assert.equal(capture.status, "pending", capture.reason);
+    assert.equal(providerCalls.length, 0);
+    await writeFinalizerArtifacts(rootDir);
+    const receiptPath = path.join(
+      rootDir,
+      "data/automation_runs",
+      `${reportDate}-afternoon.json`
+    );
+    await writeReceipt(receiptPath, healthyReceipt({
+      run_id: "9019",
+      run_attempt: 1
+    }));
+    const finalized = await collector.finalizeC5BReplayCorpusSafely({
+      rootDir,
+      reportDate,
+      runSlot: "afternoon",
+      receiptPath
+    });
+    assert.equal(finalized.status, "complete", finalized.reason);
+    const corpus = JSON.parse(await readFile(finalized.corpus_path, "utf8"));
+    assert.deepEqual(validateReplayCorpus(corpus), { valid: true, errors: [] });
+    assert.equal(corpus.candidates[0].first_pass.indie_prelaunch.qualified, true);
+    assert.equal(corpus.candidates[0].second_pass.rejection_reason, "already_qualified");
+    assert.deepEqual(corpus.second_pass.eligible_ids, []);
+    assert.equal(
+      sha256Canonical(buildStoredDecisionView(corpus)),
+      sha256Canonical(buildReplayedDecisionView(corpus))
+    );
+  });
+
   it("preserves the media role from the real fixture provider and binds both final proofs", async () => {
     requireCollector("collectV73ShadowCore");
     const evidence = nearMissEvidence(20, {
@@ -1074,6 +1156,47 @@ function liveMultiSourceWinnerFixture() {
         link: "https://media.example/games/all-our-broken-parts"
       },
       _indieAdmissionEvidence: structuredClone(mediaEvidence)
+    }
+  };
+}
+
+function qualifiedVsNearMissCanonicalFixture() {
+  const steamAppId = "3473430";
+  const dedupeKey = `steam:${steamAppId}`;
+  const qualifiedEvidence = nearMissEvidence(74, {
+    project: "_All Our Broken Parts",
+    steam_app_id: steamAppId,
+    dedupe_key: dedupeKey,
+    quality_proofs: [firstQualityProof, secondQualityProof]
+  });
+  const nearMissEvidenceValue = nearMissEvidence(75, {
+    project: "爱与机器人维修技术",
+    steam_app_id: steamAppId,
+    dedupe_key: dedupeKey,
+    region: "domestic",
+    quality_proofs: [firstQualityProof]
+  });
+  return {
+    dedupeKey,
+    qualifiedEvidence,
+    qualifiedSteamCandidate: steamCandidate(qualifiedEvidence, {
+      title: qualifiedEvidence.project,
+      score: 80
+    }),
+    nearMissMediaCandidate: {
+      project: nearMissEvidenceValue.project,
+      steam_app_id: steamAppId,
+      source: "Official media qualified-priority fixture",
+      links: ["https://media.example/games/qualified-priority"],
+      contact_methods: structuredClone(nearMissEvidenceValue.business_entrypoints),
+      media_score: 196,
+      _officialSourceMatched: true,
+      _mediaItem: {
+        title: `${nearMissEvidenceValue.project} Demo 试玩`,
+        summary: "Official product event resolved to the same Steam app.",
+        link: "https://media.example/games/qualified-priority"
+      },
+      _indieAdmissionEvidence: structuredClone(nearMissEvidenceValue)
     }
   };
 }
