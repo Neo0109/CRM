@@ -67,14 +67,17 @@ Add one bounded V7.2.2 review tier after unchanged strict formal publication: pu
 - Final post-validator repeat passed `npm run test:daily-v4` 345/345 and all 16 `npm run verify:all` tasks.
 - Final syntax/JSON/whitespace checks passed for every changed executable/rule/schema file; `.github`, `app`, and `functions` are byte-identical to the frozen base, and the 22-file scope contains no workflow, provider-call, CRM/Supabase write, product, or UI change.
 - Reconfirmed before publication: remote `main` remains the frozen base and the open PR queue remains empty; the user worktree retains its pre-existing three entries and was never modified.
+- Published the 22-file implementation as head `023de4f5161d2e914cea3248aac2dcfe52d1d5d0` (tree `8b51515841df655e9c6dde6533e09445e8389c65`) and verified every remote blob against the frozen snapshot.
+- Opened Ready PR #119: `https://github.com/Neo0109/CRM/pull/119`. Agent-side implementation and verification are complete; independent code review, remote checks, and the merge decision remain with the root Release Captain.
 
 ## Remaining
 
-- Publish the final branch, create one Ready PR, wait for remote checks, and stop unmerged for root Release Captain QA.
+- Wait for PR #119 remote checks and root Release Captain independent QA.
+- Root owns the merge gate; this implementation task must stop unmerged.
 
 ## Next Action
 
-Publish the final branch head and create the Ready PR.
+Root Release Captain independently reviews PR #119 and decides whether to merge after all remote checks are green.
 
 ## Git Status
 
@@ -83,6 +86,8 @@ Publish the final branch head and create the Ready PR.
 - Diagnosis checkpoint head: `f092c7aaf327a80be4dacfd5c78a9bb4ec212007`.
 - RED contract head: `7bbef0cab18ccea1df32effdb5065afef6ecab46` (tree `aa057fa6a09524d69704fb469aa0e2d6dec51696`).
 - Focused-GREEN implementation head: `378cc1a4051a62cb7bb42b19fac24595445457ea` (tree `a9dafc402c37be7f822b5cf8ff13f0e32524979d`).
+- Final implementation head: `023de4f5161d2e914cea3248aac2dcfe52d1d5d0` (tree `8b51515841df655e9c6dde6533e09445e8389c65`).
+- Ready PR: #119 (`https://github.com/Neo0109/CRM/pull/119`), open and unmerged at handoff.
 - Base: `fe6823186dc42e71b4cf775d3a3d4d0225df335d`.
 - Expected scope: production sourcing decision/publication code, focused sourcing tests, machine/current rule documentation, and this checkpoint only.
 - Working medium: fresh disposable non-git snapshot; user CRM worktree remains read-only.
