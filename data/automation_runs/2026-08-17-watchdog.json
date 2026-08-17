@@ -1,0 +1,323 @@
+{
+  "report_date": "2026-08-17",
+  "slot": "watchdog",
+  "status": "success",
+  "attempts": 1,
+  "generated_changed": true,
+  "generation_status": "success",
+  "generation_exit_code": 0,
+  "validation_status": "success",
+  "validation_exit_code": 0,
+  "failure_stage": null,
+  "failure_reason": null,
+  "volume_diagnostics": null,
+  "steam_evidence_lost": null,
+  "business_liveness_status": "degraded",
+  "business_liveness": {
+    "schema_version": 1,
+    "window": {
+      "start_date": "2026-08-03",
+      "end_date": "2026-08-17",
+      "requested_days": 15,
+      "report_days": 15,
+      "candidate_artifact_days": 15,
+      "missing_report_days": 0,
+      "missing_candidate_artifact_days": 0
+    },
+    "targets": {
+      "rolling_days": 7,
+      "minimum_nonzero_days": 5,
+      "minimum_new_leads": 7,
+      "degraded_zero_days": 2,
+      "unhealthy_zero_days": 3
+    },
+    "current_day": {
+      "date": "2026-08-17",
+      "report_present": true,
+      "candidate_artifact_present": true,
+      "new_lead_count": 0,
+      "candidate_records": 271,
+      "formal": 0,
+      "candidate": 69,
+      "excluded": 202
+    },
+    "rolling_7": {
+      "days_observed": 7,
+      "nonzero_days": 2,
+      "new_lead_count": 4,
+      "targets_met": false
+    },
+    "consecutive_zero_days": 1,
+    "business_liveness_status": "degraded",
+    "top_blocking_gates": [
+      {
+        "gate": "steam_review_summary",
+        "candidate_occurrences": 1089,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "independent_quality_proof",
+        "candidate_occurrences": 1081,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "official_gameplay",
+        "candidate_occurrences": 892,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "official_demo_or_playtest",
+        "candidate_occurrences": 755,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "prelaunch_window",
+        "candidate_occurrences": 620,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "concrete_china_bilibili_value",
+        "candidate_occurrences": 365,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "overseas_china_demand",
+        "candidate_occurrences": 337,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "ea_status",
+        "candidate_occurrences": 128,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "non_india_team",
+        "candidate_occurrences": 128,
+        "day_occurrences": 15
+      },
+      {
+        "gate": "non_narrative_product",
+        "candidate_occurrences": 128,
+        "day_occurrences": 15
+      }
+    ],
+    "history": [
+      {
+        "date": "2026-08-03",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 276,
+        "formal": 0,
+        "candidate": 68,
+        "excluded": 208
+      },
+      {
+        "date": "2026-08-04",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 286,
+        "formal": 0,
+        "candidate": 74,
+        "excluded": 212
+      },
+      {
+        "date": "2026-08-05",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 283,
+        "formal": 0,
+        "candidate": 72,
+        "excluded": 211
+      },
+      {
+        "date": "2026-08-06",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 283,
+        "formal": 0,
+        "candidate": 76,
+        "excluded": 207
+      },
+      {
+        "date": "2026-08-07",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 274,
+        "formal": 0,
+        "candidate": 66,
+        "excluded": 208
+      },
+      {
+        "date": "2026-08-08",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 281,
+        "formal": 0,
+        "candidate": 71,
+        "excluded": 210
+      },
+      {
+        "date": "2026-08-09",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 290,
+        "formal": 0,
+        "candidate": 77,
+        "excluded": 213
+      },
+      {
+        "date": "2026-08-10",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 279,
+        "formal": 0,
+        "candidate": 71,
+        "excluded": 208
+      },
+      {
+        "date": "2026-08-11",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 273,
+        "formal": 0,
+        "candidate": 66,
+        "excluded": 207
+      },
+      {
+        "date": "2026-08-12",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 287,
+        "formal": 0,
+        "candidate": 80,
+        "excluded": 207
+      },
+      {
+        "date": "2026-08-13",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 280,
+        "formal": 0,
+        "candidate": 75,
+        "excluded": 205
+      },
+      {
+        "date": "2026-08-14",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 275,
+        "formal": 0,
+        "candidate": 72,
+        "excluded": 203
+      },
+      {
+        "date": "2026-08-15",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 3,
+        "candidate_records": 282,
+        "formal": 3,
+        "candidate": 74,
+        "excluded": 205
+      },
+      {
+        "date": "2026-08-16",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 1,
+        "candidate_records": 282,
+        "formal": 1,
+        "candidate": 78,
+        "excluded": 203
+      },
+      {
+        "date": "2026-08-17",
+        "report_present": true,
+        "candidate_artifact_present": true,
+        "new_lead_count": 0,
+        "candidate_records": 271,
+        "formal": 0,
+        "candidate": 69,
+        "excluded": 202
+      }
+    ]
+  },
+  "business_liveness_error": null,
+  "new_lead_count": 0,
+  "consecutive_zero_days": 1,
+  "top_blocking_gates": [
+    {
+      "gate": "steam_review_summary",
+      "candidate_occurrences": 1089,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "independent_quality_proof",
+      "candidate_occurrences": 1081,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "official_gameplay",
+      "candidate_occurrences": 892,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "official_demo_or_playtest",
+      "candidate_occurrences": 755,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "prelaunch_window",
+      "candidate_occurrences": 620,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "concrete_china_bilibili_value",
+      "candidate_occurrences": 365,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "overseas_china_demand",
+      "candidate_occurrences": 337,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "ea_status",
+      "candidate_occurrences": 128,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "non_india_team",
+      "candidate_occurrences": 128,
+      "day_occurrences": 15
+    },
+    {
+      "gate": "non_narrative_product",
+      "candidate_occurrences": 128,
+      "day_occurrences": 15
+    }
+  ],
+  "generation_log_tail": "\"B站视频-国产独立游戏\": {\n        \"source\": \"B站视频-国产独立游戏\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国产游戏公开测试\": {\n        \"source\": \"B站视频-国产游戏公开测试\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 10,\n        \"retained_signals\": 1,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.1,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"游研社\": {\n        \"source\": \"游研社\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 18,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.6,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国产独立游戏PV\": {\n        \"source\": \"B站视频-国产独立游戏PV\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 11,\n        \"lead_candidates\": 4,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.55,\n        \"lead_conversion_rate\": 0.2,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国人独立游戏Steam\": {\n        \"source\": \"B站视频-国人独立游戏Steam\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 19,\n        \"lead_candidates\": 2,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.95,\n        \"lead_conversion_rate\": 0.1,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国产官方PV\": {\n        \"source\": \"B站视频-国产官方PV\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 16,\n        \"retained_signals\": 7,\n        \"lead_candidates\": 1,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.4375,\n        \"lead_conversion_rate\": 0.0625,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"indienova\": {\n        \"source\": \"indienova\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 3,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.1,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站搜索-国产独立游戏\": {\n        \"source\": \"B站搜索-国产独立游戏\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国产策略模拟\": {\n        \"source\": \"B站视频-国产策略模拟\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 11,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.55,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"Eurogamer\": {\n        \"source\": \"Eurogamer\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 13,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.65,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站搜索-国产游戏实机\": {\n        \"source\": \"B站搜索-国产游戏实机\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"VGC\": {\n        \"source\": \"VGC\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 10,\n        \"retained_signals\": 2,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.2,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国产Playtest\": {\n        \"source\": \"B站视频-国产Playtest\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 16,\n        \"retained_signals\": 4,\n        \"lead_candidates\": 1,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.25,\n        \"lead_conversion_rate\": 0.0625,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站搜索-国产肉鸽卡牌\": {\n        \"source\": \"B站搜索-国产肉鸽卡牌\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"IGN\": {\n        \"source\": \"IGN\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 8,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.4,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"PC Gamer\": {\n        \"source\": \"PC Gamer\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 6,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.3,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站搜索-国产游戏试玩\": {\n        \"source\": \"B站搜索-国产游戏试玩\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"GameDeveloper\": {\n        \"source\": \"GameDeveloper\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 12,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.6,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"The Verge Gaming\": {\n        \"source\": \"The Verge Gaming\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 10,\n        \"retained_signals\": 6,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.6,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"游戏茶馆\": {\n        \"source\": \"游戏茶馆\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 10,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.3333,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站搜索-独立游戏制作人\": {\n        \"source\": \"B站搜索-独立游戏制作人\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"Gematsu\": {\n        \"source\": \"Gematsu\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 16,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.8,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"TapTap发现\": {\n        \"source\": \"TapTap发现\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"GamesIndustry.biz\": {\n        \"source\": \"GamesIndustry.biz\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 5,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.25,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"GameSpot\": {\n        \"source\": \"GameSpot\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 19,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.95,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"Rock Paper Shotgun\": {\n        \"source\": \"Rock Paper Shotgun\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 8,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.4,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"Siliconera\": {\n        \"source\": \"Siliconera\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 15,\n        \"retained_signals\": 2,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.1333,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"机核\": {\n        \"source\": \"机核\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 17,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.5667,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"游民星空\": {\n        \"source\": \"游民星空\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 5,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.1667,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"PocketGamer.biz\": {\n        \"source\": \"PocketGamer.biz\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 15,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.75,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-独立游戏开发日志\": {\n        \"source\": \"B站视频-独立游戏开发日志\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国产肉鸽卡牌\": {\n        \"source\": \"B站视频-国产肉鸽卡牌\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国产二游新作\": {\n        \"source\": \"B站视频-国产二游新作\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国产TapTap预约\": {\n        \"source\": \"B站视频-国产TapTap预约\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国产开发者Demo\": {\n        \"source\": \"B站视频-国产开发者Demo\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国产游戏试玩\": {\n        \"source\": \"B站视频-国产游戏试玩\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国产商店页愿望单\": {\n        \"source\": \"B站视频-国产商店页愿望单\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"B站视频-国风修仙游戏\": {\n        \"source\": \"B站视频-国风修仙游戏\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"Polygon\": {\n        \"source\": \"Polygon\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 10,\n        \"retained_signals\": 1,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.1,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"B站视频-国产游戏实机\": {\n        \"source\": \"B站视频-国产游戏实机\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 1,\n        \"last_error\": null\n      },\n      \"触乐\": {\n        \"source\": \"触乐\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"证券时报\": {\n        \"source\": \"证券时报\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"3DM\": {\n        \"source\": \"3DM\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 10,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.3333,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"GameRes游资网\": {\n        \"source\": \"GameRes游资网\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 30,\n        \"retained_signals\": 5,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.1667,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"GameLook\": {\n        \"source\": \"GameLook\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 20,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 1,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"IT之家\": {\n        \"source\": \"IT之家\",\n        \"attempts\": 1,\n        \"successes\": 1,\n        \"failures\": 0,\n        \"raw_signals\": 20,\n        \"retained_signals\": 7,\n        \"lead_candidates\": 0,\n        \"success_rate\": 1,\n        \"retained_rate\": 0.35,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      },\n      \"游戏陀螺\": {\n        \"source\": \"游戏陀螺\",\n        \"attempts\": 1,\n        \"successes\": 0,\n        \"failures\": 1,\n        \"raw_signals\": 0,\n        \"retained_signals\": 0,\n        \"lead_candidates\": 0,\n        \"success_rate\": 0,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": \"fetch failed\"\n      },\n      \"B站探头-关键词\": {\n        \"source\": \"B站探头-关键词\",\n        \"attempts\": 0,\n        \"successes\": 0,\n        \"failures\": 0,\n        \"raw_signals\": 0,\n        \"retained_signals\": 46,\n        \"lead_candidates\": 7,\n        \"success_rate\": 0,\n        \"retained_rate\": 0,\n        \"lead_conversion_rate\": 0,\n        \"fallback_uses\": 0,\n        \"last_error\": null\n      }\n    },\n    \"steam_evidence_accounted\": 26,\n    \"steam_evidence_accounting_ok\": true,\n    \"steam_enrichment\": {\n      \"steam_candidates_enriched\": 0,\n      \"steam_candidates_scheduled\": 0,\n      \"steam_candidates_reused\": 260,\n      \"steam_candidates_fresh_success\": 0,\n      \"steam_candidates_failed\": 0,\n      \"steam_candidates_deferred\": 0,\n      \"steam_candidates_evaluated\": 260,\n      \"backlog_unenriched_count\": 0,\n      \"scheduler_lane_counts\": {\n        \"new\": 0,\n        \"backlog\": 0,\n        \"retry_refresh\": 0\n      },\n      \"evidence_snapshot_rejections\": 0,\n      \"snapshot_rejections\": []\n    },\n    \"release_window_health\": {\n      \"threshold_days\": 60,\n      \"steam_candidates\": 260,\n      \"steam_domestic_near_launch\": 11,\n      \"steam_overseas_near_launch\": 142,\n      \"media_near_launch_drops\": 0\n    }\n  },\n  \"duplicate_filtered\": 31,\n  \"released_filtered\": 6,\n  \"bilibili_official_source_hits\": 0,\n  \"bilibili_probe_candidates\": 145,\n  \"bilibili_probe_final_candidates\": 46,\n  \"final_import_candidates\": 0,\n  \"push_pool\": 0,\n  \"watch_pool\": 0,\n  \"drop_pool\": 0,\n  \"captured_at\": \"2026-08-17T11:00:26+08:00\"\n}\n{\n  \"ok\": true,\n  \"checked_dates\": [\n    \"2026-08-17\"\n  ],\n  \"warnings\": [],\n  \"summaries\": [\n    {\n      \"date\": \"2026-08-17\",\n      \"push\": 0,\n      \"watch\": 0,\n      \"drop\": 0,\n      \"radar_items\": 15,\n      \"steam_trend_items\": 12,\n      \"steam_market_insights\": 4,\n      \"steam_genre_signals\": 5,\n      \"sourcing_candidates\": 271\n    }\n  ]\n}\n",
+  "validation_log_tail": "{\n  \"ok\": true,\n  \"checked_dates\": [\n    \"2026-08-17\"\n  ],\n  \"warnings\": [],\n  \"summaries\": [\n    {\n      \"date\": \"2026-08-17\",\n      \"push\": 0,\n      \"watch\": 0,\n      \"drop\": 0,\n      \"radar_items\": 15,\n      \"steam_trend_items\": 12,\n      \"steam_market_insights\": 4,\n      \"steam_genre_signals\": 5,\n      \"sourcing_candidates\": 271\n    }\n  ]\n}\n",
+  "watchdog_reasons": "",
+  "event_name": "workflow_dispatch",
+  "event_schedule": null,
+  "run_id": "31989728274",
+  "run_attempt": 1,
+  "run_number": "223",
+  "run_url": "https://github.com/Neo0109/CRM/actions/runs/31989728274",
+  "captured_at": "2026-08-17T03:03:16.809Z",
+  "sync_response": "{\"synced\":true,\"created\":0,\"updated\":0,\"dropped\":0,\"total\":1000,\"import_stats\":{\"created_unprocessed\":0,\"created_dropped\":0,\"created_other\":0,\"updated_unprocessed_visible\":0,\"updated_existing_workflow\":0,\"updated_dropped\":0,\"updated_other\":0,\"visible_unprocessed\":0,\"stale_updates\":0},\"report_date\":\"2026-08-17\",\"summary\":\"Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 0 条，另从媒体/B站提取产品线索 15 条；B站探头候选 145 条、最终 46 条、官方源命中 0 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 0 条，其余只保留在候选审计。\",\"source\":\"https://raw.githubusercontent.com/Neo0109/CRM/main/data/reports/2026-08-17.json\"}"
+}
