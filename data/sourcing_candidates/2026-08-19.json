@@ -1,34 +1,34 @@
 {
   "schema_version": 2,
   "report_date": "2026-08-19",
-  "generated_at": "2026-08-19T10:42:35+08:00",
+  "generated_at": "2026-08-19T11:00:24+08:00",
   "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
   "scan_summary": {
     "steam_candidates_seen": 260,
-    "steam_candidates_enriched": 43,
-    "media_signals_seen": 316,
-    "media_candidates_seen": 15,
-    "records_total": 273,
+    "steam_candidates_enriched": 1,
+    "media_signals_seen": 336,
+    "media_candidates_seen": 16,
+    "records_total": 274,
     "formal": 0,
     "candidate": 73,
-    "excluded": 200,
+    "excluded": 201,
     "new_qualified_count": 0,
     "push_pool_count": 0,
     "strict_formal_count": 0,
     "near_pass_review_count": 0,
-    "steam_candidates_scheduled": 43,
-    "steam_candidates_reused": 217,
-    "steam_candidates_fresh_success": 42,
-    "steam_candidates_failed": 1,
-    "steam_candidates_deferred": 0,
-    "steam_candidates_evaluated": 260,
+    "steam_candidates_scheduled": 1,
+    "steam_candidates_reused": 258,
+    "steam_candidates_fresh_success": 1,
+    "steam_candidates_failed": 0,
+    "steam_candidates_deferred": 1,
+    "steam_candidates_evaluated": 259,
     "backlog_unenriched_count": 0,
     "scheduler_lane_counts": {
-      "new": 30,
+      "new": 1,
       "backlog": 0,
-      "retry_refresh": 13
+      "retry_refresh": 0
     },
-    "evidence_snapshot_rejections": 13
+    "evidence_snapshot_rejections": 1
   },
   "candidates": [
     {
@@ -496,7 +496,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -544,7 +544,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -1704,7 +1704,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/non_narrative_product",
         "v7_indie/non_india_team",
@@ -1750,7 +1750,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -1859,7 +1859,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -1908,7 +1908,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -2630,7 +2630,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -2677,7 +2677,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -4290,7 +4290,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -4336,7 +4336,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -4436,7 +4436,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -4484,7 +4484,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -5025,7 +5025,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -5073,7 +5073,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -6744,7 +6744,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -6791,7 +6791,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -7960,7 +7960,6 @@
       "matched_rules": [
         "media_discovery",
         "media_strict",
-        "official_source_matched",
         "steam_entity_matched",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
@@ -7981,16 +7980,10 @@
       ],
       "exclusion_reasons": [],
       "source_links": [
-        "https://www.bilibili.com/video/BV1bVuo6AEHw/",
         "https://www.bilibili.com/video/BV1Xob862Eyk/",
         "https://store.steampowered.com/app/3193330/_/",
         "https://store.steampowered.com/app/3193330/",
-        "https://steamdb.info/app/3193330/",
-        "https://www.bilibili.com/video/BV1VAtkzbEK7/",
-        "https://store.steampowered.com/app/3193330/The_Weird_Hunter/",
-        "https://www.bilibili.com/video/BV1xb8SzrEim/",
-        "https://www.bilibili.com/video/BV1f8ghzbEhQ/",
-        "https://www.bilibili.com/video/BV1uTZgYwE4r/"
+        "https://steamdb.info/app/3193330/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -8022,7 +8015,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -8071,7 +8064,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -8187,7 +8180,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -8233,7 +8226,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -9416,7 +9409,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -9464,7 +9457,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -9845,7 +9838,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -9892,7 +9885,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -10126,7 +10119,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -10173,7 +10166,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -10547,7 +10540,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -10594,7 +10587,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -12183,6 +12176,61 @@
           "website": "http://www.junyue.online/"
         },
         "expires_on": "2026-08-20"
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "九阴真经：修仙",
+      "steam_app_id": "3638800",
+      "dedupe_key": "steam:3638800",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1kjGA6GEwr/",
+        "https://store.steampowered.com/app/3638800/",
+        "https://steamdb.info/app/3638800/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
       }
     },
     {
@@ -15168,6 +15216,59 @@
     {
       "decision": "excluded",
       "publication_tier": null,
+      "source_type": "media",
+      "project": "浑天星途",
+      "steam_app_id": "3943730",
+      "dedupe_key": "steam:3943730",
+      "sourcing_lane": "china_joint",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "current_china_opportunity"
+      ],
+      "exclusion_reasons": [
+        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
+      ],
+      "source_links": [
+        "https://www.bilibili.com/video/BV18xgD69EqP/",
+        "https://store.steampowered.com/app/3943730/",
+        "https://steamdb.info/app/3943730/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 10,
+        "movie_count": 1
+      }
+    },
+    {
+      "decision": "excluded",
+      "publication_tier": null,
       "source_type": "steam",
       "project": "Click the Button",
       "steam_app_id": "3946950",
@@ -15320,7 +15421,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -15366,7 +15467,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -16509,7 +16610,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -16556,7 +16657,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -18113,62 +18214,6 @@
       }
     },
     {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "斩业人",
-      "steam_app_id": "4184170",
-      "dedupe_key": "steam:4184170",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1raojBREhN/",
-        "https://store.steampowered.com/app/4184170/_/",
-        "https://store.steampowered.com/app/4184170/",
-        "https://steamdb.info/app/4184170/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 15,
-        "movie_count": 1
-      }
-    },
-    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -19527,7 +19572,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -19575,7 +19620,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -20106,7 +20151,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -20155,7 +20200,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -21114,6 +21159,143 @@
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
+      "project": "Moon Garden",
+      "steam_app_id": "4319660",
+      "dedupe_key": "steam:4319660",
+      "sourcing_lane": "china_joint",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "steam_discovery",
+        "steam_enriched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/official_demo_or_playtest",
+        "v7_indie/non_steam_business_entry",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "current_china_opportunity"
+      ],
+      "exclusion_reasons": [
+        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
+      ],
+      "source_links": [
+        "https://store.steampowered.com/app/4319660/",
+        "https://steamdb.info/app/4319660/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 7,
+        "movie_count": 1
+      },
+      "first_seen": "2026-08-19",
+      "last_seen": "2026-08-19",
+      "enrichment_status": "success",
+      "enrichment_attempts": 1,
+      "last_attempted_at": "2026-08-19T11:00:24+08:00",
+      "last_enriched_at": "2026-08-19T11:00:24+08:00",
+      "next_retry_date": null,
+      "scheduler_lane": "new",
+      "evidence_snapshot": {
+        "captured_at": "2026-08-19T11:00:24+08:00",
+        "contract_version": 1,
+        "dedupe_key": "steam:4319660",
+        "evidence": {
+          "alreadyReleased": false,
+          "appId": "4319660",
+          "categories": [
+            "Single-player",
+            "Steam Achievements",
+            "Steam Cloud",
+            "Family Sharing"
+          ],
+          "chinaBilibiliValue": null,
+          "chinaDemandEvidence": null,
+          "chinaPartnerOccupied": false,
+          "comingSoon": true,
+          "contactMethods": [
+            {
+              "note": "Steam support email",
+              "type": "Email",
+              "value": "kairosgamesstudio@gmail.com"
+            },
+            {
+              "note": "Steam community backup",
+              "type": "Steam",
+              "value": "https://steamcommunity.com/app/4319660/discussions/"
+            }
+          ],
+          "country": "海外",
+          "daysToRelease": 2,
+          "developers": [
+            " Kairos Games LLC"
+          ],
+          "domesticQuery": false,
+          "earlyAccess": false,
+          "genres": [
+            "Indie"
+          ],
+          "hasDemoSignal": true,
+          "hasDetails": true,
+          "highVisual": true,
+          "indiaTeam": false,
+          "mobileAdaptationPotential": false,
+          "movieCount": 1,
+          "narrativeHeavy": false,
+          "officialDemoEvidence": [
+            {
+              "type": "steam_demo",
+              "url": "https://store.steampowered.com/app/4735350/",
+              "value": "Steam official Demo"
+            }
+          ],
+          "officialGameplayEvidence": [],
+          "publisherOccupied": false,
+          "publishers": [
+            " Kairos Games LLC"
+          ],
+          "qualityProofs": [],
+          "recommendationCount": 0,
+          "region": "海外",
+          "releaseDate": "2026-08-21",
+          "releaseTooSoon": true,
+          "reviewText": "",
+          "score": 17,
+          "screenshotCount": 7,
+          "shortDescription": "A cozy incremental game about growing your way home. Strategically plant flowers, optimize machinery, and grow your tree tall enough to escape!",
+          "source": "Steam CN Strategy Upcoming",
+          "steamDbUrl": "https://steamdb.info/app/4319660/",
+          "storeUrl": "https://store.steampowered.com/app/4319660/",
+          "strongData": false,
+          "strongGameplay": false,
+          "title": "Moon Garden",
+          "validatedPcHit": false,
+          "website": null
+        },
+        "expires_on": "2026-08-26"
+      }
+    },
+    {
+      "decision": "excluded",
+      "publication_tier": null,
+      "source_type": "steam",
       "project": "Sniper Camouflage Orange Spy Warrior I Buried Two Bodies in the Garden and the Police Haven't Figured Out Yet That They're Missing Because They Were a Lonely Old Couple Who Had No Relatives Simulator 2026",
       "steam_app_id": "4323130",
       "dedupe_key": "steam:4323130",
@@ -21689,7 +21871,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -21735,7 +21917,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -22562,7 +22744,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -22608,7 +22790,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -23537,7 +23719,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -23584,7 +23766,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -25996,7 +26178,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -26043,7 +26225,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -26759,7 +26941,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -26805,7 +26987,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -27331,7 +27513,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -27377,7 +27559,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -27470,7 +27652,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -27516,7 +27698,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -27903,7 +28085,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -27949,7 +28131,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -28041,7 +28223,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -28087,7 +28269,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -28315,7 +28497,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -28363,7 +28545,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -29756,7 +29938,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -29803,7 +29985,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -30641,10 +30823,8 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
         "v7_indie/identity_and_dedupe",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
+        "v7_2_china_joint/identity_and_dedupe"
       ],
       "missing_evidence": [
         "steam_app_details",
@@ -31029,7 +31209,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -31075,7 +31255,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -32163,7 +32343,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32209,7 +32389,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -32441,7 +32621,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -32489,7 +32669,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -32924,7 +33104,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32970,7 +33150,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -33268,7 +33448,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -33315,7 +33495,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -34503,7 +34683,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -34548,7 +34728,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -34927,160 +35107,6 @@
           "website": "https://www.mfc-studio.com/"
         },
         "expires_on": "2026-08-21"
-      }
-    },
-    {
-      "decision": "excluded",
-      "publication_tier": null,
-      "source_type": "steam",
-      "project": "Goodly Trials",
-      "steam_app_id": "4985160",
-      "dedupe_key": "steam:4985160",
-      "sourcing_lane": "china_joint",
-      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
-      "matched_rules": [
-        "steam_discovery",
-        "steam_evidence_reused",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/official_gameplay",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/concrete_china_bilibili_value",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "current_china_opportunity"
-      ],
-      "exclusion_reasons": [
-        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
-      ],
-      "source_links": [
-        "https://store.steampowered.com/app/4985160/",
-        "https://steamdb.info/app/4985160/",
-        "https://goodlytrials.com/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "yes",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 9,
-        "movie_count": 2
-      },
-      "first_seen": "2026-08-18",
-      "last_seen": "2026-08-19",
-      "enrichment_status": "success",
-      "enrichment_attempts": 1,
-      "last_attempted_at": "2026-08-18T10:39:31+08:00",
-      "last_enriched_at": "2026-08-18T10:39:31+08:00",
-      "next_retry_date": null,
-      "scheduler_lane": "reuse",
-      "evidence_snapshot": {
-        "captured_at": "2026-08-18T10:39:31+08:00",
-        "contract_version": 1,
-        "dedupe_key": "steam:4985160",
-        "evidence": {
-          "alreadyReleased": false,
-          "appId": "4985160",
-          "categories": [
-            "Single-player",
-            "Multi-player",
-            "PvP",
-            "Online PvP",
-            "Steam Achievements",
-            "Adjustable Text Size",
-            "Color Alternatives",
-            "#category_contrast_controls"
-          ],
-          "chinaBilibiliValue": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
-          "chinaDemandEvidence": null,
-          "chinaPartnerOccupied": false,
-          "comingSoon": true,
-          "contactMethods": [
-            {
-              "note": "Steam support email",
-              "type": "Email",
-              "value": "bug@goodlytrials.com"
-            },
-            {
-              "note": "Steam official website",
-              "type": "官网",
-              "value": "https://goodlytrials.com/"
-            },
-            {
-              "note": "Steam support URL",
-              "type": "官网",
-              "value": "osborndesign.works/contact"
-            },
-            {
-              "note": "Found on official site",
-              "type": "Discord",
-              "value": "https://discord.gg/FNTeKhTeY2"
-            }
-          ],
-          "country": "海外",
-          "daysToRelease": 0,
-          "developers": [
-            "Osborn Design Works"
-          ],
-          "domesticQuery": false,
-          "earlyAccess": true,
-          "genres": [
-            "Strategy",
-            "Early Access"
-          ],
-          "hasDemoSignal": false,
-          "hasDetails": true,
-          "highVisual": true,
-          "indiaTeam": false,
-          "mobileAdaptationPotential": true,
-          "movieCount": 2,
-          "narrativeHeavy": false,
-          "officialDemoEvidence": [],
-          "officialGameplayEvidence": [
-            {
-              "type": "steam_official_gameplay",
-              "url": null,
-              "value": "Goodly Trials Gameplay Trailer"
-            }
-          ],
-          "publisherOccupied": false,
-          "publishers": [
-            "Osborn Design Works"
-          ],
-          "qualityProofs": [],
-          "recommendationCount": 0,
-          "region": "海外",
-          "releaseDate": "2026-08-18",
-          "releaseTooSoon": true,
-          "reviewText": "",
-          "score": -5,
-          "screenshotCount": 9,
-          "shortDescription": "Goodly Trials follows a cast of storied leaders who, one by one, attempt to escort an ill-fated crew on their journey home. Each attempt unfolds over twelve turns of trading, tactics, and combat in a strategic single-player and multiplayer adventure.",
-          "source": "Steam CN Strategy Upcoming",
-          "steamDbUrl": "https://steamdb.info/app/4985160/",
-          "storeUrl": "https://store.steampowered.com/app/4985160/",
-          "strongData": false,
-          "strongGameplay": true,
-          "title": "Goodly Trials",
-          "validatedPcHit": false,
-          "website": "https://goodlytrials.com/"
-        },
-        "expires_on": "2026-08-25"
       }
     },
     {
@@ -35653,7 +35679,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35699,7 +35725,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -35790,7 +35816,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35837,7 +35863,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -35932,7 +35958,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35980,7 +36006,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -36796,7 +36822,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -36843,7 +36869,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -37074,7 +37100,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37120,7 +37146,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -37214,7 +37240,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37261,7 +37287,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
@@ -37500,7 +37526,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37546,7 +37572,7 @@
       "last_attempted_at": "2026-08-19T10:42:35+08:00",
       "last_enriched_at": "2026-08-19T10:42:35+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-19T10:42:35+08:00",
         "contract_version": 1,
