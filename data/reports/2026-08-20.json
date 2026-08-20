@@ -1,0 +1,82 @@
+{
+  "report_date": "2026-08-20",
+  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 90 条，另从媒体/B站提取产品线索 29 条；B站探头候选 151 条、最终 43 条、官方源命中 1 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 1 条，push_pool 共 1 条，其余只保留在候选审计。",
+  "insights": [
+    "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
+    "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
+    "国内媒体和B站捕捉到的具体产品继续参与扫描与证据校验；只有满足冻结的一软缺口 review 合同才可进入 capped review，其余证据缺口只进入候选审计。",
+    "行业雷达必须来自真实媒体、厂商、法院/公司公告或可核验社区信号，不能用内部规则说明冒充行业新闻。",
+    "Steam趋势必须输出大盘观察：近期冒头品类、活动/窗口、发行商新品、数据样本和BD含义，不能把日报规则贴到趋势页。",
+    "Demo/试玩只能证明 indie_prelaunch 可测试，不能覆盖该通道的合作窗口；china_joint 另行执行数据门、中国需求和伙伴占位门。",
+    "B站视频线索通过探头配置优先扫描官方号/开发者号/发行商号，补读简介，提取Steam/官网/联系方式，交叉验证是否已发售，并和历史CRM记录去重。",
+    "B站/媒体字段必须保持决策台可读：Steam链接写入links，玩法写标签，进度写短状态，下一步动作和备注默认留给人工。",
+    "indie_prelaunch 海外项目仍需明确中国需求；china_joint 则必须满足锁定数据路径，并确认当前中国合作需求。",
+    "已发售或EA项目不能进入 indie_prelaunch；只有数据门、中国需求和成熟中国伙伴占位门全部通过时才可进入 china_joint。",
+    "有效lead必须回答三件事：窗口是否还在、权益空间是否还在、B站是否能把中国区盘子做大。",
+    "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
+    "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
+  ],
+  "push_pool": [
+    {
+      "id": "lead_steam_4462700_2026-08-20",
+      "project": " 白蛇之子 | The Son of White Snake: Roguelike Deckbuilder",
+      "steam_app_id": "4462700",
+      "team": "Shanghai Watchman Network Technology Co., Ltd",
+      "team_size": null,
+      "country": "中国（待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": null,
+      "sourcing_lane": "china_joint",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "sourcing_run_type": "scheduled",
+      "drop_reason": null,
+      "priority_reason": null,
+      "rule_fit": "Near-pass 人工复核：唯一缺失 gate=traction_or_proven_team_event（市场牵引或成熟团队事件）；其余硬性条件已通过。",
+      "genre": "Indie / RPG / Strategy / Early Access",
+      "gameplay": "Leifeng Pagoda is no tower—it is an ancient serpent still breathing. Read enemy intent and forge card–relic engines in this Chinese cosmic-horror deckbuilder. Descend alone or online with up to 4 players, then reshape the tower through Steam Workshop.",
+      "progress": "Steam Steam CN China Keyword Upcoming；发售窗口：2026-10-01；Demo/试玩信号需优先复核",
+      "release_window": "2026-10-01",
+      "early_access": true,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Shanghai Watchman Network Technology Co., Ltd；未见成熟中国发行能力占位",
+      "publisher_name": "Shanghai Watchman Network Technology Co., Ltd",
+      "china_capability_occupied": false,
+      "traction_summary": "Steam CN China Keyword Upcoming；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
+      "public_signals": "Steam CN China Keyword Upcoming / Steam App 4462700",
+      "contact": "Email: 709377954@qq.com；Steam: https://steamcommunity.com/app/4462700/discussions/",
+      "contact_methods": [
+        {
+          "type": "Email",
+          "value": "709377954@qq.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4462700/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://store.steampowered.com/app/4462700/",
+        "https://steamdb.info/app/4462700/"
+      ],
+      "exposure_trail": "最早自动捕捉：Steam CN China Keyword Upcoming（2026-08-20）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
+      "bilibili_fit": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
+      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
+      "risks": "Near-pass 唯一缺口：traction_or_proven_team_event（市场牵引或成熟团队事件）；需在首轮试玩/筛选中核验。",
+      "verdict": "仅供首轮试玩/筛选，不代表正式商务推进，试玩不成立直接淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-08-20",
+      "notes": null
+    }
+  ],
+  "watch_pool": [],
+  "drop_pool": []
+}
