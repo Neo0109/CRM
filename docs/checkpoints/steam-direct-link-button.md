@@ -2,33 +2,33 @@
 
 ## Current Goal
 
-Deliver the approved global invariant for the Leads review UI: every Lead that can display `Steam已验` also exposes a direct canonical Steam store shortcut.
+Completed: every Lead that displays `Steam已验` now exposes a direct canonical Steam store shortcut in the production Leads review UI.
 
 ## Completed
 
-- Phase 1 Diagnosis: confirmed badge/link extraction divergence and pre-dedupe truncation on remote `main`.
-- Phase 2 Proposal and Phase 3 Approval completed.
-- Phase 4 baseline: remote `main` remains `dd989f25173f0777afd735946d4bb22e777901a5`; open PR queue remains empty.
-- Production baseline: `/api/health` was healthy at `v2.8-communication-follow-up` with `storage=supabase`.
-- TDD red: the invariant test failed because `buildLeadLinkShortcuts` did not exist.
-- Implementation commit `f5cb623e4e6d87fbc97e86ce3790d1ca6fe5073b`: shared canonical Steam resolver, Steam-first shortcut builder, list/detail wiring, regression tests, and `v2.8.1-steam-direct-link-button` version governance.
-- Exact-head verification passed: 37 focused tests, full frontend tests, frontend and Functions typechecks, CRM core tests, frontend build, `verify:all`, and `git diff --check origin/main...HEAD`.
+- Diagnosis confirmed badge/link extraction divergence and pre-dedupe truncation.
+- Proposal and user approval established a global invariant rather than a Golden Swirl-specific data patch.
+- TDD red commit `45bb5b8` proved the shortcut interface was absent.
+- Implementation commit `f5cb623` added the shared canonical Steam resolver, Steam-first shortcut builder, list/detail wiring, regression tests, and `v2.8.1-steam-direct-link-button` version governance.
+- Exact PR head `11e60baeff5704fa97fb53282ebce5f381a7cb72` passed focused tests, full frontend tests, frontend and Functions typechecks, CRM core tests, frontend build, `verify:all`, diff checks, and Build run `32499715921`.
+- PR #120 squash-merged to `main` as `88433ef761da4963d070ab896614e3489942f483`; main Build run `32499905246` passed.
+- Production health returned `ok=true`, `version=v2.8.1-steam-direct-link-button`, and `storage=supabase`.
+- Authenticated read-only UI acceptance covered all 1,000 Leads across seven buckets: 835 displayed `Steam已验`, `steam_verified_without_direct_button=0`, and 79 displayed both Steam and B站 shortcuts.
+- Golden Swirl rendered `Steam → B站` with canonical AppID 3506690 links in both list and detail; production browser logs had no errors or warnings.
+- Production acceptance evidence is recorded on PR #120.
 
 ## Remaining
 
-- Open the product PR and require green GitHub Actions on the exact PR head.
-- Merge, confirm the main/deployment commit and production health.
-- Run the read-only invariant audit when authenticated Lead data is available and complete visual acceptance when access permits.
+None for this task.
 
 ## Next Action
 
-Open the PR from `codex/steam-direct-link-button` to `main`, then follow the exact head through Actions.
+No action required. Reopen only if a production regression provides new evidence.
 
 ## Git Status
 
-- Truth source: remote GitHub only.
-- Branch: `codex/steam-direct-link-button`.
-- Base: `dd989f25173f0777afd735946d4bb22e777901a5`.
-- Verified implementation head: `f5cb623e4e6d87fbc97e86ce3790d1ca6fe5073b`.
-- Local CRM worktree: read-only and intentionally untouched.
-- Scope exclusions: sourcing rules, Daily V4, API/schema, Supabase, automation, and per-record Lead data.
+- Truth source: remote GitHub and production.
+- Product merge: `88433ef761da4963d070ab896614e3489942f483`.
+- Product PR: #120, merged.
+- Local CRM worktree: read-only and untouched.
+- Scope exclusions preserved: sourcing rules, Daily V4, API/schema, Supabase, automation, and per-record Lead data.
