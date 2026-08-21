@@ -1,5 +1,6 @@
 import type { ContactMethod, Lead } from "../../types";
-import { linkLabel } from "../../linkPresentation";
+import { collectLeadEvidenceLinks, resolveLeadSteamTarget } from "../../leadEvidence";
+import { linkLabel, normalizedLinkHref } from "../../linkPresentation";
 
 export { linkLabel, normalizedLinkHref } from "../../linkPresentation";
 
@@ -7,6 +8,12 @@ export type NormalizedSteamLink = {
   appId: string;
   storeUrl: string;
   steamDbUrl: string;
+};
+
+export type LeadLinkShortcut = {
+  href: string;
+  label: string;
+  title: string;
 };
 
 export function normalizeSteamLinkInput(value: string): NormalizedSteamLink | null {
@@ -35,6 +42,34 @@ export function gameLinks(links: string[]) {
   return links.filter(isGameLink).slice(0, 2);
 }
 
+export function buildLeadLinkShortcuts(lead: Lead): LeadLinkShortcut[] {
+  const steamTarget = resolveLeadSteamTarget(lead);
+  const eligibleLinks = collectLeadEvidenceLinks(lead).filter(isGameLink);
+  const nonSteamLinks = eligibleLinks.filter((link) => !isSteamAppLink(link));
+  const bilibiliLinks = nonSteamLinks.filter(isBilibiliLink);
+  const otherLinks = nonSteamLinks.filter((link) => !isBilibiliLink(link));
+  const orderedLinks = [
+    ...(steamTarget ? [steamTarget.storeUrl] : []),
+    ...(steamTarget ? [...bilibiliLinks, ...otherLinks] : eligibleLinks)
+  ];
+  const shortcuts: LeadLinkShortcut[] = [];
+  const seenHrefs = new Set<string>();
+  const seenPlatforms = new Set<string>();
+
+  for (const link of orderedLinks) {
+    const href = normalizedLinkHref(link);
+    const label = linkLabel(link);
+    const hrefKey = href.toLowerCase().replace(/\/$/, "");
+    const platformKey = label.toLowerCase();
+    if (seenHrefs.has(hrefKey) || seenPlatforms.has(platformKey)) continue;
+    seenHrefs.add(hrefKey);
+    seenPlatforms.add(platformKey);
+    shortcuts.push({ href, label, title: link });
+  }
+
+  return shortcuts.slice(0, 2);
+}
+
 export function needsGameLinkTriage(lead: Lead) {
   const isDropped = lead.bucket === "淘汰池" || lead.review_status === "已淘汰" || lead.stage === "rejected";
   return !isDropped && !gameLinks(lead.links).length;
@@ -61,7 +96,7 @@ export function contactLabel(method: ContactMethod) {
 function steamAppIdFromText(value: string) {
   const trimmed = value.trim();
   if (/^\d{3,}$/.test(trimmed)) return trimmed;
-  const match = trimmed.match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i) ?? trimmed.match(/\/app\/(\d+)/i);
+  const match = trimmed.match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i);
   return match?.[1] ?? null;
 }
 
@@ -86,5 +121,13 @@ function isHttpUrl(value: string) {
 }
 
 function isGameLink(link: string) {
-  return /(?:store\.steampowered\.com|steamdb\.info|steamcommunity\.com)\/app\/\d+|bilibili\.com|taptap\.cn|indienova\.com|gcores\.com|yystv\.cn|gamelook\.com\.cn|youxiputao\.com|gameres\.com|youxituoluo\.com|nadianshi\.com|youxichaguan\.com|chuapp\.com|gamersky\.com|3dmgame\.com/i.test(link);
+  return /(?:store\.steampowered\.com|steamdb\.info|steamcommunity\.com)\/app\/\d+|bilibili\.com|b23\.tv|taptap\.cn|indienova\.com|gcores\.com|yystv\.cn|gamelook\.com\.cn|youxiputao\.com|gameres\.com|youxituoluo\.com|nadianshi\.com|youxichaguan\.com|chuapp\.com|gamersky\.com|3dmgame\.com/i.test(link);
+}
+
+function isSteamAppLink(link: string) {
+  return /(?:store\.steampowered\.com|steamdb\.info|steamcommunity\.com)\/app\/\d+/i.test(link);
+}
+
+function isBilibiliLink(link: string) {
+  return /bilibili\.com|b23\.tv/i.test(link);
 }

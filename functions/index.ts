@@ -1,6 +1,6 @@
 const stylesheetFile = "index.css";
 const scriptFile = "index.js";
-const assetVersion = "20260810-communication-follow-up-v28";
+const assetVersion = "20260821-steam-direct-link-button-v281";
 
 function versionedAsset(fileName: string) {
   return `/assets/${fileName}?v=${assetVersion}`;

@@ -65,6 +65,12 @@ describe("Lead detail panel contract", () => {
     assert.match(detail, /label="发行结构"/);
   });
 
+  it("renders source shortcuts from the shared Steam target instead of truncated raw links", () => {
+    assert.match(detailSource, /buildLeadLinkShortcuts\(lead\)/);
+    assert.match(detailSource, /resolveLeadSteamTarget\(lead\)/);
+    assert.doesNotMatch(detailSource, /const usedLabels = new Set\(contactChips/);
+  });
+
   it("renders owner, due date, and next action only once in the detail source", () => {
     assert.equal((detailSource.match(/label="Owner"/g) ?? []).length, 1);
     assert.equal((detailSource.match(/label="Due Date"/g) ?? []).length, 1);

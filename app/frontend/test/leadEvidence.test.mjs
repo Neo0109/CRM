@@ -140,4 +140,17 @@ describe("buildLeadEvidence", () => {
     assert.equal(evidence.rows.find((row) => row.label === "触达完整度")?.value, "仅 Steam/B站来源链接，商务触达较弱");
     assert.equal(evidence.links.some((link) => link.label === "官网"), false);
   });
+  it("requires a resolvable Steam AppID and exposes its canonical store evidence", () => {
+    const genericSteam = buildLeadEvidence(lead({
+      links: ["https://store.steampowered.com/about/"]
+    }));
+    assert.equal(genericSteam.flags.some((flag) => flag.label === "缺 Steam/AppID"), true);
+    assert.equal(genericSteam.rows.find((row) => row.label === "Steam 交叉验证")?.tone, "unknown");
+
+    const textSteam = buildLeadEvidence(lead({
+      notes: "视频简介：https://steamdb.info/app/3506690/Golden_Swirl_Demo/"
+    }));
+    assert.equal(textSteam.rows.find((row) => row.label === "Steam 交叉验证")?.value.includes("AppID 3506690"), true);
+    assert.equal(textSteam.links.some((link) => link.label === "Steam" && link.url === "https://store.steampowered.com/app/3506690/"), true);
+  });
 });

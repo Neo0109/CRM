@@ -18,6 +18,11 @@ describe("LeadsView triage contract", () => {
     assert.match(source, /needsAction/);
   });
 
+  it("passes the complete Lead into source shortcuts so evidence text can resolve Steam", () => {
+    assert.match(source, /<ContactChips lead=\{lead\} \/>/);
+    assert.doesNotMatch(source, /<ContactChips contacts=/);
+  });
+
   it("keeps bucket navigation as the primary switching surface", () => {
     assert.match(source, /buildBucketNavigation/);
     assert.match(source, /aria-label="池子导航"/);

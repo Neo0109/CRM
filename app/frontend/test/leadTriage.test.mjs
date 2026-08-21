@@ -70,6 +70,19 @@ describe("buildLeadEvidenceChips", () => {
     assert.deepEqual(labels(chips).filter((label) => ["缺Steam", "已上线", "疑似重复", "来源偏旧", "非官方", "缺触达"].includes(label)).sort(), ["已上线", "来源偏旧", "疑似重复", "缺Steam", "缺触达", "非官方"].sort());
   });
 
+  it("only shows verified Steam when a canonical app target can be resolved", () => {
+    const textAppChips = buildLeadEvidenceChips(lead({
+      notes: "Steam 商店：https://store.steampowered.com/app/3506690/Golden_Swirl_Demo/"
+    }));
+    const genericSteamChips = buildLeadEvidenceChips(lead({
+      links: ["https://store.steampowered.com/about/"]
+    }));
+
+    assert.equal(labels(textAppChips).includes("Steam已验"), true);
+    assert.equal(labels(genericSteamChips).includes("Steam已验"), false);
+    assert.equal(labels(genericSteamChips).includes("缺Steam"), true);
+  });
+
   it("shows positive chips for official source, verified Steam, and reachable contacts", () => {
     const chips = buildLeadEvidenceChips(lead({
       steam_app_id: "2921670",
