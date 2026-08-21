@@ -1,10 +1,11 @@
 import { AlertTriangle, CalendarCheck, CheckCircle2, ExternalLink, ListChecks, Plus, Save, Trash2, TrendingUp, XCircle } from "lucide-react";
 import { useEffect, useState, type ReactElement } from "react";
 import { LeadEvidencePanel } from "../../LeadEvidencePanel";
+import { resolveLeadSteamTarget } from "../../leadEvidence";
 import type { Bucket, ContactMethod, ContactType, EvaluationGrade, Lead } from "../../types";
 import { bucketClass, bucketValues, contactTypes, dropReasonOptions, evaluationGradeOptions, priorityFromSelection, priorityLabel, prioritySelection, prioritySelectionOptions, regionPriorityValues, regionValues, stageLabel, stageValues } from "./leadConstants";
 import { Select, TextareaField, TextField } from "./leadControls";
-import { applySteamLinkToLead, contactLabel, gameLinks, linkLabel, normalizeSteamLinkInput, normalizedLinkHref, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
+import { applySteamLinkToLead, buildLeadLinkShortcuts, contactLabel, linkLabel, normalizeSteamLinkInput, normalizedLinkHref, visibleContacts, type NormalizedSteamLink } from "./leadLinks";
 import { cleanHumanLeadText } from "./leadHumanFields";
 import { buildLeadReviewChecklist, type LeadReviewChecklistItem } from "./leadReviewChecklist";
 import { buildQuickActionSpecs, isTestingOverdue, reviewPatchForBucket, stageFromBucket, type QuickActionSpec } from "./leadWorkflow";
@@ -242,24 +243,17 @@ export function QuickActions({ lead, onPatch, compact = false, missingLinksMode 
   </div>;
 }
 
-export function ContactChips({ contacts, links }: { contacts: ContactMethod[]; links: string[] }) {
-  const contactChips = visibleContacts(contacts).slice(0, 3).map((method, index) => ({
+export function ContactChips({ lead }: { lead: Lead }) {
+  const contactChips = visibleContacts(lead.contact_methods).slice(0, 3).map((method, index) => ({
     href: isHttpUrl(method.value) ? normalizedLinkHref(method.value) : null,
     key: `contact-${method.value}-${index}`,
     label: contactLabel(method),
     title: `${method.type}: ${method.value}`
   }));
-  const usedLabels = new Set(contactChips.map((chip) => chip.label));
-  const linkChips = gameLinks(links).map((link, index) => ({
-    href: normalizedLinkHref(link),
-    key: `link-${link}-${index}`,
-    label: linkLabel(link),
-    title: link
-  })).filter((chip) => {
-    if (usedLabels.has(chip.label)) return false;
-    usedLabels.add(chip.label);
-    return true;
-  }).slice(0, 2);
+  const linkChips = buildLeadLinkShortcuts(lead).map((shortcut, index) => ({
+    ...shortcut,
+    key: `link-${shortcut.href}-${index}`
+  }));
   const displayChips = [...contactChips, ...linkChips];
   if (!displayChips.length) return <span className="muted">待补充</span>;
   return <div className="chip-list contact-chip-list">{displayChips.map((chip) => (
@@ -278,7 +272,8 @@ function BucketButtons({ lead, onMove, compact = false }: { lead: Lead; onMove: 
 function SteamLinkEditor({ lead, onApply }: { lead: Lead; onApply: (link: NormalizedSteamLink) => Promise<void> }) {
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const links = gameLinks(lead.links);
+  const steamTarget = resolveLeadSteamTarget(lead);
+  const links = steamTarget ? [steamTarget.storeUrl, steamTarget.steamDbUrl] : [];
 
   useEffect(() => setValue(""), [lead.id]);
 

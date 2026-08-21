@@ -17,6 +17,7 @@ describe("Steam link presentation helpers", () => {
     assert.equal(linkLabel("https://steamdb.info/app/2921670/"), "SteamDB");
     assert.equal(normalizedLinkHref("https://www.bilibili.com/video/BV1example/"), "https://www.bilibili.com/video/BV1example/");
     assert.equal(linkLabel("https://www.bilibili.com/video/BV1example/"), "B站");
+    assert.equal(linkLabel("https://b23.tv/BV1example"), "B站");
     assert.equal(normalizedLinkHref("https://steamcommunity.com/id/demo-studio/"), "https://steamcommunity.com/id/demo-studio/");
     assert.equal(linkLabel("https://steamcommunity.com/id/demo-studio/"), "steamcommunity.com");
     assert.equal(linkLabel("https://example.com/presskit"), "example.com");

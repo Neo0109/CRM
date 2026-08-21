@@ -204,7 +204,7 @@ export function LeadsView({ leads, loading, displayName, reviewTarget, onLeadPat
                 <td><div className="project-cell"><span className={`bucket-dot ${bucketClass(lead.bucket)}`} /><div><strong>{isTestingOverdue(lead) && <span className="overdue-marker" title="测试已超过两周未更新"><AlertTriangle size={14} /></span>}{lead.project}</strong><small><span className={`priority-pill priority-${priorityTone(lead.priority)}`}>{priorityLabel(lead.priority)}</span> · {lead.bucket} · {lead.review_status}</small></div></div></td>
                 <td><EvidenceChips lead={lead} /></td>
                 <td><strong>{lead.priority_reason ?? "待判断"}</strong><small className="subline">{[lead.genre, lead.gameplay].filter(Boolean).join(" · ") || lead.bilibili_fit || "玩法待补充"}</small></td>
-                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><ContactChips contacts={lead.contact_methods} links={lead.links} /></td>
+                <td className="lead-progress-cell">{lead.progress}<small className="subline">{lead.publisher_status}</small><ContactChips lead={lead} /></td>
                 <td className="lead-action-cell"><QuickActions lead={lead} onPatch={onLeadPatch} compact missingLinksMode={filters.missingLinks} /></td>
               </tr>
             ))}

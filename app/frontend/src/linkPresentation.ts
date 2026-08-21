@@ -10,7 +10,7 @@ export function linkLabel(link: string) {
   if (link.includes("store.steampowered.com/app/")) return "Steam";
   if (link.includes("steamdb.info/app/")) return "SteamDB";
   if (link.includes("steamdb.info")) return "SteamDB";
-  if (link.includes("bilibili.com")) return "B站";
+  if (/bilibili\.com|b23\.tv/i.test(link)) return "B站";
   try { return new URL(link).hostname.replace("www.", ""); } catch { return "链接"; }
 }
 

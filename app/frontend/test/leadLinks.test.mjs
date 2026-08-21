@@ -200,6 +200,6 @@ describe("lead link helpers", () => {
         "https://www.taptap.cn/app/12345",
         "https://indienova.com/game/demo"
       ]
-    })).map((item) => item.label), ["B站", "www.taptap.cn"]);
+    })).map((item) => item.label), ["B站", "taptap.cn"]);
   });
 });

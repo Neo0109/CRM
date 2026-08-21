@@ -19,6 +19,12 @@ export type LeadEvidenceLink = {
   url: string;
 };
 
+export type ResolvedLeadSteamTarget = {
+  appId: string;
+  storeUrl: string;
+  steamDbUrl: string;
+};
+
 export type LeadEvidence = {
   status: LeadEvidenceStatus;
   tone: LeadEvidenceTone;
@@ -43,14 +49,15 @@ const oldDatePattern = /\b(20\d{2})[-/.年](0?[1-9]|1[0-2])[-/.月](0?[1-9]|[12]
 export function buildLeadEvidence(lead: Lead, now = new Date()): LeadEvidence {
   const text = collectEvidenceText(lead);
   const sourceText = collectSourceText(lead);
-  const links = collectLinks(lead, text);
+  const links = collectLeadEvidenceLinks(lead);
+  const steamTarget = resolveSteamTarget(lead, links);
   const steamLinks = links.filter((link) => isSteamLink(link));
   const bilibiliLinks = links.filter((link) => isBilibiliLink(link));
   const officialWebsiteLinks = collectOfficialWebsiteLinks(lead.contact_methods);
   const externalLinks = links.filter((link) => isExternalSourceLink(link, officialWebsiteLinks));
   const tapTapLinks = links.filter((link) => /taptap\.(cn|io|com)/i.test(link));
   const directContacts = visibleContacts(lead.contact_methods);
-  const hasSteam = Boolean(lead.steam_app_id) || steamLinks.length > 0;
+  const hasSteam = Boolean(steamTarget);
   const hasBilibili = bilibiliLinks.length > 0 || /B站|bilibili/i.test(text);
   const hasOfficialSource = (officialSourcePattern.test(sourceText) && !negativeOfficialPattern.test(sourceText)) || officialWebsiteLinks.length > 0;
   const hasMediaSource = mediaSourcePattern.test(text);
@@ -89,7 +96,7 @@ export function buildLeadEvidence(lead: Lead, now = new Date()): LeadEvidence {
   const rows: LeadEvidenceRow[] = [
     { label: "来源链", value: sourceSummary({ hasOfficialSource, hasMediaSource, hasRecommenderSource, hasBilibili, hasSteam }), tone: hasOfficialSource ? "complete" : hasRecommenderSource ? "review" : "unknown" },
     { label: "时效性", value: staleDate ? `发现旧日期 ${staleDate}，需复核是否仍有 BD 价值` : `CRM 首见 ${lead.first_seen || "待确认"}`, tone: staleDate ? "risk" : "complete" },
-    { label: "Steam 交叉验证", value: hasSteam ? `AppID ${lead.steam_app_id ?? extractSteamAppId(steamLinks[0]) ?? "待确认"} · ${steamState}` : "未发现 Steam/AppID", tone: isLaunched ? "risk" : hasSteam ? "complete" : "unknown" },
+    { label: "Steam 交叉验证", value: hasSteam ? `AppID ${steamTarget?.appId ?? "待确认"} · ${steamState}` : "未发现 Steam/AppID", tone: isLaunched ? "risk" : hasSteam ? "complete" : "unknown" },
     { label: "去重检查", value: isDuplicate ? "字段中出现重复/历史录入信号" : "未发现重复证据（仅基于当前字段）", tone: isDuplicate ? "risk" : "complete" },
     { label: "触达完整度", value: contactSummary({ directContacts, hasWebsite, hasEmail, hasDirectContact, hasOnlySourceContact }), tone: lacksOfficialTouch ? "unknown" : hasOnlySourceContact ? "review" : "complete" }
   ];
@@ -100,8 +107,32 @@ export function buildLeadEvidence(lead: Lead, now = new Date()): LeadEvidence {
     summary: evidenceSummary(status, { isLaunched, isDuplicate, staleDate, lacksCoreEvidence, hasSteam, hasOfficialSource, hasDirectContact }),
     flags: flags.length > 0 ? flags : [{ label: "无明显证据风险", tone: "complete" }],
     rows,
-    links: buildEvidenceLinks({ steamLinks, bilibiliLinks, websiteLinks: officialWebsiteLinks, tapTapLinks, externalLinks })
+    links: buildEvidenceLinks({ steamTarget, steamLinks, bilibiliLinks, websiteLinks: officialWebsiteLinks, tapTapLinks, externalLinks })
   };
+}
+
+export function collectLeadEvidenceLinks(lead: Lead) {
+  return collectLinks(lead, collectEvidenceText(lead));
+}
+
+export function resolveLeadSteamTarget(lead: Lead): ResolvedLeadSteamTarget | null {
+  return resolveSteamTarget(lead, collectLeadEvidenceLinks(lead));
+}
+
+function resolveSteamTarget(lead: Lead, links: string[]): ResolvedLeadSteamTarget | null {
+  const explicitAppId = normalizeSteamAppId(lead.steam_app_id);
+  const appId = explicitAppId ?? links.map((link) => extractSteamAppId(link)).find((value): value is string => Boolean(value)) ?? null;
+  if (!appId) return null;
+  return {
+    appId,
+    storeUrl: `https://store.steampowered.com/app/${appId}/`,
+    steamDbUrl: `https://steamdb.info/app/${appId}/`
+  };
+}
+
+function normalizeSteamAppId(value: string | null | undefined) {
+  const trimmed = value?.trim() ?? "";
+  return /^\d+$/.test(trimmed) && Number(trimmed) > 0 ? trimmed : null;
 }
 
 function statusTone(status: LeadEvidenceStatus): LeadEvidenceTone {
@@ -189,7 +220,14 @@ function isExternalSourceLink(link: string, officialWebsiteLinks: string[]) {
 }
 
 function extractSteamAppId(link: string | undefined) {
-  return link?.match(/\/app\/(\d+)/i)?.[1] ?? null;
+  if (!link) return null;
+  try {
+    const url = new URL(link);
+    if (!/(^|\.)(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)$/i.test(url.hostname)) return null;
+    return url.pathname.match(/^\/app\/(\d+)/i)?.[1] ?? null;
+  } catch {
+    return link.match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i)?.[1] ?? null;
+  }
 }
 
 function inferSteamState(lead: Lead, text: string) {
@@ -248,13 +286,22 @@ function evidenceSummary(status: LeadEvidenceStatus, input: { isLaunched: boolea
   return "证据基本可读，但仍有关键项需要人工复核。";
 }
 
-function buildEvidenceLinks(input: { steamLinks: string[]; bilibiliLinks: string[]; websiteLinks: string[]; tapTapLinks: string[]; externalLinks: string[] }) {
+function buildEvidenceLinks(input: { steamTarget: ResolvedLeadSteamTarget | null; steamLinks: string[]; bilibiliLinks: string[]; websiteLinks: string[]; tapTapLinks: string[]; externalLinks: string[] }) {
   const candidates: LeadEvidenceLink[] = [
+    ...(input.steamTarget ? [{ label: "Steam", url: input.steamTarget.storeUrl }] : []),
     ...input.steamLinks.map((url) => ({ label: /steamdb/i.test(url) ? "SteamDB" : "Steam", url })),
     ...input.bilibiliLinks.map((url) => ({ label: "B站", url })),
     ...input.websiteLinks.map((url) => ({ label: "官网", url })),
     ...input.tapTapLinks.map((url) => ({ label: "TapTap", url })),
     ...input.externalLinks.map((url) => ({ label: "外部来源", url }))
   ];
-  return candidates.slice(0, 5);
+  const deduped = new Map<string, LeadEvidenceLink>();
+  for (const candidate of candidates) {
+    const appId = candidate.label === "Steam" ? extractSteamAppId(candidate.url) : null;
+    const key = appId
+      ? `steam:${appId}`
+      : `${candidate.label.toLowerCase()}:${candidate.url.toLowerCase().replace(/\/$/, "")}`;
+    if (!deduped.has(key)) deduped.set(key, candidate);
+  }
+  return Array.from(deduped.values()).slice(0, 5);
 }
