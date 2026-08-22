@@ -1,34 +1,34 @@
 {
   "schema_version": 2,
   "report_date": "2026-08-22",
-  "generated_at": "2026-08-22T10:38:30+08:00",
+  "generated_at": "2026-08-22T11:00:45+08:00",
   "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
   "scan_summary": {
     "steam_candidates_seen": 260,
-    "steam_candidates_enriched": 61,
-    "media_signals_seen": 343,
-    "media_candidates_seen": 29,
-    "records_total": 283,
+    "steam_candidates_enriched": 0,
+    "media_signals_seen": 356,
+    "media_candidates_seen": 30,
+    "records_total": 284,
     "formal": 0,
-    "candidate": 86,
+    "candidate": 87,
     "excluded": 197,
     "new_qualified_count": 0,
     "push_pool_count": 0,
     "strict_formal_count": 0,
     "near_pass_review_count": 0,
-    "steam_candidates_scheduled": 61,
-    "steam_candidates_reused": 199,
-    "steam_candidates_fresh_success": 61,
+    "steam_candidates_scheduled": 0,
+    "steam_candidates_reused": 260,
+    "steam_candidates_fresh_success": 0,
     "steam_candidates_failed": 0,
     "steam_candidates_deferred": 0,
     "steam_candidates_evaluated": 260,
     "backlog_unenriched_count": 0,
     "scheduler_lane_counts": {
-      "new": 49,
+      "new": 0,
       "backlog": 0,
-      "retry_refresh": 12
+      "retry_refresh": 0
     },
-    "evidence_snapshot_rejections": 12
+    "evidence_snapshot_rejections": 0
   },
   "candidates": [
     {
@@ -66,6 +66,61 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://www.bilibili.com/video/BV1Cogi6KE6u/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "TCG卡牌店模拟器",
+      "steam_app_id": null,
+      "dedupe_key": "project:tcg卡牌店模拟器",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "media_discovery",
+        "media_rescue",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.yystv.cn/n/1014479"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -420,6 +475,62 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "media",
+      "project": "达拉崩吧史诗版",
+      "steam_app_id": null,
+      "dedupe_key": "project:达拉崩吧史诗版",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1Vg8w6uEp1/",
+        "https://www.bilibili.com/toy/dara-bomba-epic/index.html"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
       "project": "野生独游开发者能把游戏垃成啥样？",
       "steam_app_id": null,
       "dedupe_key": "project:野生独游开发者能把游戏垃成啥样？",
@@ -453,6 +564,61 @@
         "https://www.bilibili.com/video/BV1xHgY6YEdA/",
         "https://zeorge.itch.io/dont-run-gold-coins",
         "https://pan.quark.cn/s/6ac9e18251bd"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "问剑长生",
+      "steam_app_id": null,
+      "dedupe_key": "project:问剑长生",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "media_discovery",
+        "media_expanded",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1yCNJ6VErM/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -1129,7 +1295,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -1176,7 +1342,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -3113,7 +3279,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -3160,7 +3326,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -4853,7 +5019,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -4899,7 +5065,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -4995,7 +5161,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -5041,7 +5207,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -6419,118 +6585,6 @@
     {
       "decision": "candidate",
       "publication_tier": null,
-      "source_type": "media",
-      "project": "果岭事务所",
-      "steam_app_id": "3143510",
-      "dedupe_key": "steam:3143510",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1AF8K6YEZi/",
-        "https://coldgoats-husky.itch.io/puttiverse",
-        "https://store.steampowered.com/app/3143510/",
-        "https://steamdb.info/app/3143510/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 20,
-        "movie_count": 3
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "奶头乐TV",
-      "steam_app_id": "3159750",
-      "dedupe_key": "steam:3159750",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV13bGy6LEYq/",
-        "https://store.steampowered.com/app/3159750/TV/?utm_source=bilibili",
-        "https://store.steampowered.com/app/3159750/",
-        "https://steamdb.info/app/3159750/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 13,
-        "movie_count": 1
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
       "source_type": "steam",
       "project": "Dragon's Brew",
       "steam_app_id": "3168560",
@@ -7116,6 +7170,7 @@
       "matched_rules": [
         "media_discovery",
         "media_strict",
+        "official_source_matched",
         "steam_entity_matched",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
@@ -7136,10 +7191,16 @@
       ],
       "exclusion_reasons": [],
       "source_links": [
+        "https://www.bilibili.com/video/BV1bVuo6AEHw/",
         "https://www.bilibili.com/video/BV1Xob862Eyk/",
         "https://store.steampowered.com/app/3193330/_/",
         "https://store.steampowered.com/app/3193330/",
-        "https://steamdb.info/app/3193330/"
+        "https://steamdb.info/app/3193330/",
+        "https://www.bilibili.com/video/BV1VAtkzbEK7/",
+        "https://store.steampowered.com/app/3193330/The_Weird_Hunter/",
+        "https://www.bilibili.com/video/BV1xb8SzrEim/",
+        "https://www.bilibili.com/video/BV1f8ghzbEhQ/",
+        "https://www.bilibili.com/video/BV1uTZgYwE4r/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -8135,7 +8196,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -8182,7 +8243,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -8292,7 +8353,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -8339,7 +8400,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -8858,7 +8919,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -8906,7 +8967,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -9299,62 +9360,6 @@
       }
     },
     {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "深渊档案",
-      "steam_app_id": "3567000",
-      "dedupe_key": "steam:3567000",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1nSj26VEqZ/",
-        "https://store.steampowered.com/app/3567000/_/",
-        "https://store.steampowered.com/app/3567000/",
-        "https://steamdb.info/app/3567000/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 12,
-        "movie_count": 1
-      }
-    },
-    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -9657,7 +9662,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -9704,7 +9709,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -10068,7 +10073,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -10116,7 +10121,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -12342,7 +12347,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -12387,7 +12392,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -12493,7 +12498,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -12538,7 +12543,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -12622,7 +12627,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -12669,7 +12674,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -13506,7 +13511,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -13552,7 +13557,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -13798,7 +13803,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -13844,7 +13849,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -14810,7 +14815,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -14856,7 +14861,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -15251,7 +15256,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -15298,7 +15303,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -15447,7 +15452,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -15492,7 +15497,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -15936,7 +15941,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -15983,7 +15988,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -16673,6 +16678,62 @@
       }
     },
     {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "灵界奇谈：卧龙",
+      "steam_app_id": "4234660",
+      "dedupe_key": "steam:4234660",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1DRgg6rE6H/",
+        "https://store.steampowered.com/app/4234660/_/",
+        "https://store.steampowered.com/app/4234660/",
+        "https://steamdb.info/app/4234660/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
+      }
+    },
+    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -17263,7 +17324,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -17310,7 +17371,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -17693,7 +17754,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -17740,7 +17801,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -18125,7 +18186,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -18172,7 +18233,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -18702,7 +18763,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -18751,7 +18812,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -19442,7 +19503,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -19489,7 +19550,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -19583,7 +19644,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -19629,7 +19690,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -20431,7 +20492,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -20480,7 +20541,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -21346,7 +21407,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -21393,7 +21454,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -21631,7 +21692,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -21680,7 +21741,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -21927,7 +21988,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -21973,7 +22034,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -22063,7 +22124,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -22111,7 +22172,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -22795,7 +22856,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -22843,7 +22904,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -23807,7 +23868,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -23853,7 +23914,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -25439,7 +25500,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -25486,7 +25547,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -26155,7 +26216,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -26203,7 +26264,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -26576,7 +26637,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -26622,7 +26683,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -26883,7 +26944,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -26932,7 +26993,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -27042,7 +27103,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -27091,7 +27152,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -27911,7 +27972,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -27958,7 +28019,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -28482,7 +28543,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -28529,7 +28590,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -29833,7 +29894,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -29879,7 +29940,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -31259,7 +31320,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -31306,7 +31367,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -31980,7 +32041,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32026,7 +32087,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -32117,7 +32178,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32163,7 +32224,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -32398,7 +32459,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32443,7 +32504,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -32668,7 +32729,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32715,7 +32776,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -32807,7 +32868,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32854,7 +32915,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -32939,7 +33000,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32988,7 +33049,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -33590,7 +33651,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -33635,7 +33696,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -33720,7 +33781,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -33768,7 +33829,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -34178,7 +34239,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -34225,7 +34286,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -34731,7 +34792,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -34777,7 +34838,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -35156,7 +35217,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35201,7 +35262,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -35285,7 +35346,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35331,7 +35392,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -35426,7 +35487,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -35474,7 +35535,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -36434,7 +36495,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -36482,7 +36543,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -36877,7 +36938,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -36924,7 +36985,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -37020,7 +37081,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37066,7 +37127,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -37719,7 +37780,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37764,7 +37825,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -37849,7 +37910,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37896,7 +37957,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -37991,7 +38052,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -38037,7 +38098,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -38397,7 +38458,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -38443,7 +38504,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
@@ -38534,7 +38595,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -38581,7 +38642,7 @@
       "last_attempted_at": "2026-08-22T10:38:30+08:00",
       "last_enriched_at": "2026-08-22T10:38:30+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-08-22T10:38:30+08:00",
         "contract_version": 1,
