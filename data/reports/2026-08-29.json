@@ -1,6 +1,6 @@
 {
   "report_date": "2026-08-29",
-  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 9 条，另从媒体/B站提取产品线索 32 条；B站探头候选 151 条、最终 43 条、官方源命中 2 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 0 条，其余只保留在候选审计。",
+  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 6 条，另从媒体/B站提取产品线索 35 条；B站探头候选 119 条、最终 51 条、官方源命中 4 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 1 条，push_pool 共 1 条，其余只保留在候选审计。",
   "insights": [
     "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
     "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
@@ -16,7 +16,74 @@
     "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
     "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
   ],
-  "push_pool": [],
+  "push_pool": [
+    {
+      "id": "lead_media_20260829_1nb30ve",
+      "project": "猫猫特工队：代号伍",
+      "steam_app_id": "4762810",
+      "team": "Yuchu Games",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": null,
+      "priority_reason": null,
+      "rule_fit": "Near-pass 人工复核：唯一缺失 gate=independent_quality_proof（独立质量证明）；其余硬性条件已通过。",
+      "genre": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "gameplay": "媒体 / B站待确认 / ACT / Adventure / Indie",
+      "progress": "试玩 Demo",
+      "release_window": "Q3 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "Yuchu Games；B站/媒体线索已补 Steam 交叉验证",
+      "publisher_name": "Yuchu Games",
+      "china_capability_occupied": false,
+      "traction_summary": "B站探头-关键词 分数 214；B站视频/搜索语境；已从文本补 Steam AppID 4762810。",
+      "public_signals": "B站探头-关键词 / https://www.bilibili.com/video/BV1Nd4r6cEqF/",
+      "contact": "B站: https://www.bilibili.com/video/BV1Nd4r6cEqF/；Email: info@yuchugames.com；Steam: https://steamcommunity.com/app/4762810/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1Nd4r6cEqF/",
+          "note": "B站探头-关键词 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "info@yuchugames.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/4762810/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1Nd4r6cEqF/",
+        "https://store.steampowered.com/app/4762810/_/",
+        "https://store.steampowered.com/app/4762810/",
+        "https://steamdb.info/app/4762810/"
+      ],
+      "exposure_trail": "自动从B站探头-关键词捕捉到媒体/B站线索（2026-08-29）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
+      "amplification": "",
+      "risks": "Near-pass 唯一缺口：independent_quality_proof（独立质量证明）；需在首轮试玩/筛选中核验。",
+      "verdict": "仅供首轮试玩/筛选，不代表正式商务推进，试玩不成立直接淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-08-29",
+      "notes": null,
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "sourcing_run_type": "scheduled",
+      "drop_reason": null
+    }
+  ],
   "watch_pool": [],
   "drop_pool": []
 }
