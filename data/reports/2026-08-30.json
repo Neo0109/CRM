@@ -1,6 +1,6 @@
 {
   "report_date": "2026-08-30",
-  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 16 条，另从媒体/B站提取产品线索 31 条；B站探头候选 151 条、最终 42 条、官方源命中 3 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 0 条，其余只保留在候选审计。",
+  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 1 条，另从媒体/B站提取产品线索 41 条；B站探头候选 151 条、最终 42 条、官方源命中 3 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 1 条，push_pool 共 1 条，其余只保留在候选审计。",
   "insights": [
     "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
     "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
@@ -16,7 +16,73 @@
     "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
     "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
   ],
-  "push_pool": [],
+  "push_pool": [
+    {
+      "id": "lead_media_20260830_1iwtjcq",
+      "project": "VED：疗愈所",
+      "steam_app_id": "3255500",
+      "team": "SummerClip",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": null,
+      "priority_reason": null,
+      "rule_fit": "Near-pass 人工复核：唯一缺失 gate=independent_quality_proof（独立质量证明）；其余硬性条件已通过。",
+      "genre": "Roguelike / ACT / Adventure / RPG",
+      "gameplay": "Roguelike / ACT / Adventure / RPG",
+      "progress": "试玩 Demo",
+      "release_window": "Q3 2026",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": "SummerClip；B站/媒体线索已补 Steam 交叉验证",
+      "publisher_name": "SummerClip",
+      "china_capability_occupied": false,
+      "traction_summary": "B站视频-国产游戏试玩 分数 113；B站视频/搜索语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "B站视频-国产游戏试玩 / https://www.bilibili.com/video/BV1ob4D6zEaZ/",
+      "contact": "B站: https://www.bilibili.com/video/BV1ob4D6zEaZ/；Email: liangky@zhuziplay.com；Steam: https://steamcommunity.com/app/3255500/discussions/",
+      "contact_methods": [
+        {
+          "type": "B站",
+          "value": "https://www.bilibili.com/video/BV1ob4D6zEaZ/",
+          "note": "B站视频-国产游戏试玩 原始视频/搜索入口"
+        },
+        {
+          "type": "Email",
+          "value": "liangky@zhuziplay.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "Steam",
+          "value": "https://steamcommunity.com/app/3255500/discussions/",
+          "note": "Steam community backup"
+        }
+      ],
+      "links": [
+        "https://www.bilibili.com/video/BV1ob4D6zEaZ/",
+        "https://store.steampowered.com/app/3255500/",
+        "https://steamdb.info/app/3255500/"
+      ],
+      "exposure_trail": "自动从B站视频-国产游戏试玩捕捉到媒体/B站线索（2026-08-30）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "构筑与局内选择可形成流派复盘、挑战路线和UP主栏目，并以简中内容验证中国用户反馈。",
+      "amplification": "",
+      "risks": "Near-pass 唯一缺口：independent_quality_proof（独立质量证明）；需在首轮试玩/筛选中核验。",
+      "verdict": "仅供首轮试玩/筛选，不代表正式商务推进，试玩不成立直接淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-08-30",
+      "notes": null,
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "sourcing_run_type": "scheduled",
+      "drop_reason": null
+    }
+  ],
   "watch_pool": [],
   "drop_pool": []
 }
