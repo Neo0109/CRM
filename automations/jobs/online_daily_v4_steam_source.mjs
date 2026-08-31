@@ -1,5 +1,6 @@
 import { scoreCandidate } from "./online_daily_v4_decision.mjs";
-import { fetchJson, fetchText } from "./online_daily_v4_network.mjs";
+import { classifySourceError, fetchJson, fetchText } from "./online_daily_v4_network.mjs";
+import { recordSteamSourceFetch } from "./online_daily_v4_source_health.mjs";
 import {
   buildSteamOfficialDemoEvidence,
   buildSteamOfficialGameplayEvidence,
@@ -81,9 +82,15 @@ export async function fetchSteamSearch(filter, source, tags = [], options = {}) 
   try {
     const text = await fetchTextImpl(resultUrl.toString(), { timeoutMs: 12000, accept: "application/json,text/html;q=0.9,*/*;q=0.8" });
     const parsed = tagSearchCandidates(parseSteamSearchHtml(parseMaybeJsonHtml(text), source), options);
-    if (parsed.length) return parsed;
-    return tagSearchCandidates(parseSteamSearchHtml(await fetchTextImpl(pageUrl.toString(), { timeoutMs: 12000, accept: "text/html,*/*;q=0.8" }), source), options);
+    if (parsed.length) {
+      recordSteamSourceFetch(options.diagnostics, source, { ok: true, rawCount: parsed.length });
+      return parsed;
+    }
+    const fallback = tagSearchCandidates(parseSteamSearchHtml(await fetchTextImpl(pageUrl.toString(), { timeoutMs: 12000, accept: "text/html,*/*;q=0.8" }), source), options);
+    recordSteamSourceFetch(options.diagnostics, source, { ok: true, rawCount: fallback.length, fallbackUsed: true });
+    return fallback;
   } catch (error) {
+    recordSteamSourceFetch(options.diagnostics, source, { ok: false, error, outcome: classifySourceError(error) });
     logger.warn?.(`Steam search failed for ${source}: ${error.message}`);
     return [];
   }
@@ -126,7 +133,7 @@ export async function fetchFeaturedCategories(context = {}) {
   const logger = context.logger ?? console;
   try {
     const payload = await fetchJsonImpl("https://store.steampowered.com/api/featuredcategories?cc=us&l=english");
-    return [["Featured Coming Soon", payload.coming_soon?.items], ["Featured New Releases Context", payload.new_releases?.items], ["Featured Top Sellers Context", payload.top_sellers?.items]]
+    const candidates = [["Featured Coming Soon", payload.coming_soon?.items], ["Featured New Releases Context", payload.new_releases?.items], ["Featured Top Sellers Context", payload.top_sellers?.items]]
       .flatMap(([source, items]) => (items ?? []).map((item, index) => ({
         appId: String(item.id ?? ""),
         title: item.name,
@@ -137,7 +144,10 @@ export async function fetchFeaturedCategories(context = {}) {
         sourceIndex: index,
         href: `https://store.steampowered.com/app/${item.id}/`
       })).filter((item) => item.appId && item.title));
+    recordSteamSourceFetch(context.diagnostics, "Steam Featured Categories", { ok: true, rawCount: candidates.length });
+    return candidates;
   } catch (error) {
+    recordSteamSourceFetch(context.diagnostics, "Steam Featured Categories", { ok: false, error, outcome: classifySourceError(error) });
     logger.warn?.(`Steam featured categories failed: ${error.message}`);
     return [];
   }

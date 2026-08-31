@@ -191,7 +191,8 @@ assert.deepEqual(defaultBilibiliProbeDiagnostics(), {
   request_retries: 0,
   rate_limit_retries: 0,
   fallback_queries: 0,
-  source_health: {}
+  source_health: {},
+  incidents: []
 });
 
 {

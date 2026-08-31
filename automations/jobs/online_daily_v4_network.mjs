@@ -4,10 +4,15 @@ import { promisify } from "node:util";
 const defaultExecFile = promisify(execFileCallback);
 
 export async function fetchJson(url, options = {}) {
-  return JSON.parse(await fetchText(url, {
+  const text = await fetchText(url, {
     ...options,
     accept: options.accept ?? "application/json,text/html;q=0.9,*/*;q=0.8"
-  }));
+  });
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw parseMismatchError(`JSON response structure mismatch: ${error.message}`);
+  }
 }
 
 export async function fetchText(url, options = {}) {
@@ -27,13 +32,25 @@ export async function fetchText(url, options = {}) {
       headers.Origin = "https://search.bilibili.com";
     }
     const response = await fetchImpl(url, { signal: controller.signal, headers });
-    if (!response.ok) throw httpStatusError(response);
-    return await response.text();
+    const text = typeof response?.text === "function" ? await response.text() : "";
+    const classification = classifyHttpResponse(response, text);
+    if (classification.outcome !== "ok") {
+      const error = response?.ok
+        ? new Error(classification.outcome === "challenge" ? "Cloudflare challenge response" : "HTTP response rejected")
+        : httpStatusError(response);
+      error.name = classification.outcome === "challenge" ? "SourceChallengeError" : error.name;
+      error.sourceOutcome = classification.outcome;
+      error.provider = classification.provider;
+      if (Number.isFinite(Number(response?.status))) error.status = Number(response.status);
+      throw error;
+    }
+    return text;
   } catch (error) {
     if (isSteamUrl(url) && shouldUseCurlFallback(error)) {
       logger.warn?.(`Steam Node fetch failed for ${new URL(url).host}: ${describeNetworkError(error)}; retrying with curl fallback`);
       return await fetchTextWithCurl(url, { timeoutMs, accept, execFileImpl });
     }
+    if (!error.sourceOutcome) error.sourceOutcome = classifySourceError(error);
     throw error;
   } finally {
     clearTimeout(timer);
@@ -47,6 +64,8 @@ export function httpStatusError(response, nowMs = Date.now()) {
   const error = new Error(message);
   error.name = "HttpStatusError";
   if (Number.isFinite(status)) error.status = status;
+  error.sourceOutcome = sourceOutcomeForHttpStatus(status);
+  error.provider = providerForResponse(response);
   const retryAfterMs = parseRetryAfter(response?.headers?.get?.("retry-after"), nowMs);
   if (retryAfterMs !== null) error.retryAfterMs = retryAfterMs;
   return error;
@@ -79,7 +98,8 @@ export function describeNetworkError(error) {
 }
 
 export function shouldUseCurlFallback(error) {
-  if (/^(403|429)\b/.test(error.message)) return false;
+  if (error?.sourceOutcome && error.sourceOutcome !== "network_error") return false;
+  if (/^(402|403|412|429)\b/.test(error.message)) return false;
   return /fetch failed|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN|aborted|timeout/i.test(describeNetworkError(error));
 }
 
@@ -111,10 +131,75 @@ export async function fetchTextWithCurl(url, options = {}) {
       `Accept: ${headers.Accept}`,
       url
     ], { maxBuffer: 8 * 1024 * 1024 });
+    if (isCloudflareChallengeResponse(null, stdout)) {
+      const error = new Error("Cloudflare challenge response from curl fallback");
+      error.name = "SourceChallengeError";
+      error.sourceOutcome = "challenge";
+      error.provider = "cloudflare";
+      throw error;
+    }
     return stdout;
   } catch (error) {
+    if (error?.sourceOutcome) throw error;
     const stderr = String(error.stderr ?? "").trim();
     const detail = stderr || error.message;
-    throw new Error(`curl fallback failed: ${detail}`);
+    const wrapped = new Error(`curl fallback failed: ${detail}`);
+    wrapped.sourceOutcome = "network_error";
+    throw wrapped;
   }
+}
+
+export function sourceOutcomeForHttpStatus(status) {
+  const value = Number(status);
+  if (value === 402) return "payment_required";
+  if (value === 403) return "forbidden";
+  if (value === 412 || value === 429) return "rate_limited";
+  if (value >= 500) return "upstream_error";
+  if (value >= 400) return "upstream_error";
+  return "ok";
+}
+
+export function classifySourceError(error) {
+  if (error?.sourceOutcome) return error.sourceOutcome;
+  if (Number.isFinite(Number(error?.status))) return sourceOutcomeForHttpStatus(error.status);
+  const message = String(error?.message ?? error ?? "");
+  const statusMatch = message.match(/(?:^|\b)(402|403|412|429|5\d\d)(?:\b|$)/);
+  if (statusMatch) return sourceOutcomeForHttpStatus(Number(statusMatch[1]));
+  if (/fetch failed|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN|aborted|timeout|network/i.test(describeNetworkError(error))) {
+    return "network_error";
+  }
+  return "upstream_error";
+}
+
+export function classifyHttpResponse(response, text = "") {
+  if (isCloudflareChallengeResponse(response, text)) return { outcome: "challenge", provider: "cloudflare" };
+  return {
+    outcome: sourceOutcomeForHttpStatus(response?.status),
+    provider: providerForResponse(response)
+  };
+}
+
+export function isCloudflareChallengeResponse(response, text = "") {
+  const mitigated = headerValue(response, "cf-mitigated").toLowerCase();
+  if (mitigated === "challenge") return true;
+  const contentType = headerValue(response, "content-type").toLowerCase();
+  const body = String(text ?? "");
+  const looksHtml = contentType.includes("text/html") || /^\s*(?:<!doctype\s+html|<html\b)/i.test(body);
+  return looksHtml && /\/cdn-cgi\/challenge-platform|\bcf-chl-|<title>\s*just a moment|attention required[^<]*cloudflare/i.test(body);
+}
+
+export function parseMismatchError(message = "Response structure mismatch") {
+  const error = new Error(message);
+  error.name = "SourceParseMismatchError";
+  error.sourceOutcome = "parse_mismatch";
+  error.provider = null;
+  return error;
+}
+
+function providerForResponse(response) {
+  return headerValue(response, "cf-ray") || headerValue(response, "cf-mitigated") ? "cloudflare" : null;
+}
+
+function headerValue(response, name) {
+  return String(response?.headers?.get?.(name) ?? "").trim();
 }

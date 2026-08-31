@@ -7,7 +7,7 @@ import {
   sourceTaggedItem,
   topicScore
 } from "./online_daily_v4_dedupe.mjs";
-import { fetchJson, fetchText } from "./online_daily_v4_network.mjs";
+import { classifySourceError, fetchJson, fetchText, parseMismatchError } from "./online_daily_v4_network.mjs";
 import {
   hasAlreadyReleasedMediaText,
   isBannedMediaLeadText,
@@ -23,7 +23,12 @@ import {
   stripTags
 } from "./online_daily_v4_source_utils.mjs";
 import { defaultDailyRuleConfig } from "./online_daily_v4_rules.mjs";
-import { recordMediaSourceFetch, recordMediaSourceRetained } from "./online_daily_v4_source_health.mjs";
+import {
+  mediaSourceFamily,
+  recordMediaSourceFetch,
+  recordMediaSourceRetained,
+  recordSourceIncident
+} from "./online_daily_v4_source_health.mjs";
 
 export async function fetchMediaSignals(context = {}) {
   const diagnostics = context.diagnostics ?? {};
@@ -142,25 +147,63 @@ export async function fetchMediaSource(source, context = {}) {
     else if (source.type === "bilibili_page_search") items = parseBilibiliSearchPage(text, source);
     else if (source.type === "article") items = [parseArticleItem(text, source)].filter(Boolean);
     else items = parsePageItems(text, source);
+    assertMediaSourceContract(text, source);
     recordMediaSourceFetch(diagnostics, source, { ok: true, rawCount: items.length });
     return items;
   } catch (error) {
     if (source.type === "bilibili_video_search" && source.fallbackUrl) {
+      recordSourceIncident(diagnostics, source, {
+        error,
+        outcome: classifySourceError(error),
+        family: mediaSourceFamily(source),
+        fallbackUsed: true
+      });
       try {
-        const items = parsePageItems(await fetchTextImpl(source.fallbackUrl, { timeoutMs: 12000, accept: "text/html,*/*;q=0.8" }), source);
+        const fallbackText = await fetchTextImpl(source.fallbackUrl, { timeoutMs: 12000, accept: "text/html,*/*;q=0.8" });
+        assertMediaSourceContract(fallbackText, { ...source, type: "bilibili_page_search" });
+        const items = parsePageItems(fallbackText, source);
         recordMediaSourceFetch(diagnostics, source, { ok: true, rawCount: items.length, fallbackUsed: true });
         return items;
       } catch (fallbackError) {
         diagnostics.source_failures = (diagnostics.source_failures ?? 0) + 1;
-        recordMediaSourceFetch(diagnostics, source, { ok: false, error: `${error.message}; fallback failed: ${fallbackError.message}` });
+        recordMediaSourceFetch(diagnostics, source, {
+          ok: false,
+          error: fallbackError,
+          outcome: classifySourceError(fallbackError),
+          fallbackUsed: true
+        });
         logger.warn?.(`Media source failed for ${source.name}: ${error.message}; fallback failed: ${fallbackError.message}`);
         return [];
       }
     }
     diagnostics.source_failures = (diagnostics.source_failures ?? 0) + 1;
-    recordMediaSourceFetch(diagnostics, source, { ok: false, error: error.message });
+    recordMediaSourceFetch(diagnostics, source, { ok: false, error, outcome: classifySourceError(error) });
     logger.warn?.(`Media source failed for ${source.name}: ${error.message}`);
     return [];
+  }
+}
+
+export function assertMediaSourceContract(text, source = {}) {
+  const value = String(text ?? "");
+  if (source.type === "feed" && !/<(?:rss|feed)\b/i.test(value)) {
+    throw parseMismatchError(`Feed response structure mismatch for ${source.name ?? "unknown"}`);
+  }
+  if (source.type === "bilibili_video_search") {
+    let payload;
+    try {
+      payload = JSON.parse(value);
+    } catch {
+      throw parseMismatchError(`Bilibili search response is not JSON for ${source.name ?? "unknown"}`);
+    }
+    if (!Array.isArray(payload?.data?.result)) {
+      throw parseMismatchError(`Bilibili search response structure mismatch for ${source.name ?? "unknown"}`);
+    }
+  }
+  if (["page", "bilibili_page_search"].includes(source.type) && !/<(?:html|a)\b/i.test(value)) {
+    throw parseMismatchError(`HTML page response structure mismatch for ${source.name ?? "unknown"}`);
+  }
+  if (source.type === "article" && !/<(?:title|meta)\b/i.test(value)) {
+    throw parseMismatchError(`Article response structure mismatch for ${source.name ?? "unknown"}`);
   }
 }
 

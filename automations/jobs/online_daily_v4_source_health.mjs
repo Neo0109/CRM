@@ -1,13 +1,21 @@
+import { classifySourceError } from "./online_daily_v4_network.mjs";
+
 export function recordMediaSourceFetch(diagnostics, source, result = {}) {
-  const entry = sourceEntry(diagnostics, source?.name ?? "unknown");
+  if (!diagnostics) return null;
+  const family = mediaSourceFamily(source);
+  const entry = sourceEntry(diagnostics, "media_source_health", source?.name ?? "unknown", family);
   entry.attempts += 1;
   entry.raw_signals += Math.max(0, Number(result.rawCount ?? 0) || 0);
-  if (result.ok) {
+  const outcome = result.outcome ?? (result.ok ? "ok" : classifySourceError(result.error));
+  entry.outcome_counts[outcome] = (entry.outcome_counts[outcome] ?? 0) + 1;
+  entry.last_outcome = outcome;
+  if (result.ok && outcome === "ok") {
     entry.successes += 1;
     entry.last_error = null;
   } else {
     entry.failures += 1;
-    entry.last_error = String(result.error ?? "unknown source failure");
+    entry.last_error = errorMessage(result.error);
+    recordSourceIncident(diagnostics, source, { ...result, outcome, family });
   }
   if (result.fallbackUsed) entry.fallback_uses += 1;
   refreshRates(entry);
@@ -16,7 +24,7 @@ export function recordMediaSourceFetch(diagnostics, source, result = {}) {
 
 export function recordMediaSourceRetained(diagnostics, items = []) {
   for (const item of items) {
-    const entry = sourceEntry(diagnostics, item?.source ?? "unknown");
+    const entry = sourceEntry(diagnostics, "media_source_health", item?.source ?? "unknown", mediaItemFamily(item));
     entry.retained_signals += 1;
     refreshRates(entry);
   }
@@ -28,7 +36,7 @@ export function recordMediaLeadCandidates(diagnostics, leads = []) {
     const source = lead?._mediaItem?.source
       ?? String(lead?.public_signals ?? "").split(" / ")[0]
       ?? "unknown";
-    const entry = sourceEntry(diagnostics, source || "unknown");
+    const entry = sourceEntry(diagnostics, "media_source_health", source || "unknown", "global_media");
     entry.lead_candidates += 1;
     refreshRates(entry);
   }
@@ -39,6 +47,47 @@ export function sourceHealthEntries(diagnostics = {}) {
   const entries = Object.values(diagnostics.media_source_health ?? {});
   for (const entry of entries) refreshRates(entry);
   return entries.sort((a, b) => a.source.localeCompare(b.source, "zh-CN"));
+}
+
+export function recordSteamSourceFetch(diagnostics, source, result = {}) {
+  if (!diagnostics) return null;
+  const entry = sourceEntry(diagnostics, "steam_source_health", source ?? "unknown", "steam");
+  entry.attempts += 1;
+  entry.raw_signals += Math.max(0, Number(result.rawCount ?? 0) || 0);
+  entry.candidates = entry.raw_signals;
+  const outcome = result.outcome ?? (result.ok ? "ok" : classifySourceError(result.error));
+  entry.outcome_counts[outcome] = (entry.outcome_counts[outcome] ?? 0) + 1;
+  entry.last_outcome = outcome;
+  if (result.ok && outcome === "ok") {
+    entry.successes += 1;
+    entry.last_error = null;
+  } else {
+    entry.failures += 1;
+    entry.last_error = errorMessage(result.error);
+    recordSourceIncident(diagnostics, { name: source }, { ...result, outcome, family: "steam" });
+  }
+  if (result.fallbackUsed) entry.fallback_uses += 1;
+  refreshRates(entry);
+  return entry;
+}
+
+export function recordSourceIncident(diagnostics, source, result = {}) {
+  if (!diagnostics) return null;
+  const family = result.family ?? mediaSourceFamily(source);
+  const incident = {
+    source_id: stableSourceId(family, source?.name ?? source ?? "unknown"),
+    family,
+    outcome: result.outcome ?? classifySourceError(result.error),
+    http_status: Number.isFinite(Number(result.httpStatus ?? result.error?.status))
+      ? Number(result.httpStatus ?? result.error?.status)
+      : null,
+    provider: (result.provider ?? result.error?.provider) === "cloudflare" ? "cloudflare" : null,
+    fallback_used: Boolean(result.fallbackUsed)
+  };
+  diagnostics.source_incidents ??= [];
+  diagnostics.source_incidents.push(incident);
+  if (diagnostics.source_incidents.length > 100) diagnostics.source_incidents.splice(0, diagnostics.source_incidents.length - 100);
+  return incident;
 }
 
 export function recordReleaseWindowHealth(diagnostics, { steamCandidates = [], mediaLeads = [] } = {}) {
@@ -52,10 +101,12 @@ export function recordReleaseWindowHealth(diagnostics, { steamCandidates = [], m
   return diagnostics.release_window_health;
 }
 
-function sourceEntry(diagnostics, source) {
-  diagnostics.media_source_health ??= {};
-  diagnostics.media_source_health[source] ??= {
+function sourceEntry(diagnostics, collection, source, family) {
+  diagnostics[collection] ??= {};
+  diagnostics[collection][source] ??= {
     source,
+    source_id: stableSourceId(family, source),
+    family,
     attempts: 0,
     successes: 0,
     failures: 0,
@@ -66,9 +117,15 @@ function sourceEntry(diagnostics, source) {
     retained_rate: 0,
     lead_conversion_rate: 0,
     fallback_uses: 0,
-    last_error: null
+    last_error: null,
+    last_outcome: null,
+    outcome_counts: {}
   };
-  return diagnostics.media_source_health[source];
+  if (diagnostics[collection][source].family === "global_media" && family !== "global_media") {
+    diagnostics[collection][source].family = family;
+    diagnostics[collection][source].source_id = stableSourceId(family, source);
+  }
+  return diagnostics[collection][source];
 }
 
 function refreshRates(entry) {
@@ -80,4 +137,32 @@ function refreshRates(entry) {
 function rate(numerator, denominator) {
   if (!denominator) return 0;
   return Math.round((numerator / denominator) * 10000) / 10000;
+}
+
+export function mediaSourceFamily(source = {}) {
+  const focus = Array.isArray(source.focus) ? source.focus : [];
+  if (source.type?.startsWith?.("bilibili_") || focus.includes("bilibili")) return "bilibili";
+  if (focus.includes("domestic_sourcing") || focus.includes("china")) return "domestic_media";
+  return "global_media";
+}
+
+function mediaItemFamily(item = {}) {
+  if (Array.isArray(item.source_focus)) {
+    return mediaSourceFamily({ focus: item.source_focus, type: item.bvid ? "bilibili_signal" : "media" });
+  }
+  return "global_media";
+}
+
+function stableSourceId(family, source) {
+  const slug = String(source ?? "unknown")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 120) || "unknown";
+  return `${family}:${slug}`;
+}
+
+function errorMessage(error) {
+  return String(error?.message ?? error ?? "unknown source failure");
 }

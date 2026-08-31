@@ -1,6 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { extractBilibiliEvidence } from "./bilibili_evidence.mjs";
+import {
+  classifyHttpResponse,
+  classifySourceError,
+  httpStatusError,
+  parseMismatchError
+} from "./online_daily_v4_network.mjs";
 
 const defaultHeaders = {
   "User-Agent": "Mozilla/5.0 SourcingCRM/1.0 (+https://github.com/Neo0109/CRM)",
@@ -33,7 +39,8 @@ export function defaultBilibiliProbeDiagnostics() {
     request_retries: 0,
     rate_limit_retries: 0,
     fallback_queries: 0,
-    source_health: {}
+    source_health: {},
+    incidents: []
   };
 }
 
@@ -78,7 +85,7 @@ export async function collectBilibiliProbeSignals({
       } catch (error) {
         diagnostics.source_failures += 1;
         diagnostics.last_error = `UP ${source.uid}: ${error.message}`;
-        recordProbeSourceResult(diagnostics, sourceKey, { ok: false, error: error.message });
+        recordProbeSourceResult(diagnostics, sourceKey, { ok: false, error });
       }
     }),
     ...probeConfig.keywords.map((keyword) => async () => {
@@ -104,7 +111,7 @@ export async function collectBilibiliProbeSignals({
       } catch (error) {
         diagnostics.source_failures += 1;
         diagnostics.last_error = `keyword ${keyword}: ${error.message}`;
-        recordProbeSourceResult(diagnostics, sourceKey, { ok: false, error: error.message });
+        recordProbeSourceResult(diagnostics, sourceKey, { ok: false, error });
       }
     })
   ];
@@ -440,7 +447,29 @@ async function fetchJson(url, fetchImpl, options = {}) {
       await sleepImpl(retryDelaysMs[attempt]);
       continue;
     }
-    if (response?.ok) return response.json();
+    if (response?.ok) {
+      if (typeof response.text === "function") {
+        const text = await response.text();
+        const classification = classifyHttpResponse(response, text);
+        if (classification.outcome !== "ok") {
+          const error = new Error("Bilibili Cloudflare challenge response");
+          error.sourceOutcome = classification.outcome;
+          error.provider = classification.provider;
+          error.status = Number(response.status) || 200;
+          throw error;
+        }
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          throw parseMismatchError(`Bilibili JSON response structure mismatch: ${error.message}`);
+        }
+      }
+      try {
+        return await response.json();
+      } catch (error) {
+        throw parseMismatchError(`Bilibili JSON response structure mismatch: ${error.message}`);
+      }
+    }
     const status = Number(response?.status ?? 0);
     const retryable = status === 412 || status === 429 || status >= 500;
     if (retryable && attempt < retryDelaysMs.length) {
@@ -449,7 +478,7 @@ async function fetchJson(url, fetchImpl, options = {}) {
       await sleepImpl(retryDelaysMs[attempt]);
       continue;
     }
-    throw new Error(`Bilibili request failed: ${response?.status ?? "unknown"} ${response?.statusText ?? ""}`.trim());
+    throw httpStatusError(response);
   }
 }
 
@@ -461,17 +490,32 @@ function recordProbeSourceResult(diagnostics, source, result) {
     failures: 0,
     candidates: 0,
     fallback_uses: 0,
-    last_error: null
+    last_error: null,
+    last_outcome: null,
+    outcome_counts: {}
   };
   const entry = diagnostics.source_health[source];
   entry.attempts += 1;
   entry.candidates += Math.max(0, Number(result.candidates ?? 0) || 0);
+  const outcome = result.ok ? "ok" : classifySourceError(result.error);
+  entry.last_outcome = outcome;
+  entry.outcome_counts[outcome] = (entry.outcome_counts[outcome] ?? 0) + 1;
   if (result.ok) {
     entry.successes += 1;
     entry.last_error = null;
   } else {
     entry.failures += 1;
-    entry.last_error = String(result.error ?? "unknown source failure");
+    entry.last_error = String(result.error?.message ?? result.error ?? "unknown source failure");
+    diagnostics.incidents ??= [];
+    diagnostics.incidents.push({
+      source_id: `bilibili:${source.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 120)}`,
+      family: "bilibili",
+      outcome,
+      http_status: Number.isFinite(Number(result.error?.status)) ? Number(result.error.status) : null,
+      provider: result.error?.provider === "cloudflare" ? "cloudflare" : null,
+      fallback_used: Boolean(result.fallbackUsed)
+    });
+    if (diagnostics.incidents.length > 100) diagnostics.incidents.splice(0, diagnostics.incidents.length - 100);
   }
   if (result.fallbackUsed) entry.fallback_uses += 1;
 }

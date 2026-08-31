@@ -55,6 +55,7 @@ export const C5B_BEHAVIOR_DEPENDENCY_PATHS = Object.freeze([
   "automations/jobs/online_daily_v4_media_sources.mjs",
   "automations/jobs/online_daily_v4_network.mjs",
   "automations/jobs/online_daily_v4_rules.mjs",
+  "automations/jobs/online_daily_v4_source_coverage.mjs",
   "automations/jobs/online_daily_v4_source_health.mjs",
   "automations/jobs/online_daily_v4_source_utils.mjs",
   "automations/jobs/online_daily_v4_steam_source.mjs",
@@ -74,6 +75,7 @@ export const C5B_BEHAVIOR_DEPENDENCY_PATHS = Object.freeze([
   "automations/jobs/sourcing_v6_3_quality.mjs",
   "automations/rules/daily-report-v7-3-shadow.json",
   "automations/rules/daily-report.json",
+  "automations/rules/source-coverage.json",
   "schemas/sourcing_candidates_v3_shadow.schema.json",
   "schemas/sourcing_replay_corpus.schema.json",
   "schemas/sourcing_replay_window.schema.json"
