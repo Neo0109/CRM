@@ -20,19 +20,24 @@ Deliver Phase 1 of the approved CRM resilience plan: structured source-response 
 - Full Daily automation suite passed (358/358).
 - `npm run test:daily-heartbeat`, `npm run typecheck`, `npm run typecheck:functions`, and `npm run test:frontend` passed.
 - `npm run verify:all` passed after all frontend/backend/Functions/Daily tests, typechecks, sourcing tests, contract validation, build, and diff check.
+- PR #122 passed exact-head Build and Cloudflare Pages checks and was squash-merged as `13f68b2f6bd0e75ba5268d19096a9e6cd4e23111`.
+- Post-merge Build run `33383298155` passed.
+- Cloudflare Pages deployment `9774db03-8945-4a4c-b471-0fbe78ed4fe1` passed.
+- Production `/api/health` returned HTTP 200 JSON with no `cf-mitigated: challenge` header.
 
 ## Remaining
 
-- Open, review, merge, deploy, and observe three natural scheduled runs before proposing enforcement.
+- Observe three natural Daily schedule runs with schema-v1 receipts before enabling enforcement.
 
 ## Next Action
 
-Publish the validated staging diff to the remote branch through the GitHub API, open the PR, and complete remote check/merge/deploy acceptance.
+Count only natural `Daily online CRM automation` schedule runs after the merge. Verify receipt mode/status/family metrics, strict `sync_response.synced=true`, and absence of false-positive coverage classifications. Do not enable enforcement before three qualifying observations.
 
 ## Git Status
 
-- Remote working branch: `codex/source-coverage-observe`
-- Base SHA: `3c24111a989b52dc0b3e7e6ee94109f49f2f2ba7`
+- Production `main`: `13f68b2f6bd0e75ba5268d19096a9e6cd4e23111`
+- Merged PR: `#122`
+- Observe base SHA: `3c24111a989b52dc0b3e7e6ee94109f49f2f2ba7`
 - Local checkout: dirty VNext draft; read-only and not used for commits.
 
 ## Scope Boundaries
