@@ -1,6 +1,6 @@
 {
   "report_date": "2026-08-31",
-  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 34 条，另从媒体/B站提取产品线索 34 条；B站探头候选 111 条、最终 51 条、官方源命中 4 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 1 条，push_pool 共 1 条，其余只保留在候选审计。",
+  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 8 条，另从媒体/B站提取产品线索 42 条；B站探头候选 131 条、最终 54 条、官方源命中 3 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 0 条，其余只保留在候选审计。",
   "insights": [
     "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
     "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
@@ -16,78 +16,7 @@
     "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
     "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
   ],
-  "push_pool": [
-    {
-      "id": "lead_steam_1510440_2026-08-31",
-      "project": "Honeycomb: The World Beyond",
-      "steam_app_id": "1510440",
-      "team": "Frozen Way",
-      "team_size": null,
-      "country": "海外",
-      "region": "海外",
-      "city": null,
-      "region_priority": "其他",
-      "bucket": "未处理",
-      "stage": "new",
-      "priority": null,
-      "sourcing_lane": "china_joint",
-      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
-      "sourcing_run_type": "scheduled",
-      "drop_reason": null,
-      "priority_reason": null,
-      "rule_fit": "Near-pass 人工复核：唯一缺失 gate=traction_or_proven_team_event（市场牵引或成熟团队事件）；其余硬性条件已通过。",
-      "genre": "Adventure / Casual / Indie",
-      "gameplay": "Honeycomb: The World Beyond is a sci-fi survival adventure set on the vibrant alien planet of Sota7. Adapt by building your base and crafting essential tools. Explore diverse biomes and use your bioengineering experience to uncover mysteries and secure humanity's future.",
-      "progress": "Steam Steam CN Demo/Next Fest Window；发售窗口：2026-09-08；Demo/试玩信号需优先复核",
-      "release_window": "2026-09-08",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "Snail Games USA / Frozen District；未见成熟中国发行能力占位",
-      "publisher_name": "Snail Games USA",
-      "china_capability_occupied": false,
-      "traction_summary": "Steam CN Demo/Next Fest Window；素材/截图/视频可验证；Demo/试玩信号；玩法具备内容化空间。",
-      "public_signals": "Steam CN Demo/Next Fest Window / Steam App 1510440",
-      "contact": "Email: honeycomb@frozenway.games；官网: https://honeycomb-game.com/；Discord: https://discord.com/invite/DREJPAbbsd；X/Twitter: https://x.com/HoneycombFW",
-      "contact_methods": [
-        {
-          "type": "Email",
-          "value": "honeycomb@frozenway.games",
-          "note": "Steam support email"
-        },
-        {
-          "type": "官网",
-          "value": "https://honeycomb-game.com/",
-          "note": "Steam official website"
-        },
-        {
-          "type": "Discord",
-          "value": "https://discord.com/invite/DREJPAbbsd",
-          "note": "Found on official site"
-        },
-        {
-          "type": "X/Twitter",
-          "value": "https://x.com/HoneycombFW",
-          "note": "Found on official site"
-        }
-      ],
-      "links": [
-        "https://store.steampowered.com/app/1510440/",
-        "https://steamdb.info/app/1510440/",
-        "https://honeycomb-game.com/"
-      ],
-      "exposure_trail": "最早自动捕捉：Steam CN Demo/Next Fest Window（2026-08-31）。待反查：Steam News、SteamDB、GamesPress、YouTube trailer、B站、indienova、官网/Discord。目标是确认是否仍处在最佳BD窗口。",
-      "bilibili_fit": "画面素材较完整，适合先做视觉向短内容和愿望单转化测试。",
-      "amplification": "先用实机素材验证点击和完播，再决定是否推进商务触达。",
-      "risks": "Near-pass 唯一缺口：traction_or_proven_team_event（市场牵引或成熟团队事件）；需在首轮试玩/筛选中核验。",
-      "verdict": "仅供首轮试玩/筛选，不代表正式商务推进，试玩不成立直接淘汰。",
-      "next_action": null,
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-08-31",
-      "notes": null
-    }
-  ],
+  "push_pool": [],
   "watch_pool": [],
   "drop_pool": []
 }
