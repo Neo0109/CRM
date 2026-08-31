@@ -22,6 +22,10 @@ import {
 import { buildMediaLeadCandidates } from "./online_daily_v4_media_leads.mjs";
 import { fetchMediaSignals } from "./online_daily_v4_media_sources.mjs";
 import { recordReleaseWindowHealth } from "./online_daily_v4_source_health.mjs";
+import {
+  buildSourceCoverage,
+  loadSourceCoverageConfig
+} from "./online_daily_v4_source_coverage.mjs";
 import { buildDailyReport, buildRadarReport, buildSteamTrendReport, mediaSignalToRadarItem } from "./online_daily_v4_reports.mjs";
 import {
   buildDailyRuleConfig,
@@ -40,6 +44,7 @@ const args = parseArgs(process.argv.slice(2));
 const dailyRules = await loadDailyRules({ rootDir, rulesPath: args.rulesPath ?? args.dailyRulesPath });
 validateDailyRules(dailyRules);
 const ruleConfig = buildDailyRuleConfig(dailyRules);
+const sourceCoverageConfig = await loadSourceCoverageConfig({ rootDir, configPath: args.sourceCoverageConfig });
 const reportDate = args.date ?? todayInShanghai();
 const capturedAt = nowInShanghaiIso();
 const requestedMaxCandidates = Number(args.maxCandidates ?? 320);
@@ -141,6 +146,17 @@ recordReleaseWindowHealth(sourcingDiagnostics, {
   steamCandidates: enrichedCandidates,
   mediaLeads: mediaLeadCandidates
 });
+const sourceCoverage = buildSourceCoverage({
+  diagnostics: sourcingDiagnostics,
+  rawSteamCandidateCount: rawCandidates.length,
+  config: sourceCoverageConfig
+});
+sourcingDiagnostics.source_coverage = sourceCoverage;
+await writeJson(`data/runtime/${reportDate}-source-coverage.json`, sourceCoverage);
+console.log(JSON.stringify({ source_coverage: sourceCoverage }, null, 2));
+if (sourceCoverage.status !== "healthy") {
+  console.warn(`Source coverage ${sourceCoverage.status} in ${sourceCoverage.mode} mode; generation and sync remain enabled.`);
+}
 
 if (!rawCandidates.length && !mediaLeadCandidates.length) {
   throw new Error("No Steam candidates or domestic media/Bilibili product leads were fetched; refusing to overwrite daily reports with an empty run.");

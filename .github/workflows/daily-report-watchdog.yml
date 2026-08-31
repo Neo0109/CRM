@@ -246,6 +246,10 @@ jobs:
           const reportPayload = generationStatus === 'success' && fs.existsSync(reportPayloadPath)
             ? JSON.parse(fs.readFileSync(reportPayloadPath, 'utf8'))
             : null;
+          const sourceCoveragePath = `data/runtime/${reportDate}-source-coverage.json`;
+          const sourceCoverage = fs.existsSync(sourceCoveragePath)
+            ? JSON.parse(fs.readFileSync(sourceCoveragePath, 'utf8'))
+            : reportPayload?.diagnostics?.source_coverage ?? failurePayload?.diagnostics?.source_coverage ?? null;
           const steamEvidenceLost = generationStatus === 'success'
             ? reportPayload?.diagnostics?.steam_evidence_lost ?? null
             : failurePayload?.diagnostics?.steam_evidence_lost ?? null;
@@ -287,6 +291,7 @@ jobs:
             failure_stage: failureStage,
             failure_reason: failureReason,
             volume_diagnostics: failurePayload?.volume_diagnostics ?? null,
+            source_coverage: sourceCoverage,
             steam_evidence_lost: steamEvidenceLost,
             business_liveness_status: businessLiveness?.business_liveness_status ?? 'unavailable',
             business_liveness: businessLiveness,
@@ -388,5 +393,26 @@ jobs:
         shell: bash
         run: |
           echo "Daily report watchdog finished for $REPORT_DATE"
+          receipt_path="data/automation_runs/$REPORT_DATE-watchdog.json"
+          if [ -f "$receipt_path" ]; then
+            RECEIPT_PATH="$receipt_path" node <<'NODE' | tee -a "$GITHUB_STEP_SUMMARY"
+          const fs = require('node:fs');
+          const receipt = JSON.parse(fs.readFileSync(process.env.RECEIPT_PATH, 'utf8'));
+          const coverage = receipt.source_coverage;
+          if (!coverage) {
+            console.log('### Source coverage\n\nHistorical receipt has no structured source data.');
+            process.exit(0);
+          }
+          console.log(`### Source coverage (${coverage.mode})\n`);
+          console.log(`**Status:** ${coverage.status}; core usable: ${coverage.core_usable_count}/3\n`);
+          console.log('| Lifeline | Status | Productive sources | Signals |');
+          console.log('|---|---:|---:|---:|');
+          for (const family of ['steam', 'bilibili', 'domestic_media', 'global_media']) {
+            const value = coverage.families[family];
+            console.log(`| ${family} | ${value.status} | ${value.productive_sources} | ${value.signals} |`);
+          }
+          if (coverage.status !== 'healthy') console.log('\n> Warning: source coverage is not healthy. Observe mode does not block this sync.');
+          NODE
+          fi
           echo "needs_run=${{ steps.watchdog.outputs.needs_run }}"
           echo "reasons=${{ steps.watchdog.outputs.reasons }}"

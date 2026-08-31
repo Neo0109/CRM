@@ -102,6 +102,20 @@ describe("daily automation hardening contract", () => {
     }
   });
 
+  it("records source coverage in normal and watchdog receipts without changing trigger boundaries", () => {
+    const syncWorkflow = readRepoFile(".github/workflows/sync-daily-report.yml");
+    const watchdogWorkflow = readRepoFile(".github/workflows/daily-report-watchdog.yml");
+
+    for (const workflow of [syncWorkflow, watchdogWorkflow]) {
+      assert.match(workflow, /source_coverage: sourceCoverage/);
+      assert.match(workflow, /source-coverage\.json/);
+      assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+    }
+    assert.match(syncWorkflow, /\n  schedule:/);
+    assert.match(syncWorkflow, /workflow_dispatch:/);
+    assert.doesNotMatch(syncWorkflow, /\n  push:/);
+  });
+
   it("requires strict synced receipts for watchdog health", () => {
     const watchdogScript = readRepoFile("scripts/daily-report-watchdog.mjs");
 

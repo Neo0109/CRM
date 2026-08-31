@@ -27,7 +27,7 @@ const syncWorkflow = read("../../.github/workflows/sync-daily-report.yml");
 const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml");
 
 const ORIGINAL_BLOBS = {
-  generator: "5864b38f5d88969d85ccb47492b56ee564798cb6",
+  generator: "c21a16810adcfd38922226208299b871cd0e2a4b",
   activeRulesModule: "c89beb38b47a8f23524574c46fe19cc5ef3a3771",
   activeRule: "f111f5edc9e73c256a8f929182005d0de99cbc96",
   activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
@@ -50,7 +50,7 @@ describe("C5-B shadow-only production integration", () => {
     assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.2-near-pass-review");
   });
 
-  it("adds only one non-throwing hook after all four production writes", () => {
+  it("keeps the non-throwing hook after all four production writes and the approved coverage observation", () => {
     assert.match(generator, /runC5BShadowCollectorSafely/);
     assert.match(generator, /C5B_SHADOW_HOOK_START/);
     assert.equal(gitBlobSha(stripC5BBlocks(generator)), ORIGINAL_BLOBS.generator);
@@ -252,15 +252,17 @@ describe("C5-B shadow-only production integration", () => {
       "automations/jobs/online_daily_v4_media_entities.mjs",
       "automations/jobs/online_daily_v4_media_rules.mjs",
       "automations/jobs/online_daily_v4_network.mjs",
+      "automations/jobs/online_daily_v4_source_coverage.mjs",
       "automations/jobs/online_daily_v4_source_health.mjs",
       "automations/jobs/online_daily_v4_steam_source.mjs",
-      "automations/jobs/sourcing_v6_3_quality.mjs"
+      "automations/jobs/sourcing_v6_3_quality.mjs",
+      "automations/rules/source-coverage.json"
     ];
     assert.deepEqual(
       approvedAdditions.filter((relativePath) => !manifest.has(relativePath)),
       []
     );
-    assert.equal(manifest.size, 39);
+    assert.equal(manifest.size, 41);
     assert.ok(manifest.has("automations/jobs/online_daily_v7_3_offline_replay.mjs"));
     assert.ok(manifest.has("automations/jobs/online_daily_v7_3_replay_window.mjs"));
 

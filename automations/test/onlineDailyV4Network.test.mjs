@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  classifySourceError,
   defaultHeaders,
   fetchJson,
   fetchText,
+  sourceOutcomeForHttpStatus,
   shouldUseCurlFallback
 } from "../jobs/online_daily_v4_network.mjs";
 
@@ -79,6 +81,75 @@ describe("online daily v4 network boundary", () => {
 
     assert.equal(captured.status, 429);
     assert.equal(captured.retryAfterMs, 7000);
+    assert.equal(captured.sourceOutcome, "rate_limited");
+  });
+
+  it("classifies payment, access, rate-limit, upstream, and network failures", () => {
+    assert.equal(sourceOutcomeForHttpStatus(402), "payment_required");
+    assert.equal(sourceOutcomeForHttpStatus(403), "forbidden");
+    assert.equal(sourceOutcomeForHttpStatus(412), "rate_limited");
+    assert.equal(sourceOutcomeForHttpStatus(429), "rate_limited");
+    assert.equal(sourceOutcomeForHttpStatus(503), "upstream_error");
+    assert.equal(classifySourceError(new Error("fetch failed: ECONNRESET")), "network_error");
+  });
+
+  it("does not invoke Steam curl fallback for 402 or 403 responses", async () => {
+    for (const status of [402, 403]) {
+      let curlCalls = 0;
+      await assert.rejects(
+        () => fetchText("https://store.steampowered.com/search/results/?term=demo", {
+          fetchImpl: async () => ({
+            ok: false,
+            status,
+            statusText: status === 402 ? "Payment Required" : "Forbidden",
+            headers: { get: () => null },
+            text: async () => ""
+          }),
+          execFileImpl: async () => {
+            curlCalls += 1;
+            return { stdout: "" };
+          }
+        }),
+        (error) => error.status === status
+      );
+      assert.equal(curlCalls, 0);
+    }
+  });
+
+  it("rejects Cloudflare challenge responses even when the HTTP status is 200", async () => {
+    for (const response of [
+      {
+        ok: true,
+        status: 200,
+        headers: { get: (name) => name.toLowerCase() === "cf-mitigated" ? "challenge" : name.toLowerCase() === "content-type" ? "text/html" : null },
+        text: async () => "<html><title>Just a moment...</title></html>"
+      },
+      {
+        ok: true,
+        status: 200,
+        headers: { get: (name) => name.toLowerCase() === "content-type" ? "text/html; charset=UTF-8" : null },
+        text: async () => "<!doctype html><script src=\"/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1\"></script>"
+      }
+    ]) {
+      await assert.rejects(
+        () => fetchText("https://example.com/feed", { fetchImpl: async () => response }),
+        (error) => error.sourceOutcome === "challenge" && error.provider === "cloudflare"
+      );
+    }
+  });
+
+  it("classifies a successful HTTP response with invalid JSON as parse mismatch", async () => {
+    await assert.rejects(
+      () => fetchJson("https://example.com/data.json", {
+        fetchImpl: async () => ({
+          ok: true,
+          status: 200,
+          headers: { get: () => "application/json" },
+          text: async () => "<html>not json</html>"
+        })
+      }),
+      (error) => error.sourceOutcome === "parse_mismatch"
+    );
   });
 
   it("parses JSON through the same fetchText boundary", async () => {

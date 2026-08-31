@@ -11,19 +11,23 @@ Deliver Phase 1 of the approved CRM resilience plan: structured source-response 
 - No open pull requests existed when this phase started.
 - Created remote branch `codex/source-coverage-observe` from the exact base.
 - Confirmed the local VNext sourcing draft remains outside this task and untouched.
+- Added a separate schema-v1 operational threshold configuration in `observe` mode.
+- Added sanitized response classification for normal, payment-required, forbidden, rate-limited, challenge, parse-mismatch, upstream, and network outcomes.
+- Instrumented Steam queries, Bilibili probe keywords, and media families without changing admission or sync behavior.
+- Added structured coverage sidecars, normal/watchdog receipt fields, and Actions Summary output.
+- Added focused red/green tests for thresholds, 0-Lead independence, Cloudflare 200 challenges, status classes, parser drift, and no curl fallback for 402/403.
+- Focused source/network/workflow suite passed (41/41 before final incident-null regression coverage).
+- Full Daily automation suite passed (358/358).
+- `npm run test:daily-heartbeat`, `npm run typecheck`, `npm run typecheck:functions`, and `npm run test:frontend` passed.
+- `npm run verify:all` passed after all frontend/backend/Functions/Daily tests, typechecks, sourcing tests, contract validation, build, and diff check.
 
 ## Remaining
 
-- Add operational source-health configuration without changing sourcing admission rules.
-- Add response classification for ok, payment required, forbidden, rate limited, Cloudflare challenge, parse mismatch, upstream error, and network error.
-- Add the schema-v1 `source_coverage` calculation and write it to automation receipts in observe mode.
-- Add Actions Summary diagnostics without changing workflow triggers.
-- Add and run focused tests, then the repository acceptance commands required for this phase.
 - Open, review, merge, deploy, and observe three natural scheduled runs before proposing enforcement.
 
 ## Next Action
 
-Create a clean API staging copy from the exact remote base, add failing tests first, and implement the smallest Stage 1 observe slice.
+Publish the validated staging diff to the remote branch through the GitHub API, open the PR, and complete remote check/merge/deploy acceptance.
 
 ## Git Status
 

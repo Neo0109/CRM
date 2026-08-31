@@ -100,6 +100,25 @@ describe("online daily v4 media source parsing", () => {
     assert.equal(items[0].bvid, "BVFALLBACK");
   });
 
+  it("records a successful HTTP payload with the wrong source structure as parse mismatch", async () => {
+    const localDiagnostics = diagnostics();
+    const items = await fetchMediaSource({
+      name: "Broken Feed",
+      url: "https://example.test/feed",
+      type: "feed",
+      quality: 12,
+      focus: ["china", "domestic_sourcing"]
+    }, {
+      diagnostics: localDiagnostics,
+      fetchTextImpl: async () => "<html><title>Not a feed</title></html>",
+      logger: { warn: () => {} }
+    });
+
+    assert.deepEqual(items, []);
+    assert.equal(localDiagnostics.media_source_health["Broken Feed"].last_outcome, "parse_mismatch");
+    assert.equal(localDiagnostics.source_incidents[0].outcome, "parse_mismatch");
+  });
+
   it("scores official/developer Bilibili signals above generic topics", () => {
     const official = {
       title: "《星环工坊》官方PV Steam Demo",

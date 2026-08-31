@@ -63,7 +63,9 @@ describe("Bilibili probe source health", () => {
       failures: 0,
       candidates: 0,
       fallback_uses: 0,
-      last_error: null
+      last_error: null,
+      last_outcome: "ok",
+      outcome_counts: { ok: 1 }
     });
   });
 
