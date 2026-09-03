@@ -1,6 +1,6 @@
 {
   "report_date": "2026-09-03",
-  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 26 条，另从媒体/B站提取产品线索 51 条；B站探头候选 132 条、最终 44 条、官方源命中 4 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 0 条，其余只保留在候选审计。",
+  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 9 条，另从媒体/B站提取产品线索 45 条；B站探头候选 166 条、最终 54 条、官方源命中 3 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 1 条，push_pool 共 1 条，其余只保留在候选审计。",
   "insights": [
     "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
     "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
@@ -16,7 +16,84 @@
     "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
     "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
   ],
-  "push_pool": [],
+  "push_pool": [
+    {
+      "id": "lead_media_20260903_p61uqe",
+      "project": "维京防线：北境之风",
+      "steam_app_id": "3618000",
+      "team": "Black Deer Games",
+      "team_size": null,
+      "country": "中国（媒体/B站信号待确认）",
+      "region": "中国",
+      "city": null,
+      "region_priority": "国内优先",
+      "bucket": "未处理",
+      "stage": "new",
+      "priority": null,
+      "priority_reason": null,
+      "rule_fit": "Near-pass 人工复核：唯一缺失 gate=independent_quality_proof（独立质量证明）；其余硬性条件已通过。",
+      "genre": "Tower Defense / ACT / Indie / RPG / Strategy",
+      "gameplay": "Tower Defense / ACT / Indie / RPG / Strategy",
+      "progress": "试玩 Demo",
+      "release_window": "To be announced",
+      "early_access": false,
+      "narrative_heavy": false,
+      "india_team": false,
+      "publisher_status": " Daedalic Entertainment；B站/媒体线索已补 Steam 交叉验证",
+      "publisher_name": " Daedalic Entertainment",
+      "china_capability_occupied": false,
+      "traction_summary": "机核 分数 79；国内媒体/社区语境；需要人工确认是否有可测版本、商店页或官方账号。",
+      "public_signals": "机核 / https://www.gcores.com/articles/219185",
+      "contact": "官网: https://www.gcores.com/articles/219185；Email: contact@blackdeergames.com；官网: https://blackdeergames.com/；官网: https://www.daedalicsupport.com/；Discord: https://discord.gg/hDs9AH6",
+      "contact_methods": [
+        {
+          "type": "官网",
+          "value": "https://www.gcores.com/articles/219185",
+          "note": "B站/媒体简介中提取"
+        },
+        {
+          "type": "Email",
+          "value": "contact@blackdeergames.com",
+          "note": "Steam support email"
+        },
+        {
+          "type": "官网",
+          "value": "https://blackdeergames.com/",
+          "note": "Steam official website"
+        },
+        {
+          "type": "官网",
+          "value": "https://www.daedalicsupport.com/",
+          "note": "Steam support URL"
+        },
+        {
+          "type": "Discord",
+          "value": "https://discord.gg/hDs9AH6",
+          "note": "Found on official site"
+        }
+      ],
+      "links": [
+        "https://www.gcores.com/articles/219185",
+        "https://store.steampowered.com/app/3618000/",
+        "https://steamdb.info/app/3618000/",
+        "https://blackdeergames.com/"
+      ],
+      "exposure_trail": "自动从机核捕捉到媒体/B站线索（2026-09-03）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
+      "bilibili_fit": "多人协作循环可形成主播组队、挑战局和高密度切片，并以简中社区运营承接B站反馈。",
+      "amplification": "",
+      "risks": "Near-pass 唯一缺口：independent_quality_proof（独立质量证明）；需在首轮试玩/筛选中核验。",
+      "verdict": "仅供首轮试玩/筛选，不代表正式商务推进，试玩不成立直接淘汰。",
+      "next_action": null,
+      "owner": null,
+      "due_date": null,
+      "first_seen": "2026-09-03",
+      "notes": null,
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.2-near-pass-review",
+      "sourcing_run_type": "scheduled",
+      "drop_reason": null
+    }
+  ],
   "watch_pool": [],
   "drop_pool": []
 }
