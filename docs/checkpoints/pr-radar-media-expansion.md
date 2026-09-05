@@ -1,44 +1,40 @@
-# Radar media expansion — PR 124 and acceptance correction 125
+# Industry Radar expansion — completed delivery checkpoint
 
 ## Current Goal
-Complete post-merge daily data acceptance for the approved Radar expansion in PR https://github.com/Neo0109/CRM/pull/124.
+Completed the user-approved daily 30–40 selected external-item Radar expansion and its production acceptance on 2026-09-06.
 
 ## Completed
-- User explicitly approved implementation and normal PR/cloud delivery in this thread on 2026-09-06.
-- Baseline main: dc52d62af9bb524bf0ac013a906cf93089a17164, no open PR before this work; production health ok.
-- Radar-only collection adds AUTOMATON WEST, GamesRadar+ game articles and Chuapp website articles; all three were verified from GitHub Actions before activation.
-- Strict limits: 40 external, 3/source, 24/region, 12/topic, 3 total Bilibili; regional soft targets 16+16, no backfill outside caps.
-- Publication evidence: prefer 24h, maximum 72h, reject unknown/future dates; JSON-LD/meta/time and Chuapp publisher timestamp adapters; preserve RSS CDATA summaries.
-- Prior seven Shanghai calendar dates suppress URL/title and same-product/same-event video repeats; same-day reruns excluded from history.
-- New network requests use at most four workers, eight-second request timeouts, 60 metadata lookups, and a 90-second total budget.
-- Shared source arrays, every original non-Radar machine rule, Lead admission/decision/audit, Steam Trends, public API/schema/UI and existing daily workflow triggers are unchanged. A semantic SHA-256 test protects all original sourcing rule fields; C5-B collector code and 41-path behavior manifest remain unchanged.
-- TDD red proof: https://github.com/Neo0109/CRM/actions/runs/33977686914 (14 vs 40, selector 4 vs 2, Bilibili 30 vs 3).
-- Code head 6dd3e9dd274c1c729a9612f2b08e89a41914ca5c passed all checks: https://github.com/Neo0109/CRM/actions/runs/33979032351 (push) and PR verification.
-- Focused Radar 14/14; full Daily 372/372; frontend 136/136, backend 30/30, Functions 44/44; full npm run verify:all completed all 16 tasks including typechecks, replay, schema, temporary build and diff checks.
-- Cloud source smoke: AUTOMATON 30 entries, GamesRadar 41 game articles, Chuapp 25 articles, all with publication dates and extractable publisher summaries. Check run Cloudflare Pages success on code head.
-- Only the new verification step sets COREPACK_ENABLE_PROJECT_SPEC=0 to run the repository's existing pnpm-based typechecks under the explicitly pinned pnpm runtime; application/package files untouched.
-- Reviewed all 15 changed files: only approved Radar code/config, focused tests, existing fingerprint assertions, independent verification workflow and documentation; no unresolved review comments.
-
-- PR 124 exact final head 8d84b6d272ca282111503bced6b9fe598b0cdddd passed all checks (Radar verification 33979385109/33979387662, Build, Cloudflare); Ready then squash-merged as 2f3d6ce4567efe46eb577badca316f908f9ed43f.
-- Main Build 33979484520 succeeded; Cloudflare Pages deployment a4a7b890-bd88-47d2-a932-f3064abf7cde succeeded on the merge SHA; production /api/health ok.
-- Confirmed 2026-09-06 Radar was absent and no active/queued daily run before dispatching one normal feature-acceptance run, slot radar-acceptance, force=false. Connected App lacks workflow dispatch, so authenticated GitHub REST via gh was used.
-- Normal cloud run: https://github.com/Neo0109/CRM/actions/runs/33979517144, head 2f3d6ce4567efe46eb577badca316f908f9ed43f, completed successfully in 5m36s; receipt status=success and parsed sync_response.synced=true.
-
-- PR 125 passed all checks on d943dc2ce1463338e8a4619b03677582cdda4cff: Radar 16/16, Daily 374/374, frontend 136/136, backend 30/30, Functions 44/44 and all 16 verify:all tasks; Cloudflare preview succeeded.
-- Exact four-file diff reviewed; only Cloudflare bot comment, no unresolved findings. Ready then squash-merged as 06376c508d3456d9bef166a3b29f267ad1a1b985.
-- Initial live run: 37 external + 1 internal; China 13/global 24; 19 distinct external source labels; 63 additional requests in 21,935ms, zero request failures, 8 prior-history exclusions. Independently compared all output URLs/titles against 105 cards from seven prior dates: zero repeated external URL/title pairs.
-- PR 125 red regression proof: https://github.com/Neo0109/CRM/actions/runs/33980163275. The two real-content fixtures fail on the PR 124 implementation; existing 14 tests pass.
-- Corrective implementation changes only Radar industry relevance and video event identity; documented upload-date handling and explicit progress preservation.
+- Baseline remote main: dc52d62af9bb524bf0ac013a906cf93089a17164, no open PR before this work. The user explicitly approved implementation and the normal PR/merge/deploy/acceptance path.
+- PR 124: https://github.com/Neo0109/CRM/pull/124; reviewed final head 8d84b6d272ca282111503bced6b9fe598b0cdddd; squash merge 2f3d6ce4567efe46eb577badca316f908f9ed43f.
+- Radar-only sources: AUTOMATON WEST, GamesRadar+ game articles, and Chuapp website articles. All three passed read-only GitHub Actions source checks before activation.
+- Hard caps: 40 external, 3/source, 24/region, 12/topic, 3 across all Bilibili entrypoints. China/global have soft targets of 16 each. Internal Steam direction cards are separate. Low qualified volume does not fail delivery.
+- Prefer 24h publication, permit at most 72h, reject unknown/future dates. Publisher JSON-LD/meta/time and Chuapp timestamps enrich undated article copies. RSS CDATA summaries are preserved.
+- Compare normalized URLs/titles against the preceding seven Shanghai calendar dates, excluding same-day artifacts. Video event matching preserves distinct kinds, venues, versions and chapters.
+- Additional networking: at most four workers, eight seconds/request, 60 metadata requests, total budget 90 seconds; failures remain isolated.
+- Shared media sources, all original non-Radar machine-rule fields, formal Lead admission/decision/audit, Steam Trends, public fields/categories/API/UI, and existing daily workflow triggers remain unchanged. Semantic SHA-256 fixture protects original rule fields; C5-B collector code and its 41-path behavior manifest remain unchanged.
+- Original TDD red proof: https://github.com/Neo0109/CRM/actions/runs/33977686914. Full verification passed on PR 124, including final-head runs 33979385109 and 33979387662. The independent verification workflow sets COREPACK_ENABLE_PROJECT_SPEC=0 only for the existing pinned pnpm runtime; application/package files unchanged.
+- Initial normal production acceptance run 33979517144 succeeded, producing 37 external + 1 internal and status=success with synced=true. Content inspection exposed two actual gaps: unquoted versus bracketed Demo videos and unrelated general-media stories. These prevented final content acceptance despite successful delivery.
+- Narrow corrective PR 125: https://github.com/Neo0109/CRM/pull/125. Four files only: Radar curator, real regression fixtures, rule description, checkpoint. Red proof https://github.com/Neo0109/CRM/actions/runs/33980163275: existing 14 pass, two new fixtures fail.
+- Corrected head d943dc2ce1463338e8a4619b03677582cdda4cff passed Radar 16/16, Daily 374/374, frontend 136/136, backend 30/30, Functions 44/44, and all 16 npm run verify:all tasks in https://github.com/Neo0109/CRM/actions/runs/33980295056.
+- Corrective behavior: general-media items require explicit game/platform/engine/company context; generic launch/investment/IP language alone is insufficient. Bracketed names seed aliases for unquoted video titles in the current edition and history; upload date alone is not a new product event.
+- Reviewed exact four-file correction, no unresolved review findings, all required checks and Cloudflare preview passed. Ready then squash-merged PR 125 as 06376c508d3456d9bef166a3b29f267ad1a1b985.
+- Main Build 33980443112 succeeded. Production Cloudflare deployment 5481d792-d644-4917-a538-6f5a51aac182 succeeded at the correction merge SHA; public /api/health returned ok=true. Existing application version string remains unchanged because no UI/API code changed.
+- Final same-day normal cloud acceptance: https://github.com/Neo0109/CRM/actions/runs/33980478758, head 06376c508d3456d9bef166a3b29f267ad1a1b985, slot radar-acceptance-fixed, force=false. Generation, contract validation, data commit, CRM sync and receipt commit all succeeded.
+- Actual file data/radar/2026-09-06.json: 37 external items (China 13/global 24) + 1 internal card, matching summary; 20 source labels including three distinct Bilibili entrypoints. Every source <=3; aggregate Bilibili=3; all three added sources present. The previous 14-item external ceiling is removed.
+- Independently compared final external URLs/titles against 105 cards from the prior seven dates: zero repeats. Same-day rerun retained eligible news. The reported Zero Boundary Invasion Demo appears once; the food-delivery and token-store stories are absent.
+- Final Radar diagnostics: 436 raw, 174 eligible, 37 selected; 66 unknown dates, 142 stale, 3 non-article, 35 low-quality, 3 unrelated, 8 prior-history and 5 video-event duplicates excluded. No malformed history, no future-date items, no request failures.
+- Final source collection: AUTOMATON 30 entries, GamesRadar 42 game articles, Chuapp 25 articles; 63 requests including 60 metadata lookups; elapsed 25,757ms, budget_exhausted=false.
+- Final receipt data/automation_runs/2026-09-06-radar-acceptance-fixed.json: status=success, generation_status=success, validation_status=success, parsed sync_response.synced=true. Steam Trends dated file has 12 items. created_unprocessed=0 is not treated as a delivery failure.
+- Local pre-existing sourcing drafts/checkpoint files were rechecked and remain untouched. Both temporary CLI workflow watchers finished normally.
 
 ## Remaining
-- Inspect one final same-day cloud run on correction merge 06376c508d3456d9bef166a3b29f267ad1a1b985, slot radar-acceptance-fixed, force=false.
-- Require the corrected dated Radar artifact and status=success with parsed sync_response.synced=true; record actual count, diversity, exclusions and request budget.
-- Verify main Build, normal Cloudflare deployment and production health for the correction.
+None for this approved Radar implementation and acceptance phase. Daily quantity remains a content target subject to freshness, evidence, duplication and diversity rules.
 
 ## Next Action
-Wait for the already-dispatched final acceptance run. No duplicate dispatch. Update final evidence after inspecting the actual artifacts and logs.
+Normal existing daily schedule continues with the deployed Radar rules. No extra workflow dispatch, monitor, background task or manual CRM write is pending.
 
 ## Git Status
-- GitHub API branch: codex/radar-acceptance-fix; PR 125 corrects concrete acceptance defects after PR 124 merged. Baseline main: 8f460ecc7575485f945479f7e375c164078872c2. No unrelated open PR or product scope is introduced.
-- Local checkout remains read-only with the same pre-existing sourcing draft/checkpoint modifications.
-- No local real report generation, local Git branch/commit/push, direct CRM sync, GUI access or desktop capture occurred.
+- Product changes are merged through PRs 124 and 125; no direct main edits.
+- Final acceptance evidence is recorded through GitHub API on codex/radar-acceptance-fix as a documentation-only post-merge commit and linked from both PR descriptions.
+- Local checkout/worktrees remain read-only. Pre-existing status: modified docs/checkpoints/sourcing-rules-vnext.md; untracked docs/SOURCING_RULES_PROPOSAL.md and docs/checkpoints/pr0-quality-quarantine.md.
+- No local real report generation, local branch/commit/push, direct CRM sync, credential changes, GUI access or desktop capture occurred.
