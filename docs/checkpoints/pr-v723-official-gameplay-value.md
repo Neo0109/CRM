@@ -23,7 +23,7 @@ Implement the user-approved official Steam gameplay fallback to increase worthwh
 5. Business observation after natural cache renewal: seven consecutive natural daily runs with successful sync receipts; 5–10 worthwhile additions/week remains unverified until measured.
 
 ## Next Action
-Run the full fixed Daily/V7.3 suite, repository verification, types/contracts and diff checks on the pinned branch snapshot; then create the single PR.
+Complete PR review, confirm all applicable checks on the final head, squash merge, then verify remote main/normal deployment/production health. Preserve the natural-run observation as pending.
 
 ## Frozen input evidence
 Ten official AppDetails fixtures (five titles, english/schinese) were fetched on 2026-09-06. Each carries its exact source URL, full-game type and AppID. Only relevant public product fields are retained; contacts and media assets are omitted. Fixtures are recognition evidence, not import authorization.
@@ -41,3 +41,11 @@ Remote branch created from the baseline. Local checkout is read-only and retains
 - Daily V4: 379/379 passed, including V7.3 compatibility; the prior admission semantic fingerprint is preserved after projecting only approved additive metadata/provenance.
 - Frontend/backend typecheck and Functions typecheck passed.
 - Final scope review adds comparison/link and parent-AppID negatives; verify:all will run on the exact GitHub PR head (normal repository Git diff checks, no local checkout writes).
+
+## PR verification
+- PR: https://github.com/Neo0109/CRM/pull/126.
+- Tested code head: 451c74b97dac699eb8fc62eb321393b80b19ffb4.
+- GitHub Full repository verification (npm run verify:all) and Check PR diff both passed: https://github.com/Neo0109/CRM/actions/runs/33980409673.
+- Build and Cloudflare branch preview succeeded; preview is not production acceptance.
+- Remote PR diff reviewed: 17 scoped files; no workflow, Radar, schema, UI/API/database or generated-data change. The later main receipt-only commit is nonconflicting.
+- Review bot is running. No merge or production acceptance is claimed yet.
