@@ -58,3 +58,6 @@ Two valid P1 findings at the tested code head: the cooperative adjective could s
 - Sentence-local negation checks now cover both word orders, outcome terms, English contractions and Chinese negated outcomes; unrelated narrative-only negation remains separate.
 - Focused regressions returned GREEN (7/7); Daily V4 rerun passed 379/379.
 - Both review findings have been addressed with fixed regressions; request the final review round on the documentation-complete head and require applicable CI success before merge.
+
+## Review round 2
+Two further valid edge cases: failure/avoidance phrases and plain-text named-title attribution. Added fixed negative regressions plus a positive bound-current-title reference. Rejecting these descriptions is within the approved precision boundary. This is the final formal review round; the release owner will verify these exact fixes and the complete final CI before merging.

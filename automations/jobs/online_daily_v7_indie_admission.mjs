@@ -208,10 +208,10 @@ export function deriveOfficialGameplayChinaBilibiliValue({ appId, details } = {}
     || (details.fullgame?.appid && numericString(details.fullgame.appid) !== boundId)) return null;
 
   const shortBlocks = officialGameplayBlocks(details.short_description, boundId);
-  const shortContext = shortBlocks.filter(isAffirmativeGameplayBlock).join(" ");
+  const shortContext = shortBlocks.filter((block) => isAffirmativeGameplayBlock(block, details.name)).join(" ");
   const blocks = [...shortBlocks, ...officialGameplayBlocks(details.about_the_game, boundId)];
   for (const block of blocks) {
-    if (!isAffirmativeGameplayBlock(block)) continue;
+    if (!isAffirmativeGameplayBlock(block, details.name)) continue;
     // The short description may establish the genre; operation and outcome must
     // still coexist in this one gameplay paragraph, never across unrelated sections.
     const domain = shortContext + " " + block;
@@ -274,11 +274,15 @@ function officialGameplayBlocks(value, appId) {
     .filter((block) => block.length > 0 && block.length <= 2400);
 }
 
-function isAffirmativeGameplayBlock(block) {
+function isAffirmativeGameplayBlock(block, projectName) {
+  // A named title in an attribution frame belongs to that title, even without
+  // a comparison keyword or link. The bound current title is the sole exception.
+  const titleFrames = /\b(?:[Ii]n|[Ff]rom|[Pp]laying)\s+["“]?([A-Z][A-Za-z0-9'’:!-]*(?:\s+(?:[A-Z][A-Za-z0-9'’:!-]*|of|the|and)){0,7})["”]?(?=\s*[,，:]|\s+(?:players?|you)\b)/g;
+  if ([...block.matchAll(titleFrames)].some((match) => normalizeText(match[1]) !== normalizeText(projectName))) return false;
   if (/\b(?:like|unlike|compared (?:to|with)|inspired by|similar to|other games?|reviews?|recommended)\b|类似|如同|好比|就像|像《|与《|相比|对比|借鉴|致敬|其他游戏|其它游戏|推荐语|媒体评价|《[^》]+》.{0,10}(?:中|里)/i.test(block)) return false;
   // Negation may precede or follow the mechanic and may deny its outcome.
   // Keep narrative-only negations (e.g. "no sign of civilization") separate.
-  const negation = /\b(?:no|not|without|never|cannot|can't|doesn't|don't|lacks?|unable)\b|\b\w+n['’]t\b|没有|未能|无法|不能|不会|不再|并不|不支持|不触发|不产生|不获得|不提升|不提高|不带来|不提供|不造成|不释放|不进行|不包含|不具备|不允许|不含|并非|不存在|移除了|取消了|缺少|无需/i;
+  const negation = /\b(?:no|not|without|never|cannot|can't|doesn't|don't|lacks?|unable|impossible|unavailable|disabled|removed|omitted)\b|\b(?:fail(?:s|ed|ing)?\s+to|avoid(?:s|ed|ing)?|prevent(?:s|ed|ing)?)\b|\b\w+n['’]t\b|不(?!(?:同|断|少|时|仅|止|完美|可思议|一样))|没有|未能|无法|不能|不会|不再|并不|不支持|不触发|不产生|不获得|不提升|不提高|不带来|不提供|不造成|不释放|不进行|不包含|不具备|不允许|不含|并非|不存在|移除了|取消了|缺少|无需/i;
   const gameplayOrResult = /combo|parr|cancel|combat|cards?|co-?op|cooperat|multiplayer|physics|swing|shoot|weapons?|ammunition|ammo|resources?|upgrad|solv|puzzles?|trigger|generat|energy|\bki\b|unleash|damage|attacks?|defeat|surviv|orders?|tasks?|连段|连招|格挡|战斗|卡牌|协作|合作|多人|物理|摆荡|射击|武器|弹药|资源|强化|解谜|谜题|内力|能量|触发|伤害|释放|产出|效率|任务|订单/i;
   return !block.split(/[.!?。！？]+/).some((sentence) => negation.test(sentence) && gameplayOrResult.test(sentence));
 }
