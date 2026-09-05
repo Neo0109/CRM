@@ -280,3 +280,8 @@ Each cloud run records fetch attempts, successes, failures, raw signals, retaine
 - Request concurrency and inter-batch delay are configured in `automations/rules/bilibili-probe.json`; they must remain capped so one run does not amplify rate limiting.
 - Sources that repeatedly fail from GitHub Actions are disabled explicitly with a reason instead of producing the same warning every day. `游戏茶馆` uses its reachable homepage; the unreachable `手游那点事`, legacy GamesBeat feed, and GitHub-egress-blocked `澎湃新闻` source stay disabled until a verified replacement exists.
 - The historical 18-candidate target is removed. The V7.0 prelaunch gate enforces the 60-day/TBA window, while `release_window_health` continues recording domestic, overseas, and media near-launch samples for diagnosis.
+
+
+## Industry Radar media coverage
+
+Radar selection is maintained independently from formal Lead admission. The machine fields `radar_diversity` and `radar_sources` in `automations/rules/daily-report.json` configure the 40-item external maximum, strict diversity caps and Radar-only media. The `online_daily_v4_radar.mjs` entry performs dated 72-hour selection and previous-seven-day duplicate suppression. See [RADAR_MEDIA_RULES.md](RADAR_MEDIA_RULES.md) for the source, freshness, isolation and request-budget contract, and [delivery checkpoint](checkpoints/pr-radar-media-expansion.md) for activation evidence. Radar item count is not a daily automation failure gate.

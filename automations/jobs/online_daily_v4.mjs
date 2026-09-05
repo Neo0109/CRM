@@ -1,3 +1,4 @@
+import { collectRadarEdition, loadRadarHistory } from "./online_daily_v4_radar.mjs";
 // Online CRM generator v4 runtime, currently executing Sourcing Rules V7.2 regular admission.
 // Core principle: every output must be useful to a Bilibili BD owner.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -102,7 +103,12 @@ const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).f
   .slice(0, maxCandidates);
 
 const mediaSignals = await fetchMediaSignals(sourceContext);
-const industrySignals = selectDiverseMediaSignals(dedupeMediaSignals(mediaSignals), ruleConfig.radarDiversity.limit, ruleConfig.radarDiversity);
+const radarHistory = await loadRadarHistory({ rootDir, reportDate });
+const radarEdition = await collectRadarEdition({ mediaSignals, history: radarHistory.reports, reportDate, capturedAt, ruleConfig });
+const industrySignals = radarEdition.signals;
+radarEdition.diagnostics.history_warnings = radarHistory.warnings;
+await writeJson(`data/runtime/${reportDate}-radar-diagnostics.json`, radarEdition.diagnostics);
+console.log(JSON.stringify({ radar_diagnostics: radarEdition.diagnostics }));
 const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, sourceContext);
 const candidateHistory = await loadSourcingCandidateHistory({
   rootDir,

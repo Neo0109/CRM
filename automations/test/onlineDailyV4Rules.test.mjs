@@ -59,9 +59,9 @@ describe("online daily v4 rule config", () => {
 
     assert.equal(config.mediaQualityGates.maxBilibiliLeadAgeDays, 120);
     assert.equal(config.mediaQualityGates.lowScoreThreshold, 12);
-    assert.equal(config.radarDiversity.limit, 14);
-    assert.equal(config.radarDiversity.sourceCap, 2);
-    assert.deepEqual(config.radarDiversity.targets[0], { category: "行业新闻", region: "china", count: 2 });
+    assert.equal(config.radarDiversity.limit, 40);
+    assert.equal(config.radarDiversity.sourceCap, 3);
+    assert.deepEqual(config.radarDiversity.targets[0], { region: "china", count: 16 });
   });
 
   it("throws clear validation errors for incompatible rule files", () => {
@@ -143,6 +143,7 @@ describe("online daily v4 rule config", () => {
       sourceCap: 1,
       familyCap: 2,
       regionCap: 3,
+      bilibiliCap: 3,
       targets: [
         { category: "今日亮点", region: "china", count: 2 },
         { categories: ["B站趋势", "新梗热点"], count: 1 }
@@ -169,7 +170,7 @@ describe("online daily v4 rule config", () => {
     assert.match(source, /ruleConfig/);
     assert.match(
       source,
-      /selectDiverseMediaSignals\(dedupeMediaSignals\(mediaSignals\),\s*ruleConfig\.radarDiversity\.limit,\s*ruleConfig\.radarDiversity\)/s
+      /collectRadarEdition\(\{ mediaSignals, history: radarHistory\.reports, reportDate, capturedAt, ruleConfig \}\)/s
     );
   });
 });

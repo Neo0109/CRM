@@ -1,3 +1,4 @@
+import { RADAR_EXTERNAL_LIMIT } from "./online_daily_v4_rules.mjs";
 import { buildBilibiliFit, hardDropReason } from "./online_daily_v4_decision.mjs";
 import { classifyMediaDisposition } from "./online_daily_v4_media_rules.mjs";
 import {
@@ -42,11 +43,11 @@ export function buildDailyReport({ pools, rawCount, enrichedCount, mediaLeadCoun
 
 export function buildRadarReport({ candidates, pools, industrySignals, reportDate, capturedAt, mediaSignalToRadarItem: toRadarItem = mediaSignalToRadarItem }) {
   const genres = summarizeGenres(candidates);
-  const mediaItems = industrySignals.slice(0, 14).map((item, index) => toRadarItem(item, index, { reportDate, capturedAt }));
+  const mediaItems = industrySignals.slice(0, RADAR_EXTERNAL_LIMIT).map((item, index) => toRadarItem(item, index, { reportDate, capturedAt }));
   if (!candidates.length) {
     return {
       report_date: reportDate,
-      summary: `Sourcing V7.2 行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
+      summary: `Sourcing V7.2 行业雷达：今日选入 ${mediaItems.length} 条中外媒体/社区信号。Steam 抓取未返回候选，雷达不再用内部扫描状态凑数。`,
       items: mediaItems
     };
   }
@@ -65,7 +66,7 @@ export function buildRadarReport({ candidates, pools, industrySignals, reportDat
   );
   return {
     report_date: reportDate,
-    summary: `Sourcing V7.2 行业雷达：今日选入 ${industrySignals.length} 条中外媒体/社区信号，另扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
+    summary: `Sourcing V7.2 行业雷达：今日选入 ${mediaItems.length} 条中外媒体/社区信号，另有 1 条内部趋势卡，扫描 Steam 候选 ${candidates.length} 个。行业新闻只放宏观大事件；具体游戏、IP、公司/法律八卦和好玩线索统一进入今日亮点。`,
     items: [...mediaItems, bilibiliSignal]
   };
 }
@@ -374,7 +375,7 @@ export function mediaSignalToRadarItem(item, index, context) {
 }
 
 function conciseMediaSummary(item) {
-  const text = [item.summary, item.title].filter(Boolean).join(" ");
+  const text = item.summary || item.title || "";
   const cleaned = normalizeDisplayText(text);
   const family = mediaTopicFamily(item);
   if (isBilibiliSignal(item) && !isMetaBilibiliTrend(item)) return `今日亮点：${cleaned.slice(0, 90)}。先看画面、玩法、评论和UP主表达，判断能否变成选题、试玩或潜在线索。`;

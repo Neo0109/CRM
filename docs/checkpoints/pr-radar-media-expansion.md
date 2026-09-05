@@ -8,6 +8,8 @@ Implement the user-approved China + global Radar expansion to 30–40 curated ex
 - Remote main dc52d62af9bb524bf0ac013a906cf93089a17164; no open PR at baseline.
 - Production health ok (v2.8.1-steam-direct-link-button); latest daily sync success.
 - Diagnosis: hard-coded 14-item report truncation, selector overshoot/fallback cap bypass, cross-day repeats, undated navigation links.
+- Red TDD evidence: run https://github.com/Neo0109/CRM/actions/runs/33977686914 at 93a7aa8 fails fixed tests with 14 vs 40, selector 4 vs 2, Bilibili 30 vs 3.
+- Isolated Radar implementation prepared; remote Chuapp HTML identifies publication via friendly_time[data-time], covered by fixture.
 - Existing Lead admission, Steam Trends, UI/API/schema and main daily workflow triggers are outside this change.
 
 ## Remaining
@@ -18,7 +20,7 @@ Implement the user-approved China + global Radar expansion to 30–40 curated ex
 - Create/review PR, merge after exact-head checks, verify deployment and daily Radar/sync receipt; record final evidence.
 
 ## Next Action
-Run the committed fixed Radar regressions in cloud CI to capture the red baseline, then implement the isolated Radar path. Existing Build omits full Daily tests, so add a dedicated read-only Radar verification workflow; daily workflows remain unchanged.
+Run focused and full cloud checks for the implementation; inspect separate source-smoke results, then enable sources only after all three pass. Validate all unchanged sourcing-rule fields before commit.
 
 ## Git Status
 - Branch: codex/radar-media-expansion, based on dc52d62af9bb524bf0ac013a906cf93089a17164.

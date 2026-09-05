@@ -93,6 +93,7 @@ test("article metadata supports JSON-LD, meta attribute order, and dated time el
   assert.equal(result.summary, "媒体提供的准确摘要");
   assert.equal(result.published_at, "2026-09-06T09:00:00+08:00");
   assert.equal(readRadarArticleMetadata('<time datetime="2026-09-05T08:00:00+08:00">昨天</time>').published_at, "2026-09-05T08:00:00+08:00");
+  assert.equal(readRadarArticleMetadata('<span class="fn-right friendly_time" data-time="1788577200">2026年09月05日 11时00分</span>').published_at, "2026-09-05T03:00:00.000Z");
   const links = parseChuappRadarItems('<a href="/category/news">新闻栏目导航页面</a><a href="/article/300001.html">国产游戏开发者采访记录</a><a href="/article/300001.html">同一个文章标题的重复链接</a>');
   assert.equal(links.length, 1);
   assert.match(links[0].link, /\/article\/300001\.html$/);

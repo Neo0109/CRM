@@ -1,4 +1,4 @@
-import { defaultDailyRuleConfig } from "./online_daily_v4_rules.mjs";
+import { defaultDailyRuleConfig, RADAR_EXTERNAL_LIMIT } from "./online_daily_v4_rules.mjs";
 import { extractBilibiliEvidence } from "./bilibili_evidence.mjs";
 
 export function dedupeByAppId(items) {
@@ -146,96 +146,51 @@ function steamAppIdFromText(value) {
   return String(value ?? "").match(/(?:store\.steampowered\.com|steamcommunity\.com|steamdb\.info)\/app\/(\d+)/i)?.[1] ?? null;
 }
 
-export function selectDiverseMediaSignals(items, limit, config) {
-  const diversity = normalizeRadarDiversityConfig(limit, config);
-  const selected = [];
-  const sourceCount = new Map();
-  const familyCount = new Map();
-  const regionCount = new Map();
-
-  for (const target of diversity.targets) {
-    takeRadarSignals(
-      items,
-      selected,
-      sourceCount,
-      familyCount,
-      regionCount,
-      diversity,
-      (item) => radarTargetMatches(item, target),
-      target.count
-    );
-  }
-
-  for (const item of items) {
-    if (selected.includes(item)) continue;
-    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount, diversity)) continue;
-    selected.push(item);
-    bumpRadarCounts(item, sourceCount, familyCount, regionCount);
-    if (selected.length >= diversity.limit) return selected;
-  }
-
-  for (const item of items) {
-    if (selected.includes(item)) continue;
-    selected.push(item);
-    if (selected.length >= diversity.limit) break;
-  }
-
-  return selected;
-}
-
-function takeRadarSignals(items, selected, sourceCount, familyCount, regionCount, diversity, predicate, target) {
-  let taken = 0;
-  for (const item of items) {
-    if (selected.includes(item)) continue;
-    if (!predicate(item)) continue;
-    if (!canSelectRadarSignal(item, sourceCount, familyCount, regionCount, diversity)) continue;
-    selected.push(item);
-    bumpRadarCounts(item, sourceCount, familyCount, regionCount);
-    taken += 1;
-    if (selected.length >= diversity.limit || taken >= target) break;
-  }
-}
-
-function canSelectRadarSignal(item, sourceCount, familyCount, regionCount, diversity) {
-  const family = mediaTopicFamily(item);
-  const region = mediaRegion(item);
-  if ((sourceCount.get(item.source) ?? 0) >= diversity.sourceCap) return false;
-  if ((familyCount.get(family) ?? 0) >= diversity.familyCap) return false;
-  if ((regionCount.get(region) ?? 0) >= diversity.regionCap) return false;
-  return true;
-}
-
-function bumpRadarCounts(item, sourceCount, familyCount, regionCount) {
-  const family = mediaTopicFamily(item);
-  const region = mediaRegion(item);
-  sourceCount.set(item.source, (sourceCount.get(item.source) ?? 0) + 1);
-  familyCount.set(family, (familyCount.get(family) ?? 0) + 1);
-  regionCount.set(region, (regionCount.get(region) ?? 0) + 1);
-}
-
-function radarTargetMatches(item, target) {
-  const category = categoryForMediaSignal(item);
-  if (target.category && category !== target.category) return false;
-  if (target.categories && !target.categories.includes(category)) return false;
-  if (target.region && mediaRegion(item) !== target.region) return false;
-  return true;
-}
-
-function normalizeRadarDiversityConfig(limit, config) {
+export function selectDiverseMediaSignals(items, limit, config = {}) {
   const defaults = defaultDailyRuleConfig().radarDiversity;
-  const configuredLimit = Number(limit ?? config?.limit ?? defaults.limit);
-  return {
-    limit: Number.isFinite(configuredLimit) ? configuredLimit : defaults.limit,
-    sourceCap: boundedNumber(config?.sourceCap, defaults.sourceCap),
-    familyCap: boundedNumber(config?.familyCap, defaults.familyCap),
-    regionCap: boundedNumber(config?.regionCap, defaults.regionCap),
-    targets: Array.isArray(config?.targets) && config.targets.length ? config.targets : defaults.targets
+  const number = (value, fallback) => Number.isFinite(Number(value ?? fallback)) ? Math.max(0, Math.floor(Number(value ?? fallback))) : fallback;
+  const diversity = {
+    limit: Math.min(RADAR_EXTERNAL_LIMIT, number(limit ?? config.limit, defaults.limit)),
+    sourceCap: number(config.sourceCap, defaults.sourceCap),
+    familyCap: number(config.familyCap, defaults.familyCap),
+    regionCap: number(config.regionCap, defaults.regionCap),
+    bilibiliCap: number(config.bilibiliCap, defaults.bilibiliCap),
+    targets: Array.isArray(config.targets) ? config.targets : defaults.targets
   };
-}
-
-function boundedNumber(value, fallback) {
-  const number = Number(value ?? fallback);
-  return Number.isFinite(number) ? number : fallback;
+  const selected = [];
+  const sources = new Map(); const families = new Map(); const regions = new Map();
+  let bilibili = 0;
+  const take = item => {
+    if (selected.length >= diversity.limit || selected.includes(item)) return false;
+    const family = mediaTopicFamily(item); const region = mediaRegion(item);
+    const source = String(item.source ?? "").normalize("NFKC").trim().toLowerCase();
+    if ((sources.get(source) ?? 0) >= diversity.sourceCap ||
+        (families.get(family) ?? 0) >= diversity.familyCap ||
+        (regions.get(region) ?? 0) >= diversity.regionCap ||
+        (isBilibiliSignal(item) && bilibili >= diversity.bilibiliCap)) return false;
+    selected.push(item);
+    sources.set(source, (sources.get(source) ?? 0) + 1);
+    families.set(family, (families.get(family) ?? 0) + 1);
+    regions.set(region, (regions.get(region) ?? 0) + 1);
+    if (isBilibiliSignal(item)) bilibili++;
+    return true;
+  };
+  for (const target of diversity.targets) {
+    let count = 0;
+    for (const item of items) {
+      if (selected.length >= diversity.limit || count >= number(target.count, 0)) break;
+      if (target.region && mediaRegion(item) !== target.region) continue;
+      const category = categoryForMediaSignal(item);
+      if (target.category && category !== target.category) continue;
+      if (target.categories && !target.categories.includes(category)) continue;
+      if (take(item)) count++;
+    }
+  }
+  for (const item of items) {
+    if (selected.length >= diversity.limit) break;
+    take(item);
+  }
+  return selected;
 }
 
 export function mediaRegion(item) {

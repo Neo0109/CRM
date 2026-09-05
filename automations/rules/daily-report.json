@@ -751,19 +751,64 @@
     "probe_config": "automations/rules/bilibili-probe.json"
   },
   "radar_diversity": {
-    "limit": 14,
-    "source_cap": 2,
-    "family_cap": 4,
-    "region_cap": 8,
+    "limit": 40,
+    "source_cap": 3,
+    "family_cap": 12,
+    "region_cap": 24,
+    "bilibili_cap": 3,
     "targets": [
-      { "category": "行业新闻", "region": "china", "count": 2 },
-      { "category": "行业新闻", "region": "global", "count": 3 },
-      { "category": "今日亮点", "region": "china", "count": 4 },
-      { "category": "今日亮点", "region": "global", "count": 2 },
-      { "category": "AI 游戏", "count": 2 },
-      { "categories": ["B站趋势", "新梗热点"], "count": 1 }
+      {
+        "region": "china",
+        "count": 16
+      },
+      {
+        "region": "global",
+        "count": 16
+      }
     ]
   },
+  "radar_sources": [
+    {
+      "name": "AUTOMATON WEST",
+      "url": "https://automaton-media.com/en/feed/",
+      "type": "feed",
+      "quality": 12,
+      "focus": [
+        "global",
+        "asia",
+        "product",
+        "development"
+      ],
+      "active": false,
+      "disabled_reason": "Awaiting GitHub Actions source verification for PR 124"
+    },
+    {
+      "name": "GamesRadar+",
+      "url": "https://www.gamesradar.com/feeds.xml",
+      "type": "feed",
+      "quality": 10,
+      "focus": [
+        "global",
+        "product",
+        "platform"
+      ],
+      "active": false,
+      "disabled_reason": "Awaiting GitHub Actions source verification for PR 124"
+    },
+    {
+      "name": "触乐",
+      "url": "https://www.chuapp.com/",
+      "type": "chuapp_page",
+      "quality": 11,
+      "focus": [
+        "china",
+        "culture",
+        "development"
+      ],
+      "active": false,
+      "disabled_reason": "Awaiting GitHub Actions source verification for PR 124"
+    }
+  ],
   "bilibili_media_quality_gates": {
     "max_bilibili_lead_age_days": 120,
     "probe_config": "automations/rules/bilibili-probe.json",
