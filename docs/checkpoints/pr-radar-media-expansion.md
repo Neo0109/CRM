@@ -18,7 +18,7 @@ Implement the user-approved China + global Radar expansion to 30–40 curated ex
 - Create/review PR, merge after exact-head checks, verify deployment and daily Radar/sync receipt; record final evidence.
 
 ## Next Action
-Read remote code and CI entrypoints, add tests on this branch before implementing.
+Run the committed fixed Radar regressions in cloud CI to capture the red baseline, then implement the isolated Radar path. Existing Build omits full Daily tests, so add a dedicated read-only Radar verification workflow; daily workflows remain unchanged.
 
 ## Git Status
 - Branch: codex/radar-media-expansion, based on dc52d62af9bb524bf0ac013a906cf93089a17164.

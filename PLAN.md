@@ -185,3 +185,8 @@
 - 生产验收记录远端 SHA、Actions URL/head SHA、artifact 路径、扫描量、合格量、排除原因分布、`/api/health` 和成功同步回执。
 - 正式 Lead 为 0 不再构成 degraded；只有来源扫描异常、结构损坏、写入失败或 `synced!=true` 才属于交付失败。
 - 若 V7 出现回归，回退到质量隔离状态，不能恢复旧的数量回填机制。
+
+
+## Approved Radar media expansion (2026-09-06)
+
+The user explicitly authorized this independent PR in the current session. Deliver 30–40 China/global curated external news items with a hard limit of 40; enforce source=3, region=24, topic=12 and shared Bilibili=3 caps with China/global targets of 16 each. Prefer 24h and admit no older than 72h; verify missing publication dates from article metadata; suppress prior 7-day URL/title duplicates, excluding same-day reruns; merge only same-product/same-event videos. Add AUTOMATON WEST, GamesRadar+ and repaired Chuapp website collection exclusively to Radar after GitHub Actions source verification. Preserve source media inputs and Lead admission, Steam Trends, UI, API/schema and all daily workflow triggers. New Radar networking has a 90-second deadline, bounded concurrency, isolated errors and no count failure gate. Run fixed regressions, all Daily tests, schemas and npm run verify:all; review exact PR head, then normal merge/deploy and real Radar/synced=true receipt verification. Checkpoint: docs/checkpoints/pr-radar-media-expansion.md. Only this PR is authorized in this task; stop after acceptance.

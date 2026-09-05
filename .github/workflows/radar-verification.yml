@@ -1,0 +1,50 @@
+name: Radar verification
+
+on:
+  push:
+    branches:
+      - codex/radar-media-expansion
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "automations/jobs/online_daily_v4*.mjs"
+      - "automations/rules/daily-report.json"
+      - "automations/test/onlineDailyV4*.mjs"
+      - "scripts/check-radar-sources.mjs"
+      - ".github/workflows/radar-verification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  radar-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && corepack prepare pnpm@10.8.1 --activate
+      - run: npm install
+      - name: Fixed Radar regressions
+        run: node --test automations/test/onlineDailyV4Radar.test.mjs
+      - name: Full repository verification
+        run: npm run verify:all
+      - name: Check PR diff
+        run: git diff --check origin/main...HEAD
+  source-smoke:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read-only source smoke (no generation or CRM writes)
+        if: hashFiles('scripts/check-radar-sources.mjs') != ''
+        run: node scripts/check-radar-sources.mjs
