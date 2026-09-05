@@ -24,16 +24,19 @@ Complete post-merge daily data acceptance for the approved Radar expansion in PR
 - Confirmed 2026-09-06 Radar was absent and no active/queued daily run before dispatching one normal feature-acceptance run, slot radar-acceptance, force=false. Connected App lacks workflow dispatch, so authenticated GitHub REST via gh was used.
 - Normal cloud run: https://github.com/Neo0109/CRM/actions/runs/33979517144, head 2f3d6ce4567efe46eb577badca316f908f9ed43f, completed successfully in 5m36s; receipt status=success and parsed sync_response.synced=true.
 
+- PR 125 passed all checks on d943dc2ce1463338e8a4619b03677582cdda4cff: Radar 16/16, Daily 374/374, frontend 136/136, backend 30/30, Functions 44/44 and all 16 verify:all tasks; Cloudflare preview succeeded.
+- Exact four-file diff reviewed; only Cloudflare bot comment, no unresolved findings. Ready then squash-merged as 06376c508d3456d9bef166a3b29f267ad1a1b985.
+- Initial live run: 37 external + 1 internal; China 13/global 24; 19 distinct external source labels; 63 additional requests in 21,935ms, zero request failures, 8 prior-history exclusions. Independently compared all output URLs/titles against 105 cards from seven prior dates: zero repeated external URL/title pairs.
 - PR 125 red regression proof: https://github.com/Neo0109/CRM/actions/runs/33980163275. The two real-content fixtures fail on the PR 124 implementation; existing 14 tests pass.
 - Corrective implementation changes only Radar industry relevance and video event identity; documented upload-date handling and explicit progress preservation.
 
 ## Remaining
-- Live content review found two acceptance defects: unquoted versus 【bracketed】 Zero Boundary Invasion Demo videos evade event identity; general-media stories about food delivery and token storefronts evade game-industry relevance.
-- Complete a narrowly scoped corrective Radar PR because PR 124 is already merged. Only the new Radar curator, its fixtures and this checkpoint need changes. Existing Leads, Steam, configs, UI and daily workflow remain outside scope.
-- Re-run fixed-sample and full cloud verification, then one same-day normal cloud generation after the correction.
+- Inspect one final same-day cloud run on correction merge 06376c508d3456d9bef166a3b29f267ad1a1b985, slot radar-acceptance-fixed, force=false.
+- Require the corrected dated Radar artifact and status=success with parsed sync_response.synced=true; record actual count, diversity, exclusions and request budget.
+- Verify main Build, normal Cloudflare deployment and production health for the correction.
 
 ## Next Action
-Wait for PR 125 cloud verification; inspect the exact diff, merge after all checks pass, then run same-day normal cloud acceptance and inspect actual Radar output and synced=true receipt.
+Wait for the already-dispatched final acceptance run. No duplicate dispatch. Update final evidence after inspecting the actual artifacts and logs.
 
 ## Git Status
 - GitHub API branch: codex/radar-acceptance-fix; PR 125 corrects concrete acceptance defects after PR 124 merged. Baseline main: 8f460ecc7575485f945479f7e375c164078872c2. No unrelated open PR or product scope is introduced.
