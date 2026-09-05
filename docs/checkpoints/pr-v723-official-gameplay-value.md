@@ -36,3 +36,8 @@ Remote branch created from the baseline. Local checkout is read-only and retains
 - Focused GREEN: 7/7 passed, including ten frozen language variants, full-admission negatives, unlimited strict (7), capped review (3), cross-source dedupe and audit/report parity.
 - The same official inputs gain a content hook only; none becomes a strict Lead from text alone. No live import conclusion is asserted.
 - Baseline production health: HTTP 200, ok=true, v2.8.1-steam-direct-link-button, shared storage enabled.
+
+## Full fixed regression stage
+- Daily V4: 379/379 passed, including V7.3 compatibility; the prior admission semantic fingerprint is preserved after projecting only approved additive metadata/provenance.
+- Frontend/backend typecheck and Functions typecheck passed.
+- Final scope review adds comparison/link and parent-AppID negatives; verify:all will run on the exact GitHub PR head (normal repository Git diff checks, no local checkout writes).

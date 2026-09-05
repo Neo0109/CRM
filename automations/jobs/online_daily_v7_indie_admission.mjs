@@ -207,9 +207,9 @@ export function deriveOfficialGameplayChinaBilibiliValue({ appId, details } = {}
     || numericString(details.steam_appid) !== boundId
     || (details.fullgame?.appid && numericString(details.fullgame.appid) !== boundId)) return null;
 
-  const shortBlocks = officialGameplayBlocks(details.short_description);
+  const shortBlocks = officialGameplayBlocks(details.short_description, boundId);
   const shortContext = shortBlocks.filter(isAffirmativeGameplayBlock).join(" ");
-  const blocks = [...shortBlocks, ...officialGameplayBlocks(details.about_the_game)];
+  const blocks = [...shortBlocks, ...officialGameplayBlocks(details.about_the_game, boundId)];
   for (const block of blocks) {
     if (!isAffirmativeGameplayBlock(block)) continue;
     // The short description may establish the genre; operation and outcome must
@@ -251,7 +251,7 @@ export function deriveOfficialGameplayChinaBilibiliValue({ appId, details } = {}
   return null;
 }
 
-function officialGameplayBlocks(value) {
+function officialGameplayBlocks(value, appId) {
   if (typeof value !== "string") return [];
   return value.slice(0, 100000)
     .replace(/<(script|style|blockquote|q)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "\n")
@@ -259,6 +259,8 @@ function officialGameplayBlocks(value) {
     .replace(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>\s*(?:<p\b[^>]*>)?/gi, "\n$1: ")
     .replace(/<\/?(?:p|div|li|ul|ol|h[1-6])\b[^>]*>/gi, "\n")
     .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<a\b[^>]*href=["\'][^"\']*\/app\/(\d+)[^>]*>/gi,
+      (tag, linkedId) => linkedId === appId ? tag : " other game comparison ")
     .replace(/<[^>]*>/g, "")
     .replace(/&(?:nbsp|amp|quot|apos|lt|gt);|&#(?:x[0-9a-f]+|\d+);/gi, (entity) => {
       const named = { "&nbsp;": " ", "&amp;": "&", "&quot;": '"', "&apos;": "'", "&lt;": "<", "&gt;": ">" };
@@ -273,7 +275,7 @@ function officialGameplayBlocks(value) {
 }
 
 function isAffirmativeGameplayBlock(block) {
-  if (/\b(?:unlike|compared (?:to|with)|inspired by|similar to|other games?|reviews?|recommended)\b|类似|相比|对比|借鉴|致敬|其他游戏|其它游戏|推荐语|媒体评价|《[^》]+》.{0,10}(?:中|里)/i.test(block)) return false;
+  if (/\b(?:like|unlike|compared (?:to|with)|inspired by|similar to|other games?|reviews?|recommended)\b|类似|如同|好比|就像|像《|与《|相比|对比|借鉴|致敬|其他游戏|其它游戏|推荐语|媒体评价|《[^》]+》.{0,10}(?:中|里)/i.test(block)) return false;
   // Reject a whole gameplay paragraph when it denies a mechanism. Narrative
   // phrases such as "no sign of civilization" do not negate gameplay.
   return !/\b(?:no|not|without|never|cannot|can't|doesn't|don't|lacks?|unable)\b[^.!?。！？]*(?:combo|parr|cancel|combat|cards?|co-?op|multiplayer|physics|swing|shoot|weapons?|ammunition|resources?|upgrad|solv|puzzles?)|(?:没有|无法|不能|不支持|并非|不存在|不含|移除了|取消了)[^。！？]*(?:连段|连招|格挡|取消|战斗|卡牌|合作|协作|多人|物理|摆荡|射击|武器|资源|强化|解谜|谜题)|(?:physics|swing|combo|parr|cards?)[^.!?。！？]*(?:cannot|can't|not available)/i.test(block);

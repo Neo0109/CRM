@@ -69,6 +69,8 @@ describe("V7.2.3 official gameplay content value", () => {
       "No co-op cooking or carrying ingredients to complete orders.",
       "Unlike Other Game, where you parry attacks to gain energy, this game is a walking simulator.",
       "类似《其他游戏》：连段攻击获得内力，消耗内力释放剑招。",
+      "Like Dark Souls, perfect parry attacks generate energy to unleash a finisher.",
+      "<p>In <a href=\"https://store.steampowered.com/app/123/\">another title</a>, perfect parry generates energy to unleash a finisher.</p>",
       "<blockquote>Review: combine attacks to unleash combos.</blockquote>",
       "<p>连段和取消。</p><p>经营画廊获得收益。</p>",
       "<p>第三人称射击。</p><p>收集服装，改变外观。</p>",
@@ -86,6 +88,7 @@ describe("V7.2.3 official gameplay content value", () => {
       { appId: "9900700", details: { ...good, steam_appid: undefined } },
       { appId: "9900700", details: { ...good, type: "demo" } },
       { appId: "9900700", details: { ...good, type: "dlc" } },
+      { appId: "9900700", details: { ...good, fullgame: { appid: 123 } } },
       { appId: "9900700", details: { ...good, type: undefined } },
       { appId: "9900700", details: { ...detailsFor(""), recommendation: good.about_the_game, tags: [good.about_the_game] } }
     ]) assert.equal(derive(input), null);
