@@ -199,3 +199,17 @@ test("72-hour boundary is inclusive and oversized serializer counts only emitted
   assert.match(report.summary, /40 条/);
   assert.doesNotMatch(report.summary, /50 条/);
 });
+
+test("Radar feeds retain whitespace-wrapped CDATA summaries and exclude non-game GamesRadar sections", async () => {
+  const { parseRadarFeedItems } = await module();
+  const source = { name: "GamesRadar+", type: "feed", url: "https://www.gamesradar.com/feeds.xml", quality: 10 };
+  const xml = '<rss><channel><item><title>\n <![CDATA[Game studio interview]]>\n </title>' +
+    '<link>https://www.gamesradar.com/games/rpg/studio-interview/</link>' +
+    '<description>\n <![CDATA[The publisher explains its handcrafted game world.]]>\n </description>' +
+    '<pubDate>Sat, 05 Sep 2026 15:08:49 +0000</pubDate></item>' +
+    '<item><title>New television show announced</title><link>https://www.gamesradar.com/entertainment/tv/new-show/</link><description>TV update</description></item></channel></rss>';
+  const items = parseRadarFeedItems(xml, source);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].title, "Game studio interview");
+  assert.equal(items[0].summary, "The publisher explains its handcrafted game world.");
+});

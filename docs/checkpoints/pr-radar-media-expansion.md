@@ -22,8 +22,12 @@ Implement the user-approved China + global Radar expansion to 30–40 curated ex
 - Implementation focused tests: 10/10 passed in Actions run 33978233339. Full suite exposes stale C5-B exact production-file fingerprints and the new Radar-only import path; update only approved Radar fingerprints, preserve all non-Radar rule fields via an additional semantic SHA-256 guard, keep collector code/manifest unchanged.
 - Cloud source smoke: AUTOMATON WEST 30 entries and Chuapp 25 entries/date passed. GamesRadar feed parsed successfully; publisher summaries may be omitted by the publisher, so record availability rather than requiring every feed item to have a summary.
 
+- GitHub Actions source smoke 33978569943 passed all three URLs (AUTOMATON 30, GamesRadar 50, Chuapp 25). Sources are now enabled only in Radar configuration.
+- Added a fixture/fix for whitespace-wrapped RSS CDATA so GamesRadar publisher summaries survive parsing; exclude its non-game entertainment sections.
+- Focused fixtures 13/13 and 370/371 full Daily tests passed before the final verified report-file fingerprint correction. Collector production code and its 41-path manifest are unchanged.
+
 ## Next Action
-Run focused and full cloud checks for the implementation; inspect separate source-smoke results, then enable sources only after all three pass. Validate all unchanged sourcing-rule fields before commit.
+Run all checks and source smoke on the activated exact PR head; review scope and merge only when checks pass. Then verify deployment and a normal cloud-produced daily Radar artifact/sync receipt.
 
 ## Git Status
 - Branch: codex/radar-media-expansion, based on dc52d62af9bb524bf0ac013a906cf93089a17164.

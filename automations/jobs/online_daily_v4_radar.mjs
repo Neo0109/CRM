@@ -179,10 +179,12 @@ export function parseChuappRadarItems(html, source = { name: "触乐", quality: 
 export function parseRadarFeedItems(xml, source) {
   assertMediaSourceContract(xml, { ...source, type: "feed" });
   // The shared Lead parser remains capped at 20; Radar can read 60 feed entries.
-  return String(xml).split(/<(item|entry)\b/i).slice(1).reduce((items, block, i, blocks) => {
+  const readableXml = String(xml).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, (_, content) => content);
+  return readableXml.split(/<(item|entry)\b/i).slice(1).reduce((items, block, i, blocks) => {
     if (i % 2 === 0 && items.length < 60) {
       for (const item of parseFeedItems("<" + block + blocks[i + 1], source)) {
         item.published_at ||= cleanExtractedText(readXmlTag(blocks[i + 1], "dc:date"));
+        if (source.name === "GamesRadar+" && /^\/(?:entertainment|comics|movies|tv|deals)(?:\/|$)/i.test(new URL(item.link).pathname)) continue;
         items.push(item);
       }
     }

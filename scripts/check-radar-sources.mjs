@@ -15,6 +15,7 @@ for (const source of rules.radar_sources) {
     const example = items[0];
     const meta = source.type === "chuapp_page" ? readRadarArticleMetadata(await fetchText(example.link, { timeoutMs: 12000 })) : example;
     assert.ok(Number.isFinite(Date.parse(meta.published_at)), "source sample lacks a publication date");
+    assert.ok(meta.summary || items.some(item => item.summary), "source has no extractable publisher summaries");
     console.log(JSON.stringify({ source: source.name, status: "ok", articles: items.length, example: example.link, published_at: meta.published_at, publisher_summary_present: Boolean(meta.summary || example.summary) }));
   } catch (error) {
     failures++;
