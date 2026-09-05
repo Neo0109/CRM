@@ -1,7 +1,7 @@
 # Radar media expansion — PR 124 delivery checkpoint
 
 ## Current Goal
-Deliver the approved China/global Radar expansion (30–40 curated external items, hard cap 40) through the single PR https://github.com/Neo0109/CRM/pull/124.
+Complete post-merge daily data acceptance for the approved Radar expansion in PR https://github.com/Neo0109/CRM/pull/124.
 
 ## Completed
 - User explicitly approved implementation and normal PR/cloud delivery in this thread on 2026-09-06.
@@ -19,16 +19,20 @@ Deliver the approved China/global Radar expansion (30–40 curated external item
 - Only the new verification step sets COREPACK_ENABLE_PROJECT_SPEC=0 to run the repository's existing pnpm-based typechecks under the explicitly pinned pnpm runtime; application/package files untouched.
 - Reviewed all 15 changed files: only approved Radar code/config, focused tests, existing fingerprint assertions, independent verification workflow and documentation; no unresolved review comments.
 
+- PR 124 exact final head 8d84b6d272ca282111503bced6b9fe598b0cdddd passed all checks (Radar verification 33979385109/33979387662, Build, Cloudflare); Ready then squash-merged as 2f3d6ce4567efe46eb577badca316f908f9ed43f.
+- Main Build 33979484520 succeeded; Cloudflare Pages deployment a4a7b890-bd88-47d2-a932-f3064abf7cde succeeded on the merge SHA; production /api/health ok.
+- Confirmed 2026-09-06 Radar was absent and no active/queued daily run before dispatching one normal feature-acceptance run, slot radar-acceptance, force=false. Connected App lacks workflow dispatch, so authenticated GitHub REST via gh was used.
+- Normal cloud run: https://github.com/Neo0109/CRM/actions/runs/33979517144, head 2f3d6ce4567efe46eb577badca316f908f9ed43f, completed successfully in 5m36s; receipt status=success and parsed sync_response.synced=true.
+
 ## Remaining
-- Confirm checks on this documentation-only checkpoint head, mark PR Ready and squash merge.
-- Verify main merge SHA, main Build/Cloudflare deployment and production health.
-- Run/inspect a normal cloud daily generation for feature acceptance after confirming no same-date active run; require dated Radar artifact and status=success plus sync_response.synced=true.
-- Record actual selected count, media distribution, duplicate suppression and budget evidence; do not treat fewer than 30 qualified news items as delivery failure.
+- Live content review found two acceptance defects: unquoted versus 【bracketed】 Zero Boundary Invasion Demo videos evade event identity; general-media stories about food delivery and token storefronts evade game-industry relevance.
+- Complete a narrowly scoped corrective Radar PR because PR 124 is already merged. Only the new Radar curator, its fixtures and this checkpoint need changes. Existing Leads, Steam, configs, UI and daily workflow remain outside scope.
+- Re-run fixed-sample and full cloud verification, then one same-day normal cloud generation after the correction.
 
 ## Next Action
-Recheck exact PR head checks and mergeability, then continue normal release and post-merge daily data acceptance without entering another PR.
+Add the real acceptance examples as regression fixtures, fix Radar-only relevance and title-independent video event matching, review/merge the small correction, then inspect the new artifacts and synced=true receipt.
 
 ## Git Status
-- GitHub API branch: codex/radar-media-expansion; PR 124 is currently draft and unmerged.
+- GitHub API branch: codex/radar-media-expansion; PR 124 is merged. Post-merge evidence is recorded on this existing branch as documentation-only commits, with no further product changes.
 - Local checkout remains read-only with the same pre-existing sourcing draft/checkpoint modifications.
 - No local real report generation, local Git branch/commit/push, direct CRM sync, GUI access or desktop capture occurred.
