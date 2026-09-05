@@ -1,4 +1,4 @@
-# Radar media expansion — PR 124 delivery checkpoint
+# Radar media expansion — PR 124 and acceptance correction 125
 
 ## Current Goal
 Complete post-merge daily data acceptance for the approved Radar expansion in PR https://github.com/Neo0109/CRM/pull/124.
@@ -24,15 +24,18 @@ Complete post-merge daily data acceptance for the approved Radar expansion in PR
 - Confirmed 2026-09-06 Radar was absent and no active/queued daily run before dispatching one normal feature-acceptance run, slot radar-acceptance, force=false. Connected App lacks workflow dispatch, so authenticated GitHub REST via gh was used.
 - Normal cloud run: https://github.com/Neo0109/CRM/actions/runs/33979517144, head 2f3d6ce4567efe46eb577badca316f908f9ed43f, completed successfully in 5m36s; receipt status=success and parsed sync_response.synced=true.
 
+- PR 125 red regression proof: https://github.com/Neo0109/CRM/actions/runs/33980163275. The two real-content fixtures fail on the PR 124 implementation; existing 14 tests pass.
+- Corrective implementation changes only Radar industry relevance and video event identity; documented upload-date handling and explicit progress preservation.
+
 ## Remaining
 - Live content review found two acceptance defects: unquoted versus 【bracketed】 Zero Boundary Invasion Demo videos evade event identity; general-media stories about food delivery and token storefronts evade game-industry relevance.
 - Complete a narrowly scoped corrective Radar PR because PR 124 is already merged. Only the new Radar curator, its fixtures and this checkpoint need changes. Existing Leads, Steam, configs, UI and daily workflow remain outside scope.
 - Re-run fixed-sample and full cloud verification, then one same-day normal cloud generation after the correction.
 
 ## Next Action
-Add the real acceptance examples as regression fixtures, fix Radar-only relevance and title-independent video event matching, review/merge the small correction, then inspect the new artifacts and synced=true receipt.
+Wait for PR 125 cloud verification; inspect the exact diff, merge after all checks pass, then run same-day normal cloud acceptance and inspect actual Radar output and synced=true receipt.
 
 ## Git Status
-- GitHub API branch: codex/radar-media-expansion; PR 124 is merged. Post-merge evidence is recorded on this existing branch as documentation-only commits, with no further product changes.
+- GitHub API branch: codex/radar-acceptance-fix; PR 125 corrects concrete acceptance defects after PR 124 merged. Baseline main: 8f460ecc7575485f945479f7e375c164078872c2. No unrelated open PR or product scope is introduced.
 - Local checkout remains read-only with the same pre-existing sourcing draft/checkpoint modifications.
 - No local real report generation, local Git branch/commit/push, direct CRM sync, GUI access or desktop capture occurred.
