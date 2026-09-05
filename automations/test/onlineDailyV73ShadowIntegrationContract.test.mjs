@@ -26,13 +26,15 @@ const dailyValidator = read("../../scripts/validate-daily-contract.mjs");
 const syncWorkflow = read("../../.github/workflows/sync-daily-report.yml");
 const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml");
 
+// PR 124 approves Radar-only changes to these shared-file blobs. The separate
+// semantic fingerprint below freezes every original non-Radar machine rule.
 const ORIGINAL_BLOBS = {
-  generator: "c21a16810adcfd38922226208299b871cd0e2a4b",
-  activeRulesModule: "c89beb38b47a8f23524574c46fe19cc5ef3a3771",
-  activeRule: "f111f5edc9e73c256a8f929182005d0de99cbc96",
+  generator: "39846814bfe8188fa935065ebba42229e2175531",
+  activeRulesModule: "1ad0ecd6ca53424f7dd92e75c0a5b4014a503c66",
+  activeRule: "6ec6d8fabda91fc91708b2a876df03a757568612",
   activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
   activeCandidateAudit: "c2bf0aef0f146660129ababe09ca3eed450ad24e",
-  activeReports: "c8fb49b9e6ad1c1c9bc7d4169247cda25e867920",
+  activeReports: "424b3c4531d402b485143f7ddccd73ae2f755e0b",
   dailyValidator: "09bcf75ba6a4dc5bedd99bc6cb0a7b1b9986eed0",
   syncWorkflow: "72282bc6964e1b0744624b1903d2c5f4d26d416e",
   watchdogWorkflow: "3a01348ed0b8fc45798e59ceb60dff3a03f94be4"
@@ -48,6 +50,9 @@ describe("C5-B shadow-only production integration", () => {
     assert.equal(gitBlobSha(dailyValidator), ORIGINAL_BLOBS.dailyValidator);
     assert.match(activeRulesModule, /REGULAR_SOURCING_RULE_VERSION/);
     assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.2-near-pass-review");
+    const { radar_diversity, radar_sources, ...sourcingRules } = activeRule;
+    assert.equal(createHash("sha256").update(JSON.stringify(sourcingRules)).digest("hex"),
+      "53c073e7ae6c9adcbdaaf08604357781b22987949d32f035417f8113da57a6b8", "Radar changes must preserve every original sourcing rule");
   });
 
   it("keeps the non-throwing hook after all four production writes and the approved coverage observation", () => {
@@ -238,6 +243,9 @@ describe("C5-B shadow-only production integration", () => {
   it("declares the approved behavior floor and closes every loaded local dependency", () => {
     const manifest = new Set(shadowCollector.C5B_BEHAVIOR_DEPENDENCY_PATHS ?? []);
     const exclusions = new Set(shadowCollector.C5B_BEHAVIOR_PRODUCTION_EXCLUSIONS ?? []);
+    // Radar presentation is independent of candidate replay; it must never load
+    // in the collector and does not expand its frozen behavior manifest.
+    const radarPresentation = new Set(["automations/jobs/online_daily_v4_radar.mjs"]);
     assert.deepEqual([...exclusions].sort(), [
       "automations/jobs/online_daily_v4_candidate_audit.mjs",
       "automations/jobs/online_daily_v4_reports.mjs",
@@ -270,7 +278,7 @@ describe("C5-B shadow-only production integration", () => {
       "automations/jobs/online_daily_v7_3_shadow_collector.mjs"
     ]);
     assert.deepEqual(
-      [...collectorClosure].filter((relativePath) => exclusions.has(relativePath)),
+      [...collectorClosure].filter((relativePath) => (exclusions.has(relativePath) || radarPresentation.has(relativePath))),
       [],
       "a loaded collector dependency cannot be hidden behind a production-only exclusion"
     );
@@ -280,7 +288,7 @@ describe("C5-B shadow-only production integration", () => {
     ]);
     assert.deepEqual(
       [...loadedClosure]
-        .filter((relativePath) => !manifest.has(relativePath) && !exclusions.has(relativePath))
+        .filter((relativePath) => !manifest.has(relativePath) && !exclusions.has(relativePath) && !radarPresentation.has(relativePath))
         .sort(),
       []
     );

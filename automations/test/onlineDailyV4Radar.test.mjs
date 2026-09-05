@@ -154,3 +154,48 @@ test("unknown dates are enriched, failures isolated, and the total deadline is e
   assert.ok(result.diagnostics.request_failures > 0);
   assert.ok(result.diagnostics.elapsed_ms < 250);
 });
+
+test("global network deadline stops new requests even when individual timeout is larger", async () => {
+  const { collectRadarEdition } = await module();
+  let calls = 0; let active = 0;
+  const result = await collectRadarEdition({
+    mediaSignals: [item(0)], history: [], reportDate, capturedAt, budgetMs: 20, requestTimeoutMs: 1000, concurrency: 1,
+    ruleConfig: { radarDiversity: config, radarSources: [1, 2].map(n => ({ name: "Slow " + n, url: "https://slow.test/" + n, type: "feed" })) },
+    fetchTextImpl: async (url, { signal }) => {
+      calls++; active++;
+      try { await new Promise((resolve, reject) => signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true })); }
+      finally { active--; }
+    }
+  });
+  assert.equal(calls, 1);
+  assert.equal(active, 0);
+  assert.equal(result.diagnostics.budget_exhausted, true);
+  assert.ok(result.diagnostics.elapsed_ms < 250);
+  assert.equal(result.signals.length, 1);
+});
+
+test("history loading ignores absent days, diagnoses malformed days and never reads today", async () => {
+  const { loadRadarHistory } = await module();
+  const paths = [];
+  const result = await loadRadarHistory({ rootDir: "/fixture", reportDate, readFileImpl: async file => {
+    paths.push(file);
+    if (file.endsWith("2026-09-05.json")) return JSON.stringify({ report_date: "2026-09-05", items: [item(0)] });
+    if (file.endsWith("2026-09-04.json")) return "{broken";
+    throw Object.assign(new Error("missing"), { code: "ENOENT" });
+  } });
+  assert.equal(paths.length, 7);
+  assert.ok(paths.every(p => !p.endsWith(reportDate + ".json")));
+  assert.equal(result.reports.length, 1);
+  assert.deepEqual(result.warnings, ["2026-09-04"]);
+});
+
+test("72-hour boundary is inclusive and oversized serializer counts only emitted cards", async () => {
+  const { curateRadarSignals } = await module();
+  const result = curateRadarSignals([item(0, { published_at: "2026-09-03T12:00:00+08:00" }), item(1, { published_at: "2026-09-03T11:59:59+08:00" })],
+    { reportDate, capturedAt, diversity: config });
+  assert.equal(result.signals.length, 1);
+  const report = buildRadarReport({ candidates: [], pools: { push: [], watch: [] }, industrySignals: Array.from({length: 50}, (_, i) => item(i)), reportDate, capturedAt });
+  assert.equal(report.items.length, 40);
+  assert.match(report.summary, /40 条/);
+  assert.doesNotMatch(report.summary, /50 条/);
+});
