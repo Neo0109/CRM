@@ -49,3 +49,6 @@ Remote branch created from the baseline. Local checkout is read-only and retains
 - Build and Cloudflare branch preview succeeded; preview is not production acceptance.
 - Remote PR diff reviewed: 17 scoped files; no workflow, Radar, schema, UI/API/database or generated-data change. The later main receipt-only commit is nonconflicting.
 - Review bot is running. No merge or production acceptance is claimed yet.
+
+## Review round 1
+Two valid P1 findings at the tested code head: the cooperative adjective could satisfy the operation matcher, and result negations after a mechanic were not fully rejected. Add fixed negative regressions, then require concrete coordinated tasks and sentence-level negation/result checks before merging. No scope expansion is needed.
