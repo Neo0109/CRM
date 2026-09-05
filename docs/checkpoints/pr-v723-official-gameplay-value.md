@@ -23,7 +23,10 @@ Implement the user-approved official Steam gameplay fallback to increase worthwh
 5. Business observation after natural cache renewal: seven consecutive natural daily runs with successful sync receipts; 5–10 worthwhile additions/week remains unverified until measured.
 
 ## Next Action
-Capture pinned official samples and add deterministic red tests; no live generator or CRM writes.
+Run the new focused contract against the baseline to establish RED; then implement the approved helper.
+
+## Frozen input evidence
+Ten official AppDetails fixtures (five titles, english/schinese) were fetched on 2026-09-06. Each carries its exact source URL, full-game type and AppID. Only relevant public product fields are retained; contacts and media assets are omitted. Fixtures are recognition evidence, not import authorization.
 
 ## Git Status
 Remote branch created from the baseline. Local checkout is read-only and retains its existing three draft paths.
