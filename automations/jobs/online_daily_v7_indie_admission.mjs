@@ -216,7 +216,7 @@ export function deriveOfficialGameplayChinaBilibiliValue({ appId, details } = {}
     // still coexist in this one gameplay paragraph, never across unrelated sections.
     const domain = shortContext + " " + block;
     if (/(?:co-?op|cooperative|multiplayer|多人|协作|合作)/i.test(domain)
-      && /(?:coordinat|cooperat|work together|carry|share|分工|协作|搬运|传递|配合)/i.test(block)
+      && /(?:coordinat\w*.{0,25}(?:cooking|attacks?|roles?|timing|defen[cs]e)|(?:carry|pass|share|exchange).{0,30}(?:ingredients?|supplies|resources?|items?|tools?)|(?:分配|交换).{0,15}(?:任务|角色|职责)|(?:搬运|传递|共享|交换).{0,15}(?:物资|资源|材料|道具|食材|工具)|(?:同时|轮流).{0,15}(?:按压|拉动|扳动))/i.test(block)
       && /(?:complete.{0,50}(?:orders?|tasks?|missions?)|solve.{0,40}puzzles?|defeat|survive|完成.{0,25}(?:订单|任务)|解开|通关|击败)/i.test(block)) {
       return "官方玩法描述了协作操作与任务结果，可作为B站组队挑战、配合技巧和机制讲解的内容切入点。";
     }
@@ -276,9 +276,11 @@ function officialGameplayBlocks(value, appId) {
 
 function isAffirmativeGameplayBlock(block) {
   if (/\b(?:like|unlike|compared (?:to|with)|inspired by|similar to|other games?|reviews?|recommended)\b|类似|如同|好比|就像|像《|与《|相比|对比|借鉴|致敬|其他游戏|其它游戏|推荐语|媒体评价|《[^》]+》.{0,10}(?:中|里)/i.test(block)) return false;
-  // Reject a whole gameplay paragraph when it denies a mechanism. Narrative
-  // phrases such as "no sign of civilization" do not negate gameplay.
-  return !/\b(?:no|not|without|never|cannot|can't|doesn't|don't|lacks?|unable)\b[^.!?。！？]*(?:combo|parr|cancel|combat|cards?|co-?op|multiplayer|physics|swing|shoot|weapons?|ammunition|resources?|upgrad|solv|puzzles?)|(?:没有|无法|不能|不支持|并非|不存在|不含|移除了|取消了)[^。！？]*(?:连段|连招|格挡|取消|战斗|卡牌|合作|协作|多人|物理|摆荡|射击|武器|资源|强化|解谜|谜题)|(?:physics|swing|combo|parr|cards?)[^.!?。！？]*(?:cannot|can't|not available)/i.test(block);
+  // Negation may precede or follow the mechanic and may deny its outcome.
+  // Keep narrative-only negations (e.g. "no sign of civilization") separate.
+  const negation = /\b(?:no|not|without|never|cannot|can't|doesn't|don't|lacks?|unable)\b|\b\w+n['’]t\b|没有|未能|无法|不能|不会|不再|并不|不支持|不触发|不产生|不获得|不提升|不提高|不带来|不提供|不造成|不释放|不进行|不包含|不具备|不允许|不含|并非|不存在|移除了|取消了|缺少|无需/i;
+  const gameplayOrResult = /combo|parr|cancel|combat|cards?|co-?op|cooperat|multiplayer|physics|swing|shoot|weapons?|ammunition|ammo|resources?|upgrad|solv|puzzles?|trigger|generat|energy|\bki\b|unleash|damage|attacks?|defeat|surviv|orders?|tasks?|连段|连招|格挡|战斗|卡牌|协作|合作|多人|物理|摆荡|射击|武器|弹药|资源|强化|解谜|谜题|内力|能量|触发|伤害|释放|产出|效率|任务|订单/i;
+  return !block.split(/[.!?。！？]+/).some((sentence) => negation.test(sentence) && gameplayOrResult.test(sentence));
 }
 
 export function buildSteamOfficialDemoEvidence(details, appId) {
