@@ -84,18 +84,16 @@ const DEFAULT_QUALITY_GATES = {
   probeConfig: "automations/rules/bilibili-probe.json"
 };
 
+export const RADAR_EXTERNAL_LIMIT = 40;
 const DEFAULT_RADAR_DIVERSITY = {
-  limit: 14,
-  sourceCap: 2,
-  familyCap: 4,
-  regionCap: 8,
+  limit: RADAR_EXTERNAL_LIMIT,
+  sourceCap: 3,
+  familyCap: 12,
+  regionCap: 24,
+  bilibiliCap: 3,
   targets: [
-    { category: "行业新闻", region: "china", count: 2 },
-    { category: "行业新闻", region: "global", count: 3 },
-    { category: "今日亮点", region: "china", count: 4 },
-    { category: "今日亮点", region: "global", count: 2 },
-    { category: "AI 游戏", count: 2 },
-    { categories: ["B站趋势", "新梗热点"], count: 1 }
+    { region: "china", count: 16 },
+    { region: "global", count: 16 }
   ]
 };
 
@@ -127,7 +125,8 @@ export function buildDailyRuleConfig(rules = {}) {
   return {
     mediaSources: mediaSourceConfigFromRules(rules),
     mediaQualityGates: qualityGateConfigFromRules(rules),
-    radarDiversity: radarDiversityConfigFromRules(rules)
+    radarDiversity: radarDiversityConfigFromRules(rules),
+    radarSources: normalizeMediaSources(Array.isArray(rules.radar_sources) ? rules.radar_sources : [])
   };
 }
 
@@ -135,7 +134,8 @@ export function defaultDailyRuleConfig() {
   return {
     mediaSources: normalizeMediaSources(DEFAULT_MEDIA_SOURCES),
     mediaQualityGates: { ...DEFAULT_QUALITY_GATES },
-    radarDiversity: cloneRadarDiversity(DEFAULT_RADAR_DIVERSITY)
+    radarDiversity: cloneRadarDiversity(DEFAULT_RADAR_DIVERSITY),
+    radarSources: []
   };
 }
 
@@ -170,10 +170,11 @@ export function radarDiversityConfigFromRules(rules = {}) {
   const raw = objectValue(rules.radar_diversity);
   const fallback = DEFAULT_RADAR_DIVERSITY;
   return {
-    limit: boundedNumber(raw.limit, fallback.limit, 1, 100),
+    limit: boundedNumber(raw.limit, fallback.limit, 1, RADAR_EXTERNAL_LIMIT),
     sourceCap: boundedNumber(raw.source_cap ?? raw.sourceCap, fallback.sourceCap, 1, 100),
     familyCap: boundedNumber(raw.family_cap ?? raw.familyCap, fallback.familyCap, 1, 100),
     regionCap: boundedNumber(raw.region_cap ?? raw.regionCap, fallback.regionCap, 1, 100),
+    bilibiliCap: boundedNumber(raw.bilibili_cap ?? raw.bilibiliCap, fallback.bilibiliCap, 0, 3),
     targets: normalizeRadarTargets(raw.targets ?? fallback.targets)
   };
 }
@@ -219,7 +220,7 @@ function normalizeRadarTargets(targets) {
       if (target.region) normalized.region = String(target.region);
       return normalized;
     })
-    .filter((target) => target.category || target.categories?.length);
+    .filter((target) => target.category || target.categories?.length || target.region);
 }
 
 function bilibiliSearchApi(keyword) {
