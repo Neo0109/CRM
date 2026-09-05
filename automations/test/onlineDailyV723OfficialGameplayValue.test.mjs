@@ -48,6 +48,7 @@ describe("V7.2.3 official gameplay content value", () => {
 
   it("recognizes concrete action/result pairs, including HTML headings and entities", () => {
     const positives = [
+      ["In Fixture, perfect parry attacks generate energy to unleash a finisher.", /连招教学/],
       ["<h2>Co-op kitchen</h2><p>Players coordinate cooking and carry ingredients to complete customer orders.</p>", /组队/],
       ["<p>经营工厂：分配工人并连接生产线，提高资源产出。</p>", /机制讲解/],
       ["<p>Deckbuilding: combine cards and spend mana to trigger chained attacks.</p>", /流派复盘/],
@@ -66,6 +67,13 @@ describe("V7.2.3 official gameplay content value", () => {
       "A cooperative action game where players defeat bosses.",
       "多人协作游戏，协作挑战，击败强大的Boss。",
       "Combine cards without triggering attacks.",
+      "Players fail to combine cards to trigger attacks.",
+      "Try combining cards, but fail to trigger attacks.",
+      "Players avoid combining cards to trigger attacks.",
+      "It is impossible to combine cards to trigger attacks.",
+      "格挡不破防。",
+      "In Street Fighter, perfect parry attacks generate energy to unleash a finisher. This game is a walking simulator.",
+      "In Street Fighter players combine attacks to unleash combos.",
       "Perfect parries do not generate energy.",
       "Perfect parries don’t generate energy.",
       "连段攻击不会提高内力，也不触发反击。",
