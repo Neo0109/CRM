@@ -35,7 +35,7 @@ const expectedVerdict = "仅供首轮试玩/筛选，不代表正式商务推进
 
 describe("V7.2.2 bounded near-pass review publication", () => {
   it("exposes a pure eligibility contract and the exact active rule version", () => {
-    assert.equal(REGULAR_SOURCING_RULE_VERSION, "sourcing-rules-v7.2.2-near-pass-review");
+    assert.equal(REGULAR_SOURCING_RULE_VERSION, "sourcing-rules-v7.2.3-official-gameplay-value");
     assert.equal(nearPass.NEAR_PASS_REVIEW_LIMIT, 3);
     assert.deepEqual(nearPass.NEAR_PASS_GAP_LABELS, Object.fromEntries(
       Object.entries(expectedCopy).map(([gate, copy]) => [gate, copy.label])

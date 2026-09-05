@@ -6,6 +6,7 @@ import {
   buildSteamOfficialGameplayEvidence,
   buildVerifiedPublicQualityProofs,
   deriveConcreteChinaBilibiliValue,
+  deriveOfficialGameplayChinaBilibiliValue,
   deriveExplicitChinaDemandEvidence
 } from "./online_daily_v7_indie_admission.mjs";
 import {
@@ -261,7 +262,9 @@ export async function enrichSteamCandidate(candidate, details, context = {}) {
   const officialDemoEvidence = buildSteamOfficialDemoEvidence(details, candidate.appId);
   const officialGameplayEvidence = buildSteamOfficialGameplayEvidence(details);
   const qualityProofs = buildVerifiedPublicQualityProofs(details, candidate.appId);
-  const chinaBilibiliValue = deriveConcreteChinaBilibiliValue(`${genres.join(" ")} ${categories.join(" ")}`);
+  const chinaBilibiliValue = String(candidate.chinaBilibiliValue ?? candidate.china_bilibili_value ?? "").trim()
+    || (deriveConcreteChinaBilibiliValue(`${genres.join(" ")} ${categories.join(" ")}`)
+      ?? deriveOfficialGameplayChinaBilibiliValue({ appId: candidate.appId, details }));
   const chinaDemandEvidence = deriveExplicitChinaDemandEvidence(
     details?.short_description,
     details?.detailed_description,

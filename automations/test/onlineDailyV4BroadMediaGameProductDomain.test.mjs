@@ -907,9 +907,9 @@ describe("broad-media game-product candidate domain", () => {
     const defaults = defaultDailyRuleConfig();
     const broadSourceNames = ["IT之家", "证券时报", "澎湃新闻"];
 
-    assert.equal(RULE_VERSION, "sourcing-rules-v7.2.2-near-pass-review");
+    assert.equal(RULE_VERSION, "sourcing-rules-v7.2.3-official-gameplay-value");
     assert.equal(rules.rule_version, RULE_VERSION);
-    assert.equal(rules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2_2.md");
+    assert.equal(rules.canonical_rules_doc, "docs/SOURCING_RULES_V7_2_3.md");
     assert.equal(
       rules.broad_media_candidate_domain_gate.structured_identity_constraints.platform_ids,
       "positive_numeric"
@@ -1054,7 +1054,7 @@ describe("broad-media game-product candidate domain", () => {
     const current = readFileSync(new URL("../../docs/SOURCING_RULES_CURRENT.md", import.meta.url), "utf8");
     assert.match(canonical, /non_game_broad_media/);
     assert.match(canonical, /candidate_domain_gate.*game_product/);
-    assert.match(current, /SOURCING_RULES_V7_2_2\.md/);
+    assert.match(current, /SOURCING_RULES_V7_2_3\.md/);
   });
 
   it("keeps exact Chevrolet and generic company news Radar-only with one stable reason", () => {
