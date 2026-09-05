@@ -52,3 +52,9 @@ Remote branch created from the baseline. Local checkout is read-only and retains
 
 ## Review round 1
 Two valid P1 findings at the tested code head: the cooperative adjective could satisfy the operation matcher, and result negations after a mechanic were not fully rejected. Add fixed negative regressions, then require concrete coordinated tasks and sentence-level negation/result checks before merging. No scope expansion is needed.
+
+## Review fixes verified
+- 1739f1bb792ba597cf858e77e1f390ab256087ad removes adjective-only cooperation and requires concrete coordinated task/object operations.
+- Sentence-local negation checks now cover both word orders, outcome terms, English contractions and Chinese negated outcomes; unrelated narrative-only negation remains separate.
+- Focused regressions returned GREEN (7/7); Daily V4 rerun passed 379/379.
+- Both review findings have been addressed with fixed regressions; request the final review round on the documentation-complete head and require applicable CI success before merge.
