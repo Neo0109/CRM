@@ -49,7 +49,7 @@ describe("C5-B shadow-only production integration", () => {
     assert.equal(gitBlobSha(activeReports), ORIGINAL_BLOBS.activeReports);
     assert.equal(gitBlobSha(dailyValidator), ORIGINAL_BLOBS.dailyValidator);
     assert.match(activeRulesModule, /REGULAR_SOURCING_RULE_VERSION/);
-    assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.2-near-pass-review");
+    assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.3-official-gameplay-value");
     const { radar_diversity, radar_sources, ...sourcingRules } = activeRule;
     assert.equal(createHash("sha256").update(JSON.stringify(sourcingRules)).digest("hex"),
       "53c073e7ae6c9adcbdaaf08604357781b22987949d32f035417f8113da57a6b8", "Radar changes must preserve every original sourcing rule");

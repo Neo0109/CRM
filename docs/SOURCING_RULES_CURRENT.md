@@ -1,13 +1,13 @@
 # Current Daily Report Rules
 
-Date: 2026-08-14
+Date: 2026-09-06
 
-The current daily report rule version is `sourcing-rules-v7.2.2-near-pass-review`.
+The current daily report rule version is `sourcing-rules-v7.2.3-official-gameplay-value`.
 
 Canonical human-readable rule document:
 
 ```text
-docs/SOURCING_RULES_V7_2_2.md
+docs/SOURCING_RULES_V7_2_3.md
 ```
 
 Machine-readable automation rule source:
@@ -24,11 +24,13 @@ automations/jobs/online_daily_runner.mjs -> automations/jobs/online_daily_v4.mjs
 
 The pre-v4 daily generators are archived in git history. Do not use `online_daily.mjs`, `online_daily_v2.mjs`, or `online_daily_v3.mjs` as development or workflow entrypoints.
 
-V7.2.2 retains the V7.2.1 broad-discovery and `game_product` candidate-domain contract while evaluating `indie_prelaunch` and `china_joint` in parallel. Failed broad-media items remain Radar-only. Every deduped project that completely passes either unchanged V7.2 lane enters `push_pool` first with `priority=null`; neither lane has a quota and the combined strict-formal pool has no total cap. Only after strict-formal dedupe may at most three candidates satisfying the frozen one-gap review contract be appended; all other missing or contradictory evidence remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, publication parity mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
+V7.2.3 retains the V7.2.1 broad-discovery and `game_product` candidate-domain contract while evaluating `indie_prelaunch` and `china_joint` in parallel. Failed broad-media items remain Radar-only. Every deduped project that completely passes either unchanged V7.2 lane enters `push_pool` first with `priority=null`; neither lane has a quota and the combined strict-formal pool has no total cap. Only after strict-formal dedupe may at most three candidates satisfying the frozen one-gap review contract be appended; all other missing or contradictory evidence remains only in the candidate audit. A zero-Lead day is neither a failure nor `degraded`; missing/invalid artifacts, source failure, publication parity mismatch, write failure, and a receipt without both `status=success` and `sync_response.synced=true` remain unhealthy.
 
 The broad-media gate uses strict numeric/namespaced product identities or one shared concrete-project extractor plus an explicit category and product event. Across structured, quoted, and unquoted paths, the extractor rejects fully generic region/promotion/genre/platform/count phrases, market/platform/industry/ecosystem roles, Bilibili aliases, shared domestic-company/affiliation roles, media/source/attribution entities, and bounded document roles while retaining distinctive residue. Quantity recognition is part of the same whole-name dynamic program: numeral transitions are enabled only during generic segmentation for Arabic, Chinese/`若干`, and bounded English quantity words, while role tokens compose operators, extended classifiers, approximation/range connectors, magnitude idioms, share/rank roles, vague quantities, and common English frames. Category recognition performs a longest-prefix split and reuses that same segmentation plus approved modifiers before an explicit category; it does not maintain a second count regex. Thus `十余种游戏`, `若干名开发者`, `前十名游戏`, `一半游戏`, `很多游戏`, `over 10 games`, `several dozen games`, and `top ten games` are generic only when the whole normalized name is covered, while `半条命`, `十强争霸`, `种地勇者`, `Overland`, `UnderMine`, and `A Dozen Dreams` retain distinctive residue. Organization roles include company suffixes through 股份、控股、事业群、事业部、部门、中心 and, only after a known company prefix, a bounded terminal-role check that closes arbitrary middle sub-brands ending in 业务部、实验室、研究院、工作室群、项目组, or related explicit organization shapes; distinctive products such as `腾讯极光计划` and `网易射雕` remain valid. Media roles include known sources and conservative source suffix shapes. Short documents use whole-body generic-qualifier segmentation plus a role suffix, rejecting composable forms from `投资协议` through `反馈意见` while retaining distinctive names such as `逆光协议` and `灵魂协议`. Category matching uses a lexical-start scanner plus the shared longest-first vocabulary, preventing embedded `PC game/mobile game/端游` substring matches while keeping bare `游戏` insufficient. Category-event slot framing supports bounded Chinese/English temporal/announcement phrases and glued category-first `新作` without globally trimming real names. Quote selection uses the first role-valid project with a later event, so nearer media or policy quotes cannot override it. Prose URL punctuation is removed before strict route validation. Dedupe operates on transitive shared-key components and conservatively preserves the gate marker if any component member carries it, ensuring failed broad items never reach candidate conversion or enrichment.
 
 The standalone `steam-schinese-reviews-v1` audit source is not imported by the active Daily runner or either Daily workflow. V7.1 consumes its validated artifact and activates EA/high-traction and China-heat publication only through the separate `.github/workflows/steam-review-opportunities.yml`, `automations/rules/steam-review-opportunities.json`, and the delivery contract in `docs/STEAM_REVIEW_OPPORTUNITY_DELIVERY.md`.
+
+V7.2.3 adds only a missing-value fallback from official Steam short description and gameplay paragraphs bound to the full-game AppID. Concrete operation/result pairs may support co-op, management/tower-defense, card builds, physics traversal/puzzles, skill combat or survival-shooting content hooks. Existing explicit and legacy values win. Tags alone, marketing, negation, third-party copy and other-game comparisons cannot become new fallback evidence. A content hook proves neither quality, traction, China demand nor cooperation intent. The implementation is `deriveOfficialGameplayChinaBilibiliValue` in `automations/jobs/online_daily_v7_indie_admission.mjs`; Steam enrichment and media admission reuse it without extra requests. Existing snapshots retain their seven-day TTL and refresh naturally. The 5–10 worthwhile additional Leads/week target is pending seven natural days after cache renewal, with successful synchronization receipts; there is no quota or automatic relaxation.
 
 ## Operating Principle
 
@@ -220,14 +222,14 @@ V6.8 was the temporary publication boundary before V7.0 activation. It remains d
 
 ## V7.2 2A/3A China Joint Admission
 
-- The unchanged lane baseline is `docs/SOURCING_RULES_V7_2.md`; the active composite contract is `docs/SOURCING_RULES_V7_2_2.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
+- The unchanged lane baseline is `docs/SOURCING_RULES_V7_2.md`; the active composite contract is `docs/SOURCING_RULES_V7_2_3.md`, mirrored by `automations/rules/daily-report.json` and executed by the regular Daily V4 decision layer.
 - `indie_prelaunch` keeps its eleven V7.0 gates. `china_joint` adds four independent gates: identity/dedupe, one locked data path, a current China business opportunity, and confirmed absence of mature China-partner occupancy.
 - The three data paths are exactly: Steam recommendations `>=5000`; recommendations `>=1500` with `Very Positive` or `Overwhelmingly Positive`; or a verified major-title team record plus a current official product event.
 - Current China opportunity means verified publishing, license/版号, localization, marketing, mobile, or joint-operation need. No current China need and known mature China-partner occupancy are hard exclusions from `china_joint`; unknown evidence cannot pass.
 - Both lanes use the same dedupe/publication boundary. An already-qualified indie project keeps `indie_prelaunch`; otherwise a complete joint pass publishes as `china_joint`.
 - Every complete pass is formal. Ranking affects reading order only; neither lane nor their combined formal output has a quota, minimum, maximum, backfill, or cutoff.
 - Fixed acceptance requires the same-day 5-indie + 4-joint fixture to publish all 9 formal Leads, while no-demand and occupied-partner fixtures publish none.
-- The active provenance version is `sourcing-rules-v7.2.2-near-pass-review` for every new regular formal/review Lead and candidate-audit record.
+- The active provenance version is `sourcing-rules-v7.2.3-official-gameplay-value` for every new regular formal/review Lead and candidate-audit record.
 
 ## V7.2.1 Broad-Media Game-Product Domain
 
