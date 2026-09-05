@@ -170,7 +170,8 @@ export function mediaIndieAdmissionEvidence(lead = {}) {
       officialBilibili: lead._officialSourceMatched === true
     }),
     china_bilibili_value: cleanEvidenceText(lead.chinaBilibiliValue ?? lead.china_bilibili_value)
-      ?? deriveConcreteChinaBilibiliValue(`${lead.gameplay ?? ""} ${sourceText}`),
+      ?? deriveConcreteChinaBilibiliValue(`${lead.gameplay ?? ""} ${sourceText}`)
+      ?? deriveOfficialGameplayChinaBilibiliValue({ appId: steamAppId, details }),
     china_demand: cleanEvidenceText(lead.chinaDemandEvidence ?? lead.china_demand)
       ?? deriveExplicitChinaDemandEvidence(sourceText, details?.detailed_description, details?.about_the_game)
   };
@@ -196,6 +197,86 @@ export function deriveConcreteChinaBilibiliValue(value) {
     return "构筑与局内选择可形成流派复盘、挑战路线和UP主栏目，并以简中内容验证中国用户反馈。";
   }
   return null;
+}
+
+// This is a content-hook fallback, never a quality, traction or China-demand proof.
+// Callers supply Steam AppDetails already obtained by the official entity/detail path.
+export function deriveOfficialGameplayChinaBilibiliValue({ appId, details } = {}) {
+  const boundId = numericString(appId);
+  if (!boundId || boundId === "0" || details?.type !== "game"
+    || numericString(details.steam_appid) !== boundId
+    || (details.fullgame?.appid && numericString(details.fullgame.appid) !== boundId)) return null;
+
+  const shortBlocks = officialGameplayBlocks(details.short_description);
+  const shortContext = shortBlocks.filter(isAffirmativeGameplayBlock).join(" ");
+  const blocks = [...shortBlocks, ...officialGameplayBlocks(details.about_the_game)];
+  for (const block of blocks) {
+    if (!isAffirmativeGameplayBlock(block)) continue;
+    // The short description may establish the genre; operation and outcome must
+    // still coexist in this one gameplay paragraph, never across unrelated sections.
+    const domain = shortContext + " " + block;
+    if (/(?:co-?op|cooperative|multiplayer|多人|协作|合作)/i.test(domain)
+      && /(?:coordinat|cooperat|work together|carry|share|分工|协作|搬运|传递|配合)/i.test(block)
+      && /(?:complete.{0,50}(?:orders?|tasks?|missions?)|solve.{0,40}puzzles?|defeat|survive|完成.{0,25}(?:订单|任务)|解开|通关|击败)/i.test(block)) {
+      return "官方玩法描述了协作操作与任务结果，可作为B站组队挑战、配合技巧和机制讲解的内容切入点。";
+    }
+    if (/(?:management|automation|factory|tower defense|经营|自动化|工厂|塔防)/i.test(domain)
+      && /(?:assign|allocat|connect|match.{0,20}tiles|分配|连接|连线|消除|建造)/i.test(block)
+      && /(?:produc|output|efficiency|cast.{0,20}spells?|summon.{0,20}allies|产出|效率|释放法术|召唤友军|抵御)/i.test(block)) {
+      return "官方玩法描述了系统操作与产出或防守结果，可作为B站机制讲解、效率挑战和策略复盘的内容切入点。";
+    }
+    if (/(?:deckbuild|card|卡牌|构筑)/i.test(domain)
+      && /(?:(?:combin|play|select|draft|discard|upgrad).{0,35}cards?|(?:选择|组合|打出|升级|弃置).{0,20}(?:卡牌|牌组))/i.test(block)
+      && /(?:trigger|synerg|damage|attack|defeat|触发|联动|伤害|击败)/i.test(block)) {
+      return "官方玩法描述了卡牌操作与构筑效果，可作为B站流派复盘、局内决策和挑战路线的内容切入点。";
+    }
+    if (/(?:physics|swing|物理|摆荡|摆动)/i.test(domain)
+      && /(?:swing|climb|grab|grasp|push|pull|launch|摆荡|摆动|攀爬|抓取|推动|拉动|发射)/i.test(block)
+      && /(?:solv.{0,40}puzzles?|overcome.{0,30}(?:obstacles?|challenges?)|cross.{0,30}(?:gaps?|obstacles?)|闯关|解谜|破解.{0,15}谜题|越过障碍|应对.{0,20}挑战)/i.test(block)) {
+      return "官方玩法描述了物理移动或物体交互如何用于闯关解谜，可作为B站路线挑战、技巧展示和创意解法的内容切入点。";
+    }
+    if (/(?:combo|parr|cancel|attack chains?|连段|连招|格挡|取消)/i.test(block)
+      && /(?:combin|mix|chain|cancel|parr|格挡|取消|组合|连段攻击)/i.test(block)
+      && /(?:unleash|generat|give.{0,25}(?:ki|energy)|gain.{0,25}(?:ki|energy)|释放|提高内力|获得内力|打出.{0,15}连段|反击|破防)/i.test(block)) {
+      return "官方玩法描述了连段、取消或格挡带来的战斗效果，可作为B站连招教学、Boss挑战和操作展示的内容切入点。";
+    }
+    if (/(?:shooter|shooting|射击)/i.test(domain)
+      && /(?:surviv|third.person|生存|活下去|第三人称)/i.test(domain)
+      && /(?:weapons?|ammunition|ammo|resources?|武器|弹药|资源)/i.test(block)
+      && /(?:collect|scaveng|upgrad|discover|spend|manage|收集|搜寻|升级|强化|消耗|分配|获得)/i.test(block)
+      && /(?:surviv|grow|capable|unlock|stronger|defeat|提升|成长|变强|解锁|生存|击败)/i.test(block)) {
+      return "官方玩法描述了生存射击中的武器、资源或成长操作，可作为B站实况挑战、资源决策和战斗攻略的内容切入点。";
+    }
+  }
+  return null;
+}
+
+function officialGameplayBlocks(value) {
+  if (typeof value !== "string") return [];
+  return value.slice(0, 100000)
+    .replace(/<(script|style|blockquote|q)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "\n")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>\s*(?:<p\b[^>]*>)?/gi, "\n$1: ")
+    .replace(/<\/?(?:p|div|li|ul|ol|h[1-6])\b[^>]*>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(?:nbsp|amp|quot|apos|lt|gt);|&#(?:x[0-9a-f]+|\d+);/gi, (entity) => {
+      const named = { "&nbsp;": " ", "&amp;": "&", "&quot;": '"', "&apos;": "'", "&lt;": "<", "&gt;": ">" };
+      if (named[entity.toLowerCase()]) return named[entity.toLowerCase()];
+      const code = entity[2].toLowerCase() === "x"
+        ? parseInt(entity.slice(3, -1), 16) : parseInt(entity.slice(2, -1), 10);
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : " ";
+    })
+    .split(/\n+/)
+    .map((block) => block.replace(/\s+/g, " ").trim())
+    .filter((block) => block.length > 0 && block.length <= 2400);
+}
+
+function isAffirmativeGameplayBlock(block) {
+  if (/\b(?:unlike|compared (?:to|with)|inspired by|similar to|other games?|reviews?|recommended)\b|类似|相比|对比|借鉴|致敬|其他游戏|其它游戏|推荐语|媒体评价|《[^》]+》.{0,10}(?:中|里)/i.test(block)) return false;
+  // Reject a whole gameplay paragraph when it denies a mechanism. Narrative
+  // phrases such as "no sign of civilization" do not negate gameplay.
+  return !/\b(?:no|not|without|never|cannot|can't|doesn't|don't|lacks?|unable)\b[^.!?。！？]*(?:combo|parr|cancel|combat|cards?|co-?op|multiplayer|physics|swing|shoot|weapons?|ammunition|resources?|upgrad|solv|puzzles?)|(?:没有|无法|不能|不支持|并非|不存在|不含|移除了|取消了)[^。！？]*(?:连段|连招|格挡|取消|战斗|卡牌|合作|协作|多人|物理|摆荡|射击|武器|资源|强化|解谜|谜题)|(?:physics|swing|combo|parr|cards?)[^.!?。！？]*(?:cannot|can't|not available)/i.test(block);
 }
 
 export function buildSteamOfficialDemoEvidence(details, appId) {
