@@ -33,6 +33,8 @@ jobs:
       - name: Fixed Radar regressions
         run: node --test automations/test/onlineDailyV4Radar.test.mjs
       - name: Full repository verification
+        env:
+          COREPACK_ENABLE_PROJECT_SPEC: "0"
         run: npm run verify:all
       - name: Check PR diff
         run: git diff --check origin/main...HEAD

@@ -26,6 +26,9 @@ Implement the user-approved China + global Radar expansion to 30–40 curated ex
 - Added a fixture/fix for whitespace-wrapped RSS CDATA so GamesRadar publisher summaries survive parsing; exclude its non-game entertainment sections.
 - Focused fixtures 13/13 and 370/371 full Daily tests passed before the final verified report-file fingerprint correction. Collector production code and its 41-path manifest are unchanged.
 
+- Activated-source smoke run 33978880750 passed with extracted summaries: AUTOMATON 30, GamesRadar 41 game articles, Chuapp 25.
+- Focused 14/14 and complete Daily suite 372/372 passed. verify:all then hit Corepack rejecting the repository's historical pnpm typecheck commands because packageManager declares npm; configure only the new verification step to use the explicitly pinned global pnpm (COREPACK_ENABLE_PROJECT_SPEC=0), with no package or application changes.
+
 ## Next Action
 Run all checks and source smoke on the activated exact PR head; review scope and merge only when checks pass. Then verify deployment and a normal cloud-produced daily Radar artifact/sync receipt.
 
