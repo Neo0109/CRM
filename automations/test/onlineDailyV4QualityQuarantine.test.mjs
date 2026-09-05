@@ -29,7 +29,7 @@ describe("online daily v4 quality quarantine", () => {
     assert.equal(machineRules.rule_version, RULE_VERSION);
     assert.equal("quality_quarantine" in machineRules, false);
     assert.match(currentRulesDoc, /Historical V6\.8 Quality Quarantine/);
-    assert.match(currentRulesDoc, /sourcing-rules-v7\.2\.2-near-pass-review/);
+    assert.match(currentRulesDoc, /sourcing-rules-v7\.2\.3-official-gameplay-value/);
     assert.match(generator, /const sourcingRuleVersion = RULE_VERSION/);
     assert.doesNotMatch(generator, /quarantineDailyLeadPools/);
     assert.doesNotMatch(contractValidator, /isLeadCountHealthEnabled\(RULE_VERSION\)/);

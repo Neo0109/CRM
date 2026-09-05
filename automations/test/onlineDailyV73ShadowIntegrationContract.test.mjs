@@ -26,12 +26,13 @@ const dailyValidator = read("../../scripts/validate-daily-contract.mjs");
 const syncWorkflow = read("../../.github/workflows/sync-daily-report.yml");
 const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml");
 
-// PR 124 approves Radar-only changes to these shared-file blobs. The separate
-// semantic fingerprint below freezes every original non-Radar machine rule.
+// PR 124 approved Radar changes; V7.2.3 explicitly approves only the official
+// gameplay fallback and its provenance. The projection below still freezes
+// every prior sourcing rule after removing this approved additive metadata.
 const ORIGINAL_BLOBS = {
   generator: "39846814bfe8188fa935065ebba42229e2175531",
   activeRulesModule: "1ad0ecd6ca53424f7dd92e75c0a5b4014a503c66",
-  activeRule: "2c9a3030c25fabe603b2dba81bdefa23ad377c73",
+  activeRule: "3ddc70e4082f118598c6bf3da6183ba671b20663",
   activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
   activeCandidateAudit: "c2bf0aef0f146660129ababe09ca3eed450ad24e",
   activeReports: "3309a6d1ee42579676cef8fabbaee2c2cbbcc4fa",
@@ -41,7 +42,7 @@ const ORIGINAL_BLOBS = {
 };
 
 describe("C5-B shadow-only production integration", () => {
-  it("freezes every exact denylist and approved production V7.2.2 authority blob", () => {
+  it("freezes every exact denylist and approved production V7.2.3 authority blob", () => {
     assert.equal(gitBlobSha(activeRulesModule), ORIGINAL_BLOBS.activeRulesModule);
     assert.equal(gitBlobSha(activeRuleText), ORIGINAL_BLOBS.activeRule);
     assert.equal(gitBlobSha(activeDecision), ORIGINAL_BLOBS.activeDecision);
@@ -50,9 +51,15 @@ describe("C5-B shadow-only production integration", () => {
     assert.equal(gitBlobSha(dailyValidator), ORIGINAL_BLOBS.dailyValidator);
     assert.match(activeRulesModule, /REGULAR_SOURCING_RULE_VERSION/);
     assert.equal(activeRule.rule_version, "sourcing-rules-v7.2.3-official-gameplay-value");
-    const { radar_diversity, radar_sources, ...sourcingRules } = activeRule;
+    const { radar_diversity, radar_sources, official_gameplay_content_value, ...sourcingRules } = activeRule;
+    assert.equal(official_gameplay_content_value.additional_network_requests, 0);
+    assert.equal(official_gameplay_content_value.cache_ttl_days, 7);
+    assert.equal(official_gameplay_content_value.proves_quality, false);
+    sourcingRules.rule_version = "sourcing-rules-v7.2.2-near-pass-review";
+    sourcingRules.updated_at = "2026-08-14";
+    sourcingRules.canonical_rules_doc = "docs/SOURCING_RULES_V7_2_2.md";
     assert.equal(createHash("sha256").update(JSON.stringify(sourcingRules)).digest("hex"),
-      "53c073e7ae6c9adcbdaaf08604357781b22987949d32f035417f8113da57a6b8", "Radar changes must preserve every original sourcing rule");
+      "53c073e7ae6c9adcbdaaf08604357781b22987949d32f035417f8113da57a6b8", "Approved Radar and gameplay metadata changes must preserve every original admission rule");
   });
 
   it("keeps the non-throwing hook after all four production writes and the approved coverage observation", () => {
