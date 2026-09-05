@@ -213,3 +213,37 @@ test("Radar feeds retain whitespace-wrapped CDATA summaries and exclude non-game
   assert.equal(items[0].title, "Game studio interview");
   assert.equal(items[0].summary, "The publisher explains its handcrafted game world.");
 });
+
+
+test("production acceptance excludes unrelated broad-media stories without losing game or engine news", async () => {
+  const { curateRadarSignals } = await module();
+  const articles = [
+    item(0, { source: "IT之家", title: "央视曝光幽灵外卖乱象：无资质商家花500元就能上线外卖平台", summary: "外卖平台商家资质与网络餐饮监管。" }),
+    item(1, { source: "IT之家", title: "Kimi、MiniMax等即将在天猫开店，开售Token", summary: "大模型厂商入驻天猫官方旗舰店。" }),
+    item(2, { source: "证券时报", title: "新消费公司融资并购，品牌版权授权上线", summary: "消费市场投资与商店平台。" }),
+    item(3, { source: "IT之家", title: "索尼澄清2028年PlayStation光盘产量下降10%", summary: "游戏光盘制造政策变化。" }),
+    item(4, { source: "IT之家", title: "Unreal Engine开发工具发布新渲染功能", summary: "开发技术更新。" }),
+    item(5, { source: "证券时报", title: "米哈游公布公司业务进展", summary: "公司与发行投资动态。" })
+  ];
+  const result = curateRadarSignals(articles, { reportDate, capturedAt, diversity: config });
+  assert.deepEqual(new Set(result.signals.map(x => x.title)), new Set(articles.slice(3).map(x => x.title)));
+  assert.equal(result.diagnostics.unrelated, 3);
+});
+
+test("production acceptance merges bracketed and unquoted Demo videos across upload dates", async () => {
+  const { curateRadarSignals } = await module();
+  const video = (i, title, published_at = "2026-09-05T09:00:00+08:00") =>
+    item(i, { title, source: "B站视频-" + i, link: "https://www.bilibili.com/video/BVaccept" + i, published_at });
+  const duplicate = [
+    video(0, "新游 试玩 ——零境入侵 demo"),
+    video(1, "【零境入侵】 Demo试玩 —— 这 游戏 完成度还是挺高的", "2026-09-06T09:00:00+08:00"),
+    video(2, "《零境入侵》公开测试开启")
+  ];
+  const result = curateRadarSignals(duplicate, { reportDate, capturedAt, diversity: config });
+  assert.equal(result.signals.length, 2);
+  assert.equal(result.diagnostics.duplicate_event, 1);
+  const history = [{ report_date: "2026-09-05", items: [duplicate[1]] }];
+  assert.equal(curateRadarSignals([duplicate[0]], { reportDate, capturedAt, diversity: config, history }).signals.length, 0);
+  const distinct = [video(3, "【零境入侵】Demo试玩 v1.0"), video(4, "零境入侵 Demo试玩 v2.0"), video(5, "《星河远征》Demo试玩")];
+  assert.equal(curateRadarSignals(distinct, { reportDate, capturedAt, diversity: config }).signals.length, 3);
+});
