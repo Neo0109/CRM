@@ -46,10 +46,40 @@ function publicationTimestamp(value) {
   return Date.parse(text);
 }
 
-function videoEventKey(item) {
+const BROAD_RADAR_SOURCES = new Set(["IT之家", "证券时报", "澎湃新闻"]);
+const BROAD_RADAR_HOSTS = new Set(["ithome.com", "stcn.com", "thepaper.cn"]);
+
+function hasRadarIndustryContext(item) {
+  let host = ""; try { host = new URL(item.link).hostname.replace(/^www\./, ""); } catch { /* URL validation is separate. */ }
+  if (!BROAD_RADAR_SOURCES.has(item.source) && !BROAD_RADAR_HOSTS.has(host)) return true;
+  // Generic platform, launch, investment and IP words are not gaming evidence.
+  return /\b(?:games?|gaming|steam|xbox|playstation|nintendo|switch|unity|unreal(?: engine)?|godot|gdc|gamescom|esports?)\b|游戏|手游|端游|电竞|掌机|主机|版号|腾讯游戏|网易游戏|米哈游|莉莉丝|鹰角|游族|巨人网络|完美世界|虚幻引擎/i.test(item.title + " " + (item.summary ?? ""));
+}
+
+function explicitVideoProducts(item) {
+  if (!isBilibiliSignal(item)) return [];
+  return [...normalizeDisplayText(item.title ?? "").matchAll(/[《「『【\[]([^》」』】\]]+)[》」』】\]]/g)]
+    .map(match => match[1].trim())
+    .filter(name => titleKey(name).length >= 2 && name.length <= 80 &&
+      !/^(?:新游|独立游戏|游戏|国产游戏)?(?:试玩|实机|演示|推荐|评测|合集|预告|开发日志|demo|pv|4k|中字|中文字幕|官方)$/i.test(name));
+}
+
+function videoProduct(item, knownProducts) {
+  const explicit = explicitVideoProducts(item);
+  if (explicit.length) return explicit.length === 1 ? titleKey(explicit[0]) : "";
+  const title = titleKey(item.title);
+  // Learn aliases only from product brackets in this edition/history. An
+  // unquoted title can then match the same product without guessing a name.
+  return knownProducts.find(product => {
+    const index = title.indexOf(product);
+    return index >= 0 && !/[0-9]/.test(title[index + product.length] ?? "");
+  }) ?? "";
+}
+
+function videoEventKey(item, knownProducts = []) {
   if (!isBilibiliSignal(item)) return "";
   const title = normalizeDisplayText(item.title ?? "");
-  const product = title.match(/[《「『]([^》」』]+)[》」』]/)?.[1];
+  const product = videoProduct(item, knownProducts);
   if (!product) return "";
   const event = /公开测试|封闭测试|公测|内测|playtest/i.test(title) ? "test"
     : /试玩|demo/i.test(title) ? "demo"
@@ -59,13 +89,13 @@ function videoEventKey(item) {
   if (!event) return "";
   const venue = title.match(/科隆|gamescom|东京电玩展|\btgs\b|夏日游戏节|summer game fest|新品节|next fest/i)?.[0]?.toLowerCase()
     .replace("gamescom", "科隆").replace("tgs", "东京电玩展").replace("summer game fest", "夏日游戏节").replace("next fest", "新品节") ?? "";
-  const year = title.match(/\b20\d{2}\b/)?.[0] ?? "";
-  const part = title.match(/第[一二三四五六七八九十\d]+[章节部弹]|(?:版本|version|ver\.?|v)\s*\d+(?:\.\d+)*/i)?.[0] ?? "";
   const timestamp = publicationTimestamp(item.published_at ?? item.captured_at);
-  const day = Number.isFinite(timestamp) ? new Date(timestamp + 8 * HOUR).toISOString().slice(0, 10) : "";
-  // Explicit venue + year identifies an event across upload dates. Otherwise only
-  // combine the same kind of update on the same publication day, preserving parts.
-  return [titleKey(product), event, venue, venue && year ? year : day, titleKey(part)].join("|");
+  const publicationYear = Number.isFinite(timestamp) ? new Date(timestamp + 8 * HOUR).getUTCFullYear() : "";
+  const year = title.match(/\b20\d{2}\b/)?.[0] ?? String(publicationYear);
+  const part = title.match(/第[一二三四五六七八九十\d]+[章节部弹]|(?:版本|version|ver\.?|v)\s*\d+(?:\.\d+)*/i)?.[0] ?? "";
+  // Upload dates do not identify different product progress. Keep explicit
+  // venues, editions, versions and chapters separate instead.
+  return [product, event, venue, venue ? year : "", titleKey(part)].join("|");
 }
 
 function previousHistory(history, reportDate) {
@@ -79,11 +109,13 @@ function previousHistory(history, reportDate) {
 
 export function curateRadarSignals(items, { reportDate, capturedAt, history = [], diversity, diagnostics = {} }) {
   const result = { raw: items.length, unknown_date: 0, stale: 0, future_date: 0, non_article: 0,
-    low_quality: 0, duplicate_history: 0, duplicate_current: 0, duplicate_event: 0, ...diagnostics };
+    low_quality: 0, unrelated: 0, duplicate_history: 0, duplicate_current: 0, duplicate_event: 0, ...diagnostics };
   const historyItems = previousHistory(history, reportDate);
   const priorUrls = new Set(historyItems.map(x => radarUrlKey(x.link)).filter(Boolean));
   const priorTitles = new Set(historyItems.map(x => titleKey(x.title)).filter(Boolean));
-  const priorEvents = new Set(historyItems.map(videoEventKey).filter(Boolean));
+  const knownProducts = [...new Set([...items, ...historyItems].flatMap(explicitVideoProducts).map(titleKey))].sort((a, b) => b.length - a.length || a.localeCompare(b));
+  const eventKey = item => videoEventKey(item, knownProducts);
+  const priorEvents = new Set(historyItems.map(eventKey).filter(Boolean));
   const now = Date.parse(capturedAt);
   if (!Number.isFinite(now)) throw new Error("Radar requires a valid capturedAt timestamp");
   const eligible = [];
@@ -95,6 +127,7 @@ export function curateRadarSignals(items, { reportDate, capturedAt, history = []
     const age = now - published;
     if (age < 0) { result.future_date++; continue; }
     if (age > 72 * HOUR) { result.stale++; continue; }
+    if (!hasRadarIndustryContext(item)) { result.unrelated++; continue; }
     const text = String(item.title ?? "");
     if (/\b(?:walkthrough|best settings|discount|deals|cosplay|quiz)\b|攻略|折扣|促销|史低|壁纸|图赏|周末游戏视频集锦/i.test(text)) {
       result.low_quality++; continue;
@@ -102,7 +135,7 @@ export function curateRadarSignals(items, { reportDate, capturedAt, history = []
     item.score = Number.isFinite(item.score) ? item.score : scoreMediaSignal(item);
     if (item.score < 12 || !titleKey(item.title)) { result.low_quality++; continue; }
     if (priorUrls.has(radarUrlKey(item.link)) || priorTitles.has(titleKey(item.title)) ||
-        (videoEventKey(item) && priorEvents.has(videoEventKey(item)))) {
+        (eventKey(item) && priorEvents.has(eventKey(item)))) {
       result.duplicate_history++; continue;
     }
     eligible.push({ item, recent: age <= 24 * HOUR, published });
@@ -111,7 +144,7 @@ export function curateRadarSignals(items, { reportDate, capturedAt, history = []
     b.published - a.published || radarUrlKey(a.item.link).localeCompare(radarUrlKey(b.item.link)));
   const urls = new Set(); const titles = new Set(); const events = new Set(); const unique = [];
   for (const { item } of eligible) {
-    const url = radarUrlKey(item.link); const title = titleKey(item.title); const event = videoEventKey(item);
+    const url = radarUrlKey(item.link); const title = titleKey(item.title); const event = eventKey(item);
     if (urls.has(url) || titles.has(title)) { result.duplicate_current++; continue; }
     if (event && events.has(event)) { result.duplicate_event++; continue; }
     urls.add(url); titles.add(title); if (event) events.add(event); unique.push(item);
