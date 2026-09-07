@@ -1,6 +1,6 @@
 {
   "report_date": "2026-09-07",
-  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 22 条，另从媒体/B站提取产品线索 30 条；B站探头候选 152 条、最终 47 条、官方源命中 5 条；严格准入 indie_prelaunch 0 条、china_joint 1 条，严格正式共 1 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 1 条，其余只保留在候选审计。",
+  "summary": "Sourcing V7.2.2：扫描 Steam 候选 260 条、富化 1 条，另从媒体/B站提取产品线索 51 条；B站探头候选 152 条、最终 47 条、官方源命中 0 条；严格准入 indie_prelaunch 0 条、china_joint 0 条，严格正式共 0 条；正式去重后追加 near-pass 人工复核 0 条，push_pool 共 0 条，其余只保留在候选审计。",
   "insights": [
     "V7.2.2先无上限发布完整通过 indie_prelaunch 或 china_joint 的严格正式Lead；全部正式去重后，才可追加最多3条带明确警告的 near-pass 人工复核Lead。",
     "每个可review项目必须说明玩法循环、公开数据、优势、短板、B站内容/社区赋能方式和下一步测试/BD动作。",
@@ -16,85 +16,7 @@
     "自动日报把严格正式Lead和最多3条明确警告的 near-pass review 写入未处理 push_pool，priority 保持为空；不自动写入观察池/待评测/跟进池/推进池。",
     "正式Lead为0既不失败也不标记degraded；来源扫描异常、结构损坏、资格与push数量不一致、写入失败或同步失败仍然阻断。"
   ],
-  "push_pool": [
-    {
-      "id": "lead_media_20260907_1kynrpd",
-      "project": "以撒的结合",
-      "steam_app_id": "686060",
-      "team": "Edmund McMillen",
-      "team_size": null,
-      "country": "中国（媒体/B站信号待确认）",
-      "region": "中国",
-      "city": null,
-      "region_priority": "国内优先",
-      "bucket": "未处理",
-      "stage": "new",
-      "priority": null,
-      "priority_reason": null,
-      "rule_fit": "V7.2 2A/3A 中国联合发行数据门与商业资格门全部通过；排序只影响阅读顺序，不影响推荐资格。",
-      "genre": "Roguelike / Co-op / Multiplayer / Adventure / Indie",
-      "gameplay": "Roguelike / Co-op / Multiplayer / Adventure / Indie",
-      "progress": "正式上线",
-      "release_window": "2026-02-10",
-      "early_access": false,
-      "narrative_heavy": false,
-      "india_team": false,
-      "publisher_status": "Edmund McMillen / Tyler Glaiel；B站/媒体线索已补 Steam 交叉验证",
-      "publisher_name": "Edmund McMillen",
-      "china_capability_occupied": false,
-      "traction_summary": "IT之家 分数 53；国内媒体/社区语境；已从文本补 Steam AppID 686060。",
-      "public_signals": "IT之家 / https://www.ithome.com/0/999/150.htm",
-      "contact": "官网: https://www.ithome.com/0/999/150.htm；Email: support@glaielgames.com；官网: http://mewgenics.com/；官网: https://discord.gg/mewgenics；Email: localizationfeedback@glaielgames.com",
-      "contact_methods": [
-        {
-          "type": "官网",
-          "value": "https://www.ithome.com/0/999/150.htm",
-          "note": "B站/媒体简介中提取"
-        },
-        {
-          "type": "Email",
-          "value": "support@glaielgames.com",
-          "note": "Steam support email"
-        },
-        {
-          "type": "官网",
-          "value": "http://mewgenics.com/",
-          "note": "Steam official website"
-        },
-        {
-          "type": "官网",
-          "value": "https://discord.gg/mewgenics",
-          "note": "Steam support URL"
-        },
-        {
-          "type": "Email",
-          "value": "localizationfeedback@glaielgames.com",
-          "note": "Found on official site"
-        }
-      ],
-      "links": [
-        "https://www.ithome.com/0/999/150.htm",
-        "https://store.steampowered.com/app/686060/_/",
-        "https://store.steampowered.com/app/686060/",
-        "https://steamdb.info/app/686060/",
-        "http://mewgenics.com/"
-      ],
-      "exposure_trail": "自动从IT之家捕捉到媒体/B站线索（2026-09-07）。这类线索用于扩大国内产品发现，不要求先具备 Steam AppID。",
-      "bilibili_fit": "可看上线后内容热度和用户反馈，但不作为新签约优先线索。",
-      "amplification": "",
-      "risks": "已正式上线，合作窗口和权益空间大概率不足。",
-      "verdict": "符合 V7.2 china_joint 正式准入；建议按人工优先级流程评估中国合作窗口并触达。",
-      "next_action": null,
-      "owner": null,
-      "due_date": null,
-      "first_seen": "2026-09-07",
-      "notes": null,
-      "sourcing_lane": "china_joint",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "sourcing_run_type": "scheduled",
-      "drop_reason": null
-    }
-  ],
+  "push_pool": [],
   "watch_pool": [],
   "drop_pool": []
 }
