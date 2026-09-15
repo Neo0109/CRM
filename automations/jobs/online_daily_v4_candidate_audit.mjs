@@ -27,7 +27,8 @@ export function buildSourcingCandidateArtifact({
   candidatePools = emptyPools(),
   publishedPools = emptyPools(),
   candidateStates = null,
-  steamEnrichmentMetrics = null
+  steamEnrichmentMetrics = null,
+  gameplayLookupResults = null
 }) {
   const poolIndex = buildPoolIndex(candidatePools, publishedPools);
   const statefulArtifact = candidateStates instanceof Map && steamEnrichmentMetrics && typeof steamEnrichmentMetrics === "object";
@@ -60,7 +61,11 @@ export function buildSourcingCandidateArtifact({
   }
 
   const internalCandidates = [...records.values()].sort((left, right) => left.dedupe_key.localeCompare(right.dedupe_key));
-  const candidates = internalCandidates.map(stripAuditPrivate);
+  const candidates = internalCandidates.map(record => {
+    const cleaned = stripAuditPrivate(record);
+    const lookup = gameplayLookupResults?.get(record.dedupe_key);
+    return lookup ? { ...cleaned, official_gameplay_lookup: lookup } : cleaned;
+  });
   const decisionCount = (decision) => candidates.filter((candidate) => candidate.decision === decision).length;
   const v7Summary = buildV7PublicationSummary({ ruleVersion, internalCandidates, publishedPools });
 

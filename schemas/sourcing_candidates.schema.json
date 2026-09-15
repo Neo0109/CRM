@@ -107,7 +107,70 @@
         "last_enriched_at": { "type": ["string", "null"], "format": "date-time" },
         "next_retry_date": { "type": ["string", "null"], "format": "date" },
         "scheduler_lane": { "type": ["string", "null"], "enum": ["new", "backlog", "retry_refresh", "reuse", null] },
-        "evidence_snapshot": { "$ref": "#/$defs/evidenceSnapshot" }
+        "evidence_snapshot": { "$ref": "#/$defs/evidenceSnapshot" },
+        "official_gameplay_lookup": {
+          "type": "object",
+          "required": [
+            "version",
+            "steam_app_id",
+            "checked_on",
+            "status",
+            "evidence"
+          ],
+          "properties": {
+            "version": {
+              "const": "official-gameplay-metadata-v1"
+            },
+            "steam_app_id": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "checked_on": {
+              "type": "string",
+              "format": "date"
+            },
+            "status": {
+              "enum": [
+                "confirmed",
+                "not_confirmed",
+                "fetch_failed"
+              ]
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "url",
+                  "source_url",
+                  "steam_app_id",
+                  "basis"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "source_url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "steam_app_id": {
+                    "type": "string"
+                  },
+                  "basis": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },

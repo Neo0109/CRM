@@ -149,7 +149,7 @@ describe("online daily v4 Steam source pipeline", () => {
         screenshots: Array.from({ length: 12 }, () => ({})),
         movies: [
           { name: "Cinematic Trailer", webm: { max: "https://cdn.example/cinematic.webm" } },
-          { name: "Official Gameplay Trailer", webm: { max: "https://cdn.example/gameplay.webm" } }
+          { name: "Official Gameplay Trailer", webm: { max: "https://cdn.akamai.steamstatic.com/steam/apps/123456/movie.webm" } }
         ],
         demos: [{ appid: 234568, description: "Evidence Game Demo" }],
         recommendations: { total: 1200 },

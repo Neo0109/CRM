@@ -260,7 +260,7 @@ export async function enrichSteamCandidate(candidate, details, context = {}) {
   const contactMethods = await collectContactMethodsImpl(details, candidate.appId);
   const score = scoreCandidateImpl({ source: candidate.source, domestic, domesticLens: Boolean(candidate.domesticLens), domesticQuery: Boolean(candidate.domesticQuery), hasDemoSignal, strongGameplay, highVisual, strongData, validatedPcHit, mobileAdaptationPotential, alreadyReleased, releaseTooSoon, earlyAccess, narrativeHeavy, indiaTeam, publisherOccupied, comingSoon, hasDetails: Boolean(details), contactCount: contactMethods.length });
   const officialDemoEvidence = buildSteamOfficialDemoEvidence(details, candidate.appId);
-  const officialGameplayEvidence = buildSteamOfficialGameplayEvidence(details);
+  const officialGameplayEvidence = buildSteamOfficialGameplayEvidence(details, candidate.appId);
   const qualityProofs = buildVerifiedPublicQualityProofs(details, candidate.appId);
   const chinaBilibiliValue = String(candidate.chinaBilibiliValue ?? candidate.china_bilibili_value ?? "").trim()
     || (deriveConcreteChinaBilibiliValue(`${genres.join(" ")} ${categories.join(" ")}`)

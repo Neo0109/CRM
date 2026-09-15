@@ -1,3 +1,4 @@
+import { extractSteamGameplayEvidence, extractOfficialBilibiliGameplayEvidence } from "./online_daily_v4_official_gameplay.mjs";
 import { normalizeDisplayText, normalizeText, normalizeUrl } from "./online_daily_v4_dedupe.mjs";
 
 export const INDIE_PRELAUNCH_RULE_VERSION = "sourcing-rules-v7.0-quality-gated-indie";
@@ -160,11 +161,15 @@ export function mediaIndieAdmissionEvidence(lead = {}) {
     official_demo_evidence: resolution?.demo_available === true
       ? [{ type: "steam_demo", url: steamAppId ? `https://store.steampowered.com/app/${steamAppId}/` : null }]
       : [],
-    official_gameplay_evidence: officialGameplayEvidence({
-      details,
-      officialSourceMatched: lead._officialSourceMatched === true,
-      sourceItem: lead._mediaItem
-    }),
+    official_gameplay_evidence: normalizeEvidenceList([
+      ...officialGameplayEvidence({
+        details, appId: steamAppId, project,
+        officialSourceMatched: lead._officialSourceMatched === true,
+        sourceItem: lead._officialGameplaySource ?? lead._mediaItem,
+        acceptedSourceAppId: resolution?.relation === "demo_of" ? resolution.evidence_app_id : null
+      }),
+      ...(lead._officialGameplayEvidence ?? [])
+    ]),
     quality_proofs: publicQualityProofs(details, steamAppId),
     business_entrypoints: nonSteamBusinessEntrypoints(lead.contact_methods, {
       officialBilibili: lead._officialSourceMatched === true
@@ -302,8 +307,8 @@ export function buildSteamOfficialDemoEvidence(details, appId) {
   }));
 }
 
-export function buildSteamOfficialGameplayEvidence(details) {
-  return officialGameplayEvidence({ details, officialSourceMatched: false, sourceItem: null });
+export function buildSteamOfficialGameplayEvidence(details, appId = details?.steam_appid) {
+  return officialGameplayEvidence({ details, appId, officialSourceMatched: false, sourceItem: null });
 }
 
 export function buildVerifiedPublicQualityProofs(details, appId) {
@@ -430,17 +435,16 @@ function mediaReleaseWindowState(lead, details) {
   return "unknown";
 }
 
-function officialGameplayEvidence({ details, officialSourceMatched, sourceItem }) {
-  const evidence = [];
-  for (const movie of details?.movies ?? []) {
-    if (!/gameplay|game play|实机|實機|玩法|试玩|試玩/i.test(String(movie?.name ?? ""))) continue;
-    evidence.push({ type: "steam_official_gameplay", value: movie.name, url: movie?.webm?.max ?? movie?.mp4?.max ?? null });
-  }
-  const sourceText = `${sourceItem?.title ?? ""} ${sourceItem?.summary ?? ""}`;
-  if (officialSourceMatched && /gameplay|实机|實機|玩法演示|试玩演示/i.test(sourceText)) {
-    evidence.push({ type: "official_bilibili_gameplay", value: normalizeDisplayText(sourceItem?.title), url: sourceItem?.link ?? null });
-  }
-  return normalizeEvidenceList(evidence);
+function officialGameplayEvidence({ details, appId=details?.steam_appid, project, officialSourceMatched, sourceItem, acceptedSourceAppId }) {
+  // Old injected fixtures may omit the API identity envelope; actual fetches retain it.
+  const boundDetails = details && appId ? { type:"game", steam_appid:Number(appId), ...details } : details;
+  const steam = appId ? extractSteamGameplayEvidence({appId,details:boundDetails}) : [];
+  const legacy = !appId ? (details?.movies ?? [])
+    .filter(movie=>/gameplay|game play|实机|實機|玩法|试玩|試玩/i.test(String(movie?.name??"")))
+    .map(movie=>({type:"steam_official_gameplay",value:movie.name,url:movie?.webm?.max??movie?.mp4?.max??null})) : [];
+  return normalizeEvidenceList([...steam,...legacy,...extractOfficialBilibiliGameplayEvidence({
+    appId,project,officialSourceMatched,sourceItem,acceptedSourceAppId
+  })]);
 }
 
 function publicQualityProofs(details, steamAppId) {

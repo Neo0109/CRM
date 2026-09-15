@@ -1,3 +1,4 @@
+import { refreshOfficialGameplayEvidence } from "./online_daily_v4_gameplay_refresh.mjs";
 import { collectRadarEdition, loadRadarHistory } from "./online_daily_v4_radar.mjs";
 // Online CRM generator v4 runtime, currently executing Sourcing Rules V7.2 regular admission.
 // Core principle: every output must be useful to a Bilibili BD owner.
@@ -110,7 +111,10 @@ const industrySignals = radarEdition.signals;
 radarEdition.diagnostics.history_warnings = radarHistory.warnings;
 await writeJson(`data/runtime/${reportDate}-radar-diagnostics.json`, radarEdition.diagnostics);
 console.log(JSON.stringify({ radar_diagnostics: radarEdition.diagnostics }));
-const mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, sourceContext);
+// Reserve half of the shared official-lookup capacity for missing gameplay.
+let mediaLeadCandidates = await buildMediaLeadCandidates(mediaSignals, existingIndex, {
+  ...sourceContext, maxOfficialLookups: Math.floor(maxOfficialLookups / 2)
+});
 const candidateHistory = await loadSourcingCandidateHistory({
   rootDir,
   reportDate,
@@ -144,7 +148,14 @@ const enrichmentOutcome = applySteamEnrichmentOutcomes({
 });
 const candidateStates = enrichmentOutcome.states;
 const steamEnrichmentMetrics = enrichmentOutcome.metrics;
-const enrichedCandidates = enrichmentOutcome.evaluatedCandidates;
+const gameplayRefresh = await refreshOfficialGameplayEvidence({
+  steamCandidates: enrichmentOutcome.evaluatedCandidates,
+  mediaCandidates: mediaLeadCandidates,
+  history: candidateHistory,
+  reportDate, maxOfficialLookups, diagnostics: sourcingDiagnostics
+});
+const enrichedCandidates = gameplayRefresh.steamCandidates;
+mediaLeadCandidates = gameplayRefresh.mediaCandidates;
 sourcingDiagnostics.steam_enrichment = {
   ...steamEnrichmentMetrics,
   snapshot_rejections: enrichmentOutcome.snapshot_rejections
@@ -217,7 +228,8 @@ const sourcingCandidateArtifact = buildSourcingCandidateArtifact({
   candidatePools,
   publishedPools: pools,
   candidateStates: candidateStates,
-  steamEnrichmentMetrics: steamEnrichmentMetrics
+  steamEnrichmentMetrics: steamEnrichmentMetrics,
+  gameplayLookupResults: gameplayRefresh.lookupResults
 });
 
 await writeJson(`data/sourcing_candidates/${reportDate}.json`, sourcingCandidateArtifact);

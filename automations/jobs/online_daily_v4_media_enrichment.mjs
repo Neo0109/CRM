@@ -265,6 +265,7 @@ export async function enrichMediaLeadWithOfficialBilibiliContext(lead, context =
     _mediaItem: { ...preferred, bilibili_evidence: evidence },
     _originalMediaItem: lead._mediaItem,
     _officialSourceMatched: true,
+    _officialGameplaySource: { ...preferred, steam_app_id: officialSteamAppId, bilibili_evidence: officialEvidence },
     _bilibiliEvidence: evidence,
     _steamEvidencePrimary: evidence.steam_app_id ? 1 : lead._steamEvidencePrimary,
     steam_app_id: evidence.steam_app_id ?? lead.steam_app_id,
