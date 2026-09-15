@@ -14,13 +14,12 @@ Implement the user-approved official-information-only gameplay evidence plan in 
 - Read local delivery protocol (not present on remote main); use GitHub App/API and disposable exact-commit test snapshots only.
 
 ## Remaining
-1. Freeze official metadata samples and 46-candidate audit; add RED contracts.
-2. Implement metadata extraction and shared-budget refresh; focused GREEN.
-3. Full verification, exact-head review, PR, normal squash merge/deploy.
-4. Record evidence recovery, strict/review counts, actual CRM additions when a new normal run exists; zero strict additions leaves business goal unmet.
+1. Verify category enum and finish 46-row same-input admission/publication audit.
+2. Fix compatibility manifests for the approved modules; install test dependencies and run full verification.
+3. Exact-head review, PR, normal squash merge/deploy and scheduled-run acceptance.
 
 ## Next Action
-Verify official category mapping and runtime budget/state boundaries; add focused failing tests.
+Resume from branch edd319b: inspect the frozen 46 samples, validate category mapping, fix compatibility contracts, then verify:all. Do not restart diagnosis or broaden admission gates.
 
 ## Git Status
 Remote branch codex/official-gameplay-evidence from 742f496fad982e9da5a76bb0f43adbbc733033d1. Local checkout read-only; the existing three draft paths are unchanged.
@@ -33,3 +32,10 @@ Remote branch codex/official-gameplay-evidence from 742f496fad982e9da5a76bb0f43a
 - Exact branch RED failed with ERR_MODULE_NOT_FOUND for the new official metadata helper, before implementation.
 - Implemented pure source-bound metadata extraction and shared-budget refresh with an additive per-candidate lookup ledger. Existing media official lookup phase receives half the 12-slot ceiling; unused capacity goes to gameplay refresh, so neither path adds a second budget.
 - No change to the 7-day broad evidence snapshot TTL. Cached missing-gameplay candidates receive a separate targeted lookup and same-day cooldown.
+
+## Recovery checkpoint (2026-09-16)
+- Recovered the approved user request from task 01a0a480-58ee-7953-bf43-d1c5d6d845ca and verified remote branch edd319b0071ecb554b8791cdd20bac4e4f715bb0. No PR yet.
+- Remote main is 96c09553ad9601b01a9225d9988dc1cf86bf9aa7; the only drift since 742f496 is scheduled data and sync receipts. Build of edd319b passed; production health is HTTP 200 / ok=true.
+- Previous focused tests: 8/8. Preliminary frozen-sample evidence recovery: 18/46; formal/review/publication impact not yet verified.
+- Full-test failures are stale production hash/dependency-closure assertions plus missing ajv in the disposable snapshot. These must be resolved and all checks rerun before PR delivery.
+- Local CRM checkout remains read-only with its three pre-existing draft paths. Test snapshot: /tmp/crm-official-gameplay-20260915. Frozen metadata: /tmp/crm-gameplay-audit-20260915/audit.json.
