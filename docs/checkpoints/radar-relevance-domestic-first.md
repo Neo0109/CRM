@@ -16,6 +16,10 @@ Implement the user-approved 2026-09-15 Radar-only plan: game relevance first; on
 - PR 127 created as Draft. Independent snapshot, pure editorial module, conservative event groups, domestic representative fallback and metadata priority implemented on the branch.
 - Original admission SHA-256 projection and collector 41-path behavior manifest remain unchanged; only approved generator/radar-rule fingerprints refreshed. New pure editorial module is a Radar-only dependency exclusion.
 
+- Implementation head 233831fea7dacdecfc1cfa3ced782a083f90f77b passed Radar 24/24, full Daily 389/389 and all verify:all tasks in run 34924817486.
+- Manual archived replay review found false negatives for valid named-game previews/ports/studio news lacking the word game. Added 16 actual archived positive fixtures and stronger genre/platform/article-section evidence, without publisher-wide exemptions.
+- Added distinct-game, distinct-mod and coarse-year event safeguards; incomplete/uncertain attribution stays conservative. Historical-card replay strips old presentation boilerplate before curation.
+
 ## Remaining
 - Add failing fixtures for actual relevance problems, multilingual/reprint events, distinct progress, publisher identity, cap fallback, history and independent collector copies.
 - Implement the bounded Radar behavior, rules and replay diagnostics.

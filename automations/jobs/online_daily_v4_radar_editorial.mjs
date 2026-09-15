@@ -3,6 +3,33 @@ const textKey = value => String(value ?? "").normalize("NFKC").toLowerCase().rep
 const escapeRegExp = value => value.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 
 export const RADAR_ENTITY_ALIASES = [
+  {"id":"liesofp","names":["Lies of P","匹诺曹的谎言"]},
+  {"id":"overwatch","names":["Overwatch","守望先锋"]},
+  {"id":"zelda","names":["Zelda","塞尔达传说"]},
+  {"id":"deathstranding","names":["Death Stranding","死亡搁浅"]},
+  {"id":"physint","names":["Physint"]},
+  {"id":"planetzoo2","names":["Planet Zoo 2","动物园之星2"]},
+  {"id":"genshin","names":["Genshin Impact","原神"]},
+  {"id":"spacemarine3","names":["Space Marine 3","星际战士3"]},
+  {"id":"ff14","names":["Final Fantasy XIV","FFXIV","最终幻想14"]},
+  {"id":"ff7","names":["Final Fantasy 7","Final Fantasy VII","FFVII","最终幻想7"]},
+  {"id":"diablo","names":["Diablo","暗黑破坏神"]},
+  {"id":"fireemblem","names":["Fire Emblem","火焰纹章"]},
+  {"id":"crazytaxi","names":["Crazy Taxi","疯狂出租车"]},
+  {"id":"danganronpa","names":["Danganronpa","弹丸论破"]},
+  {"id":"rayman","names":["Rayman","雷曼"]},
+  {"id":"gtasanandreas","names":["GTA: San Andreas","GTA：圣安地列斯","侠盗猎车手圣安地列斯"]},
+  {"id":"mir","names":["Legend of Mir","《传奇》","传奇IP"]},
+  {"id":"onmyoji","names":["Onmyoji","阴阳师"]},
+  {"id":"saber","names":["Saber Interactive"]},
+  {"id":"rockstar","names":["Rockstar Games","Rockstar"]},
+  {"id":"ubisoft","names":["Ubisoft","育碧"]},
+  {"id":"ko_op","names":["KO_OP"]},
+  {"id":"wemade","names":["Wemade","娱美德"]},
+  {"id":"kingnet","names":["恺英网络","恺英"]},
+  {"id":"take_two","names":["Take-Two"]},
+  {"id":"aquaplus","names":["Aquaplus"]},
+  {"id":"sony_ie","names":["Sony Interactive Entertainment"]},
   {id:"wow",names:["World of Warcraft","WoW","魔兽世界"]},
   {id:"starcraft",names:["StarCraft","星际争霸"]},
   {id:"diablo5",names:["Diablo 5","Diablo V","暗黑破坏神5","暗黑破坏神 5","暗黑5"]},
@@ -38,7 +65,7 @@ export const RADAR_ENTITY_ALIASES = [
 export function radarEditorialText(item) {
   const title = String(item.title ?? "").replace(/<[^>]*>/g, " ");
   let summary = String(item.summary ?? "").replace(/<[^>]*>/g, " ");
-  summary = summary.replace(/^(?:行业新闻|今日亮点|广域媒体非游戏信号|AI 游戏|新梗热点|B站趋势)[：:]\s*/, "");
+  summary = summary.replace(/^(?:行业新闻|今日亮点|广域媒体非游戏信号|AI 游戏|AI\/工具链信号|新梗热点|B站趋势)[：:]\s*/, "");
   summary = summary.split(/。(?:重点看|先看|把公司\/IP|保留在 Radar|用于判断|记录关键人|打开视频|只保留有BD|这类线索)/)[0];
   return {title, summary, text:title + " " + summary};
 }
@@ -55,26 +82,32 @@ function entities(text, editorial = {}) {
   for (const match of text.matchAll(/[《「『]([^》」』]+)[》」』]/g)) {
     if (!found.some(entry => entry.names.some(name => textKey(name) === textKey(match[1])))) ids.push("title:" + textKey(match[1]));
   }
+  if((ids.includes("diablo4")||ids.includes("diablo5"))&&ids.includes("diablo"))ids.splice(ids.indexOf("diablo"),1);
   return ids.sort();
 }
 
 export function assessRadarRelevance(item, editorial = {}) {
   const {title, summary, text} = radarEditorialText(item);
   const ids = entities(text, editorial);
-  const companies = /^(blizzard|bungie|naughtydog|level5|nintendo|playstation|xbox|steam|epic|unity|unreal|godot|roblox|squareenix|mihoyo|neteasegames|tencentgames)$/;
+  const companies = /^(blizzard|bungie|naughtydog|level5|nintendo|playstation|xbox|steam|epic|unity|unreal|godot|roblox|squareenix|mihoyo|neteasegames|tencentgames|saber|rockstar|ubisoft|ko_op|wemade|kingnet|take_two|aquaplus|sony_ie)$/;
   const namedGame = ids.some(id => !id.startsWith("title:") && !companies.test(id));
-  const explicit = /\b(?:games?|gaming|gameplay|gamers?|rpg|mmorpg|mmo|rts|roguelike|deckbuilder|playtest|esports?|dlc)\b|游戏|手游|端游|电竞|玩法|副本|资料片|版号|试玩|实机|战棋|肉鸽/i.test(text);
+  const explicit = /\b(?:games?|gaming|gameplay|gamers?|pve|pvp|rpg|jrpg|arpg|mmorpg|mmo|rts|roguelike|roguelite|soulslike|deckbuilder|playtest|esports?|dlc)\b|游戏|手游|端游|电竞|玩法|副本|资料片|版号|试玩|实机|战棋|肉鸽|玩家|游戏引擎/i.test(text);
+  const gamePlatform = /\b(?:PS5|PS4|Xbox|Nintendo Switch|Steam(?: Deck| Frame)?|Meta Quest|TapTap|BlizzCon|GDC|PGC|Gamescom)\b|游戏主机|玩聚节/i.test(text);
+  const gameSection = /^https?:\/\/[^/]+\/(?:games|gaming|gameplay)\//i.test(item.link??"");
+  const gameAction = /\b(?:remake|remaster|sequel|expansion|trailer|demo|review|gameplay|players?|patch|update|DLC|city builder)\b|移植|发售|预告|试玩|联动|游戏更新/i.test(text);
+  const indieBusiness = /\bindie (?:devs?|developers?|studios?|publishers?)\b/i.test(text)&&/\b(?:publisher|revenue|split|funding|development|game)\b/i.test(text);
   const engine = /\b(?:unreal(?: engine)?|godot|unity engine)\b|虚幻引擎|Unity引擎/i.test(text);
-  const business = /\b(?:layoffs?|acquisition|funding|union|studio|publishing|publisher|policy|revenue|earnings|copyright|disc|development)\b|裁员|游戏开发|发行|收购|融资|工作室|光盘|游戏政策|营收|版号/i.test(text);
+  const business = /\b(?:layoffs?|acquisition|funding|union|studio|publish(?:er|ing)?|policy|revenue|earnings|copyright|disc|development|court|lawsuit|tribunal|union|trademark|showcase|generative ai|expansion|delay|release|players?)\b|裁员|游戏开发|发行|收购|融资|工作室|光盘|游戏政策|营收|版号|入股|仲裁|诉讼|人工智能|发布会/i.test(text);
   const entertainment = /\b(?:television|TV show|new show|movie|film|leprechaun|cinema|Netflix)\b|电视剧|影视剧|电影|演员访谈/i.test(text);
   const hardware = /\b(?:laptop|notebook|monitors?|GPU|CPU|graphics card|RTX|processor|keyboard|mouse)\b|笔记本|迷你主机|处理器|显卡|显示器|键盘|鼠标/i.test(text);
   let level = 0;
   if (entertainment) {
-    if ((namedGame || explicit) && /\b(?:adaptation|based on|crossover|collab)\b|游戏改编|游戏联动|改编自|游戏IP/i.test(text)) level = 1;
+    if (namedGame && /coming|release|launch|announc|发售|公布|上线/i.test(title) && /20\d{2}|游戏|game/i.test(title)) level = 3;
+    else if ((namedGame || explicit) && /\b(?:adaptation|based on|crossover|collab)\b|animated series|游戏改编|游戏联动|改编自|游戏IP|动画剧集/i.test(text)) level = 1;
     else if (explicit && /\b(?:gameplay|DLC|patch|in-game|game release)\b|游戏内|游戏更新|游戏发售/i.test(text)) level = 3;
   } else if (hardware) {
     if (explicit || /\b(?:playstation|xbox|steam deck|nintendo switch)\b|游戏主机/i.test(text)) level = 2;
-  } else if (explicit || namedGame || engine || (ids.some(id=>companies.test(id)) && business)) level = 3;
+  } else if (explicit || namedGame || engine || gamePlatform || indieBusiness || (gameSection&&gameAction) || (ids.some(id=>companies.test(id)) && business)) level = 3;
   const filler = /\b(?:best deals|discount|walkthrough|best settings|cosplay|quiz)\b|折扣|促销|史低|壁纸|图赏|喜加[一二三四五六七八九十\d]+|免费白嫖|周末游戏视频集锦/i.test(title);
   if (filler || title.trim().length < 6 || /^(首页|更多|新闻|资讯|专题|视频|搜索|登录|注册)$/.test(title.trim())) level = 0;
   const information = Math.min(8,Math.floor(textKey(summary).length/24)) + (title.length>=24 ? 2 : 0);
@@ -107,6 +140,14 @@ function progressFacts(text) {
     parts:[...normalized.matchAll(/第([一二三四五六七八九十\d]+)[章节部弹]|(?:chapter|part)\s+(\d+)/gi)].map(x=>x[1]??x[2])
   };
 }
+function eventObject(text, action) {
+  if(action==="mod_blocked") {
+    if(/\b(?:multiplayer|co-op)\b|多人|联机/i.test(text))return "multiplayer";
+    if(/\bvr\b|virtual reality|虚拟现实/i.test(text))return "vr";
+  }
+  return "";
+}
+const COMPANY_IDS=/^(blizzard|bungie|naughtydog|level5|nintendo|playstation|xbox|steam|epic|unity|unreal|godot|roblox|squareenix|mihoyo|neteasegames|tencentgames|saber|rockstar|ubisoft|ko_op|wemade|kingnet|take_two|aquaplus|sony_ie)$/;
 const conflict=(a,b)=>["versions","dates","parts"].some(k=>a[k].length&&b[k].length&&!a[k].some(x=>b[k].includes(x)));
 function eventAction(text) {
   if(/\b(?:review|opinion|hands-on|impressions)\b|评测|评析|体验感受/i.test(text)) return "review";
@@ -135,15 +176,21 @@ export function sameRadarEvent(a,b,editorial={}) {
   const aa=eventAction(at.text), ba=eventAction(bt.text);
   const compatible=!aa||!ba||aa===ba||["announcement","release_date","release"].includes(aa)&&["announcement","release_date","release"].includes(ba);
   if(!compatible) return false;
+  const ae=entities(at.text,editorial), be=entities(bt.text,editorial);
+  const productsA=ae.filter(id=>!COMPANY_IDS.test(id)), productsB=be.filter(id=>!COMPANY_IDS.test(id));
+  const knownA=productsA.filter(id=>!id.startsWith("title:")), knownB=productsB.filter(id=>!id.startsWith("title:"));
+  if(knownA.length&&knownB.length&&!knownA.some(id=>knownB.includes(id))) return false;
+  if(/clarif|correct|澄清|更正/i.test(at.title)!==/clarif|correct|澄清|更正/i.test(bt.title))return false;
+  const ao=eventObject(at.text,aa), bo=eventObject(bt.text,ba);
+  if(ao&&bo&&ao!==bo)return false;
   const originalsA=new Set((a.original_links??[]).map(urlKey).filter(Boolean));
   const originalsB=new Set((b.original_links??[]).map(urlKey).filter(Boolean));
   if(bu&&originalsA.has(bu)||au&&originalsB.has(au)||[...originalsA].some(url=>originalsB.has(url))) return true;
   if(!aa||aa!==ba||aa==="review") return false;
-  const ae=entities(at.text,editorial), be=entities(bt.text,editorial);
   if(!ae.length||!ae.some(id=>be.includes(id))) return false;
   const distinctive=/^(sequel_unlikely|mod_blocked|office_sublease|disc_production)$/.test(aa);
-  const sharedFact=["versions","dates","parts"].some(k=>af[k].some(x=>bf[k].includes(x)));
-  return distinctive||sharedFact;
+  const sharedFact=["versions","dates","parts"].some(k=>af[k].some(x=>(k!=="dates"||x.length>4||aa==="release_date")&&bf[k].includes(x)));
+  return distinctive||(productsA.length>0&&productsB.length>0&&sharedFact);
 }
 export function hasCompleteRadarCoverage(item,alternatives=[]) {
   const {title,summary,text}=radarEditorialText(item);

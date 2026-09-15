@@ -4,7 +4,7 @@ import { isBilibiliSignal, mediaRegion, normalizeDisplayText, selectDiverseMedia
 import { assertMediaSourceContract, parseFeedItems, readXmlTag, scoreMediaSignal } from "./online_daily_v4_media_sources.mjs";
 import { classifySourceError, fetchText } from "./online_daily_v4_network.mjs";
 import { cleanExtractedText } from "./online_daily_v4_source_utils.mjs";
-import { assessRadarRelevance, radarPublisherRegion, sameRadarEvent, hasCompleteRadarCoverage } from "./online_daily_v4_radar_editorial.mjs";
+import { assessRadarRelevance, radarEditorialText, radarPublisherRegion, sameRadarEvent, hasCompleteRadarCoverage } from "./online_daily_v4_radar_editorial.mjs";
 
 const HOUR = 3600000;
 export const RADAR_NETWORK_BUDGET_MS = 90000;
@@ -112,7 +112,7 @@ export function curateRadarSignals(items, { reportDate, capturedAt, history = []
   if(!Number.isFinite(now)) throw new Error("Radar requires a valid capturedAt timestamp");
   const eligible=[];
   for(const original of items) {
-    const item={...original};
+    const item={...original,summary:radarEditorialText(original).summary};
     if(!isRadarArticleUrl(item.link)){result.non_article++;continue;}
     const published=publicationTimestamp(item.published_at);
     if(!Number.isFinite(published)){result.unknown_date++;continue;}

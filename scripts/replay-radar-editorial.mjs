@@ -3,6 +3,7 @@ import {readFile} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {curateRadarSignals,loadRadarHistory} from "../automations/jobs/online_daily_v4_radar.mjs";
+import {assessRadarRelevance} from "../automations/jobs/online_daily_v4_radar_editorial.mjs";
 import {buildDailyRuleConfig} from "../automations/jobs/online_daily_v4_rules.mjs";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
@@ -29,6 +30,6 @@ for(const reportDate of dates){
   assert.ok(Object.values(result.diagnostics.regions).every(count=>count<=24));
   const selected=new Set(result.signals.map(item=>item.link));
   output.push({report_date:reportDate,before:external.length,after:result.signals.length,
-    diagnostics:result.diagnostics,removed:external.filter(item=>!selected.has(item.link)).map(item=>({source:item.source,title:item.title}))});
+    diagnostics:result.diagnostics,removed:external.filter(item=>!selected.has(item.link)).map(item=>({source:item.source,title:item.title,assessment:assessRadarRelevance(item)}))});
 }
 console.log(JSON.stringify({mode:"archived_curation_only_synthetic_publication_dates",editions:output},null,2));

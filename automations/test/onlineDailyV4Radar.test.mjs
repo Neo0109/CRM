@@ -350,3 +350,99 @@ test("domestic article metadata is prioritized and retains explicit original sou
   await collectRadarEdition({mediaSignals:[item(0,{source_focus:["global"],published_at:"",score:999}),item(1,{source_focus:["china"],published_at:"",score:0})],reportDate,capturedAt,ruleConfig:{radarDiversity:{...config,targets:[]},radarSources:[]},concurrency:1,fetchTextImpl:async url=>{calls.push(url);return html;}});
   assert.equal(calls[0],item(1).link);
 });
+
+
+test("same publisher company or calendar year cannot collapse different games, mod types or releases", async () => {
+  const {sameRadarEvent}=await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  assert.equal(sameRadarEvent({title:"Blizzard announces StarCraft for 2030"},{title:"Blizzard announces Diablo 5 for 2030"}),false);
+  assert.equal(sameRadarEvent({title:"World of Warcraft new update in 2026"},{title:"World of Warcraft another update in 2026"}),false);
+  assert.equal(sameRadarEvent({title:"Sony stops The Last of Us Part 2 multiplayer mod"},{title:"Sony stops The Last of Us Part 2 VR mod"}),false);
+});
+
+
+test("archived game previews, ports, studio news and updates survive even without the word game", async () => {
+  const {assessRadarRelevance}=await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const samples=[
+  {
+    "title": "Lies Of P’s Wizard Of Oz Tease May Have Just Gotten A Lot More Interesting",
+    "summary": "AI/工具链信号：Lies of P was a big hit when it was first released, and several years after it w。重点看研发效率、素材风险、内容供给质量和平台合规。",
+    "link": "https://www.gamespot.com/articles/lies-of-p-wizard-of-oz-tease-may-have-just-gotten-a-lot-more-interesting/"
+  },
+  {
+    "title": "Hozy coming to PS5, Xbox Series, and Switch in 2026; free DLC ‘Hideways’ now available",
+    "summary": "行业新闻：Publisher tinyBuild and developer Come On Games will release cozy renovation and cleaning 。重点看平台、渠道、政策或市场节奏是否改变发行打法。",
+    "link": "https://www.gematsu.com/2026/09/hozy-coming-to-ps5-xbox-series-and-switch-in-2026-free-dlc-hideways-now-available"
+  },
+  {
+    "title": "Level-5 CEO admits using generative AI in recent showcase",
+    "summary": "AI/工具链信号：Level-5 president and CEO Akihiro Hino has apologized after confirming that gene。重点看研发效率、素材风险、内容供给质量和平台合规。",
+    "link": "https://www.gamesindustry.biz/level-5-ceo-admits-using-generative-ai-in-recent-showcase"
+  },
+  {
+    "title": "官方 VR 项目取消后，第三方开发者成功将《GTA：圣安地列斯》移植至 Meta Quest 3 平台",
+    "summary": "广域媒体非游戏信号：IT之家 9 月 15 日消息，Meta 曾在 2021 年 宣布《GTA：圣安地列斯》将登陆 Quest 2 ，但后来相应项目悄悄被砍。而在近 5 年后的今天，第三方开发者 Ge。保留在 Radar，不作为游戏产品候选。",
+    "link": "https://www.ithome.com/1/002/419.htm"
+  },
+  {
+    "title": "从打官司到当“传奇大股东”，恺英拟花20.3亿元入股娱美德！",
+    "summary": "今日亮点：【GameLook专稿，禁止转载！】 GameLook报道/围绕《传奇》纠缠多年的两家公司，正在把关系推进到一个新阶段。 今年2月，恺英网络与娱美德旗下传奇IP公司就长期诉讼、仲裁。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "http://www.gamelook.com.cn/2026/09/602122/"
+  },
+  {
+    "title": "Lies of P publisher files trademark for likely sequel 'Wonders of O'",
+    "summary": "今日亮点：Lies of P publisher files trademark for likely sequel 'Wonders of O'。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.pcgamer.com/games/action/lies-of-p-publisher-files-trademark-for-likely-sequel-wonders-of-o/"
+  },
+  {
+    "title": "tinyBuild and Hypnohead announce roguelite city builder The Crab is Walking for PC",
+    "summary": "今日亮点：Publisher tinyBuild and The King is Watching developer Hypnohead have announced The Crab i。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.gematsu.com/2026/09/tinybuild-and-hypnohead-announce-roguelite-city-builder-the-crab-is-walking-for-pc"
+  },
+  {
+    "title": "Valve decided that cutting the Steam Frame’s specs to avoid price rises wasn't \"the right product choice\" for the VR headset",
+    "summary": "行业新闻：Surprising no-one, Valve&rsquo;s Steam Frame VR headset is launching with higher-than-expe。重点看平台、渠道、政策或市场节奏是否改变发行打法。",
+    "link": "https://www.rockpapershotgun.com/valve-decided-that-cutting-the-steam-frames-specs-to-avoid-price-rises-wasnt-the-right-product-choice-for-the-vr-headset"
+  },
+  {
+    "title": "华尔街日报：夏尔马收拾微软 XBOX 烂摊子，每月数小时亲自回玩家工单",
+    "summary": "广域媒体非游戏信号：IT之家 9 月 15 日消息，华尔街日报昨日（9 月 14 日）发布博文，报道称 微软 XBOX 首席执行官阿莎 · 夏尔马（Asha Sharma）不再完全依赖各团队的报告，每。保留在 Radar，不作为游戏产品候选。",
+    "link": "https://www.ithome.com/1/002/441.htm"
+  },
+  {
+    "title": "The other Xbox 360 exclusive JRPG from the creator of Final Fantasy now has a PC port",
+    "summary": "行业新闻：Lost Odyssey is now playable on PC thanks to a fan-made static recompilation port。重点看平台、渠道、政策或市场节奏是否改变发行打法。",
+    "link": "https://www.videogameschronicle.com/news/the-other-xbox-360-exclusive-jrpg-from-the-creator-of-final-fantasy-now-has-a-pc-port/"
+  },
+  {
+    "title": "Rockstar and IWGB outline arguments at start of tribunal",
+    "summary": "Rockstar and the Independent Workers' Union of Great Britain have set out their arguments at an ongoing employment tribu",
+    "link": "https://www.gamesindustry.biz/rockstar-and-iwgb-outline-arguments-at-start-of-tribunal"
+  },
+  {
+    "title": "Final Fantasy 7 Revelation is definitely \"the end of the series,\" says Square Enix director Yoshinori Kitase, but he won't rule out a spin-off if the \"fan reaction\" is right",
+    "summary": "今日亮点：The trilogy could become a universe。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.gamesradar.com/games/final-fantasy/final-fantasy-7-revelation-is-definitely-the-end-of-the-series-says-square-enix-director-yoshinori-kitase-but-he-wont-rule-out-a-spin-off-if-the-fan-reaction-is-right/"
+  },
+  {
+    "title": "Sombra's change to Support is the right move, but I fear some Overwatch players may take time to adjust",
+    "summary": "今日亮点：Sombra's change to Support is the right move, but I fear some Overwatch players may take t。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.pcgamer.com/games/fps/sombras-change-to-support-is-the-right-move-but-i-fear-some-overwatch-players-may-take-time-to-adjust/"
+  },
+  {
+    "title": "Danganronpa 2×2’s “insanely high” PC specs were based on 4K high-quality settings, producer reassures. Updates to be made",
+    "summary": "今日亮点：The originally announced recommended PC specs were on par with Capcom's Monster Hunter Wil。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。",
+    "link": "https://automaton-media.com/en/news/danganronpa-2x2s-insanely-high-pc-specs-were-based-on-4k-high-quality-settings-producer-reassures-updates-to-be-made/"
+  },
+  {
+    "title": "Ubisoft delays Rayman Legends Retold weeks before planned release",
+    "summary": "今日亮点：The Rayman Legends remake has been pushed to the end of the year。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。",
+    "link": "https://www.videogameschronicle.com/news/ubisoft-delays-rayman-legends-retold-weeks-before-planned-release/"
+  },
+  {
+    "title": "Marathon's permanent PvE mode and next major update delayed to December days before launch, and Bungie's \"moving away from a strict season schedule\"",
+    "summary": "今日亮点：Marathon Season 3 and everything that was due to come alongside it has been delayed, inclu。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。",
+    "link": "https://www.eurogamer.net/marathon-pve-mode-delay-bungie-major-update"
+  }
+];
+  for(const sample of samples)assert.ok(assessRadarRelevance(sample).level>0,sample.title);
+});
