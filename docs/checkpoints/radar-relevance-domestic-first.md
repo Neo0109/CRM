@@ -12,6 +12,10 @@ Implement the user-approved 2026-09-15 Radar-only plan: game relevance first; on
 - Prior coverage baseline 2026-09-14: 35 external (11 domestic publisher/24 foreign publisher), with unrelated content and repeated news.
 - Skills/routing: crm-production-guardian; remote GitHub/API edits only. No GUI or local real generation.
 
+- TDD red cloud proof: https://github.com/Neo0109/CRM/actions/runs/34924129519; all existing 16 tests pass, all eight new behavior fixtures fail before implementation.
+- PR 127 created as Draft. Independent snapshot, pure editorial module, conservative event groups, domestic representative fallback and metadata priority implemented on the branch.
+- Original admission SHA-256 projection and collector 41-path behavior manifest remain unchanged; only approved generator/radar-rule fingerprints refreshed. New pure editorial module is a Radar-only dependency exclusion.
+
 ## Remaining
 - Add failing fixtures for actual relevance problems, multilingual/reprint events, distinct progress, publisher identity, cap fallback, history and independent collector copies.
 - Implement the bounded Radar behavior, rules and replay diagnostics.
@@ -19,7 +23,7 @@ Implement the user-approved 2026-09-15 Radar-only plan: game relevance first; on
 - Verify normal deployment and one cloud acceptance run with actual content and synced=true receipt.
 
 ## Next Action
-Create regression fixtures and a draft PR, then implement the approved Radar slice. Update this checkpoint after each verification stage.
+Run the implementation's focused Radar fixtures, archived content replay and full verify:all in GitHub Actions; fix only concrete failures inside this approved scope.
 
 ## Git Status
 - Base 2ed65ed3aa8e3bd7e2c3d5f961fc05b0916d0a44; branch codex/radar-relevance-domestic-first, GitHub API only.

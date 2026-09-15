@@ -102,9 +102,10 @@ const rawCandidates = dedupeByAppId((await runLimited(steamCandidateTasks, 2)).f
   .filter((candidate) => candidate.appId && candidate.title && !isExistingSteamCandidate(candidate, existingIndex))
   .slice(0, maxCandidates);
 
-const mediaSignals = await fetchMediaSignals(sourceContext);
+let radarMediaSnapshot;
+const mediaSignals = await fetchMediaSignals({ ...sourceContext, onRadarSnapshot: items => { radarMediaSnapshot = items; } });
 const radarHistory = await loadRadarHistory({ rootDir, reportDate });
-const radarEdition = await collectRadarEdition({ mediaSignals, history: radarHistory.reports, reportDate, capturedAt, ruleConfig });
+const radarEdition = await collectRadarEdition({ mediaSignals: radarMediaSnapshot ?? mediaSignals, history: radarHistory.reports, reportDate, capturedAt, ruleConfig });
 const industrySignals = radarEdition.signals;
 radarEdition.diagnostics.history_warnings = radarHistory.warnings;
 await writeJson(`data/runtime/${reportDate}-radar-diagnostics.json`, radarEdition.diagnostics);

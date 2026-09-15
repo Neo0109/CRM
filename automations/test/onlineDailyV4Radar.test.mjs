@@ -317,8 +317,8 @@ test("event representatives try another domestic publisher then foreign when med
   const signals=[];
   for(let i=0;i<4;i++){
     const en=item(i*3,{source:"Foreign "+i,source_focus:["global"],title:"Game project "+i+" launch announced",summary:"The new action game launches on 2026-10-"+(10+i)+".",link:"https://foreign.test/story/"+i});
-    signals.push(en,item(i*3+1,{source:"国内甲",source_focus:["china"],title:"《游戏"+i+"》宣布发售",summary:"动作游戏确认了十月发售日期和发行安排。",original_links:[en.link]}));
-    if(i===3)signals.push(item(50,{source:"国内乙",source_focus:["china"],title:"《游戏3》公布发售安排",summary:"动作游戏将在十月发售，发行安排已经正式确认。",original_links:[en.link]}));
+    signals.push(en,item(i*3+1,{source:"国内甲",source_focus:["china"],title:"《游戏"+i+"》宣布发售",summary:"动作游戏确认在2026-10-"+(10+i)+"发售，发行安排已经正式确认。",original_links:[en.link]}));
+    if(i===3)signals.push(item(50,{source:"国内乙",source_focus:["china"],title:"《游戏3》公布发售安排",summary:"动作游戏将在2026-10-13发售，发行安排已经正式确认。",original_links:[en.link]}));
   }
   const opts={reportDate,capturedAt,diversity:{...config,targets:[]}};
   const selected=curateRadarSignals(signals,opts).signals;

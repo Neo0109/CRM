@@ -147,6 +147,7 @@ function steamAppIdFromText(value) {
 }
 
 export function selectDiverseMediaSignals(items, limit, config = {}) {
+  const regionFor = typeof config.regionFor === "function" ? config.regionFor : mediaRegion;
   const defaults = defaultDailyRuleConfig().radarDiversity;
   const number = (value, fallback) => Number.isFinite(Number(value ?? fallback)) ? Math.max(0, Math.floor(Number(value ?? fallback))) : fallback;
   const diversity = {
@@ -162,7 +163,7 @@ export function selectDiverseMediaSignals(items, limit, config = {}) {
   let bilibili = 0;
   const take = item => {
     if (selected.length >= diversity.limit || selected.includes(item)) return false;
-    const family = mediaTopicFamily(item); const region = mediaRegion(item);
+    const family = mediaTopicFamily(item); const region = regionFor(item);
     const source = String(item.source ?? "").normalize("NFKC").trim().toLowerCase();
     if ((sources.get(source) ?? 0) >= diversity.sourceCap ||
         (families.get(family) ?? 0) >= diversity.familyCap ||
@@ -179,7 +180,7 @@ export function selectDiverseMediaSignals(items, limit, config = {}) {
     let count = 0;
     for (const item of items) {
       if (selected.length >= diversity.limit || count >= number(target.count, 0)) break;
-      if (target.region && mediaRegion(item) !== target.region) continue;
+      if (target.region && regionFor(item) !== target.region) continue;
       const category = categoryForMediaSignal(item);
       if (target.category && category !== target.category) continue;
       if (target.categories && !target.categories.includes(category)) continue;

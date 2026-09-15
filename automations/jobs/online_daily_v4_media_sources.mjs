@@ -41,6 +41,10 @@ export async function fetchMediaSignals(context = {}) {
   const results = [...baseResults, ...probeResults];
   diagnostics.media_signals_raw = (diagnostics.media_signals_raw ?? 0) + results.length;
   const enrichedResults = await enrichBilibiliVideoSignals(results, context);
+  if (typeof context.onRadarSnapshot === "function") {
+    try { context.onRadarSnapshot(structuredClone(enrichedResults)); }
+    catch { context.logger?.warn?.("Radar snapshot unavailable; Lead collection continues"); }
+  }
   const scored = [];
   for (const item of enrichedResults) {
     if (isStaleMediaSignal(item, context)) {

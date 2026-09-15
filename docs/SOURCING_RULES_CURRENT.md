@@ -287,3 +287,8 @@ Each cloud run records fetch attempts, successes, failures, raw signals, retaine
 ## Industry Radar media coverage
 
 Radar selection is maintained independently from formal Lead admission. The machine fields `radar_diversity` and `radar_sources` in `automations/rules/daily-report.json` configure the 40-item external maximum, strict diversity caps and Radar-only media. The `online_daily_v4_radar.mjs` entry performs dated 72-hour selection and previous-seven-day duplicate suppression. See [RADAR_MEDIA_RULES.md](RADAR_MEDIA_RULES.md) for the source, freshness, isolation and request-budget contract, and [delivery checkpoint](checkpoints/pr-radar-media-expansion.md) for activation evidence. Radar item count is not a daily automation failure gate.
+
+
+## Radar editorial selection (2026-09-15)
+
+Radar now uses an independent copy and independent game-relevance assessment for every publisher, including reviews, demos, trailers and updates. Confirmed same-event reports prefer complete domestic coverage; unrelated entertainment/general technology and repeated events are removed. No mandatory 16/16 region fill remains; hard caps and publication requirements still apply. Machine limits remain in automations/rules/daily-report.json; game/context and bilingual event evidence are defined by automations/jobs/online_daily_v4_radar_editorial.mjs. Details: [Radar media rules](RADAR_MEDIA_RULES.md). Delivery evidence: [checkpoint](checkpoints/radar-relevance-domestic-first.md). This Radar change does not modify formal Lead or Steam rules.

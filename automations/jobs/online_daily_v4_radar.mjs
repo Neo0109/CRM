@@ -4,6 +4,7 @@ import { isBilibiliSignal, mediaRegion, normalizeDisplayText, selectDiverseMedia
 import { assertMediaSourceContract, parseFeedItems, readXmlTag, scoreMediaSignal } from "./online_daily_v4_media_sources.mjs";
 import { classifySourceError, fetchText } from "./online_daily_v4_network.mjs";
 import { cleanExtractedText } from "./online_daily_v4_source_utils.mjs";
+import { assessRadarRelevance, radarPublisherRegion, sameRadarEvent, hasCompleteRadarCoverage } from "./online_daily_v4_radar_editorial.mjs";
 
 const HOUR = 3600000;
 export const RADAR_NETWORK_BUDGET_MS = 90000;
@@ -44,16 +45,6 @@ function publicationTimestamp(value) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return Date.parse(text + "T00:00:00+08:00");
   if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2})?$/.test(text)) return Date.parse(text.replace(" ", "T") + "+08:00");
   return Date.parse(text);
-}
-
-const BROAD_RADAR_SOURCES = new Set(["IT之家", "证券时报", "澎湃新闻"]);
-const BROAD_RADAR_HOSTS = new Set(["ithome.com", "stcn.com", "thepaper.cn"]);
-
-function hasRadarIndustryContext(item) {
-  let host = ""; try { host = new URL(item.link).hostname.replace(/^www\./, ""); } catch { /* URL validation is separate. */ }
-  if (!BROAD_RADAR_SOURCES.has(item.source) && !BROAD_RADAR_HOSTS.has(host)) return true;
-  // Generic platform, launch, investment and IP words are not gaming evidence.
-  return /\b(?:games?|gaming|steam|xbox|playstation|nintendo|switch|unity|unreal(?: engine)?|godot|gdc|gamescom|esports?)\b|游戏|手游|端游|电竞|掌机|主机|版号|腾讯游戏|网易游戏|米哈游|莉莉丝|鹰角|游族|巨人网络|完美世界|虚幻引擎/i.test(item.title + " " + (item.summary ?? ""));
 }
 
 function explicitVideoProducts(item) {
@@ -107,55 +98,79 @@ function previousHistory(history, reportDate) {
   }).flatMap(report => Array.isArray(report.items) ? report.items : []);
 }
 
-export function curateRadarSignals(items, { reportDate, capturedAt, history = [], diversity, diagnostics = {} }) {
-  const result = { raw: items.length, unknown_date: 0, stale: 0, future_date: 0, non_article: 0,
-    low_quality: 0, unrelated: 0, duplicate_history: 0, duplicate_current: 0, duplicate_event: 0, ...diagnostics };
-  const historyItems = previousHistory(history, reportDate);
-  const priorUrls = new Set(historyItems.map(x => radarUrlKey(x.link)).filter(Boolean));
-  const priorTitles = new Set(historyItems.map(x => titleKey(x.title)).filter(Boolean));
-  const knownProducts = [...new Set([...items, ...historyItems].flatMap(explicitVideoProducts).map(titleKey))].sort((a, b) => b.length - a.length || a.localeCompare(b));
-  const eventKey = item => videoEventKey(item, knownProducts);
-  const priorEvents = new Set(historyItems.map(eventKey).filter(Boolean));
-  const now = Date.parse(capturedAt);
-  if (!Number.isFinite(now)) throw new Error("Radar requires a valid capturedAt timestamp");
-  const eligible = [];
-  for (const original of items) {
-    const item = { ...original };
-    if (!isRadarArticleUrl(item.link)) { result.non_article++; continue; }
-    const published = publicationTimestamp(item.published_at);
-    if (!Number.isFinite(published)) { result.unknown_date++; continue; }
-    const age = now - published;
-    if (age < 0) { result.future_date++; continue; }
-    if (age > 72 * HOUR) { result.stale++; continue; }
-    if (!hasRadarIndustryContext(item)) { result.unrelated++; continue; }
-    const text = String(item.title ?? "");
-    if (/\b(?:walkthrough|best settings|discount|deals|cosplay|quiz)\b|攻略|折扣|促销|史低|壁纸|图赏|周末游戏视频集锦/i.test(text)) {
-      result.low_quality++; continue;
+export function curateRadarSignals(items, { reportDate, capturedAt, history = [], diversity, diagnostics = {}, sources = [], editorial = {} }) {
+  const result = {raw:items.length, unknown_date:0, stale:0, future_date:0, non_article:0, low_quality:0, unrelated:0,
+    duplicate_history:0, duplicate_current:0, duplicate_event:0, article_event_duplicates:0, domestic_replacements:0,
+    domestic_cap_fallbacks:0, foreign_cap_fallbacks:0, ...diagnostics};
+  const historyItems=previousHistory(history,reportDate).filter(x=>x.source!=="CRM Online Scan");
+  const priorUrls=new Set(historyItems.map(x=>radarUrlKey(x.link)).filter(Boolean));
+  const priorTitles=new Set(historyItems.map(x=>titleKey(x.title)).filter(Boolean));
+  const knownProducts=[...new Set([...items,...historyItems].flatMap(explicitVideoProducts).map(titleKey))].sort((a,b)=>b.length-a.length||a.localeCompare(b));
+  const eventKey=item=>videoEventKey(item,knownProducts);
+  const priorEvents=new Set(historyItems.map(eventKey).filter(Boolean));
+  const now=Date.parse(capturedAt);
+  if(!Number.isFinite(now)) throw new Error("Radar requires a valid capturedAt timestamp");
+  const eligible=[];
+  for(const original of items) {
+    const item={...original};
+    if(!isRadarArticleUrl(item.link)){result.non_article++;continue;}
+    const published=publicationTimestamp(item.published_at);
+    if(!Number.isFinite(published)){result.unknown_date++;continue;}
+    const age=now-published;
+    if(age<0){result.future_date++;continue;}
+    if(age>72*HOUR){result.stale++;continue;}
+    const assessment=assessRadarRelevance(item,editorial);
+    if(!assessment.level){result[assessment.reason==="low_information"?"low_quality":"unrelated"]++;continue;}
+    const credibility=Number.isFinite(item.source_quality)?item.source_quality:10;
+    item.score=assessment.level*20+assessment.information+Math.min(20,Math.max(0,credibility));
+    if(priorUrls.has(radarUrlKey(item.link))||priorTitles.has(titleKey(item.title))||
+       (eventKey(item)&&priorEvents.has(eventKey(item)))||
+       (!isBilibiliSignal(item)&&historyItems.some(old=>!isBilibiliSignal(old)&&sameRadarEvent(item,old,editorial)))) {
+      result.duplicate_history++;continue;
     }
-    item.score = Number.isFinite(item.score) ? item.score : scoreMediaSignal(item);
-    if (item.score < 12 || !titleKey(item.title)) { result.low_quality++; continue; }
-    if (priorUrls.has(radarUrlKey(item.link)) || priorTitles.has(titleKey(item.title)) ||
-        (eventKey(item) && priorEvents.has(eventKey(item)))) {
-      result.duplicate_history++; continue;
+    eligible.push({item,assessment,recent:age<=24*HOUR,published,quality:assessment.information+Math.min(20,Math.max(0,credibility))});
+  }
+  const compare=(a,b)=>b.assessment.level-a.assessment.level||Number(b.recent)-Number(a.recent)||b.quality-a.quality||
+    b.published-a.published||radarUrlKey(a.item.link).localeCompare(radarUrlKey(b.item.link));
+  eligible.sort(compare);
+  const groups=[], videoEvents=new Set();
+  for(const entry of eligible) {
+    const video=eventKey(entry.item);
+    if(video&&videoEvents.has(video)){result.duplicate_event++;continue;}
+    if(video)videoEvents.add(video);
+    const group=groups.find(g=>g.every(other=>{
+      if(isBilibiliSignal(entry.item)||isBilibiliSignal(other.item))
+        return radarUrlKey(entry.item.link)===radarUrlKey(other.item.link)||titleKey(entry.item.title)===titleKey(other.item.title);
+      return sameRadarEvent(entry.item,other.item,editorial);
+    }));
+    if(group){
+      const exact=group.some(x=>radarUrlKey(x.item.link)===radarUrlKey(entry.item.link)||titleKey(x.item.title)===titleKey(entry.item.title));
+      result[exact?"duplicate_current":"article_event_duplicates"]++;
+      group.push(entry);
+    }else groups.push([entry]);
+  }
+  const selected=[];
+  const limits={...diversity,targets:[],regionFor:item=>radarPublisherRegion(item,sources)};
+  for(const group of groups) {
+    const foreigners=group.filter(x=>radarPublisherRegion(x.item,sources)==="global");
+    const preferred=group.filter(x=>radarPublisherRegion(x.item,sources)==="china"&&hasCompleteRadarCoverage(x.item,foreigners.map(x=>x.item))).sort(compare);
+    const others=[...foreigners.sort(compare),...group.filter(x=>!preferred.includes(x)&&!foreigners.includes(x)).sort(compare)];
+    const ordered=[...preferred,...others];
+    for(const [index,entry] of ordered.entries()) {
+      const next=selectDiverseMediaSignals([...selected,entry.item],limits.limit,limits);
+      if(!next.includes(entry.item))continue;
+      selected.push(entry.item);
+      if(preferred.includes(entry)&&foreigners.length)result.domestic_replacements++;
+      if(index>0&&preferred.length)result[radarPublisherRegion(entry.item,sources)==="china"?"domestic_cap_fallbacks":"foreign_cap_fallbacks"]++;
+      break;
     }
-    eligible.push({ item, recent: age <= 24 * HOUR, published });
   }
-  eligible.sort((a, b) => Number(b.recent) - Number(a.recent) || b.item.score - a.item.score ||
-    b.published - a.published || radarUrlKey(a.item.link).localeCompare(radarUrlKey(b.item.link)));
-  const urls = new Set(); const titles = new Set(); const events = new Set(); const unique = [];
-  for (const { item } of eligible) {
-    const url = radarUrlKey(item.link); const title = titleKey(item.title); const event = eventKey(item);
-    if (urls.has(url) || titles.has(title)) { result.duplicate_current++; continue; }
-    if (event && events.has(event)) { result.duplicate_event++; continue; }
-    urls.add(url); titles.add(title); if (event) events.add(event); unique.push(item);
-  }
-  const selected = new Set(selectDiverseMediaSignals(unique, diversity?.limit, diversity));
-  const signals = unique.filter(item => selected.has(item));
-  result.eligible = unique.length;
-  result.selected = signals.length;
-  result.regions = { china: signals.filter(x => mediaRegion(x) === "china").length, global: signals.filter(x => mediaRegion(x) === "global").length };
-  result.sources = Object.fromEntries([...new Set(signals.map(x => x.source))].map(source => [source, signals.filter(x => x.source === source).length]));
-  return { signals, diagnostics: result };
+  result.eligible=groups.length;
+  result.selected=selected.length;
+  result.regions={china:selected.filter(x=>radarPublisherRegion(x,sources)==="china").length,global:selected.filter(x=>radarPublisherRegion(x,sources)==="global").length};
+  result.sources=Object.fromEntries([...new Set(selected.map(x=>x.source))].map(source=>[source,selected.filter(x=>x.source===source).length]));
+  result.relevance_levels=Object.fromEntries([1,2,3].map(level=>[level,selected.filter(x=>assessRadarRelevance(x,editorial).level===level).length]));
+  return {signals:selected,diagnostics:result};
 }
 
 function attributes(tag) {
@@ -191,7 +206,16 @@ export function readRadarArticleMetadata(html) {
     [...String(html).matchAll(/<time\b[^>]*>/gi)].map(x => attributes(x[0]).datetime).find(Boolean) || publisherTime || "";
   const title = article.headline || metadata.get("og:title") || "";
   const summary = metadata.get("og:description") || metadata.get("description") || article.description || "";
-  return { title: cleanExtractedText(title), summary: cleanExtractedText(summary), published_at: String(date) };
+  const originalLinks = [];
+  // Only explicit attribution links from the article body, never menus/related links.
+  const articleBody = String(html).match(/<article\b[^>]*>([\s\S]*?)<\/article>/i)?.[1] ?? String(html).match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
+  for (const match of articleBody.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+    const attrs=attributes(match[1]);
+    const context=cleanExtractedText(articleBody.slice(Math.max(0,match.index-80),match.index+match[0].length+40));
+    if(!isRadarArticleUrl(attrs.href)||!/原文|来源|据.{0,30}报道|source|according to|\bvia\b/i.test(context))continue;
+    originalLinks.push(attrs.href);
+  }
+  return {title:cleanExtractedText(title),summary:cleanExtractedText(summary),published_at:String(date),original_links:[...new Set(originalLinks)].slice(0,8)};
 }
 
 export function parseChuappRadarItems(html, source = { name: "触乐", quality: 11, focus: ["china", "culture"] }) {
@@ -293,11 +317,16 @@ export async function collectRadarEdition({ mediaSignals, history = [], reportDa
     // Metadata requests only concern undated external article copies; the original
     // shared media array and every sourcing diagnostic remain untouched.
     const seen = new Set();
+    const registeredSources=[...(ruleConfig.mediaSources??[]),...(ruleConfig.radarSources??[])];
     const needsDate = combined.filter(item => {
-      const key = radarUrlKey(item.link);
-      if (Number.isFinite(publicationTimestamp(item.published_at)) || isBilibiliSignal(item) || !isRadarArticleUrl(item.link) || seen.has(key)) return false;
-      seen.add(key); return true;
-    }).sort((a, b) => (b.score ?? scoreMediaSignal(b)) - (a.score ?? scoreMediaSignal(a))).slice(0, 60);
+      const key=radarUrlKey(item.link);
+      const published=publicationTimestamp(item.published_at);
+      const needsEvidence=radarPublisherRegion(item,registeredSources)==="china"&&!item.original_links?.length;
+      if(isBilibiliSignal(item)||!isRadarArticleUrl(item.link)||seen.has(key))return false;
+      if(Number.isFinite(published)&&(!needsEvidence||Date.parse(capturedAt)-published>72*HOUR))return false;
+      seen.add(key);return true;
+    }).sort((a,b)=>Number(radarPublisherRegion(b,registeredSources)==="china")-Number(radarPublisherRegion(a,registeredSources)==="china")||
+      assessRadarRelevance(b).level-assessRadarRelevance(a).level).slice(0,60);
     const metadata = new Map();
     await pool(needsDate, async item => {
       diagnostics.metadata_requests++;
@@ -309,9 +338,10 @@ export async function collectRadarEdition({ mediaSignals, history = [], reportDa
       if (!detail) continue;
       if (!Number.isFinite(publicationTimestamp(item.published_at))) item.published_at = detail.published_at;
       if (detail.summary) item.summary = detail.summary;
+      if (detail.original_links?.length) item.original_links = detail.original_links.filter(link=>radarUrlKey(link)!==radarUrlKey(item.link));
     }
     diagnostics.budget_exhausted = controller.signal.aborted || Date.now() >= deadline;
     diagnostics.elapsed_ms = Date.now() - started;
-    return curateRadarSignals(combined, { reportDate, capturedAt, history, diversity: ruleConfig.radarDiversity, diagnostics });
+    return curateRadarSignals(combined, { reportDate, capturedAt, history, diversity: ruleConfig.radarDiversity, sources: registeredSources, diagnostics });
   } finally { clearTimeout(budgetTimer); controller.abort(); }
 }
