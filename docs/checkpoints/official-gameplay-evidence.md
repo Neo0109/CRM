@@ -45,3 +45,9 @@ Remote branch codex/official-gameplay-evidence from 742f496fad982e9da5a76bb0f43a
 - Fixes ignore malformed trailer entries, bind modern media to the official trailer ID, and merge only gameplay into a matching explicit admission snapshot without mutating its input.
 - Updated approved production hashes and the V7.3 dependency manifest for the two new modules; all original rule hashes and shadow isolation assertions remain enforced.
 - Test dependencies installed after a transient npm registry reset. Next: 46-row audit fixtures and full validation.
+
+## Frozen audit and final verification
+- Added the 46-row official-metadata fixture and a complete real-snapshot test through refresh, unchanged gates, publication dedupe, candidate ledger and same-day reuse.
+- Evidence recovered: 18/46. Complete replay available for 41 Steam snapshots: strict formal 0 -> 0, near-pass review 0 -> 2 (4328540 and 4955940). Five media rows have evidence/gap audit only; their runtime input was not retained in the original baseline. Actual CRM creation remains pending a post-deploy scheduled run.
+- Focused recovery and compatibility: 20/20; 46-row tests: 2/2. Full verification caught one old test fixture using a non-Steam CDN; replaced its fake URL with a Steam CDN fixture to exercise the new source binding. Schema cleanup retains only the additive lookup field diff with identical JSON semantics.
+- Next Action: run all verification on the exact updated remote head, review the bounded diff, create PR, follow normal checks/merge/deploy. No manual daily dispatch or direct CRM write is authorized.
