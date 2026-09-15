@@ -29,7 +29,7 @@ Deliver only the user-approved 2026-09-15 Radar plan: game relevance first, one 
 - Record deployment and content acceptance here and in the PR body; do not claim actual domestic coverage uplift from fixed tests.
 
 ## Next Action
-User explicitly authorized immediate manual generation and CRM sync on 2026-09-15 at approximately 12:09 Asia/Shanghai. Remote main is 3b4c3388991c092f1e351668f085d1371348bca2; no active main automation was found. Dispatch exactly one sync-daily-report.yml run on main for date 2026-09-15, slot radar-pr127-acceptance, force=true; then inspect the run and receipt. Do not dispatch a duplicate.
+User explicitly authorized immediate manual generation and CRM sync on 2026-09-15. One run has been dispatched: https://github.com/Neo0109/CRM/actions/runs/34927849018, workflow sync-daily-report.yml, ref main, head 3b4c3388991c092f1e351668f085d1371348bca2, date 2026-09-15, slot radar-pr127-acceptance, force=true. It entered generation after successfully fetching the CRM dedupe index. Follow this run to completion; do not dispatch a duplicate.
 
 ## Git Status
 - Branch codex/radar-relevance-domestic-first; PR https://github.com/Neo0109/CRM/pull/127.
