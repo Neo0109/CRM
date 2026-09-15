@@ -473,3 +473,9 @@ test("quoting an earlier article does not merge an independent review", async ()
   const independent = {title: "《魔兽世界》评测：战斗体验有待提升", summary: "本文引用海外观点，但给出独立的战斗体验评价。", link: "https://domestic.test/review/wow", original_links: [original.link]};
   assert.equal(sameRadarEvent(original, independent), false);
 });
+
+test("article attribution ignores navigation and footer source links", async () => {
+  const { readRadarArticleMetadata } = await module();
+  const html='<body><nav>Source <a href="https://foreign.test/news/navigation">source story</a></nav><div><p>据 <a href="https://foreign.test/news/original">原文报道</a>，该游戏将推出新副本。</p></div><footer>Source <a href="https://foreign.test/news/footer">source story</a></footer></body>';
+  assert.deepEqual(readRadarArticleMetadata(html).original_links,["https://foreign.test/news/original"]);
+});
