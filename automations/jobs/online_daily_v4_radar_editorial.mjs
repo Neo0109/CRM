@@ -97,7 +97,7 @@ export function assessRadarRelevance(item, editorial = {}) {
   const gameAction = /\b(?:remake|remaster|sequel|expansion|trailer|demo|review|gameplay|players?|patch|update|DLC|city builder)\b|移植|发售|预告|试玩|联动|游戏更新/i.test(text);
   const indieBusiness = /\bindie (?:devs?|developers?|studios?|publishers?)\b/i.test(text)&&/\b(?:publisher|revenue|split|funding|development|game)\b/i.test(text);
   const engine = /\b(?:unreal(?: engine)?|godot|unity engine)\b|虚幻引擎|Unity引擎/i.test(text);
-  const business = /\b(?:layoffs?|acquisition|funding|union|studio|publish(?:er|ing)?|policy|revenue|earnings|copyright|disc|development|court|lawsuit|tribunal|union|trademark|showcase|generative ai|expansion|delay|release|players?)\b|裁员|游戏开发|发行|收购|融资|工作室|光盘|游戏政策|营收|版号|入股|仲裁|诉讼|人工智能|发布会/i.test(text);
+  const business = /\b(?:layoffs?|acquisition|funding|union|studio|publish(?:er|ing)?|policy|revenue|earnings|copyright|disc|development|court|lawsuit|tribunal|union|trademark|showcase|awards?|generative ai|expansion|delay|release|players?)\b|裁员|游戏开发|发行|收购|融资|工作室|光盘|游戏政策|营收|版号|入股|仲裁|诉讼|人工智能|发布会/i.test(text);
   const entertainment = /\b(?:television|TV show|new show|movie|film|leprechaun|cinema|Netflix)\b|电视剧|影视剧|电影|演员访谈/i.test(text);
   const hardware = /\b(?:laptop|notebook|monitors?|GPU|CPU|graphics card|RTX|processor|keyboard|mouse)\b|笔记本|迷你主机|处理器|显卡|显示器|键盘|鼠标/i.test(text);
   let level = 0;
@@ -176,6 +176,8 @@ export function sameRadarEvent(a,b,editorial={}) {
   const aa=eventAction(at.text), ba=eventAction(bt.text);
   const compatible=!aa||!ba||aa===ba||["announcement","release_date","release"].includes(aa)&&["announcement","release_date","release"].includes(ba);
   if(!compatible) return false;
+  // A citation can support an independently authored review; it does not prove a reprint.
+  if(aa==="review"||ba==="review") return false;
   const ae=entities(at.text,editorial), be=entities(bt.text,editorial);
   const productsA=ae.filter(id=>!COMPANY_IDS.test(id)), productsB=be.filter(id=>!COMPANY_IDS.test(id));
   const knownA=productsA.filter(id=>!id.startsWith("title:")), knownB=productsB.filter(id=>!id.startsWith("title:"));
@@ -189,8 +191,10 @@ export function sameRadarEvent(a,b,editorial={}) {
   if(!aa||aa!==ba||aa==="review") return false;
   if(!ae.length||!ae.some(id=>be.includes(id))) return false;
   const distinctive=/^(sequel_unlikely|mod_blocked|office_sublease|disc_production)$/.test(aa);
+  const sharedProduct=productsA.some(id=>productsB.includes(id));
   const sharedFact=["versions","dates","parts"].some(k=>af[k].some(x=>(k!=="dates"||x.length>4||aa==="release_date")&&bf[k].includes(x)));
-  return distinctive||(productsA.length>0&&productsB.length>0&&sharedFact);
+  return (sharedProduct&&(distinctive||sharedFact))||
+    (!productsA.length&&!productsB.length&&/^(office_sublease|disc_production)$/.test(aa));
 }
 export function hasCompleteRadarCoverage(item,alternatives=[]) {
   const {title,summary,text}=radarEditorialText(item);

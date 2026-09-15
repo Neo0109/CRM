@@ -20,6 +20,9 @@ Implement the user-approved 2026-09-15 Radar-only plan: game relevance first; on
 - Manual archived replay review found false negatives for valid named-game previews/ports/studio news lacking the word game. Added 16 actual archived positive fixtures and stronger genre/platform/article-section evidence, without publisher-wide exemptions.
 - Added distinct-game, distinct-mod and coarse-year event safeguards; incomplete/uncertain attribution stays conservative. Historical-card replay strips old presentation boilerplate before curation.
 
+- Recovery exact-head review: c085338 passed Radar 26/26, full Daily 391/391, types/contracts/verify:all/diff; reviewed all four replay editions.
+- Confirmed three additional regressions in cloud run 34925991771: Roblox platform awards excluded; different unregistered games sharing a publisher/date merged; independent review citation treated as duplicate. Existing 26 fixtures remained green. Added narrow fixes preserving uncertain events.
+
 ## Remaining
 - Inspect latest cloud archived replay and exact-head diff for content correctness.
 - Record final verification and review, then merge this approved PR and verify deployment.
