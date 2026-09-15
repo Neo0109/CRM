@@ -10,11 +10,11 @@ function httpsUrl(value) {
     return url.protocol === "https:" && !url.username && !url.password ? url : null;
   } catch { return null; }
 }
-function mediaUrl(value, appId) {
+function mediaUrl(value, appId, videoId = null) {
   const url = httpsUrl(value);
   if (!url || !/(^|\.)steamstatic\.com$/.test(url.hostname)) return null;
-  const bound = url.pathname.match(/^\/store_trailers\/(\d+)\//);
-  if (bound && bound[1] !== appId) return null;
+  const bound = url.pathname.match(/^\/store_trailers\/(\d+)\/(\d+)\//);
+  if (bound && (bound[1] !== appId || (videoId && bound[2] !== videoId))) return null;
   return url.href;
 }
 function decodeAttribute(value) {
@@ -49,6 +49,7 @@ export function parseSteamStoreTrailers(html, appId) {
     try { data=JSON.parse(attrs["data-props"]); } catch { continue; }
     if (!Array.isArray(data?.trailers)) continue;
     for (const t of data.trailers) {
+      if (!t || typeof t !== "object" || Array.isArray(t)) continue;
       const stats=httpsUrl(t?.statsURL);
       const identity=stats?.hostname === "store.steampowered.com" && stats.pathname.match(/^\/app\/trailerstats\/(\d+)\/(\d+)\/?$/);
       if (!identity || identity[1] !== id || seen.has(identity[2])) continue;
@@ -58,12 +59,13 @@ export function parseSteamStoreTrailers(html, appId) {
   }
   return trailers;
 }
-function evidenceFromVideo(video, appId, isStore) {
+function evidenceFromVideo(video, appId) {
+  if (!video || typeof video !== "object" || Array.isArray(video)) return null;
   const basis=declaration(video);
   if (!basis) return null;
   const possible=[video.hlsManifest,video.hls_h264,video.dash_h264,...(Array.isArray(video.dashManifests)?video.dashManifests:[]),
     video.dash_av1,video.webm?.max,video.mp4?.max,video.webm?.["480"],video.mp4?.["480"]].filter(Boolean);
-  const usable=possible.map(url=>mediaUrl(url,appId)).find(Boolean);
+  const usable=possible.map(url=>mediaUrl(url,appId,video.video_id ?? null)).find(Boolean);
   // A present but wrong-product/non-Steam media target cannot fall back to a page.
   if (possible.length && !usable) return null;
   const sourceUrl="https://store.steampowered.com/app/"+appId+"/";
@@ -75,7 +77,7 @@ export function extractSteamGameplayEvidence({appId,details=null,storeHtml=""}={
   const id=idString(appId);
   if (!id) return [];
   if (details && (details.type !== "game" || String(details.steam_appid) !== id)) return [];
-  const videos=[...(details?.movies ?? []),...parseSteamStoreTrailers(storeHtml,id)];
+  const videos=[...(Array.isArray(details?.movies) ? details.movies : []),...parseSteamStoreTrailers(storeHtml,id)];
   const result=[], seen=new Set();
   for (const video of videos) {
     const entry=evidenceFromVideo(video,id);

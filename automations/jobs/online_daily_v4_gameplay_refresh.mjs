@@ -27,6 +27,11 @@ export async function refreshOfficialGameplayEvidence({
   const apply=(item,evidence)=>{
     if (item.kind==="steam") item.candidate.officialGameplayEvidence=merge(item.candidate.officialGameplayEvidence??[],evidence);
     else item.candidate._officialGameplayEvidence=merge(item.candidate._officialGameplayEvidence??[],evidence);
+    const explicit=item.candidate._indieAdmissionEvidence;
+    if (explicit && String(explicit.steam_app_id)===keyOf(item.candidate)?.slice(6)) {
+      item.candidate._indieAdmissionEvidence={...explicit,
+        official_gameplay_evidence:merge(explicit.official_gameplay_evidence??[],evidence)};
+    }
   };
   for (const [kind,list] of [["steam",steam],["media",media]]) {
     for (const c of list) {

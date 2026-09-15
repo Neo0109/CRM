@@ -39,3 +39,9 @@ Remote branch codex/official-gameplay-evidence from 742f496fad982e9da5a76bb0f43a
 - Previous focused tests: 8/8. Preliminary frozen-sample evidence recovery: 18/46; formal/review/publication impact not yet verified.
 - Full-test failures are stale production hash/dependency-closure assertions plus missing ajv in the disposable snapshot. These must be resolved and all checks rerun before PR delivery.
 - Local CRM checkout remains read-only with its three pre-existing draft paths. Test snapshot: /tmp/crm-official-gameplay-20260915. Frozen metadata: /tmp/crm-gameplay-audit-20260915/audit.json.
+
+## Recovery verification progress
+- Added RED cases proving two real defects: malformed trailer entries aborted extraction, and explicit cached admission evidence masked newly recovered gameplay.
+- Fixes ignore malformed trailer entries, bind modern media to the official trailer ID, and merge only gameplay into a matching explicit admission snapshot without mutating its input.
+- Updated approved production hashes and the V7.3 dependency manifest for the two new modules; all original rule hashes and shadow isolation assertions remain enforced.
+- Test dependencies installed after a transient npm registry reset. Next: 46-row audit fixtures and full validation.

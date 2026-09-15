@@ -26,15 +26,16 @@ const dailyValidator = read("../../scripts/validate-daily-contract.mjs");
 const syncWorkflow = read("../../.github/workflows/sync-daily-report.yml");
 const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml");
 
+// Approved official gameplay refresh adds only source-bound evidence and the lookup ledger.
 // PR 127 approved Radar snapshot/editorial changes; V7.2.3 approves only the official
 // gameplay fallback and its provenance. The projection below still freezes
 // every prior sourcing rule after removing this approved additive metadata.
 const ORIGINAL_BLOBS = {
-  generator: "b45acaa673ec0a0bed2092d52a01e04309b33c7b",
+  generator: "6ca59746ce243e7e395de2a87e2a2a8b7ad18c00",
   activeRulesModule: "4e67313e8bd3498662b19e8ae091237b66066bbd",
   activeRule: "83b4a2120949bf8c0f7571445efa3d37150542ab",
   activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
-  activeCandidateAudit: "c2bf0aef0f146660129ababe09ca3eed450ad24e",
+  activeCandidateAudit: "133a4340dafcd035820c7e9b2c6c410014ffad20",
   activeReports: "3309a6d1ee42579676cef8fabbaee2c2cbbcc4fa",
   dailyValidator: "09bcf75ba6a4dc5bedd99bc6cb0a7b1b9986eed0",
   syncWorkflow: "72282bc6964e1b0744624b1903d2c5f4d26d416e",
@@ -277,7 +278,7 @@ describe("C5-B shadow-only production integration", () => {
       approvedAdditions.filter((relativePath) => !manifest.has(relativePath)),
       []
     );
-    assert.equal(manifest.size, 41);
+    assert.equal(manifest.size, 43);
     assert.ok(manifest.has("automations/jobs/online_daily_v7_3_offline_replay.mjs"));
     assert.ok(manifest.has("automations/jobs/online_daily_v7_3_replay_window.mjs"));
 
