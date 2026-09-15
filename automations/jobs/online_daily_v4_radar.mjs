@@ -208,7 +208,7 @@ export function readRadarArticleMetadata(html) {
   const summary = metadata.get("og:description") || metadata.get("description") || article.description || "";
   const originalLinks = [];
   // Only explicit attribution links from the article body, never menus/related links.
-  const contentHtml = String(html).replace(/<(nav|header|footer|aside|script|style)\\b[^>]*>[\\s\\S]*?<\\/\\1>/gi, "");
+  const contentHtml = String(html).replace(/<(nav|header|footer|aside|script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
   const articleBody = contentHtml.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i)?.[1] ?? contentHtml.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? "";
   for (const match of articleBody.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
     const attrs=attributes(match[1]);
