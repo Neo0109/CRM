@@ -247,3 +247,106 @@ test("production acceptance merges bracketed and unquoted Demo videos across upl
   const distinct = [video(3, "【零境入侵】Demo试玩 v1.0"), video(4, "零境入侵 Demo试玩 v2.0"), video(5, "《星河远征》Demo试玩")];
   assert.equal(curateRadarSignals(distinct, { reportDate, capturedAt, diversity: config }).signals.length, 3);
 });
+
+
+test("editorial relevance is independent of publisher name, Lead scores and template prose", async () => {
+  const { assessRadarRelevance } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const cases = [
+    ["Dan Harmon reveals leprechaun lore for his new TV show", "An interview about the television series.", "Polygon", 0],
+    ["荣耀笔记本升级 YOYO Claw 悬浮球，提供编码能力", "通用办公系统功能。", "IT之家", 0],
+    ["A fantasy RPG review", "Turn-based party combat and a branching quest system.", "Unknown", 3],
+    ["独立游戏开发日志：新增采集系统", "展示玩家采集、制作和资源消耗。", "B站视频", 3],
+    ["Unreal Engine renderer update", "The game engine adds shader debugging tools.", "Unknown", 3],
+    ["RTX laptop launch", "This general purpose computer is on sale.", "PC Gamer", 0],
+    ["Gaming monitor latency tested", "Input lag measured in PC games.", "PC Gamer", 2],
+    ["普通公司访谈", "媒体报道。重点看平台、渠道、政策或市场节奏是否改变发行打法。", "GamesIndustry.biz", 0]
+  ];
+  for (const [title, summary, source, level] of cases)
+    assert.equal(assessRadarRelevance({ title, summary, source, score: 999 }).level, level, title);
+});
+
+test("Radar ranks direct game content ahead of indirect hardware and ignores inherited Lead score", async () => {
+  const { curateRadarSignals } = await module();
+  const input = [
+    item(1, {title:"Gaming monitor latency tested", summary:"Tests in PC games.",score:999}),
+    item(2, {title:"New RPG demo review",summary:"A tactical game demo with party combat.",score:-100,published_at:"2026-09-04T12:00:00+08:00"}),
+    item(3, {title:"Television star interview",summary:"A new drama series interview.",source:"Polygon",score:999})
+  ];
+  const result=curateRadarSignals(input,{reportDate,capturedAt,diversity:{...config,targets:[]}});
+  assert.deepEqual(result.signals.map(x=>x.title),[input[1].title,input[0].title]);
+});
+
+test("confirmed multilingual events prefer domestic articles, preserve distinct progress and honor caps", async () => {
+  const { curateRadarSignals } = await module();
+  const editorial={ entity_aliases:[{id:"wow",names:["World of Warcraft","魔兽世界"]}] };
+  const foreign=item(0,{source:"Foreign",title:"World of Warcraft sequel is unlikely",summary:"Developers confirm there are no plans for a direct sequel.",source_focus:["global"],link:"https://foreign.test/news/wow"});
+  const chinese=item(1,{source:"国内甲",title:"《魔兽世界》开发者称不会推出直接续作",summary:"开发团队表示目前没有直接续作的计划，现有游戏将继续更新。",source_focus:["china"],original_links:[foreign.link]});
+  const invalid={...chinese,link:"https://cn.test/invalid",published_at:"",source:"失效国内"};
+  const short={...chinese,title:"《魔兽世界》续作消息",summary:"详见原文",source:"简讯",link:"https://cn.test/short"};
+  const other=item(2,{source:"国内乙",title:"《魔兽世界》补丁12.1上线",summary:"这次更新为游戏加入新的副本和战斗系统。",source_focus:["china"]});
+  const result=curateRadarSignals([foreign,chinese,invalid,short,other],{reportDate,capturedAt,diversity:{...config,targets:[]},editorial});
+  assert.ok(result.signals.some(x=>x.link===chinese.link));
+  assert.ok(!result.signals.some(x=>x.link===foreign.link||x.link===short.link));
+  assert.ok(result.signals.some(x=>x.link===other.link));
+  assert.equal(result.diagnostics.domestic_replacements,1);
+  const history=[{report_date:"2026-09-05",items:[foreign]}];
+  assert.equal(curateRadarSignals([chinese],{reportDate,capturedAt,diversity:config,editorial,history}).signals.length,0);
+  assert.equal(curateRadarSignals([chinese],{reportDate,capturedAt,diversity:config,editorial,history:[{report_date:reportDate,items:[foreign]}]}).signals.length,1);
+});
+
+test("event identity distinguishes versions and reviews and does not merge a company alone", async () => {
+  const { sameRadarEvent } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const editorial={entity_aliases:[{id:"wow",names:["World of Warcraft","魔兽世界"]}]};
+  const a={title:"World of Warcraft patch 12.1 released",summary:"The game update adds a new dungeon."};
+  assert.equal(sameRadarEvent(a,{title:"《魔兽世界》12.2补丁上线",summary:"新的游戏副本。"},editorial),false);
+  assert.equal(sameRadarEvent(a,{title:"《魔兽世界》12.1补丁上线",summary:"该游戏更新加入新的副本。"},editorial),true);
+  assert.equal(sameRadarEvent({title:"World of Warcraft review",summary:"Great combat."},{title:"《魔兽世界》评测",summary:"战斗体验很差。"},editorial),false);
+  assert.equal(sameRadarEvent({title:"Blizzard studio layoffs",summary:"A game company reduces staff."},{title:"Blizzard announces a new game",summary:"A new RPG announced."},editorial),false);
+});
+
+test("domestic publisher identity comes from registered source or host, never the story country", async () => {
+  const { radarPublisherRegion } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const sources=[{name:"国内刊物",url:"https://cn.test/feed",focus:["china"]},{name:"Foreign",url:"https://global.test/rss",focus:["global"]}];
+  assert.equal(radarPublisherRegion({source:"Foreign",title:"中国腾讯国内游戏新闻",link:"https://global.test/story"},sources),"global");
+  assert.equal(radarPublisherRegion({source:"国内刊物",title:"Blizzard reveals a game",link:"https://cn.test/story"},sources),"china");
+  assert.equal(radarPublisherRegion({source:"renamed",link:"https://cn.test/story"},sources),"china");
+});
+
+test("event representatives try another domestic publisher then foreign when media caps fill", async () => {
+  const { curateRadarSignals }=await module();
+  const signals=[];
+  for(let i=0;i<4;i++){
+    const en=item(i*3,{source:"Foreign "+i,source_focus:["global"],title:"Game project "+i+" launch announced",summary:"The new action game launches on 2026-10-"+(10+i)+".",link:"https://foreign.test/story/"+i});
+    signals.push(en,item(i*3+1,{source:"国内甲",source_focus:["china"],title:"《游戏"+i+"》宣布发售",summary:"动作游戏确认了十月发售日期和发行安排。",original_links:[en.link]}));
+    if(i===3)signals.push(item(50,{source:"国内乙",source_focus:["china"],title:"《游戏3》公布发售安排",summary:"动作游戏将在十月发售，发行安排已经正式确认。",original_links:[en.link]}));
+  }
+  const opts={reportDate,capturedAt,diversity:{...config,targets:[]}};
+  const selected=curateRadarSignals(signals,opts).signals;
+  assert.equal(selected.length,4);
+  assert.equal(selected.filter(x=>x.source==="国内甲").length,3);
+  assert.ok(selected.some(x=>x.source==="国内乙"));
+  const withoutBackup=signals.filter(x=>x.source!=="国内乙");
+  assert.equal(curateRadarSignals(withoutBackup,opts).signals.filter(x=>x.source.startsWith("Foreign")).length,1);
+});
+
+test("collector exposes an independent pre-Lead-filter snapshot without changing its returned input", async () => {
+  const { fetchMediaSignals }=await import("../jobs/online_daily_v4_media_sources.mjs");
+  let snapshot;
+  const input={title:"A small RPG review",summary:"A game with tactical turn-based combat.",source:"Tiny",source_quality:0,source_focus:[],link:"https://tiny.test/review",published_at:"2026-09-06"};
+  const context={reportDate,mediaSourcesImpl:()=>[{}],fetchMediaSourceImpl:async()=>[input],collectBilibiliProbeSignalsImpl:async()=>({signals:[],diagnostics:{source_failures:0,official_source_hits:0}}),sleepImpl:async()=>{}};
+  const before=await fetchMediaSignals({...context,diagnostics:{}});
+  const after=await fetchMediaSignals({...context,diagnostics:{},onRadarSnapshot:items=>{snapshot=items;items[0].summary="consumer mutation";}});
+  assert.deepEqual(after,before);
+  assert.equal(input.summary,"A game with tactical turn-based combat.");
+  assert.equal(snapshot.length,1);
+  assert.ok(!before.some(x=>x.title===input.title));
+});
+
+test("domestic article metadata is prioritized and retains explicit original source links", async () => {
+  const { collectRadarEdition,readRadarArticleMetadata }=await module();
+  const html='<article><p>据 <a href="https://foreign.test/news/game">原文报道</a>，该游戏将推出新副本。</p></article><meta name="description" content="游戏开发团队宣布新副本和测试计划。"><meta property="article:published_time" content="2026-09-06T09:00:00+08:00">';
+  assert.deepEqual(readRadarArticleMetadata(html).original_links,["https://foreign.test/news/game"]);
+  const calls=[];
+  await collectRadarEdition({mediaSignals:[item(0,{source_focus:["global"],published_at:"",score:999}),item(1,{source_focus:["china"],published_at:"",score:0})],reportDate,capturedAt,ruleConfig:{radarDiversity:{...config,targets:[]},radarSources:[]},concurrency:1,fetchTextImpl:async url=>{calls.push(url);return html;}});
+  assert.equal(calls[0],item(1).link);
+});
