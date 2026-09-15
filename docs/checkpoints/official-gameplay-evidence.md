@@ -28,3 +28,8 @@ Remote branch codex/official-gameplay-evidence from 742f496fad982e9da5a76bb0f43a
 ## Sample collection
 - Collected official store metadata for all 46 frozen candidate identities. No video download, frame extraction or AI calls occurred.
 - Added RED contracts for category-based recognition, bound descriptions, modern URLs, Bilibili identity, shared budget, cached evidence and failure cooldown.
+
+## RED / implementation
+- Exact branch RED failed with ERR_MODULE_NOT_FOUND for the new official metadata helper, before implementation.
+- Implemented pure source-bound metadata extraction and shared-budget refresh with an additive per-candidate lookup ledger. Existing media official lookup phase receives half the 12-slot ceiling; unused capacity goes to gameplay refresh, so neither path adds a second budget.
+- No change to the 7-day broad evidence snapshot TTL. Cached missing-gameplay candidates receive a separate targeted lookup and same-day cooldown.
