@@ -61,7 +61,7 @@ describe("online daily v4 rule config", () => {
     assert.equal(config.mediaQualityGates.lowScoreThreshold, 12);
     assert.equal(config.radarDiversity.limit, 40);
     assert.equal(config.radarDiversity.sourceCap, 3);
-    assert.deepEqual(config.radarDiversity.targets[0], { region: "china", count: 16 });
+    assert.deepEqual(config.radarDiversity.targets, []);
   });
 
   it("throws clear validation errors for incompatible rule files", () => {
@@ -170,7 +170,7 @@ describe("online daily v4 rule config", () => {
     assert.match(source, /ruleConfig/);
     assert.match(
       source,
-      /collectRadarEdition\(\{ mediaSignals, history: radarHistory\.reports, reportDate, capturedAt, ruleConfig \}\)/s
+      /collectRadarEdition\(\{ mediaSignals: radarMediaSnapshot \?\? mediaSignals, history: radarHistory\.reports, reportDate, capturedAt, ruleConfig \}\)/s
     );
   });
 });

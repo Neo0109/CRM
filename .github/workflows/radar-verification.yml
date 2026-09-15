@@ -12,6 +12,7 @@ on:
       - "automations/rules/daily-report.json"
       - "automations/test/onlineDailyV4*.mjs"
       - "scripts/check-radar-sources.mjs"
+      - "scripts/replay-radar-editorial.mjs"
       - ".github/workflows/radar-verification.yml"
 
 permissions:
@@ -32,6 +33,8 @@ jobs:
       - run: npm install
       - name: Fixed Radar regressions
         run: node --test automations/test/onlineDailyV4Radar.test.mjs
+      - name: Archived Radar content replay (not publication freshness)
+        run: node scripts/replay-radar-editorial.mjs
       - name: Full repository verification
         env:
           COREPACK_ENABLE_PROJECT_SPEC: "0"

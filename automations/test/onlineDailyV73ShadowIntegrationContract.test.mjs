@@ -26,13 +26,13 @@ const dailyValidator = read("../../scripts/validate-daily-contract.mjs");
 const syncWorkflow = read("../../.github/workflows/sync-daily-report.yml");
 const watchdogWorkflow = read("../../.github/workflows/daily-report-watchdog.yml");
 
-// PR 124 approved Radar changes; V7.2.3 explicitly approves only the official
+// PR 127 approved Radar snapshot/editorial changes; V7.2.3 approves only the official
 // gameplay fallback and its provenance. The projection below still freezes
 // every prior sourcing rule after removing this approved additive metadata.
 const ORIGINAL_BLOBS = {
-  generator: "39846814bfe8188fa935065ebba42229e2175531",
-  activeRulesModule: "1ad0ecd6ca53424f7dd92e75c0a5b4014a503c66",
-  activeRule: "3ddc70e4082f118598c6bf3da6183ba671b20663",
+  generator: "b45acaa673ec0a0bed2092d52a01e04309b33c7b",
+  activeRulesModule: "4e67313e8bd3498662b19e8ae091237b66066bbd",
+  activeRule: "83b4a2120949bf8c0f7571445efa3d37150542ab",
   activeDecision: "762a6e8352376a9467aa9d10b98de25a8171e35c",
   activeCandidateAudit: "c2bf0aef0f146660129ababe09ca3eed450ad24e",
   activeReports: "3309a6d1ee42579676cef8fabbaee2c2cbbcc4fa",
@@ -252,7 +252,7 @@ describe("C5-B shadow-only production integration", () => {
     const exclusions = new Set(shadowCollector.C5B_BEHAVIOR_PRODUCTION_EXCLUSIONS ?? []);
     // Radar presentation is independent of candidate replay; it must never load
     // in the collector and does not expand its frozen behavior manifest.
-    const radarPresentation = new Set(["automations/jobs/online_daily_v4_radar.mjs"]);
+    const radarPresentation = new Set(["automations/jobs/online_daily_v4_radar.mjs", "automations/jobs/online_daily_v4_radar_editorial.mjs"]);
     assert.deepEqual([...exclusions].sort(), [
       "automations/jobs/online_daily_v4_candidate_audit.mjs",
       "automations/jobs/online_daily_v4_reports.mjs",

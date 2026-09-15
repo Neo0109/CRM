@@ -91,10 +91,7 @@ const DEFAULT_RADAR_DIVERSITY = {
   familyCap: 12,
   regionCap: 24,
   bilibiliCap: 3,
-  targets: [
-    { region: "china", count: 16 },
-    { region: "global", count: 16 }
-  ]
+  targets: []
 };
 
 export async function loadDailyRules({ rootDir = process.cwd(), rulesPath } = {}) {
@@ -210,7 +207,7 @@ function normalizeMediaSource(source) {
 }
 
 function normalizeRadarTargets(targets) {
-  return (Array.isArray(targets) && targets.length ? targets : DEFAULT_RADAR_DIVERSITY.targets)
+  return (Array.isArray(targets) ? targets : DEFAULT_RADAR_DIVERSITY.targets)
     .map((target) => {
       const normalized = {
         count: boundedNumber(target.count, 1, 1, 100)

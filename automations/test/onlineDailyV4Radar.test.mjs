@@ -247,3 +247,235 @@ test("production acceptance merges bracketed and unquoted Demo videos across upl
   const distinct = [video(3, "【零境入侵】Demo试玩 v1.0"), video(4, "零境入侵 Demo试玩 v2.0"), video(5, "《星河远征》Demo试玩")];
   assert.equal(curateRadarSignals(distinct, { reportDate, capturedAt, diversity: config }).signals.length, 3);
 });
+
+
+test("editorial relevance is independent of publisher name, Lead scores and template prose", async () => {
+  const { assessRadarRelevance } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const cases = [
+    ["Dan Harmon reveals leprechaun lore for his new TV show", "An interview about the television series.", "Polygon", 0],
+    ["荣耀笔记本升级 YOYO Claw 悬浮球，提供编码能力", "通用办公系统功能。", "IT之家", 0],
+    ["A fantasy RPG review", "Turn-based party combat and a branching quest system.", "Unknown", 3],
+    ["独立游戏开发日志：新增采集系统", "展示玩家采集、制作和资源消耗。", "B站视频", 3],
+    ["Unreal Engine renderer update", "The game engine adds shader debugging tools.", "Unknown", 3],
+    ["RTX laptop launch", "This general purpose computer is on sale.", "PC Gamer", 0],
+    ["Gaming monitor latency tested", "Input lag measured in PC games.", "PC Gamer", 2],
+    ["普通公司访谈", "媒体报道。重点看平台、渠道、政策或市场节奏是否改变发行打法。", "GamesIndustry.biz", 0]
+  ];
+  for (const [title, summary, source, level] of cases)
+    assert.equal(assessRadarRelevance({ title, summary, source, score: 999 }).level, level, title);
+});
+
+test("Radar ranks direct game content ahead of indirect hardware and ignores inherited Lead score", async () => {
+  const { curateRadarSignals } = await module();
+  const input = [
+    item(1, {title:"Gaming monitor latency tested", summary:"Tests in PC games.",score:999}),
+    item(2, {title:"New RPG demo review",summary:"A tactical game demo with party combat.",score:-100,published_at:"2026-09-04T12:00:00+08:00"}),
+    item(3, {title:"Television star interview",summary:"A new drama series interview.",source:"Polygon",score:999})
+  ];
+  const result=curateRadarSignals(input,{reportDate,capturedAt,diversity:{...config,targets:[]}});
+  assert.deepEqual(result.signals.map(x=>x.title),[input[1].title,input[0].title]);
+});
+
+test("confirmed multilingual events prefer domestic articles, preserve distinct progress and honor caps", async () => {
+  const { curateRadarSignals } = await module();
+  const editorial={ entity_aliases:[{id:"wow",names:["World of Warcraft","魔兽世界"]}] };
+  const foreign=item(0,{source:"Foreign",title:"World of Warcraft sequel is unlikely",summary:"Developers confirm there are no plans for a direct sequel.",source_focus:["global"],link:"https://foreign.test/news/wow"});
+  const chinese=item(1,{source:"国内甲",title:"《魔兽世界》开发者称不会推出直接续作",summary:"开发团队表示目前没有直接续作的计划，现有游戏将继续更新。",source_focus:["china"],original_links:[foreign.link]});
+  const invalid={...chinese,link:"https://cn.test/invalid",published_at:"",source:"失效国内"};
+  const short={...chinese,title:"《魔兽世界》续作消息",summary:"详见原文",source:"简讯",link:"https://cn.test/short"};
+  const other=item(2,{source:"国内乙",title:"《魔兽世界》补丁12.1上线",summary:"这次更新为游戏加入新的副本和战斗系统。",source_focus:["china"]});
+  const result=curateRadarSignals([foreign,chinese,invalid,short,other],{reportDate,capturedAt,diversity:{...config,targets:[]},editorial});
+  assert.ok(result.signals.some(x=>x.link===chinese.link));
+  assert.ok(!result.signals.some(x=>x.link===foreign.link||x.link===short.link));
+  assert.ok(result.signals.some(x=>x.link===other.link));
+  assert.equal(result.diagnostics.domestic_replacements,1);
+  const history=[{report_date:"2026-09-05",items:[foreign]}];
+  assert.equal(curateRadarSignals([chinese],{reportDate,capturedAt,diversity:config,editorial,history}).signals.length,0);
+  assert.equal(curateRadarSignals([chinese],{reportDate,capturedAt,diversity:config,editorial,history:[{report_date:reportDate,items:[foreign]}]}).signals.length,1);
+});
+
+test("event identity distinguishes versions and reviews and does not merge a company alone", async () => {
+  const { sameRadarEvent } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const editorial={entity_aliases:[{id:"wow",names:["World of Warcraft","魔兽世界"]}]};
+  const a={title:"World of Warcraft patch 12.1 released",summary:"The game update adds a new dungeon."};
+  assert.equal(sameRadarEvent(a,{title:"《魔兽世界》12.2补丁上线",summary:"新的游戏副本。"},editorial),false);
+  assert.equal(sameRadarEvent(a,{title:"《魔兽世界》12.1补丁上线",summary:"该游戏更新加入新的副本。"},editorial),true);
+  assert.equal(sameRadarEvent({title:"World of Warcraft review",summary:"Great combat."},{title:"《魔兽世界》评测",summary:"战斗体验很差。"},editorial),false);
+  assert.equal(sameRadarEvent({title:"Blizzard studio layoffs",summary:"A game company reduces staff."},{title:"Blizzard announces a new game",summary:"A new RPG announced."},editorial),false);
+});
+
+test("domestic publisher identity comes from registered source or host, never the story country", async () => {
+  const { radarPublisherRegion } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const sources=[{name:"国内刊物",url:"https://cn.test/feed",focus:["china"]},{name:"Foreign",url:"https://global.test/rss",focus:["global"]}];
+  assert.equal(radarPublisherRegion({source:"Foreign",title:"中国腾讯国内游戏新闻",link:"https://global.test/story"},sources),"global");
+  assert.equal(radarPublisherRegion({source:"国内刊物",title:"Blizzard reveals a game",link:"https://cn.test/story"},sources),"china");
+  assert.equal(radarPublisherRegion({source:"renamed",link:"https://cn.test/story"},sources),"china");
+});
+
+test("event representatives try another domestic publisher then foreign when media caps fill", async () => {
+  const { curateRadarSignals }=await module();
+  const signals=[];
+  for(let i=0;i<4;i++){
+    const en=item(i*3,{source:"Foreign "+i,source_focus:["global"],title:"Game project "+i+" launch announced",summary:"The new action game launches on 2026-10-"+(10+i)+".",link:"https://foreign.test/story/"+i});
+    signals.push(en,item(i*3+1,{source:"国内甲",source_focus:["china"],title:"《游戏"+i+"》宣布发售",summary:"动作游戏确认在2026-10-"+(10+i)+"发售，发行安排已经正式确认。",original_links:[en.link]}));
+    if(i===3)signals.push(item(50,{source:"国内乙",source_focus:["china"],title:"《游戏3》公布发售安排",summary:"动作游戏将在2026-10-13发售，发行安排已经正式确认。",original_links:[en.link]}));
+  }
+  const opts={reportDate,capturedAt,diversity:{...config,targets:[]}};
+  const selected=curateRadarSignals(signals,opts).signals;
+  assert.equal(selected.length,4);
+  assert.equal(selected.filter(x=>x.source==="国内甲").length,3);
+  assert.ok(selected.some(x=>x.source==="国内乙"));
+  const withoutBackup=signals.filter(x=>x.source!=="国内乙");
+  assert.equal(curateRadarSignals(withoutBackup,opts).signals.filter(x=>x.source.startsWith("Foreign")).length,1);
+});
+
+test("collector exposes an independent pre-Lead-filter snapshot without changing its returned input", async () => {
+  const { fetchMediaSignals }=await import("../jobs/online_daily_v4_media_sources.mjs");
+  let snapshot;
+  const input={title:"A small RPG review",summary:"A game with tactical turn-based combat.",source:"Tiny",source_quality:0,source_focus:[],link:"https://tiny.test/review",published_at:"2026-09-06"};
+  const context={reportDate,mediaSourcesImpl:()=>[{}],fetchMediaSourceImpl:async()=>[input],collectBilibiliProbeSignalsImpl:async()=>({signals:[],diagnostics:{source_failures:0,official_source_hits:0}}),sleepImpl:async()=>{}};
+  const before=await fetchMediaSignals({...context,diagnostics:{}});
+  const after=await fetchMediaSignals({...context,diagnostics:{},onRadarSnapshot:items=>{snapshot=items;items[0].summary="consumer mutation";}});
+  assert.deepEqual(after,before);
+  assert.equal(input.summary,"A game with tactical turn-based combat.");
+  assert.equal(snapshot.length,1);
+  assert.ok(!before.some(x=>x.title===input.title));
+});
+
+test("domestic article metadata is prioritized and retains explicit original source links", async () => {
+  const { collectRadarEdition,readRadarArticleMetadata }=await module();
+  const html='<article><p>据 <a href="https://foreign.test/news/game">原文报道</a>，该游戏将推出新副本。</p></article><meta name="description" content="游戏开发团队宣布新副本和测试计划。"><meta property="article:published_time" content="2026-09-06T09:00:00+08:00">';
+  assert.deepEqual(readRadarArticleMetadata(html).original_links,["https://foreign.test/news/game"]);
+  const calls=[];
+  await collectRadarEdition({mediaSignals:[item(0,{source_focus:["global"],published_at:"",score:999}),item(1,{source_focus:["china"],published_at:"",score:0})],reportDate,capturedAt,ruleConfig:{radarDiversity:{...config,targets:[]},radarSources:[]},concurrency:1,fetchTextImpl:async url=>{calls.push(url);return html;}});
+  assert.equal(calls[0],item(1).link);
+});
+
+
+test("same publisher company or calendar year cannot collapse different games, mod types or releases", async () => {
+  const {sameRadarEvent}=await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  assert.equal(sameRadarEvent({title:"Blizzard announces StarCraft for 2030"},{title:"Blizzard announces Diablo 5 for 2030"}),false);
+  assert.equal(sameRadarEvent({title:"World of Warcraft new update in 2026"},{title:"World of Warcraft another update in 2026"}),false);
+  assert.equal(sameRadarEvent({title:"Sony stops The Last of Us Part 2 multiplayer mod"},{title:"Sony stops The Last of Us Part 2 VR mod"}),false);
+});
+
+
+test("archived game previews, ports, studio news and updates survive even without the word game", async () => {
+  const {assessRadarRelevance}=await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const samples=[
+  {
+    "title": "Lies Of P’s Wizard Of Oz Tease May Have Just Gotten A Lot More Interesting",
+    "summary": "AI/工具链信号：Lies of P was a big hit when it was first released, and several years after it w。重点看研发效率、素材风险、内容供给质量和平台合规。",
+    "link": "https://www.gamespot.com/articles/lies-of-p-wizard-of-oz-tease-may-have-just-gotten-a-lot-more-interesting/"
+  },
+  {
+    "title": "Hozy coming to PS5, Xbox Series, and Switch in 2026; free DLC ‘Hideways’ now available",
+    "summary": "行业新闻：Publisher tinyBuild and developer Come On Games will release cozy renovation and cleaning 。重点看平台、渠道、政策或市场节奏是否改变发行打法。",
+    "link": "https://www.gematsu.com/2026/09/hozy-coming-to-ps5-xbox-series-and-switch-in-2026-free-dlc-hideways-now-available"
+  },
+  {
+    "title": "Level-5 CEO admits using generative AI in recent showcase",
+    "summary": "AI/工具链信号：Level-5 president and CEO Akihiro Hino has apologized after confirming that gene。重点看研发效率、素材风险、内容供给质量和平台合规。",
+    "link": "https://www.gamesindustry.biz/level-5-ceo-admits-using-generative-ai-in-recent-showcase"
+  },
+  {
+    "title": "官方 VR 项目取消后，第三方开发者成功将《GTA：圣安地列斯》移植至 Meta Quest 3 平台",
+    "summary": "广域媒体非游戏信号：IT之家 9 月 15 日消息，Meta 曾在 2021 年 宣布《GTA：圣安地列斯》将登陆 Quest 2 ，但后来相应项目悄悄被砍。而在近 5 年后的今天，第三方开发者 Ge。保留在 Radar，不作为游戏产品候选。",
+    "link": "https://www.ithome.com/1/002/419.htm"
+  },
+  {
+    "title": "从打官司到当“传奇大股东”，恺英拟花20.3亿元入股娱美德！",
+    "summary": "今日亮点：【GameLook专稿，禁止转载！】 GameLook报道/围绕《传奇》纠缠多年的两家公司，正在把关系推进到一个新阶段。 今年2月，恺英网络与娱美德旗下传奇IP公司就长期诉讼、仲裁。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "http://www.gamelook.com.cn/2026/09/602122/"
+  },
+  {
+    "title": "Lies of P publisher files trademark for likely sequel 'Wonders of O'",
+    "summary": "今日亮点：Lies of P publisher files trademark for likely sequel 'Wonders of O'。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.pcgamer.com/games/action/lies-of-p-publisher-files-trademark-for-likely-sequel-wonders-of-o/"
+  },
+  {
+    "title": "tinyBuild and Hypnohead announce roguelite city builder The Crab is Walking for PC",
+    "summary": "今日亮点：Publisher tinyBuild and The King is Watching developer Hypnohead have announced The Crab i。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.gematsu.com/2026/09/tinybuild-and-hypnohead-announce-roguelite-city-builder-the-crab-is-walking-for-pc"
+  },
+  {
+    "title": "Valve decided that cutting the Steam Frame’s specs to avoid price rises wasn't \"the right product choice\" for the VR headset",
+    "summary": "行业新闻：Surprising no-one, Valve&rsquo;s Steam Frame VR headset is launching with higher-than-expe。重点看平台、渠道、政策或市场节奏是否改变发行打法。",
+    "link": "https://www.rockpapershotgun.com/valve-decided-that-cutting-the-steam-frames-specs-to-avoid-price-rises-wasnt-the-right-product-choice-for-the-vr-headset"
+  },
+  {
+    "title": "华尔街日报：夏尔马收拾微软 XBOX 烂摊子，每月数小时亲自回玩家工单",
+    "summary": "广域媒体非游戏信号：IT之家 9 月 15 日消息，华尔街日报昨日（9 月 14 日）发布博文，报道称 微软 XBOX 首席执行官阿莎 · 夏尔马（Asha Sharma）不再完全依赖各团队的报告，每。保留在 Radar，不作为游戏产品候选。",
+    "link": "https://www.ithome.com/1/002/441.htm"
+  },
+  {
+    "title": "The other Xbox 360 exclusive JRPG from the creator of Final Fantasy now has a PC port",
+    "summary": "行业新闻：Lost Odyssey is now playable on PC thanks to a fan-made static recompilation port。重点看平台、渠道、政策或市场节奏是否改变发行打法。",
+    "link": "https://www.videogameschronicle.com/news/the-other-xbox-360-exclusive-jrpg-from-the-creator-of-final-fantasy-now-has-a-pc-port/"
+  },
+  {
+    "title": "Rockstar and IWGB outline arguments at start of tribunal",
+    "summary": "Rockstar and the Independent Workers' Union of Great Britain have set out their arguments at an ongoing employment tribu",
+    "link": "https://www.gamesindustry.biz/rockstar-and-iwgb-outline-arguments-at-start-of-tribunal"
+  },
+  {
+    "title": "Final Fantasy 7 Revelation is definitely \"the end of the series,\" says Square Enix director Yoshinori Kitase, but he won't rule out a spin-off if the \"fan reaction\" is right",
+    "summary": "今日亮点：The trilogy could become a universe。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.gamesradar.com/games/final-fantasy/final-fantasy-7-revelation-is-definitely-the-end-of-the-series-says-square-enix-director-yoshinori-kitase-but-he-wont-rule-out-a-spin-off-if-the-fan-reaction-is-right/"
+  },
+  {
+    "title": "Sombra's change to Support is the right move, but I fear some Overwatch players may take time to adjust",
+    "summary": "今日亮点：Sombra's change to Support is the right move, but I fear some Overwatch players may take t。把公司/IP/法律/资本八卦当成BD尽调和窗口判断线索。",
+    "link": "https://www.pcgamer.com/games/fps/sombras-change-to-support-is-the-right-move-but-i-fear-some-overwatch-players-may-take-time-to-adjust/"
+  },
+  {
+    "title": "Danganronpa 2×2’s “insanely high” PC specs were based on 4K high-quality settings, producer reassures. Updates to be made",
+    "summary": "今日亮点：The originally announced recommended PC specs were on par with Capcom's Monster Hunter Wil。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。",
+    "link": "https://automaton-media.com/en/news/danganronpa-2x2s-insanely-high-pc-specs-were-based-on-4k-high-quality-settings-producer-reassures-updates-to-be-made/"
+  },
+  {
+    "title": "Ubisoft delays Rayman Legends Retold weeks before planned release",
+    "summary": "今日亮点：The Rayman Legends remake has been pushed to the end of the year。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。",
+    "link": "https://www.videogameschronicle.com/news/ubisoft-delays-rayman-legends-retold-weeks-before-planned-release/"
+  },
+  {
+    "title": "Marathon's permanent PvE mode and next major update delayed to December days before launch, and Bungie's \"moving away from a strict season schedule\"",
+    "summary": "今日亮点：Marathon Season 3 and everything that was due to come alongside it has been delayed, inclu。重点看它是否能变成B站选题、试玩推荐、IP节点或潜在线索。",
+    "link": "https://www.eurogamer.net/marathon-pve-mode-delay-bungie-major-update"
+  }
+];
+  for(const sample of samples)assert.ok(assessRadarRelevance(sample).level>0,sample.title);
+});
+
+test("game-platform awards remain eligible without publisher-name evidence", async () => {
+  const { assessRadarRelevance } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  assert.equal(assessRadarRelevance({
+    title: "Roblox reveals 2026 Innovation Awards winners",
+    summary: "The awards recognize this year's creators and their experiences."
+  }).level, 3);
+  assert.equal(assessRadarRelevance({
+    title: "An investment group announces film awards winners",
+    summary: "The cinema awards ceremony celebrated actors."
+  }).level, 0);
+});
+
+test("a shared company and date cannot merge different unregistered game titles", async () => {
+  const { sameRadarEvent } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  assert.equal(sameRadarEvent(
+    {title: "育碧宣布《星河农场》发售日期", summary: "游戏将于2026-10-10发售。"},
+    {title: "育碧宣布《古堡工坊》发售日期", summary: "游戏将于2026-10-10发售。"}
+  ), false);
+});
+
+test("quoting an earlier article does not merge an independent review", async () => {
+  const { sameRadarEvent } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const original = {title: "World of Warcraft review", summary: "The reviewer praises its combat.", link: "https://foreign.test/reviews/wow"};
+  const independent = {title: "《魔兽世界》评测：战斗体验有待提升", summary: "本文引用海外观点，但给出独立的战斗体验评价。", link: "https://domestic.test/review/wow", original_links: [original.link]};
+  assert.equal(sameRadarEvent(original, independent), false);
+});
+
+test("article attribution ignores navigation and footer source links", async () => {
+  const { readRadarArticleMetadata } = await module();
+  const html='<body><nav>Source <a href="https://foreign.test/news/navigation">source story</a></nav><div><p>据 <a href="https://foreign.test/news/original">原文报道</a>，该游戏将推出新副本。</p></div><footer>Source <a href="https://foreign.test/news/footer">source story</a></footer></body>';
+  assert.deepEqual(readRadarArticleMetadata(html).original_links,["https://foreign.test/news/original"]);
+});
