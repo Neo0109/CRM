@@ -446,3 +446,30 @@ test("archived game previews, ports, studio news and updates survive even withou
 ];
   for(const sample of samples)assert.ok(assessRadarRelevance(sample).level>0,sample.title);
 });
+
+test("game-platform awards remain eligible without publisher-name evidence", async () => {
+  const { assessRadarRelevance } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  assert.equal(assessRadarRelevance({
+    title: "Roblox reveals 2026 Innovation Awards winners",
+    summary: "The awards recognize this year's creators and their experiences."
+  }).level, 3);
+  assert.equal(assessRadarRelevance({
+    title: "An investment group announces film awards winners",
+    summary: "The cinema awards ceremony celebrated actors."
+  }).level, 0);
+});
+
+test("a shared company and date cannot merge different unregistered game titles", async () => {
+  const { sameRadarEvent } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  assert.equal(sameRadarEvent(
+    {title: "育碧宣布《星河农场》发售日期", summary: "游戏将于2026-10-10发售。"},
+    {title: "育碧宣布《古堡工坊》发售日期", summary: "游戏将于2026-10-10发售。"}
+  ), false);
+});
+
+test("quoting an earlier article does not merge an independent review", async () => {
+  const { sameRadarEvent } = await import("../jobs/online_daily_v4_radar_editorial.mjs");
+  const original = {title: "World of Warcraft review", summary: "The reviewer praises its combat.", link: "https://foreign.test/reviews/wow"};
+  const independent = {title: "《魔兽世界》评测：战斗体验有待提升", summary: "本文引用海外观点，但给出独立的战斗体验评价。", link: "https://domestic.test/review/wow", original_links: [original.link]};
+  assert.equal(sameRadarEvent(original, independent), false);
+});
