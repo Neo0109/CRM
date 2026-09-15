@@ -88,3 +88,31 @@ test("isolated request failure is remembered for the day, retries next day, and 
   await refreshOfficialGameplayEvidence({steamCandidates:[candidate()],history,reportDate:"2026-09-16",maxOfficialLookups:12,fetchTextImpl:async()=>{calls++;return page([trailer()]);}});
   assert.equal(calls,1);
 });
+
+test("malformed official metadata cannot abort enrichment or confirm a mismatched video",()=>{
+  for (const movies of [[null], {}, [42]]) {
+    assert.deepEqual(extractSteamGameplayEvidence({appId:id,details:{type:"game",steam_appid:Number(id),movies}}),[]);
+  }
+  assert.deepEqual(parseSteamStoreTrailers(page([null, trailer()]),id).map(x=>x.video_id),["576817724"]);
+  assert.deepEqual(extractSteamGameplayEvidence({appId:id,storeHtml:page([trailer({hlsManifest:stream().replace("576817724","999999")})])}),[]);
+});
+test("confirmed refresh survives explicit admission snapshots without changing other gates",async()=>{
+  const {steamIndieAdmissionEvidence,evaluateSteamIndiePrelaunchAdmission}=await import("../jobs/online_daily_v7_indie_admission.mjs");
+  const input=candidate();
+  input._indieAdmissionEvidence=steamIndieAdmissionEvidence(input);
+  const before=evaluateSteamIndiePrelaunchAdmission(input);
+  const r=await refreshOfficialGameplayEvidence({steamCandidates:[input],reportDate:"2026-09-15",fetchTextImpl:async()=>page([trailer()])});
+  const after=evaluateSteamIndiePrelaunchAdmission(r.steamCandidates[0]);
+  assert.deepEqual(after.failed_gates,before.failed_gates.filter(x=>x!=="official_gameplay"));
+  assert.equal(input._indieAdmissionEvidence.official_gameplay_evidence.length,0,"original snapshot stays immutable");
+});
+test("expired evidence is retried and same-day negative results do not spend a second request",async()=>{
+  const first=await refreshOfficialGameplayEvidence({steamCandidates:[candidate()],reportDate:"2026-09-08",fetchTextImpl:async()=>page([trailer()])});
+  const history=[{report_date:"2026-09-08",candidates:[{dedupe_key:"steam:"+id,official_gameplay_lookup:first.lookupResults.get("steam:"+id)}]}];
+  const expired=await refreshOfficialGameplayEvidence({steamCandidates:[candidate()],history,reportDate:"2026-09-15",fetchTextImpl:async()=>page([trailer({category:3})])});
+  assert.equal(expired.diagnostics.official_gameplay_lookup_attempts,1);
+  assert.deepEqual(expired.steamCandidates[0].officialGameplayEvidence,[]);
+  history.push({report_date:"2026-09-15",candidates:[{dedupe_key:"steam:"+id,official_gameplay_lookup:expired.lookupResults.get("steam:"+id)}]});
+  const repeat=await refreshOfficialGameplayEvidence({steamCandidates:[candidate()],history,reportDate:"2026-09-15",fetchTextImpl:()=>assert.fail("negative same-day cache")});
+  assert.equal(repeat.diagnostics.official_gameplay_lookup_attempts,0);
+});
