@@ -24,3 +24,7 @@ Verify official category mapping and runtime budget/state boundaries; add focuse
 
 ## Git Status
 Remote branch codex/official-gameplay-evidence from 742f496fad982e9da5a76bb0f43adbbc733033d1. Local checkout read-only; the existing three draft paths are unchanged.
+
+## Sample collection
+- Collected official store metadata for all 46 frozen candidate identities. No video download, frame extraction or AI calls occurred.
+- Added RED contracts for category-based recognition, bound descriptions, modern URLs, Bilibili identity, shared budget, cached evidence and failure cooldown.
