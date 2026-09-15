@@ -21,13 +21,12 @@ Implement the user-approved 2026-09-15 Radar-only plan: game relevance first; on
 - Added distinct-game, distinct-mod and coarse-year event safeguards; incomplete/uncertain attribution stays conservative. Historical-card replay strips old presentation boilerplate before curation.
 
 ## Remaining
-- Add failing fixtures for actual relevance problems, multilingual/reprint events, distinct progress, publisher identity, cap fallback, history and independent collector copies.
-- Implement the bounded Radar behavior, rules and replay diagnostics.
-- Run cloud focused tests, full Daily tests, schema/type/verify:all/diff checks; review exact PR and merge.
-- Verify normal deployment and one cloud acceptance run with actual content and synced=true receipt.
+- Inspect latest cloud archived replay and exact-head diff for content correctness.
+- Record final verification and review, then merge this approved PR and verify deployment.
+- Verify actual cloud Radar output and a successful synced=true receipt.
 
 ## Next Action
-Run the implementation's focused Radar fixtures, archived content replay and full verify:all in GitHub Actions; fix only concrete failures inside this approved scope.
+Resume from c085338d24a859de22f201807d4ea34ca96c371a; read cloud run 34925244483 replay logs and review the event matching boundary. The prior context failed during compaction; its corrective implementation is already committed.
 
 ## Git Status
 - Base 2ed65ed3aa8e3bd7e2c3d5f961fc05b0916d0a44; branch codex/radar-relevance-domestic-first, GitHub API only.
