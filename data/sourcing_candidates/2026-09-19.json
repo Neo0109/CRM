@@ -1,34 +1,34 @@
 {
   "schema_version": 2,
   "report_date": "2026-09-19",
-  "generated_at": "2026-09-19T11:00:54+08:00",
+  "generated_at": "2026-09-19T14:31:07+08:00",
   "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
   "scan_summary": {
     "steam_candidates_seen": 260,
-    "steam_candidates_enriched": 51,
-    "media_signals_seen": 309,
-    "media_candidates_seen": 44,
-    "records_total": 284,
+    "steam_candidates_enriched": 1,
+    "media_signals_seen": 312,
+    "media_candidates_seen": 36,
+    "records_total": 286,
     "formal": 0,
-    "candidate": 84,
-    "excluded": 200,
+    "candidate": 88,
+    "excluded": 198,
     "new_qualified_count": 0,
     "push_pool_count": 0,
     "strict_formal_count": 0,
     "near_pass_review_count": 0,
-    "steam_candidates_scheduled": 51,
-    "steam_candidates_reused": 209,
-    "steam_candidates_fresh_success": 50,
-    "steam_candidates_failed": 1,
-    "steam_candidates_deferred": 0,
-    "steam_candidates_evaluated": 260,
+    "steam_candidates_scheduled": 1,
+    "steam_candidates_reused": 258,
+    "steam_candidates_fresh_success": 1,
+    "steam_candidates_failed": 0,
+    "steam_candidates_deferred": 1,
+    "steam_candidates_evaluated": 259,
     "backlog_unenriched_count": 1,
     "scheduler_lane_counts": {
-      "new": 32,
+      "new": 1,
       "backlog": 0,
-      "retry_refresh": 19
+      "retry_refresh": 0
     },
-    "evidence_snapshot_rejections": 18
+    "evidence_snapshot_rejections": 0
   },
   "candidates": [
     {
@@ -200,16 +200,15 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "media",
-      "project": "动物朋克",
+      "project": "steam下架 -林离-再见",
       "steam_app_id": null,
-      "dedupe_key": "project:动物朋克",
+      "dedupe_key": "project:steam下架 -林离-再见",
       "sourcing_lane": "indie_prelaunch",
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "media_discovery",
-        "media_strict",
+        "media_expanded",
         "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
         "v7_indie/overseas_china_demand",
         "v7_2_china_joint/identity_and_dedupe"
       ],
@@ -226,12 +225,287 @@
         "official_demo_or_playtest",
         "official_gameplay",
         "independent_quality_proof",
+        "non_steam_business_entry",
         "concrete_china_bilibili_value"
       ],
       "exclusion_reasons": [],
       "source_links": [
-        "https://www.bilibili.com/video/BV1UB8d6UEaf/",
-        "https://chzzk.naver.com/video/14880819"
+        "https://www.bilibili.com/video/BV1iehw62EsG/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "傀纪元：悟道",
+      "steam_app_id": null,
+      "dedupe_key": "project:傀纪元：悟道",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1Rpbs6vEKb/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "喵喵帝国幸存者",
+      "steam_app_id": null,
+      "dedupe_key": "project:喵喵帝国幸存者",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1yuet6zEWb/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "基米钓鱼增量",
+      "steam_app_id": null,
+      "dedupe_key": "project:基米钓鱼增量",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1fWeD6tEAM/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "夜园游记",
+      "steam_app_id": null,
+      "dedupe_key": "project:夜园游记",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_expanded",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1oEe26LEeU/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "乡村狂想曲",
+      "steam_app_id": null,
+      "dedupe_key": "project:乡村狂想曲",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV11KTf6ZEwQ/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -366,16 +640,15 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "media",
-      "project": "无限大",
+      "project": "昭和米国物语",
       "steam_app_id": null,
-      "dedupe_key": "project:无限大",
+      "dedupe_key": "project:昭和米国物语",
       "sourcing_lane": "indie_prelaunch",
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "media_discovery",
         "media_strict",
         "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
         "v7_indie/overseas_china_demand",
         "v7_2_china_joint/identity_and_dedupe"
       ],
@@ -392,72 +665,17 @@
         "official_demo_or_playtest",
         "official_gameplay",
         "independent_quality_proof",
+        "non_steam_business_entry",
         "concrete_china_bilibili_value"
       ],
       "exclusion_reasons": [],
       "source_links": [
-        "https://www.bilibili.com/video/BV1jr8R6ZE4X/",
-        "https://chzzk.naver.com/video/14880940",
-        "https://www.bilibili.com/video/BV14C8d6jEJt/",
-        "https://chzzk.naver.com/video/14880819"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "星布谷地",
-      "steam_app_id": null,
-      "dedupe_key": "project:星布谷地",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1kJ4X6WEzi/",
-        "https://chzzk.naver.com/video/14882225",
-        "https://www.bilibili.com/video/BV17x8Z6iE4d/",
-        "https://chzzk.naver.com/video/14880940"
+        "https://www.bilibili.com/video/BV1hcbg6WELW/",
+        "https://www.bilibili.com/video/BV1m5bA6hESV/",
+        "https://www.bilibili.com/video/BV1Qjtv64Eym/",
+        "https://www.bilibili.com/video/BV1mTti6HEcy/",
+        "https://www.bilibili.com/video/BV1VNt962EtT/",
+        "https://www.bilibili.com/video/BV11PtR6KE36/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -513,14 +731,7 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://www.bilibili.com/video/BV1gbtt6NEDQ/",
-        "https://www.youtube.com/watch?v=JVo13btP--o",
-        "https://www.bilibili.com/video/BV14C8d6jE78/",
-        "https://live.bilibili.com/23459804",
-        "https://www.bilibili.com/video/BV1oH8d68EB3/",
-        "https://chzzk.naver.com/video/14880940",
-        "https://www.bilibili.com/video/BV1KZ4C6qEJu/",
-        "https://www.bilibili.com/video/BV1NetA6RENR/",
-        "https://www.youtube.com/watch?v=4-H_KAC6eCM"
+        "https://www.youtube.com/watch?v=JVo13btP--o"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -686,6 +897,116 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://www.bilibili.com/video/BV1W7Yq6wEzV/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "问剑长生",
+      "steam_app_id": null,
+      "dedupe_key": "project:问剑长生",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_expanded",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1yCNJ6VErM/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "黑夜轮回",
+      "steam_app_id": null,
+      "dedupe_key": "project:黑夜轮回",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_expanded",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1VVM166EC7/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -1318,7 +1639,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -1364,7 +1685,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -1455,7 +1776,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -1503,7 +1824,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -1940,17 +2261,7 @@
         "https://www.bilibili.com/video/BV1dktJ6pEvN/",
         "https://www.youtube.com/watch?v=Ae2-fUePqTI",
         "https://www.bilibili.com/video/BV1int86EEnU/",
-        "https://www.youtube.com/watch?v=70RwhIUhmME",
-        "https://www.bilibili.com/video/BV1hcbg6WELW/",
-        "https://www.bilibili.com/video/BV1m5bA6hESV/",
-        "https://www.bilibili.com/video/BV1Qjtv64Eym/",
-        "https://www.bilibili.com/video/BV1mTti6HEcy/",
-        "https://www.bilibili.com/video/BV1VNt962EtT/",
-        "https://www.bilibili.com/video/BV11PtR6KE36/",
-        "https://www.bilibili.com/video/BV1FCtA6UE1T/",
-        "https://www.youtube.com/@IGNJapan",
-        "https://www.bilibili.com/video/BV1Bz8R6FEMX/",
-        "https://chzzk.naver.com/video/14880940"
+        "https://www.youtube.com/watch?v=70RwhIUhmME"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -3071,7 +3382,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -3118,7 +3429,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -5348,7 +5659,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -5395,7 +5706,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -6091,7 +6402,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -6138,7 +6449,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -6375,7 +6686,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -6422,7 +6733,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -6804,7 +7115,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -6852,7 +7163,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -6971,7 +7282,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -7018,7 +7329,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -7272,7 +7583,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -7319,7 +7630,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -7992,7 +8303,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -8039,7 +8350,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -8132,62 +8443,6 @@
           "website": "https://www.selkiesinteractive.com/"
         },
         "expires_on": "2026-09-26"
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "果岭事务所",
-      "steam_app_id": "3143510",
-      "dedupe_key": "steam:3143510",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1AF8K6YEZi/",
-        "https://coldgoats-husky.itch.io/puttiverse",
-        "https://store.steampowered.com/app/3143510/",
-        "https://steamdb.info/app/3143510/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 20,
-        "movie_count": 3
       }
     },
     {
@@ -9242,7 +9497,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -9290,7 +9545,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -9559,64 +9814,6 @@
       }
     },
     {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "湮灭之潮",
-      "steam_app_id": "3292470",
-      "dedupe_key": "steam:3292470",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1Ebt46jEik/",
-        "https://store.steampowered.com/app/3292470/",
-        "https://steamdb.info/app/3292470/",
-        "https://www.bilibili.com/video/BV1528R6sEMi/",
-        "https://chzzk.naver.com/video/14880940",
-        "https://www.bilibili.com/video/BV1J58d6KEzm/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 9,
-        "movie_count": 2
-      }
-    },
-    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -9767,80 +9964,6 @@
       }
     },
     {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "摇摆沼泽",
-      "steam_app_id": "3361000",
-      "dedupe_key": "steam:3361000",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/official_demo_or_playtest",
-        "v7_indie/official_gameplay",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1j1ty6tEDK/",
-        "https://store.steampowered.com/app/3361000/",
-        "https://steamdb.info/app/3361000/",
-        "https://www.kmhgame.com/swingswamp.html"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 8,
-        "movie_count": 1
-      },
-      "official_gameplay_lookup": {
-        "version": "official-gameplay-metadata-v1",
-        "steam_app_id": "3361000",
-        "checked_on": "2026-09-17",
-        "status": "confirmed",
-        "evidence": [
-          {
-            "type": "steam_official_gameplay",
-            "value": "New Trailler",
-            "url": "https://video.fastly.steamstatic.com/store_trailers/3361000/576817724/f01a82283ecd0456b580d6a0281b5312b8142dfd/1788874060/hls_264_master.m3u8?t=1788876249",
-            "source_url": "https://store.steampowered.com/app/3361000/",
-            "video_id": "576817724",
-            "steam_app_id": "3361000",
-            "basis": "steam_gameplay_category",
-            "evidence_version": "official-gameplay-metadata-v1"
-          }
-        ]
-      }
-    },
-    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -9851,7 +9974,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -9899,7 +10022,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -10001,7 +10124,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -10049,7 +10172,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -10294,7 +10417,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -10340,7 +10463,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -10872,7 +10995,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -10920,7 +11043,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -11181,7 +11304,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -11230,7 +11353,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -11335,62 +11458,6 @@
     {
       "decision": "candidate",
       "publication_tier": null,
-      "source_type": "media",
-      "project": "深渊档案",
-      "steam_app_id": "3567000",
-      "dedupe_key": "steam:3567000",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1nSj26VEqZ/",
-        "https://store.steampowered.com/app/3567000/_/",
-        "https://store.steampowered.com/app/3567000/",
-        "https://steamdb.info/app/3567000/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 12,
-        "movie_count": 1
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
       "source_type": "steam",
       "project": "Mr Magpie's Harmless Card Game",
       "steam_app_id": "3616280",
@@ -11399,7 +11466,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -11447,7 +11514,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -11822,7 +11889,7 @@
     {
       "decision": "candidate",
       "publication_tier": null,
-      "source_type": "multi_source",
+      "source_type": "steam",
       "project": "9 Yin Sutra: Wuxia",
       "steam_app_id": "3638790",
       "dedupe_key": "steam:3638790",
@@ -11840,10 +11907,7 @@
         "v7_indie/concrete_china_bilibili_value",
         "v7_indie/overseas_china_demand",
         "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear",
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched"
+        "v7_2_china_joint/mature_china_partner_clear"
       ],
       "missing_evidence": [
         "steam_review_summary",
@@ -11854,9 +11918,7 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://store.steampowered.com/app/3638790/",
-        "https://steamdb.info/app/3638790/",
-        "https://www.bilibili.com/video/BV1wetH6qE2w/",
-        "https://www.youtube.com/@MeiaLuaTV"
+        "https://steamdb.info/app/3638790/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -12992,7 +13054,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -13039,7 +13101,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -13571,7 +13633,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -13619,7 +13681,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -14913,7 +14975,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -14961,7 +15023,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -15195,7 +15257,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "3891300",
-        "checked_on": "2026-09-18",
+        "checked_on": "2026-09-19",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -15211,7 +15273,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/non_narrative_product",
         "v7_indie/non_india_team",
@@ -15258,7 +15320,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -15669,147 +15731,6 @@
       }
     },
     {
-      "decision": "excluded",
-      "publication_tier": null,
-      "source_type": "steam",
-      "project": "Night of the Living Bubble",
-      "steam_app_id": "3984090",
-      "dedupe_key": "steam:3984090",
-      "sourcing_lane": "china_joint",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "steam_discovery",
-        "steam_enriched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/official_demo_or_playtest",
-        "v7_indie/non_steam_business_entry",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "current_china_opportunity"
-      ],
-      "exclusion_reasons": [
-        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
-      ],
-      "source_links": [
-        "https://store.steampowered.com/app/3984090/",
-        "https://steamdb.info/app/3984090/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 15,
-        "movie_count": 1
-      },
-      "first_seen": "2026-09-19",
-      "last_seen": "2026-09-19",
-      "enrichment_status": "success",
-      "enrichment_attempts": 1,
-      "last_attempted_at": "2026-09-19T11:00:54+08:00",
-      "last_enriched_at": "2026-09-19T11:00:54+08:00",
-      "next_retry_date": null,
-      "scheduler_lane": "new",
-      "evidence_snapshot": {
-        "captured_at": "2026-09-19T11:00:54+08:00",
-        "contract_version": 1,
-        "dedupe_key": "steam:3984090",
-        "evidence": {
-          "alreadyReleased": true,
-          "appId": "3984090",
-          "categories": [
-            "Single-player",
-            "Steam Achievements",
-            "Full controller support",
-            "Custom Volume Controls",
-            "Playable without Timed Input",
-            "Stereo Sound",
-            "Family Sharing"
-          ],
-          "chinaBilibiliValue": null,
-          "chinaDemandEvidence": null,
-          "chinaPartnerOccupied": false,
-          "comingSoon": true,
-          "contactMethods": [
-            {
-              "note": "Steam support email",
-              "type": "Email",
-              "value": "studionailgun@gmail.com"
-            },
-            {
-              "note": "Steam community backup",
-              "type": "Steam",
-              "value": "https://steamcommunity.com/app/3984090/discussions/"
-            }
-          ],
-          "country": "海外",
-          "daysToRelease": -1,
-          "developers": [
-            "Studio Nailgun"
-          ],
-          "domesticQuery": false,
-          "earlyAccess": false,
-          "genres": [
-            "Action",
-            "Adventure"
-          ],
-          "hasDemoSignal": true,
-          "hasDetails": true,
-          "highVisual": true,
-          "indiaTeam": false,
-          "mobileAdaptationPotential": false,
-          "movieCount": 1,
-          "narrativeHeavy": false,
-          "officialDemoEvidence": [
-            {
-              "type": "steam_demo",
-              "url": "https://store.steampowered.com/app/4115110/",
-              "value": "Steam official Demo"
-            }
-          ],
-          "officialGameplayEvidence": [],
-          "publisherOccupied": false,
-          "publishers": [
-            "Studio Nailgun"
-          ],
-          "qualityProofs": [],
-          "recommendationCount": 0,
-          "region": "海外",
-          "releaseDate": "2026-09-18",
-          "releaseTooSoon": false,
-          "reviewText": "",
-          "score": -43,
-          "screenshotCount": 15,
-          "shortDescription": "NOT YOUR AVERAGE NIGHT SHIFT... When clocking into work, you find that your business has been overrun by monsters borne from the products on the shelves. Constructed by a mad scientist bent on world domination, only YOU can stop them and save the world by shooting monsters with your Nailgun.",
-          "source": "Steam CN Demo/Next Fest Window",
-          "steamDbUrl": "https://steamdb.info/app/3984090/",
-          "storeUrl": "https://store.steampowered.com/app/3984090/",
-          "strongData": false,
-          "strongGameplay": false,
-          "title": "Night of the Living Bubble",
-          "validatedPcHit": false,
-          "website": null
-        },
-        "expires_on": "2026-09-26"
-      }
-    },
-    {
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "steam",
@@ -16109,7 +16030,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4004550",
-        "checked_on": "2026-09-18",
+        "checked_on": "2026-09-19",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -16438,7 +16359,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -16487,7 +16408,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -17008,7 +16929,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4081780",
-        "checked_on": "2026-09-18",
+        "checked_on": "2026-09-19",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -17487,7 +17408,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -17534,7 +17455,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -17773,7 +17694,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -17819,7 +17740,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -18188,22 +18109,28 @@
       "project": "不问凡尘",
       "steam_app_id": "4209920",
       "dedupe_key": "steam:4209920",
-      "sourcing_lane": "china_joint",
+      "sourcing_lane": "indie_prelaunch",
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
         "v7_indie/identity_and_dedupe",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
+        "v7_2_china_joint/identity_and_dedupe"
       ],
       "missing_evidence": [
         "steam_app_details",
         "ea_status",
         "visual_assets",
         "steam_review_summary",
-        "traction_or_proven_team_event",
-        "current_china_opportunity"
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value",
+        "overseas_china_demand"
       ],
       "exclusion_reasons": [],
       "source_links": [
@@ -18573,7 +18500,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -18619,7 +18546,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -19913,7 +19840,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4261190",
-        "checked_on": "2026-09-18",
+        "checked_on": "2026-09-19",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -20425,7 +20352,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -20473,7 +20400,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -20618,7 +20545,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4334690",
-        "checked_on": "2026-09-18",
+        "checked_on": "2026-09-19",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -21647,7 +21574,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -21696,7 +21623,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -22795,7 +22722,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -22842,7 +22769,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -23094,7 +23021,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -23142,7 +23069,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -23679,7 +23606,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4506090",
-        "checked_on": "2026-09-18",
+        "checked_on": "2026-09-19",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -23975,7 +23902,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -24022,7 +23949,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -26102,6 +26029,62 @@
     {
       "decision": "candidate",
       "publication_tier": null,
+      "source_type": "media",
+      "project": "辉石纪元",
+      "steam_app_id": "4598920",
+      "dedupe_key": "steam:4598920",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/official_demo_or_playtest",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_gameplay",
+        "independent_quality_proof",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1C3et6ME1z/",
+        "https://store.steampowered.com/app/4598920/The_Pyroxene_Ages/",
+        "https://store.steampowered.com/app/4598920/",
+        "https://steamdb.info/app/4598920/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 11,
+        "movie_count": 1
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
       "source_type": "steam",
       "project": "蜃渊契兽师",
       "steam_app_id": "4600450",
@@ -28045,7 +28028,6 @@
       "matched_rules": [
         "media_discovery",
         "media_strict",
-        "official_source_matched",
         "steam_entity_matched",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
@@ -28066,11 +28048,7 @@
       ],
       "exclusion_reasons": [],
       "source_links": [
-        "https://www.bilibili.com/video/BV1LZYS6pEs8/",
         "https://www.bilibili.com/video/BV1R5eM6eE8w/",
-        "https://store.steampowered.com/app/5227280/_Demo/",
-        "https://store.steampowered.com/app/5227280/",
-        "https://steamdb.info/app/5227280/",
         "https://store.steampowered.com/app/4766480/",
         "https://steamdb.info/app/4766480/"
       ],
@@ -28243,62 +28221,6 @@
       }
     },
     {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "五局司",
-      "steam_app_id": "4778380",
-      "dedupe_key": "steam:4778380",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1giej6pEky/",
-        "https://store.steampowered.com/app/4778380/_/",
-        "https://store.steampowered.com/app/4778380/",
-        "https://steamdb.info/app/4778380/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 5,
-        "movie_count": 1
-      }
-    },
-    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -28309,7 +28231,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -28355,7 +28277,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -28583,6 +28505,62 @@
         "checked_on": "2026-09-18",
         "status": "not_confirmed",
         "evidence": []
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "佳宝物业热线",
+      "steam_app_id": "4793680",
+      "dedupe_key": "steam:4793680",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV13c3g6kEuB/",
+        "https://store.steampowered.com/app/4793680/_/",
+        "https://store.steampowered.com/app/4793680/",
+        "https://steamdb.info/app/4793680/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
       }
     },
     {
@@ -28886,7 +28864,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -28932,7 +28910,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -29288,61 +29266,7 @@
     {
       "decision": "excluded",
       "publication_tier": null,
-      "source_type": "media",
-      "project": "旧梦夏日",
-      "steam_app_id": "4822610",
-      "dedupe_key": "steam:4822610",
-      "sourcing_lane": "china_joint",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "current_china_opportunity"
-      ],
-      "exclusion_reasons": [
-        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
-      ],
-      "source_links": [
-        "https://www.bilibili.com/video/BV116Tp6fE3Q/",
-        "https://store.steampowered.com/app/4822610/_/",
-        "https://store.steampowered.com/app/4822610/",
-        "https://steamdb.info/app/4822610/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 5,
-        "movie_count": 2
-      }
-    },
-    {
-      "decision": "excluded",
-      "publication_tier": null,
-      "source_type": "steam",
+      "source_type": "multi_source",
       "project": "SnapQuest",
       "steam_app_id": "4822930",
       "dedupe_key": "steam:4822930",
@@ -29358,7 +29282,11 @@
         "v7_indie/non_steam_business_entry",
         "v7_indie/concrete_china_bilibili_value",
         "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
+        "v7_2_china_joint/mature_china_partner_clear",
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/overseas_china_demand"
       ],
       "missing_evidence": [
         "steam_review_summary",
@@ -29369,7 +29297,8 @@
       ],
       "source_links": [
         "https://store.steampowered.com/app/4822930/",
-        "https://steamdb.info/app/4822930/"
+        "https://steamdb.info/app/4822930/",
+        "https://www.bilibili.com/video/BV1q23r6GEZc/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -30208,9 +30137,9 @@
       }
     },
     {
-      "decision": "excluded",
+      "decision": "candidate",
       "publication_tier": null,
-      "source_type": "steam",
+      "source_type": "multi_source",
       "project": "Wind Tiger Cloud Dragon",
       "steam_app_id": "4868360",
       "dedupe_key": "steam:4868360",
@@ -30226,18 +30155,23 @@
         "v7_indie/non_steam_business_entry",
         "v7_indie/overseas_china_demand",
         "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
+        "v7_2_china_joint/mature_china_partner_clear",
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/non_narrative_product"
       ],
       "missing_evidence": [
-        "steam_review_summary",
-        "current_china_opportunity"
+        "steam_review_summary"
       ],
       "exclusion_reasons": [
         "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
       ],
       "source_links": [
         "https://store.steampowered.com/app/4868360/",
-        "https://steamdb.info/app/4868360/"
+        "https://steamdb.info/app/4868360/",
+        "https://www.bilibili.com/video/BV1nAjd6iEZu/",
+        "https://store.steampowered.com/app/4868360/_/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -30354,7 +30288,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -30401,7 +30335,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -32214,7 +32148,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -32261,7 +32195,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -32360,7 +32294,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32408,7 +32342,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -32522,7 +32456,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -32570,7 +32504,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -32956,7 +32890,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -33003,7 +32937,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -33664,7 +33598,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -33712,7 +33646,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -34398,7 +34332,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -34445,7 +34379,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -34536,7 +34470,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -34582,7 +34516,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -34953,7 +34887,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35000,7 +34934,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -35659,7 +35593,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -35705,7 +35639,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -36627,6 +36561,69 @@
       }
     },
     {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "炼妖录",
+      "steam_app_id": "5135770",
+      "dedupe_key": "steam:5135770",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1httD6PEqF/",
+        "https://store.steampowered.com/app/5135770/_/?beta=1",
+        "https://store.steampowered.com/app/5135770/",
+        "https://steamdb.info/app/5135770/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 8,
+        "movie_count": 0
+      },
+      "official_gameplay_lookup": {
+        "version": "official-gameplay-metadata-v1",
+        "steam_app_id": "5135770",
+        "checked_on": "2026-09-18",
+        "status": "not_confirmed",
+        "evidence": []
+      }
+    },
+    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -36637,7 +36634,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -36683,7 +36680,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -36895,40 +36892,36 @@
       }
     },
     {
-      "decision": "candidate",
+      "decision": "excluded",
       "publication_tier": null,
-      "source_type": "media",
-      "project": "傀纪元：悟道",
-      "steam_app_id": "5151660",
-      "dedupe_key": "steam:5151660",
-      "sourcing_lane": "indie_prelaunch",
+      "source_type": "steam",
+      "project": "ANTARTIDA",
+      "steam_app_id": "5154340",
+      "dedupe_key": "steam:5154340",
+      "sourcing_lane": "china_joint",
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
+        "steam_discovery",
+        "steam_enriched",
         "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
         "v7_indie/non_india_team",
-        "v7_indie/official_gameplay",
         "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
+        "v7_indie/concrete_china_bilibili_value",
         "v7_2_china_joint/identity_and_dedupe",
         "v7_2_china_joint/mature_china_partner_clear"
       ],
       "missing_evidence": [
         "steam_review_summary",
-        "official_demo_or_playtest",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
+        "current_china_opportunity"
       ],
-      "exclusion_reasons": [],
+      "exclusion_reasons": [
+        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
+      ],
       "source_links": [
-        "https://www.bilibili.com/video/BV1Rpbs6vEKb/",
-        "https://store.steampowered.com/app/5151660/",
-        "https://steamdb.info/app/5151660/"
+        "https://store.steampowered.com/app/5154340/",
+        "https://steamdb.info/app/5154340/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -36945,8 +36938,88 @@
       "ea_state": "no",
       "visual_state": {
         "status": "available",
-        "screenshot_count": 5,
+        "screenshot_count": 11,
         "movie_count": 1
+      },
+      "first_seen": "2026-09-19",
+      "last_seen": "2026-09-19",
+      "enrichment_status": "success",
+      "enrichment_attempts": 1,
+      "last_attempted_at": "2026-09-19T14:31:07+08:00",
+      "last_enriched_at": "2026-09-19T14:31:07+08:00",
+      "next_retry_date": null,
+      "scheduler_lane": "new",
+      "evidence_snapshot": {
+        "captured_at": "2026-09-19T14:31:07+08:00",
+        "contract_version": 1,
+        "dedupe_key": "steam:5154340",
+        "evidence": {
+          "alreadyReleased": false,
+          "appId": "5154340",
+          "categories": [
+            "Single-player",
+            "Steam Achievements",
+            "Family Sharing"
+          ],
+          "chinaBilibiliValue": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
+          "chinaDemandEvidence": null,
+          "chinaPartnerOccupied": false,
+          "comingSoon": true,
+          "contactMethods": [
+            {
+              "note": "Steam support email",
+              "type": "Email",
+              "value": "larathepitbullgames@gmail.com"
+            },
+            {
+              "note": "Steam community backup",
+              "type": "Steam",
+              "value": "https://steamcommunity.com/app/5154340/discussions/"
+            }
+          ],
+          "country": "海外",
+          "daysToRelease": 4,
+          "developers": [
+            "Lara the Pitbull"
+          ],
+          "domesticQuery": false,
+          "earlyAccess": false,
+          "genres": [
+            "Adventure",
+            "Simulation"
+          ],
+          "hasDemoSignal": true,
+          "hasDetails": true,
+          "highVisual": true,
+          "indiaTeam": false,
+          "mobileAdaptationPotential": true,
+          "movieCount": 1,
+          "narrativeHeavy": false,
+          "officialDemoEvidence": [],
+          "officialGameplayEvidence": [],
+          "publisherOccupied": false,
+          "publishers": [
+            "Lara the Pitbull"
+          ],
+          "qualityProofs": [],
+          "recommendationCount": 0,
+          "region": "海外",
+          "releaseDate": "2026-09-23",
+          "releaseTooSoon": true,
+          "reviewText": "",
+          "score": 35,
+          "screenshotCount": 11,
+          "shortDescription": "No instructions, no manual, no help of any kind. Just you and a polar exploration vehicle. Are you capable of completing the mission, or will you be buried forever in Antarctica?",
+          "source": "Steam CN Demo/Next Fest Window",
+          "steamDbUrl": "https://steamdb.info/app/5154340/",
+          "storeUrl": "https://store.steampowered.com/app/5154340/",
+          "strongData": false,
+          "strongGameplay": true,
+          "title": "ANTARTIDA",
+          "validatedPcHit": false,
+          "website": null
+        },
+        "expires_on": "2026-09-26"
       }
     },
     {
@@ -37096,7 +37169,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -37141,7 +37214,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -37368,7 +37441,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37415,7 +37488,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -37634,7 +37707,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37681,7 +37754,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -37920,7 +37993,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_india_team",
@@ -37967,7 +38040,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -39047,7 +39120,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -39095,7 +39168,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
@@ -39213,7 +39286,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -39258,7 +39331,7 @@
       "last_attempted_at": "2026-09-19T11:00:54+08:00",
       "last_enriched_at": "2026-09-19T11:00:54+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-09-19T11:00:54+08:00",
         "contract_version": 1,
