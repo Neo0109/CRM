@@ -1,0 +1,182 @@
+{
+  "report_date": "2026-10-13",
+  "slot": "afternoon",
+  "status": "generation_failed",
+  "attempts": 0,
+  "generated_changed": false,
+  "generation_status": "unknown",
+  "generation_exit_code": 0,
+  "validation_status": "unknown",
+  "validation_exit_code": 0,
+  "failure_stage": "generation",
+  "failure_reason": "daily report generation failed",
+  "volume_diagnostics": null,
+  "source_coverage": {
+    "schema_version": 1,
+    "mode": "observe",
+    "status": "healthy",
+    "core_usable_count": 3,
+    "families": {
+      "steam": {
+        "status": "healthy",
+        "productive_sources": 21,
+        "signals": 911,
+        "failures": {},
+        "reasons": []
+      },
+      "bilibili": {
+        "status": "healthy",
+        "productive_sources": 8,
+        "signals": 54,
+        "failures": {
+          "rate_limited": 1
+        },
+        "reasons": [
+          "rate_limited=1"
+        ]
+      },
+      "domestic_media": {
+        "status": "healthy",
+        "productive_sources": 12,
+        "signals": 311,
+        "failures": {
+          "parse_mismatch": 1
+        },
+        "reasons": [
+          "parse_mismatch=1"
+        ]
+      },
+      "global_media": {
+        "status": "healthy",
+        "productive_sources": 13,
+        "signals": 225,
+        "failures": {},
+        "reasons": []
+      }
+    },
+    "incidents": [
+      {
+        "source_id": "bilibili:b站视频-国产游戏实机",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产肉鸽卡牌",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-独立游戏开发日志",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产策略模拟",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产二游新作",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产官方pv",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产商店页愿望单",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产playtest",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产taptap预约",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国人独立游戏steam",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "bilibili:b站视频-国产开发者demo",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": true
+      },
+      {
+        "source_id": "domestic_media:触乐",
+        "family": "domestic_media",
+        "outcome": "parse_mismatch",
+        "http_status": null,
+        "provider": null,
+        "fallback_used": false
+      },
+      {
+        "source_id": "bilibili:keyword-国产游戏-开发日志-demo",
+        "family": "bilibili",
+        "outcome": "rate_limited",
+        "http_status": 412,
+        "provider": null,
+        "fallback_used": false
+      }
+    ],
+    "recovery_suppressed_until": null
+  },
+  "steam_evidence_lost": null,
+  "business_liveness_status": "unavailable",
+  "business_liveness": null,
+  "business_liveness_error": null,
+  "new_lead_count": null,
+  "consecutive_zero_days": null,
+  "top_blocking_gates": [],
+  "generation_log_tail": "",
+  "validation_log_tail": "",
+  "event_name": "schedule",
+  "event_schedule": "17 6 * * *",
+  "run_id": "38412212000",
+  "run_attempt": 1,
+  "run_number": "328",
+  "run_url": "https://github.com/Neo0109/CRM/actions/runs/38412212000",
+  "captured_at": "2026-10-13T14:33:40.551Z",
+  "sync_response": ""
+}
