@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
   "report_date": "2026-11-15",
-  "generated_at": "2026-11-15T11:00:58+08:00",
+  "generated_at": "2026-11-15T16:23:03+08:00",
   "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
   "scan_summary": {
     "steam_candidates_seen": 260,
-    "steam_candidates_enriched": 6,
-    "media_signals_seen": 312,
+    "steam_candidates_enriched": 1,
+    "media_signals_seen": 354,
     "media_candidates_seen": 32,
     "records_total": 291,
     "formal": 0,
@@ -16,19 +16,19 @@
     "push_pool_count": 0,
     "strict_formal_count": 0,
     "near_pass_review_count": 0,
-    "steam_candidates_scheduled": 6,
-    "steam_candidates_reused": 254,
-    "steam_candidates_fresh_success": 6,
+    "steam_candidates_scheduled": 1,
+    "steam_candidates_reused": 259,
+    "steam_candidates_fresh_success": 1,
     "steam_candidates_failed": 0,
     "steam_candidates_deferred": 0,
     "steam_candidates_evaluated": 260,
     "backlog_unenriched_count": 0,
     "scheduler_lane_counts": {
-      "new": 3,
+      "new": 0,
       "backlog": 0,
-      "retry_refresh": 3
+      "retry_refresh": 1
     },
-    "evidence_snapshot_rejections": 3
+    "evidence_snapshot_rejections": 1
   },
   "candidates": [
     {
@@ -200,62 +200,6 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "media",
-      "project": "九阴真经：武侠",
-      "steam_app_id": null,
-      "dedupe_key": "project:九阴真经：武侠",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1wetH6qE2w/",
-        "https://www.youtube.com/@MeiaLuaTV"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
       "project": "勇者小队全灭了 Demo",
       "steam_app_id": null,
       "dedupe_key": "project:勇者小队全灭了 demo",
@@ -287,6 +231,116 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://www.bilibili.com/video/BV1Mv4W6DEnr/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "夜园游记",
+      "steam_app_id": null,
+      "dedupe_key": "project:夜园游记",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_expanded",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1oEe26LEeU/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "not_fetched"
+      },
+      "ea_state": "unknown",
+      "visual_state": {
+        "status": "unknown",
+        "screenshot_count": null,
+        "movie_count": null
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "太吾绘卷",
+      "steam_app_id": null,
+      "dedupe_key": "project:太吾绘卷",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe"
+      ],
+      "missing_evidence": [
+        "steam_app_id",
+        "steam_app_details",
+        "ea_status",
+        "visual_assets",
+        "steam_review_summary",
+        "prelaunch_window",
+        "publisher_china_capacity_clear",
+        "non_narrative_product",
+        "non_india_team",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "non_steam_business_entry"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1DFnm6gEov/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -421,62 +475,6 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "media",
-      "project": "星布谷地",
-      "steam_app_id": null,
-      "dedupe_key": "project:星布谷地",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1kJ4X6WEzi/",
-        "https://chzzk.naver.com/video/14882225"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
       "project": "星阵",
       "steam_app_id": null,
       "dedupe_key": "project:星阵",
@@ -508,119 +506,6 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://www.bilibili.com/video/BV1jL4H6dE29/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "昭和米国物语",
-      "steam_app_id": null,
-      "dedupe_key": "project:昭和米国物语",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1FCtA6UE1T/",
-        "https://www.youtube.com/@IGNJapan"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "源初之结",
-      "steam_app_id": null,
-      "dedupe_key": "project:源初之结",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1KZ4C6qEJu/",
-        "https://www.bilibili.com/video/BV1NetA6RENR/",
-        "https://www.youtube.com/watch?v=4-H_KAC6eCM"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -763,65 +648,7 @@
       "matched_rules": [
         "media_discovery",
         "media_strict",
-        "official_source_matched",
         "v7_indie/identity_and_dedupe",
-        "v7_indie/official_gameplay",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV19RnY6TEVP/",
-        "https://www.bilibili.com/video/BV1FbaM6MEFa/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "约书亚：梦境之门",
-      "steam_app_id": null,
-      "dedupe_key": "project:约书亚：梦境之门",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/concrete_china_bilibili_value",
         "v7_indie/overseas_china_demand",
         "v7_2_china_joint/identity_and_dedupe"
       ],
@@ -838,11 +665,12 @@
         "official_demo_or_playtest",
         "official_gameplay",
         "independent_quality_proof",
-        "non_steam_business_entry"
+        "non_steam_business_entry",
+        "concrete_china_bilibili_value"
       ],
       "exclusion_reasons": [],
       "source_links": [
-        "https://www.bilibili.com/video/BV1MEHx6kEhk/"
+        "https://www.bilibili.com/video/BV1FbaM6MEFa/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -1118,63 +946,6 @@
       "exclusion_reasons": [],
       "source_links": [
         "https://youxichaguan.com/archives/222714"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "魔岛新纪",
-      "steam_app_id": null,
-      "dedupe_key": "project:魔岛新纪",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "official_source_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_id",
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "concrete_china_bilibili_value"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV11cUrBCEVM/",
-        "https://www.bilibili.com/video/BV19f4h67EjK/"
       ],
       "steam_review_summary": {
         "status": "unknown",
@@ -2144,6 +1915,13 @@
           "website": null
         },
         "expires_on": "2026-11-19"
+      },
+      "official_gameplay_lookup": {
+        "version": "official-gameplay-metadata-v1",
+        "steam_app_id": "1404100",
+        "checked_on": "2026-11-15",
+        "status": "not_confirmed",
+        "evidence": []
       }
     },
     {
@@ -9140,6 +8918,166 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "steam",
+      "project": "Spirit Possession",
+      "steam_app_id": "2811400",
+      "dedupe_key": "steam:2811400",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "steam_discovery",
+        "steam_evidence_reused",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/official_demo_or_playtest",
+        "v7_indie/official_gameplay",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "independent_quality_proof",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://store.steampowered.com/app/2811400/",
+        "https://steamdb.info/app/2811400/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 7,
+        "movie_count": 2
+      },
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-15",
+      "enrichment_status": "success",
+      "enrichment_attempts": 2,
+      "last_attempted_at": "2026-11-11T11:00:50+08:00",
+      "last_enriched_at": "2026-11-11T11:00:50+08:00",
+      "next_retry_date": null,
+      "scheduler_lane": "reuse",
+      "evidence_snapshot": {
+        "captured_at": "2026-11-11T11:00:50+08:00",
+        "contract_version": 1,
+        "dedupe_key": "steam:2811400",
+        "evidence": {
+          "alreadyReleased": false,
+          "appId": "2811400",
+          "categories": [
+            "Single-player",
+            "Steam Achievements",
+            "Steam Cloud",
+            "Family Sharing"
+          ],
+          "chinaBilibiliValue": null,
+          "chinaDemandEvidence": null,
+          "chinaPartnerOccupied": false,
+          "comingSoon": true,
+          "contactMethods": [
+            {
+              "note": "Steam support email",
+              "type": "Email",
+              "value": "710066603@qq.com"
+            },
+            {
+              "note": "Steam community backup",
+              "type": "Steam",
+              "value": "https://steamcommunity.com/app/2811400/discussions/"
+            }
+          ],
+          "country": "中国（待确认）",
+          "daysToRelease": null,
+          "developers": [
+            "Happy Fish"
+          ],
+          "domesticQuery": true,
+          "earlyAccess": false,
+          "genres": [
+            "Action",
+            "Adventure",
+            "Casual",
+            "Indie"
+          ],
+          "hasDemoSignal": true,
+          "hasDetails": true,
+          "highVisual": true,
+          "indiaTeam": false,
+          "mobileAdaptationPotential": true,
+          "movieCount": 2,
+          "narrativeHeavy": false,
+          "officialDemoEvidence": [
+            {
+              "type": "steam_demo",
+              "url": "https://store.steampowered.com/app/2835550/",
+              "value": "Steam official Demo"
+            }
+          ],
+          "officialGameplayEvidence": [],
+          "publisherOccupied": false,
+          "publishers": [
+            "Happy Fish"
+          ],
+          "qualityProofs": [],
+          "recommendationCount": 0,
+          "region": "中国",
+          "releaseDate": "Coming soon",
+          "releaseTooSoon": false,
+          "reviewText": "",
+          "score": 127,
+          "screenshotCount": 7,
+          "shortDescription": "A 2D horizontal platform game that transforms into an enemy and solves puzzles.",
+          "source": "Steam CN Indie Keyword Upcoming",
+          "steamDbUrl": "https://steamdb.info/app/2811400/",
+          "storeUrl": "https://store.steampowered.com/app/2811400/",
+          "strongData": false,
+          "strongGameplay": false,
+          "title": "Spirit Possession",
+          "validatedPcHit": false,
+          "website": null
+        },
+        "expires_on": "2026-11-18"
+      },
+      "official_gameplay_lookup": {
+        "version": "official-gameplay-metadata-v1",
+        "steam_app_id": "2811400",
+        "checked_on": "2026-11-09",
+        "status": "confirmed",
+        "evidence": [
+          {
+            "type": "steam_official_gameplay",
+            "value": "BaiBianNingCaiChenDemo",
+            "url": "https://video.akamai.steamstatic.com/store_trailers/2811400/664884/5f987fece76dbd2f1a4cc50ec3238206934e8137/1750902186/hls_264_master.m3u8?t=1708489063",
+            "source_url": "https://store.steampowered.com/app/2811400/",
+            "video_id": "664884",
+            "steam_app_id": "2811400",
+            "basis": "steam_gameplay_category",
+            "evidence_version": "official-gameplay-metadata-v1"
+          }
+        ]
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "steam",
       "project": "Majo Strategy",
       "steam_app_id": "2812440",
       "dedupe_key": "steam:2812440",
@@ -13303,7 +13241,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -13352,7 +13290,7 @@
       "last_attempted_at": "2026-11-15T11:00:58+08:00",
       "last_enriched_at": "2026-11-15T11:00:58+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-11-15T11:00:58+08:00",
         "contract_version": 1,
@@ -14437,163 +14375,6 @@
           "title": "Dress the Duel",
           "validatedPcHit": false,
           "website": null
-        },
-        "expires_on": "2026-11-20"
-      }
-    },
-    {
-      "decision": "excluded",
-      "publication_tier": null,
-      "source_type": "steam",
-      "project": "Starball Pachinko",
-      "steam_app_id": "3235700",
-      "dedupe_key": "steam:3235700",
-      "sourcing_lane": "china_joint",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "steam_discovery",
-        "steam_evidence_reused",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/official_gameplay",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/concrete_china_bilibili_value",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "current_china_opportunity"
-      ],
-      "exclusion_reasons": [
-        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
-      ],
-      "source_links": [
-        "https://store.steampowered.com/app/3235700/",
-        "https://steamdb.info/app/3235700/",
-        "https://starball.game"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 5,
-        "movie_count": 1
-      },
-      "first_seen": "2026-11-04",
-      "last_seen": "2026-11-15",
-      "enrichment_status": "success",
-      "enrichment_attempts": 2,
-      "last_attempted_at": "2026-11-13T11:00:57+08:00",
-      "last_enriched_at": "2026-11-13T11:00:57+08:00",
-      "next_retry_date": null,
-      "scheduler_lane": "reuse",
-      "evidence_snapshot": {
-        "captured_at": "2026-11-13T11:00:57+08:00",
-        "contract_version": 1,
-        "dedupe_key": "steam:3235700",
-        "evidence": {
-          "alreadyReleased": false,
-          "appId": "3235700",
-          "categories": [
-            "Single-player",
-            "Steam Achievements",
-            "Steam Cloud",
-            "Family Sharing"
-          ],
-          "chinaBilibiliValue": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
-          "chinaDemandEvidence": null,
-          "chinaPartnerOccupied": false,
-          "comingSoon": true,
-          "contactMethods": [
-            {
-              "note": "Steam support email",
-              "type": "Email",
-              "value": "support@summerbreak.games"
-            },
-            {
-              "note": "Steam official website",
-              "type": "官网",
-              "value": "https://starball.game"
-            },
-            {
-              "note": "Steam support URL",
-              "type": "官网",
-              "value": "www.summerbreak.games"
-            },
-            {
-              "note": "Found on official site",
-              "type": "Email",
-              "value": "contact@summerbreak.games"
-            }
-          ],
-          "country": "海外",
-          "daysToRelease": 49,
-          "developers": [
-            "Summer Break Games"
-          ],
-          "domesticQuery": false,
-          "earlyAccess": false,
-          "genres": [
-            "Casual",
-            "Indie",
-            "Simulation",
-            "Strategy"
-          ],
-          "hasDemoSignal": false,
-          "hasDetails": true,
-          "highVisual": true,
-          "indiaTeam": false,
-          "mobileAdaptationPotential": true,
-          "movieCount": 1,
-          "narrativeHeavy": false,
-          "officialDemoEvidence": [],
-          "officialGameplayEvidence": [
-            {
-              "basis": "official_video_title",
-              "evidence_version": "official-gameplay-metadata-v1",
-              "source_url": "https://store.steampowered.com/app/3235700/",
-              "steam_app_id": "3235700",
-              "type": "steam_official_gameplay",
-              "url": "https://video.akamai.steamstatic.com/store_trailers/3235700/362070436/7bc970851b624e162fe60ae29395879deb920b96/1790879332/hls_264_master.m3u8?t=1790880351",
-              "value": "Gameplay Trailer",
-              "video_id": "257439003"
-            }
-          ],
-          "publisherOccupied": false,
-          "publishers": [
-            "Summer Break Games"
-          ],
-          "qualityProofs": [],
-          "recommendationCount": 0,
-          "region": "海外",
-          "releaseDate": "2027-01-01",
-          "releaseTooSoon": true,
-          "reviewText": "",
-          "score": 45,
-          "screenshotCount": 5,
-          "shortDescription": "A pachinko roguelike in a back-alley izakaya run by a fox-masked bartender. Build your board, win him prizes, chase the grand prize. Why won't he let you leave?",
-          "source": "Steam CN Roguelike Keyword Upcoming",
-          "steamDbUrl": "https://steamdb.info/app/3235700/",
-          "storeUrl": "https://store.steampowered.com/app/3235700/",
-          "strongData": false,
-          "strongGameplay": true,
-          "title": "Starball Pachinko",
-          "validatedPcHit": false,
-          "website": "https://starball.game"
         },
         "expires_on": "2026-11-20"
       }
@@ -15878,7 +15659,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "3458640",
-        "checked_on": "2026-11-11",
+        "checked_on": "2026-11-15",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -16788,6 +16569,153 @@
           "website": null
         },
         "expires_on": "2026-11-17"
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "steam",
+      "project": "Fourth Age: Idle RPG",
+      "steam_app_id": "3588840",
+      "dedupe_key": "steam:3588840",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "steam_discovery",
+        "steam_evidence_reused",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://store.steampowered.com/app/3588840/",
+        "https://steamdb.info/app/3588840/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 15,
+        "movie_count": 0
+      },
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-15",
+      "enrichment_status": "success",
+      "enrichment_attempts": 1,
+      "last_attempted_at": "2026-11-11T11:00:50+08:00",
+      "last_enriched_at": "2026-11-11T11:00:50+08:00",
+      "next_retry_date": null,
+      "scheduler_lane": "reuse",
+      "evidence_snapshot": {
+        "captured_at": "2026-11-11T11:00:50+08:00",
+        "contract_version": 1,
+        "dedupe_key": "steam:3588840",
+        "evidence": {
+          "alreadyReleased": false,
+          "appId": "3588840",
+          "categories": [
+            "Multi-player",
+            "PvP",
+            "Online PvP",
+            "Co-op",
+            "Online Co-op",
+            "Family Sharing"
+          ],
+          "chinaBilibiliValue": "多人协作循环可形成主播组队、挑战局和高密度切片，并以简中社区运营承接B站反馈。",
+          "chinaDemandEvidence": null,
+          "chinaPartnerOccupied": false,
+          "comingSoon": true,
+          "contactMethods": [
+            {
+              "note": "Steam support email",
+              "type": "Email",
+              "value": "support@crimoons.com"
+            },
+            {
+              "note": "Steam official website",
+              "type": "官网",
+              "value": "http://www.crimoons.com/"
+            },
+            {
+              "note": "Steam community backup",
+              "type": "Steam",
+              "value": "https://steamcommunity.com/app/3588840/discussions/"
+            }
+          ],
+          "country": "中国（待确认）",
+          "daysToRelease": null,
+          "developers": [
+            "Chengdu Chiyue Interactive Entertainment Co., Ltd."
+          ],
+          "domesticQuery": false,
+          "earlyAccess": false,
+          "genres": [
+            "RPG"
+          ],
+          "hasDemoSignal": false,
+          "hasDetails": true,
+          "highVisual": true,
+          "indiaTeam": false,
+          "mobileAdaptationPotential": true,
+          "movieCount": 0,
+          "narrativeHeavy": false,
+          "officialDemoEvidence": [],
+          "officialGameplayEvidence": [],
+          "publisherOccupied": false,
+          "publishers": [
+            "Chengdu Chiyue Interactive Entertainment Co., Ltd."
+          ],
+          "qualityProofs": [],
+          "recommendationCount": 0,
+          "region": "中国",
+          "releaseDate": "Coming soon",
+          "releaseTooSoon": false,
+          "reviewText": "",
+          "score": 105,
+          "screenshotCount": 15,
+          "shortDescription": "Fourth Age is a fantasy-themed strategy placement card mobile game. As an adventurer, you will summon heroes of different races and occupations, and with their unique exclusive special skills, formulate brain-burning strategies and freely combine schools.",
+          "source": "Steam CN Management Keyword Upcoming",
+          "steamDbUrl": "https://steamdb.info/app/3588840/",
+          "storeUrl": "https://store.steampowered.com/app/3588840/",
+          "strongData": false,
+          "strongGameplay": true,
+          "title": "Fourth Age: Idle RPG",
+          "validatedPcHit": false,
+          "website": null
+        },
+        "expires_on": "2026-11-18"
+      },
+      "official_gameplay_lookup": {
+        "version": "official-gameplay-metadata-v1",
+        "steam_app_id": "3588840",
+        "checked_on": "2026-11-15",
+        "status": "not_confirmed",
+        "evidence": []
       }
     },
     {
@@ -18709,6 +18637,62 @@
     {
       "decision": "excluded",
       "publication_tier": null,
+      "source_type": "media",
+      "project": "渎神牌局",
+      "steam_app_id": "3840430",
+      "dedupe_key": "steam:3840430",
+      "sourcing_lane": "china_joint",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/official_demo_or_playtest",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "current_china_opportunity"
+      ],
+      "exclusion_reasons": [
+        "project does not meet the locked Steam recommendation/rating threshold or verified-team current-event path"
+      ],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1C2nt6TETP/",
+        "https://store.steampowered.com/app/3840430/",
+        "https://steamdb.info/app/3840430/",
+        "https://www.bilibili.com/video/BV1Ks4P6oEXM/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
+      }
+    },
+    {
+      "decision": "excluded",
+      "publication_tier": null,
       "source_type": "steam",
       "project": "缘之绳",
       "steam_app_id": "3840650",
@@ -20028,69 +20012,6 @@
     {
       "decision": "candidate",
       "publication_tier": null,
-      "source_type": "media",
-      "project": "人间异想计划",
-      "steam_app_id": "3988530",
-      "dedupe_key": "steam:3988530",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/concrete_china_bilibili_value",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1CBnv6dEHx/",
-        "https://store.steampowered.com/app/3988530/",
-        "https://steamdb.info/app/3988530/",
-        "https://ordinaryoddness.com/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 5,
-        "movie_count": 1
-      },
-      "official_gameplay_lookup": {
-        "version": "official-gameplay-metadata-v1",
-        "steam_app_id": "3988530",
-        "checked_on": "2026-11-14",
-        "status": "not_confirmed",
-        "evidence": []
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
       "source_type": "steam",
       "project": "Rogue Circus",
       "steam_app_id": "4001840",
@@ -21164,7 +21085,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -21210,7 +21131,7 @@
       "last_attempted_at": "2026-11-15T11:00:58+08:00",
       "last_enriched_at": "2026-11-15T11:00:58+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-11-15T11:00:58+08:00",
         "contract_version": 1,
@@ -22636,7 +22557,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4264850",
-        "checked_on": "2026-11-11",
+        "checked_on": "2026-11-15",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -25602,7 +25523,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -25650,7 +25571,7 @@
       "last_attempted_at": "2026-11-15T11:00:58+08:00",
       "last_enriched_at": "2026-11-15T11:00:58+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-11-15T11:00:58+08:00",
         "contract_version": 1,
@@ -25728,6 +25649,69 @@
           "website": null
         },
         "expires_on": "2026-11-22"
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "江湖一掷",
+      "steam_app_id": "4635350",
+      "dedupe_key": "steam:4635350",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1Qy8T6nExQ/",
+        "https://store.steampowered.com/app/4635350?utm_source=bwpv&utm_campaign=jhyzpt1",
+        "https://store.steampowered.com/app/4635350/",
+        "https://steamdb.info/app/4635350/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 7,
+        "movie_count": 1
+      },
+      "official_gameplay_lookup": {
+        "version": "official-gameplay-metadata-v1",
+        "steam_app_id": "4635350",
+        "checked_on": "2026-11-14",
+        "status": "not_confirmed",
+        "evidence": []
       }
     },
     {
@@ -28416,7 +28400,7 @@
       "official_gameplay_lookup": {
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "4872010",
-        "checked_on": "2026-11-11",
+        "checked_on": "2026-11-15",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -31302,6 +31286,61 @@
     {
       "decision": "candidate",
       "publication_tier": null,
+      "source_type": "media",
+      "project": "小镇青年：行路",
+      "steam_app_id": "5019550",
+      "dedupe_key": "steam:5019550",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV13vhn6ZErj/",
+        "https://store.steampowered.com/app/5019550/",
+        "https://steamdb.info/app/5019550/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
       "source_type": "steam",
       "project": "客栈江湖",
       "steam_app_id": "5021000",
@@ -31736,166 +31775,6 @@
           "website": null
         },
         "expires_on": "2026-11-21"
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "steam",
-      "project": "Fish Go Brrr!",
-      "steam_app_id": "5047990",
-      "dedupe_key": "steam:5047990",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "steam_discovery",
-        "steam_evidence_reused",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/official_demo_or_playtest",
-        "v7_indie/official_gameplay",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/concrete_china_bilibili_value",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "independent_quality_proof",
-        "overseas_china_demand"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://store.steampowered.com/app/5047990/",
-        "https://steamdb.info/app/5047990/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 9,
-        "movie_count": 1
-      },
-      "first_seen": "2026-11-04",
-      "last_seen": "2026-11-15",
-      "enrichment_status": "success",
-      "enrichment_attempts": 1,
-      "last_attempted_at": "2026-11-10T16:47:23+08:00",
-      "last_enriched_at": "2026-11-10T16:47:23+08:00",
-      "next_retry_date": null,
-      "scheduler_lane": "reuse",
-      "evidence_snapshot": {
-        "captured_at": "2026-11-10T16:47:23+08:00",
-        "contract_version": 1,
-        "dedupe_key": "steam:5047990",
-        "evidence": {
-          "alreadyReleased": false,
-          "appId": "5047990",
-          "categories": [
-            "Single-player",
-            "Custom Volume Controls",
-            "Save Anytime",
-            "Family Sharing"
-          ],
-          "chinaBilibiliValue": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
-          "chinaDemandEvidence": null,
-          "chinaPartnerOccupied": false,
-          "comingSoon": true,
-          "contactMethods": [
-            {
-              "note": "Steam support email",
-              "type": "Email",
-              "value": "jesusruizsteamdevelopment@gmail.com"
-            },
-            {
-              "note": "Steam community backup",
-              "type": "Steam",
-              "value": "https://steamcommunity.com/app/5047990/discussions/"
-            }
-          ],
-          "country": "海外",
-          "daysToRelease": null,
-          "developers": [
-            "Jesus E Ruiz"
-          ],
-          "domesticQuery": false,
-          "earlyAccess": false,
-          "genres": [
-            "Action",
-            "Casual",
-            "Indie",
-            "Simulation"
-          ],
-          "hasDemoSignal": true,
-          "hasDetails": true,
-          "highVisual": true,
-          "indiaTeam": false,
-          "mobileAdaptationPotential": true,
-          "movieCount": 1,
-          "narrativeHeavy": false,
-          "officialDemoEvidence": [
-            {
-              "type": "steam_demo",
-              "url": "https://store.steampowered.com/app/5301560/",
-              "value": "Steam official Demo"
-            }
-          ],
-          "officialGameplayEvidence": [],
-          "publisherOccupied": false,
-          "publishers": [
-            "Jesus E Ruiz"
-          ],
-          "qualityProofs": [],
-          "recommendationCount": 0,
-          "region": "海外",
-          "releaseDate": "To be announced",
-          "releaseTooSoon": false,
-          "reviewText": "",
-          "score": 75,
-          "screenshotCount": 9,
-          "shortDescription": "Feed your fish, collect their gold, and defend your tank from alien invaders in this incremental aquarium tycoon. Unlock bizarre rule-bending helper creatures. Take the dangerous aquatic journey if you dare!",
-          "source": "Steam CN Management Keyword Upcoming",
-          "steamDbUrl": "https://steamdb.info/app/5047990/",
-          "storeUrl": "https://store.steampowered.com/app/5047990/",
-          "strongData": false,
-          "strongGameplay": true,
-          "title": "Fish Go Brrr!",
-          "validatedPcHit": false,
-          "website": null
-        },
-        "expires_on": "2026-11-17"
-      },
-      "official_gameplay_lookup": {
-        "version": "official-gameplay-metadata-v1",
-        "steam_app_id": "5047990",
-        "checked_on": "2026-11-10",
-        "status": "confirmed",
-        "evidence": [
-          {
-            "type": "steam_official_gameplay",
-            "value": "announceTrailer",
-            "url": "https://video.fastly.steamstatic.com/store_trailers/5047990/170285915/f6fa95b1bcd54ca730c44a6d6a0375d69387686c/1788651429/hls_264_master.m3u8?t=1788651737",
-            "source_url": "https://store.steampowered.com/app/5047990/",
-            "video_id": "170285915",
-            "steam_app_id": "5047990",
-            "basis": "steam_gameplay_category",
-            "evidence_version": "official-gameplay-metadata-v1"
-          }
-        ]
       }
     },
     {
@@ -33497,6 +33376,62 @@
       "decision": "candidate",
       "publication_tier": null,
       "source_type": "media",
+      "project": "角落打宝",
+      "steam_app_id": "5119770",
+      "dedupe_key": "steam:5119770",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1ejhd6ZE4L/",
+        "https://store.steampowered.com/app/5119770/_/?utm_source=bilibili",
+        "https://store.steampowered.com/app/5119770/",
+        "https://steamdb.info/app/5119770/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
       "project": "Hex Weaver",
       "steam_app_id": "5135130",
       "dedupe_key": "steam:5135130",
@@ -34949,63 +34884,6 @@
       }
     },
     {
-      "decision": "candidate",
-      "publication_tier": null,
-      "source_type": "media",
-      "project": "极境：垂钓者",
-      "steam_app_id": "5224350",
-      "dedupe_key": "steam:5224350",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "media_discovery",
-        "media_strict",
-        "steam_entity_matched",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/concrete_china_bilibili_value",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe"
-      ],
-      "missing_evidence": [
-        "steam_app_details",
-        "ea_status",
-        "visual_assets",
-        "steam_review_summary",
-        "prelaunch_window",
-        "publisher_china_capacity_clear",
-        "non_narrative_product",
-        "non_india_team",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof",
-        "non_steam_business_entry"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://www.bilibili.com/video/BV1ubpb6xES5/",
-        "https://store.steampowered.com/app/5224350/",
-        "https://steamdb.info/app/5224350/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "not_fetched"
-      },
-      "ea_state": "unknown",
-      "visual_state": {
-        "status": "unknown",
-        "screenshot_count": null,
-        "movie_count": null
-      }
-    },
-    {
       "decision": "excluded",
       "publication_tier": null,
       "source_type": "steam",
@@ -36104,7 +35982,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -36152,7 +36030,7 @@
       "last_attempted_at": "2026-11-15T11:00:58+08:00",
       "last_enriched_at": "2026-11-15T11:00:58+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "retry_refresh",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-11-15T11:00:58+08:00",
         "contract_version": 1,
@@ -36227,6 +36105,147 @@
         "version": "official-gameplay-metadata-v1",
         "steam_app_id": "5341030",
         "checked_on": "2026-11-14",
+        "status": "not_confirmed",
+        "evidence": []
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "steam",
+      "project": "Chain Pet Auto Battle",
+      "steam_app_id": "5358810",
+      "dedupe_key": "steam:5358810",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "steam_discovery",
+        "steam_enriched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/concrete_china_bilibili_value",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://store.steampowered.com/app/5358810/",
+        "https://steamdb.info/app/5358810/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 6,
+        "movie_count": 0
+      },
+      "first_seen": "2026-11-06",
+      "last_seen": "2026-11-15",
+      "enrichment_status": "success",
+      "enrichment_attempts": 2,
+      "last_attempted_at": "2026-11-15T16:23:03+08:00",
+      "last_enriched_at": "2026-11-15T16:23:03+08:00",
+      "next_retry_date": null,
+      "scheduler_lane": "retry_refresh",
+      "evidence_snapshot": {
+        "captured_at": "2026-11-15T16:23:03+08:00",
+        "contract_version": 1,
+        "dedupe_key": "steam:5358810",
+        "evidence": {
+          "alreadyReleased": false,
+          "appId": "5358810",
+          "categories": [
+            "Single-player",
+            "Family Sharing"
+          ],
+          "chinaBilibiliValue": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
+          "chinaDemandEvidence": null,
+          "chinaPartnerOccupied": false,
+          "comingSoon": true,
+          "contactMethods": [
+            {
+              "note": "Steam support email",
+              "type": "Email",
+              "value": "1769808937@qq.com"
+            },
+            {
+              "note": "Steam community backup",
+              "type": "Steam",
+              "value": "https://steamcommunity.com/app/5358810/discussions/"
+            }
+          ],
+          "country": "中国（待确认）",
+          "daysToRelease": null,
+          "developers": [
+            "零梦"
+          ],
+          "domesticQuery": false,
+          "earlyAccess": false,
+          "genres": [
+            "Adventure",
+            "Casual",
+            "Indie",
+            "Strategy"
+          ],
+          "hasDemoSignal": false,
+          "hasDetails": true,
+          "highVisual": true,
+          "indiaTeam": false,
+          "mobileAdaptationPotential": true,
+          "movieCount": 0,
+          "narrativeHeavy": false,
+          "officialDemoEvidence": [],
+          "officialGameplayEvidence": [],
+          "publisherOccupied": false,
+          "publishers": [
+            "零梦"
+          ],
+          "qualityProofs": [],
+          "recommendationCount": 0,
+          "region": "中国",
+          "releaseDate": "To be announced",
+          "releaseTooSoon": false,
+          "reviewText": "",
+          "score": 105,
+          "screenshotCount": 6,
+          "shortDescription": "In this pet-collecting auto-battler, collect all kinds of pets and try to keep evolving them. The unique skill-chain pre-editing gameplay gives every pet infinite possibilities in combat. Explore the potential of different lineups—every adventure is an unprecedented experience!",
+          "source": "Steam CN Roguelike Keyword Upcoming",
+          "steamDbUrl": "https://steamdb.info/app/5358810/",
+          "storeUrl": "https://store.steampowered.com/app/5358810/",
+          "strongData": false,
+          "strongGameplay": true,
+          "title": "Chain Pet Auto Battle",
+          "validatedPcHit": false,
+          "website": null
+        },
+        "expires_on": "2026-11-22"
+      },
+      "official_gameplay_lookup": {
+        "version": "official-gameplay-metadata-v1",
+        "steam_app_id": "5358810",
+        "checked_on": "2026-11-15",
         "status": "not_confirmed",
         "evidence": []
       }
@@ -36537,6 +36556,61 @@
         "checked_on": "2026-11-15",
         "status": "not_confirmed",
         "evidence": []
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "捕捉利维坦",
+      "steam_app_id": "5377850",
+      "dedupe_key": "steam:5377850",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1Qepg6uENZ/",
+        "https://store.steampowered.com/app/5377850/",
+        "https://steamdb.info/app/5377850/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 8,
+        "movie_count": 1
       }
     },
     {
@@ -37461,7 +37535,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/publisher_china_capacity_clear",
         "v7_indie/non_narrative_product",
@@ -37507,7 +37581,7 @@
       "last_attempted_at": "2026-11-15T11:00:58+08:00",
       "last_enriched_at": "2026-11-15T11:00:58+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-11-15T11:00:58+08:00",
         "contract_version": 1,
@@ -37906,142 +37980,6 @@
     {
       "decision": "candidate",
       "publication_tier": null,
-      "source_type": "steam",
-      "project": "地府模拟器",
-      "steam_app_id": "5477030",
-      "dedupe_key": "steam:5477030",
-      "sourcing_lane": "indie_prelaunch",
-      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
-      "matched_rules": [
-        "steam_discovery",
-        "steam_evidence_reused",
-        "v7_indie/identity_and_dedupe",
-        "v7_indie/prelaunch_window",
-        "v7_indie/publisher_china_capacity_clear",
-        "v7_indie/non_narrative_product",
-        "v7_indie/non_india_team",
-        "v7_indie/non_steam_business_entry",
-        "v7_indie/concrete_china_bilibili_value",
-        "v7_indie/overseas_china_demand",
-        "v7_2_china_joint/identity_and_dedupe",
-        "v7_2_china_joint/mature_china_partner_clear"
-      ],
-      "missing_evidence": [
-        "steam_review_summary",
-        "official_demo_or_playtest",
-        "official_gameplay",
-        "independent_quality_proof"
-      ],
-      "exclusion_reasons": [],
-      "source_links": [
-        "https://store.steampowered.com/app/5477030/",
-        "https://steamdb.info/app/5477030/"
-      ],
-      "steam_review_summary": {
-        "status": "unknown",
-        "text": null,
-        "recommendation_count": null,
-        "positive_reviews": null,
-        "negative_reviews": null,
-        "total_reviews": null,
-        "positive_rate": null,
-        "language": null,
-        "purchase_type": null,
-        "source_status": "steam_appdetails"
-      },
-      "ea_state": "no",
-      "visual_state": {
-        "status": "available",
-        "screenshot_count": 5,
-        "movie_count": 0
-      },
-      "first_seen": "2026-11-13",
-      "last_seen": "2026-11-15",
-      "enrichment_status": "success",
-      "enrichment_attempts": 1,
-      "last_attempted_at": "2026-11-13T22:40:20+08:00",
-      "last_enriched_at": "2026-11-13T22:40:20+08:00",
-      "next_retry_date": null,
-      "scheduler_lane": "reuse",
-      "evidence_snapshot": {
-        "captured_at": "2026-11-13T22:40:20+08:00",
-        "contract_version": 1,
-        "dedupe_key": "steam:5477030",
-        "evidence": {
-          "alreadyReleased": false,
-          "appId": "5477030",
-          "categories": [
-            "Single-player",
-            "Family Sharing"
-          ],
-          "chinaBilibiliValue": "系统型玩法可形成机制讲解、效率挑战和长期栏目，并以简中本地化承接B站社区反馈。",
-          "chinaDemandEvidence": null,
-          "chinaPartnerOccupied": false,
-          "comingSoon": true,
-          "contactMethods": [
-            {
-              "note": "Steam support email",
-              "type": "Email",
-              "value": "2427747650@qq.com"
-            },
-            {
-              "note": "Steam community backup",
-              "type": "Steam",
-              "value": "https://steamcommunity.com/app/5477030/discussions/"
-            }
-          ],
-          "country": "中国（待确认）",
-          "daysToRelease": 261,
-          "developers": [
-            "星游互动"
-          ],
-          "domesticQuery": true,
-          "earlyAccess": false,
-          "genres": [
-            "Action",
-            "Adventure",
-            "Casual",
-            "Indie",
-            "RPG",
-            "Simulation"
-          ],
-          "hasDemoSignal": false,
-          "hasDetails": true,
-          "highVisual": true,
-          "indiaTeam": false,
-          "mobileAdaptationPotential": true,
-          "movieCount": 0,
-          "narrativeHeavy": false,
-          "officialDemoEvidence": [],
-          "officialGameplayEvidence": [],
-          "publisherOccupied": false,
-          "publishers": [
-            "星游互动"
-          ],
-          "qualityProofs": [],
-          "recommendationCount": 0,
-          "region": "中国",
-          "releaseDate": "2027-08-01",
-          "releaseTooSoon": false,
-          "reviewText": "",
-          "score": 123,
-          "screenshotCount": 5,
-          "shortDescription": "你死了，但真正的人生才刚刚开始。作为一名初入地府的孤魂野鬼，在酆都谋生、赚钱、修炼、置业、结交鬼神，也可以加入阴司，从普通阴兵一路晋升为判官、阎罗，甚至掌管整个地府。",
-          "source": "Steam CN Indie Keyword Upcoming",
-          "steamDbUrl": "https://steamdb.info/app/5477030/",
-          "storeUrl": "https://store.steampowered.com/app/5477030/",
-          "strongData": false,
-          "strongGameplay": true,
-          "title": "地府模拟器",
-          "validatedPcHit": false,
-          "website": null
-        },
-        "expires_on": "2026-11-20"
-      }
-    },
-    {
-      "decision": "candidate",
-      "publication_tier": null,
       "source_type": "media",
       "project": "日志006",
       "steam_app_id": "5477210",
@@ -38412,7 +38350,7 @@
       "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
       "matched_rules": [
         "steam_discovery",
-        "steam_enriched",
+        "steam_evidence_reused",
         "v7_indie/identity_and_dedupe",
         "v7_indie/prelaunch_window",
         "v7_indie/publisher_china_capacity_clear",
@@ -38460,7 +38398,7 @@
       "last_attempted_at": "2026-11-15T11:00:58+08:00",
       "last_enriched_at": "2026-11-15T11:00:58+08:00",
       "next_retry_date": null,
-      "scheduler_lane": "new",
+      "scheduler_lane": "reuse",
       "evidence_snapshot": {
         "captured_at": "2026-11-15T11:00:58+08:00",
         "contract_version": 1,
@@ -38678,6 +38616,61 @@
           "website": null
         },
         "expires_on": "2026-11-17"
+      }
+    },
+    {
+      "decision": "candidate",
+      "publication_tier": null,
+      "source_type": "media",
+      "project": "幻数阶梯",
+      "steam_app_id": "5554250",
+      "dedupe_key": "steam:5554250",
+      "sourcing_lane": "indie_prelaunch",
+      "sourcing_rule_version": "sourcing-rules-v7.2.3-official-gameplay-value",
+      "matched_rules": [
+        "media_discovery",
+        "media_strict",
+        "steam_entity_matched",
+        "v7_indie/identity_and_dedupe",
+        "v7_indie/prelaunch_window",
+        "v7_indie/publisher_china_capacity_clear",
+        "v7_indie/non_narrative_product",
+        "v7_indie/non_india_team",
+        "v7_indie/non_steam_business_entry",
+        "v7_indie/overseas_china_demand",
+        "v7_2_china_joint/identity_and_dedupe",
+        "v7_2_china_joint/mature_china_partner_clear"
+      ],
+      "missing_evidence": [
+        "steam_review_summary",
+        "official_demo_or_playtest",
+        "official_gameplay",
+        "independent_quality_proof",
+        "concrete_china_bilibili_value"
+      ],
+      "exclusion_reasons": [],
+      "source_links": [
+        "https://www.bilibili.com/video/BV1rjW86jEaC/",
+        "https://store.steampowered.com/app/5554250/",
+        "https://steamdb.info/app/5554250/"
+      ],
+      "steam_review_summary": {
+        "status": "unknown",
+        "text": null,
+        "recommendation_count": null,
+        "positive_reviews": null,
+        "negative_reviews": null,
+        "total_reviews": null,
+        "positive_rate": null,
+        "language": null,
+        "purchase_type": null,
+        "source_status": "steam_appdetails"
+      },
+      "ea_state": "no",
+      "visual_state": {
+        "status": "available",
+        "screenshot_count": 5,
+        "movie_count": 1
       }
     },
     {
